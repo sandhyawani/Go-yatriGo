@@ -1,0 +1,326 @@
+.user-management-page {
+  background:
+    radial-gradient(circle at 94% 2%, rgba(124, 58, 237, 0.12), transparent 28rem),
+    radial-gradient(circle at 10% 34%, rgba(59, 130, 246, 0.08), transparent 24rem),
+    linear-gradient(145deg, #f8f9ff 0%, #f5f6fb 46%, #f7f8fc 100%);
+}
+
+.user-metric-card {
+  border: 1px solid rgba(255, 255, 255, 0.86);
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow:
+    0 1px 2px rgba(15, 23, 42, 0.03),
+    0 14px 30px rgba(31, 41, 55, 0.045);
+  backdrop-filter: blur(18px);
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    border-color: rgba(221, 214, 254, 0.88);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.04),
+      0 18px 37px rgba(76, 29, 149, 0.085);
+  }
+
+  .metric-icon {
+    background: rgba(124, 58, 237, 0.09);
+    color: #7c3aed;
+  }
+
+  &.user-metric-emerald .metric-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #059669;
+  }
+
+  &.user-metric-blue .metric-icon {
+    background: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+  }
+
+  &.user-metric-rose .metric-icon {
+    background: rgba(225, 29, 72, 0.09);
+    color: #e11d48;
+  }
+
+  &.user-metric-amber .metric-icon {
+    background: rgba(217, 119, 6, 0.1);
+    color: #d97706;
+  }
+}
+
+.premium-directory {
+  .directory-search input {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      0 8px 21px rgba(31, 41, 55, 0.035);
+
+    &:focus {
+      box-shadow:
+        0 0 0 4px rgba(124, 58, 237, 0.1),
+        0 14px 32px rgba(124, 58, 237, 0.1);
+    }
+  }
+
+  .directory-surface {
+    border: 1px solid rgba(255, 255, 255, 0.84);
+    background: rgba(255, 255, 255, 0.48);
+    box-shadow:
+      0 1px 2px rgba(15, 23, 42, 0.03),
+      0 25px 55px rgba(30, 27, 75, 0.065);
+    backdrop-filter: blur(22px);
+  }
+
+  .premium-table-scroll {
+    max-height: min(620px, calc(100vh - 360px));
+    min-height: 220px;
+    padding: 0 2px;
+  }
+}
+
+.premium-user-table {
+  border-collapse: separate;
+  border-spacing: 0 4px;
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 3;
+    height: 38px;
+    padding: 0 16px;
+    background: rgba(248, 249, 254, 0.94);
+    backdrop-filter: blur(16px);
+    color: #64748b;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+
+    &:first-child {
+      border-radius: 10px 0 0 10px;
+    }
+
+    &:last-child {
+      border-radius: 0 10px 10px 0;
+    }
+  }
+
+  .premium-user-row td {
+    height: 52px;
+    padding: 6px 16px;
+    border-top: 1px solid rgba(226, 232, 240, 0.74);
+    border-bottom: 1px solid rgba(226, 232, 240, 0.74);
+    background: rgba(255, 255, 255, 0.77);
+    transition:
+      background 170ms ease,
+      border-color 170ms ease,
+      box-shadow 170ms ease;
+
+    &:first-child {
+      border-left: 1px solid rgba(226, 232, 240, 0.74);
+      border-radius: 12px 0 0 12px;
+    }
+
+    &:last-child {
+      border-right: 1px solid rgba(226, 232, 240, 0.74);
+      border-radius: 0 12px 12px 0;
+    }
+  }
+
+  .premium-user-row:hover td {
+    border-color: rgba(196, 181, 253, 0.62);
+    background: rgba(255, 255, 255, 0.97);
+    box-shadow: 0 8px 20px rgba(76, 29, 149, 0.04);
+  }
+
+  .loading-row td {
+    padding: 4px 0;
+  }
+}
+
+.user-role-badge,
+.user-status {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.user-role-badge {
+  padding: 7px 11px;
+
+  &.role-admin {
+    background: #ede9fe;
+    color: #6d28d9;
+  }
+
+  &.role-guide {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+
+  &.role-traveler {
+    background: #ecfdf5;
+    color: #059669;
+  }
+}
+
+.user-status {
+  gap: 7px;
+  padding: 7px 10px;
+
+  span {
+    height: 7px;
+    width: 7px;
+    border-radius: 999px;
+  }
+
+  &.status-online {
+    background: #ecfdf5;
+    color: #047857;
+
+    span {
+      background: #10b981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.65);
+    }
+  }
+
+  &.status-offline {
+    background: #f1f5f9;
+    color: #64748b;
+
+    span {
+      background: #94a3b8;
+    }
+  }
+
+  &.status-suspended {
+    background: #fff1f2;
+    color: #e11d48;
+
+    span {
+      background: #f43f5e;
+    }
+  }
+}
+
+.user-action-trigger,
+.directory-page-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  width: 34px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.72);
+  color: #64748b;
+  transition: all 160ms ease;
+
+  &:hover:not(:disabled) {
+    border-color: #ddd6fe;
+    background: #f5f3ff;
+    color: #6d28d9;
+    box-shadow: 0 6px 14px rgba(109, 40, 217, 0.1);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+}
+
+.user-action-menu {
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow:
+    0 18px 42px rgba(15, 23, 42, 0.14),
+    0 2px 8px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(20px);
+
+  button {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    border-radius: 9px;
+    padding: 9px 10px;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+    text-align: left;
+    transition: background 140ms ease, color 140ms ease;
+
+    svg {
+      height: 15px;
+      width: 15px;
+    }
+
+    &:hover {
+      background: #f5f3ff;
+      color: #6d28d9;
+    }
+
+    &.danger-action:hover {
+      background: #fff1f2;
+      color: #e11d48;
+    }
+
+    &.success-action:hover {
+      background: #ecfdf5;
+      color: #047857;
+    }
+  }
+}
+
+.moderation-dialog {
+  border-radius: 22px !important;
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.18) !important;
+}
+
+.cellWithImg {
+  display: flex;
+  align-items: center;
+
+  .cellImg {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+}
+
+.cellWithStatus {
+  padding: 5px;
+  border-radius: 5px;
+
+  &.active {
+    background-color: rgba(16, 134, 111, 0.08);
+    color: #10866f;
+  }
+
+  &.pending {
+    background-color: rgba(184, 107, 0, 0.08);
+    color: #b86b00;
+  }
+
+  &.passive {
+    background-color: rgba(220, 38, 38, 0.08);
+    color: #dc2626;
+  }
+}
+
+@media (max-width: 767px) {
+  .user-management-page {
+    padding-top: 16px;
+  }
+
+  .premium-directory .premium-table-scroll {
+    max-height: none;
+  }
+}

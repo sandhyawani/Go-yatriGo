@@ -1,0 +1,68 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  width: 100%;
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: "Poppins", sans-serif;
+  background: #f8f7ff;
+  color: #111827;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #0b2727;
+}
+
+/* REMOVE global section padding */
+/* Use page/component spacing instead */
+
+/* REMOVE dangerous Tailwind overrides */
+/*
+.flex-row {
+  flex-direction: column;
+}
+
+.gap-4 {
+  gap: 3rem;
+}
+*/
+
+.wrapper {
+  position: relative;
+}
+
+.icon {
+  height: 1.5rem;
+  width: 1.5rem;
+  padding: 4px;
+  position: absolute;
+  top: 50%;
+  left: 8px;
+  transform: translateY(-50%);
+}
+
+.input {
+  height: 50px;
+  padding-left: 2rem;
+}
+
+/* Better responsive handling */
+@media (max-width: 768px) {
+  body {
+    overflow-x: hidden;
+  }
+}

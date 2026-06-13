@@ -1,0 +1,56 @@
+Created At: 2026-06-03T10:30:58Z
+Completed At: 2026-06-03T10:30:58Z
+File Path: `file:///c:/Users/sandh/OneDrive/Desktop/my%20pro/frontend/src/pages/social/TravelBuddyDetails.jsx`
+Total Lines: 740
+Total Bytes: 38407
+Showing lines 180 to 300
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+180:   }
+181: 
+182:   if (!trip) return null;
+183: 
+184:   const currentUserId = (user?._id || user?.id || "").toString();
+185:   const isHost = user && (trip.userId?._id || trip.userId)?.toString() === currentUserId;
+186:   const myMemberObj = trip?.members?.find(m => (m?.user?._id || m?.user)?.toString() === currentUserId);
+187:   const myRole = isHost ? "host" : (myMemberObj?.role || "member");
+188:   const isCompanion = user && (trip.companions?.some(c => (c?._id || c)?.toString() === currentUserId) || trip.members?.some(m => (m?._id || m)?.toString() === currentUserId));
+189:   const userRequest = user && trip.joinRequests?.find(r => (r?.userId?._id || r?.userId)?.toString() === currentUserId);
+190:   const isPending = userRequest && userRequest.status === "Pending";
+191:   const isApproved = userRequest && userRequest.status === "Approved";
+192:   const isRejected = userRequest && userRequest.status === "Rejected";
+193: 
+194:   const showChat = isHost || isCompanion || isApproved;
+195:   const routeFrom = trip.from || trip.startLocation || "Anywhere";
+196:   const maxMembers = trip.maxMembers || trip.maxCompanions || 0;
+197:   const memberCount = (trip.companions?.length || 0) + 1;
+198:   const slotsOpen = Math.max(0, maxMembers - memberCount);
+199:   const pendingRequests = trip.joinRequests?.filter(r => r.status === "Pending") || [];
+200:   const hasFelt = trip.likes?.some(likeId => likeId?.toString() === currentUserId);
+201: 
+202:   const formattedDate = new Date(trip.startDate).toLocaleDateString(undefined, {
+<truncated 4067 bytes>
+div className="w-full h-[220px] sm:h-64 bg-slate-200 relative">
+278:                 {trip.coverImage ? (
+279:                   <>
+280:                     {!imgLoaded && !imgError && <div className="absolute inset-0 bg-slate-200 animate-pulse" />}
+281:                     <img src={trip.coverImage} alt={`${trip.title} group cover photo`} onLoad={() => setImgLoaded(true)} onError={() => setImgError(true)} className={`w-full h-full object-cover transition-opacity ${imgLoaded ? 'opacity-100' : 'opacity-0'} ${imgError ? 'hidden' : ''}`} />
+282:                     {imgError && <div className="absolute inset-0 bg-[#EEEDFE] flex items-center justify-center"><MapPin className="w-12 h-12 text-[#AFA9EC]" /></div>}
+283:                   </>
+284:                 ) : (
+285:                   <div className="w-full h-full bg-[#6C4DF6]/20 flex items-center justify-center">
+286:                     <MapPin className="w-12 h-12 text-[#6C4DF6]/40" />
+287:                   </div>
+288:                 )}
+289:                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+290:                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+291:                   <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight drop-shadow-md">{trip.title}</h1>
+292:                 </div>
+293:           </div>
+294: 
+295:           {/* RIGHT 4 COLUMNS: Sidebar Actions, Host Request Manager, Companion Profiles */}
+296:           <div className="lg:col-span-4 space-y-4">
+297:             
+298:             {/* Host Profile Info Card */}
+299:             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+300:               <h3 className="text-sm font-medium text-slate-500 border-b border-slate-100 pb-2 flex items-center gap-1.5">
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

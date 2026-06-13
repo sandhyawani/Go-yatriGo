@@ -1,0 +1,77 @@
+Created At: 2026-06-03T10:28:44Z
+Completed At: 2026-06-03T10:28:44Z
+File Path: `file:///c:/Users/sandh/OneDrive/Desktop/my%20pro/frontend/src/pages/social/TravelBuddyDetails.jsx`
+Total Lines: 764
+Total Bytes: 39222
+Showing lines 422 to 764
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+422:                   <p className="text-xs text-slate-500 leading-relaxed font-semibold">
+423:                     This is a public group. You can join instantly without approval.
+424:                   </p>
+425:                   <button
+426:                     type="submit"
+427:                     disabled={submittingRequest}
+428:                     className="w-full py-2.5 bg-[#7F77DD] hover:bg-[#6C4DF6] text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+429:                   >
+430:                     <UserPlus className="w-4 h-4" /> {submittingRequest ? "Joining..." : "Join Group"}
+431:                   </button>
+432:                 </form>
+433:                 )}
+434:               </div>
+435:             )}
+436: 
+437:             {/* Host Join Request Manager (Visible ONLY to the host) */}
+438:             {isHost && (
+439:               <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+440:                 <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-2">
+441:                   Pending Requests ({pendingRequests.length})
+442:                 </h3>
+443: 
+444:                 <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar">
+445:                   {pendingRequests.length === 0 ? (
+446:                     <p className="text-xs text-slate-400 font-semibold py-3 text-center">No pending requests.</p>
+447:             
+<truncated 17175 bytes>
+723:                   const mId = mUser._id.toString();
+724:                   return (
+725:                     <div key={mId} className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+726:                       <img
+727:                         src={getAvatar(mUser)}
+728:                         alt={mUser.name}
+729:                         className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm"
+730:                       />
+731:                       <div className="min-w-0 flex-1">
+732:                         <div className="flex items-center gap-2">
+733:                           <h4 className="text-sm font-semibold text-[#111827] truncate">{mUser.name || "User"}</h4>
+734:                           {memberObj.role === 'host' && (
+735:                             <span className="bg-[#EEEDFE] text-[#534AB7] text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
+736:                               Host
+737:                             </span>
+738:                           )}
+739:                         </div>
+740:                         <span className="text-xs text-slate-500">Rating {mUser.rating || "4.5"} &middot; Joined recently</span>
+741:                       </div>
+742:                     </div>
+743:                   );
+744:                 })}
+745:             </div>
+746:           </div>
+747:         </div>
+748:       )}
+749: 
+750:       {reportModal.isOpen && (
+751:         <ReportModal
+752:           isOpen={reportModal.isOpen}
+753:           onClose={() => setReportModal({ isOpen: false })}
+754:           targetId={trip._id}
+755:           targetType="group"
+756:           reportedUserId={trip.creator?._id || trip.creator}
+757:         />
+758:       )}
+759:     </div>
+760:   );
+761: };
+762: 
+763: export default TravelBuddyDetails;
+764: 
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
