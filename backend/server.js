@@ -42,7 +42,12 @@ const corsOptions = {
 
     const normalizedOrigin = origin.replace(/\/$/, "");
 
-    if (allowedClientOrigins.includes(normalizedOrigin)) {
+    if (
+      allowedClientOrigins.includes(normalizedOrigin) ||
+      normalizedOrigin.endsWith(".vercel.app") ||
+      normalizedOrigin.includes("localhost") ||
+      normalizedOrigin.includes("127.0.0.1")
+    ) {
       return callback(null, true);
     }
 
