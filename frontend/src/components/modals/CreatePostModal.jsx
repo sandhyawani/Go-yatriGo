@@ -104,14 +104,14 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
       try {
         if (!query) {
           const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/music/trending${selectedMusicLang ? `?language=${encodeURIComponent(selectedMusicLang)}` : ""}`,
+            `/music/trending${selectedMusicLang ? `?language=${encodeURIComponent(selectedMusicLang)}` : ""}`,
           );
           const tracks = res.data?.tracks || res.data?.data || [];
           setTrendingMusic(tracks);
           setMusicResults([]);
         } else {
           const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/music/search?q=${encodeURIComponent(query)}`,
+            `/music/search?q=${encodeURIComponent(query)}`,
           );
           const tracks = res.data?.tracks || res.data?.data || [];
           if (tracks.length > 0) {

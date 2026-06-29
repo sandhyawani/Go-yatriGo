@@ -1,14 +1,8 @@
 import axios from 'axios';
 
-// Use environment variable if available, but ignore localhost when running on Vercel production
-const isProduction = process.env.NODE_ENV === 'production' || window.location.hostname.includes('vercel.app');
-let baseURL = process.env.REACT_APP_API_URL;
-if (!baseURL || (isProduction && baseURL.includes('localhost'))) {
-  baseURL = 'https://go-yatrigo.onrender.com/api';
-}
-if (baseURL && !baseURL.endsWith('/api')) {
-  baseURL = baseURL.replace(/\/+$/, '') + '/api';
-}
+// Unconditionally connect to Render cloud backend when running on Vercel or production
+const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
+const baseURL = isProduction ? 'https://go-yatrigo.onrender.com/api' : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
 
 const axiosInstance = axios.create({
   baseURL,

@@ -228,7 +228,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           try {
             setIsSearchingUsers(true);
             const res = await axios.get(
-              `${process.env.REACT_APP_API_URL}/users/${user._id}`,
+              `/users/${user._id}`,
               { withCredentials: true },
             );
             if (res.data?.following) {
@@ -250,7 +250,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
       try {
         setIsSearchingUsers(true);
         const res = await axios.get(
-          `${process.env.REACT_APP_API_URL}/users/search?q=${encodeURIComponent(query)}`,
+          `/users/search?q=${encodeURIComponent(query)}`,
         );
         if (res.data?.users) {
           setUserSearchResults(res.data.users);
@@ -341,13 +341,13 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
       try {
         if (!query) {
           const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/music/trending${selectedMusicLang ? `?language=${encodeURIComponent(selectedMusicLang)}` : ""}`,
+            `/music/trending${selectedMusicLang ? `?language=${encodeURIComponent(selectedMusicLang)}` : ""}`,
           );
           setTrendingSongs(res.data?.tracks || res.data?.data || []);
           setSpotifyResults([]);
         } else {
           const res = await axios.get(
-            `${process.env.REACT_APP_API_URL}/music/search?q=${encodeURIComponent(query)}`,
+            `/music/search?q=${encodeURIComponent(query)}`,
           );
           const tracks = res.data?.tracks || res.data?.data || [];
           if (tracks.length > 0) {
@@ -619,7 +619,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
       }
 
       const res = await axios.post(
-        `${process.env.REACT_APP_API_URL}/social/story`,
+        `/social/story`,
         formData,
         {
           withCredentials: true,
