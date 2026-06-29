@@ -1,7 +1,8 @@
 import axios from 'axios';
 
-// Use environment variable if available, else fallback to local development URL
-const baseURL = process.env.REACT_APP_API_URL;
+// Use environment variable if available, else fallback automatically based on environment
+const isProduction = process.env.NODE_ENV === 'production' || window.location.hostname.includes('vercel.app');
+const baseURL = process.env.REACT_APP_API_URL || (isProduction ? 'https://go-yatrigo.onrender.com/api' : 'http://localhost:5000/api');
 
 const axiosInstance = axios.create({
   baseURL,

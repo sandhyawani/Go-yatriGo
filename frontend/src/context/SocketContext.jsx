@@ -4,7 +4,8 @@ import { AuthContext } from "./authContext";
 
 export const SocketContext = createContext(null);
 
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://10.126.5.219:5000";
+const isProduction = process.env.NODE_ENV === 'production' || window.location.hostname.includes('vercel.app');
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || (isProduction ? "https://go-yatrigo.onrender.com" : "http://localhost:5000");
 
 export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
