@@ -74,14 +74,14 @@ cd go-yatrigo
 ### Install Frontend Dependencies
 
 ```bash
-cd client
+cd frontend
 npm install
 ```
 
 ### Install Backend Dependencies
 
 ```bash
-cd ../server
+cd backend
 npm install
 ```
 
