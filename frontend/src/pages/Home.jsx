@@ -88,7 +88,7 @@ const PostSkeleton = () => (
 );
 
 const StorySkeleton = () => (
-  <div className="w-[84px] h-[120px] rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-800 relative overflow-hidden shrink-0 animate-pulse border border-slate-100 dark:border-slate-600/50">
+  <div className="w-[70px] h-[100px] sm:w-[84px] sm:h-[120px] rounded-2xl bg-gradient-to-br from-slate-200 to-slate-100 dark:from-slate-700 dark:to-slate-800 relative overflow-hidden shrink-0 animate-pulse border border-slate-100 dark:border-slate-600/50">
     <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent" />
   </div>
 );
@@ -1142,7 +1142,7 @@ const Home = () => {
 
               <div
                 ref={storyContainerRef}
-                className="w-full max-w-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/40 dark:border-slate-700/50 rounded-3xl py-3 px-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none flex items-center gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory select-none transition-colors duration-300 scroll-smooth"
+                className="w-full max-w-full bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl border border-white/40 dark:border-slate-700/50 rounded-3xl py-2.5 px-3 sm:py-3 sm:px-4 shadow-[0_8px_30px_rgba(0,0,0,0.04)] dark:shadow-none flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-none snap-x snap-mandatory select-none transition-colors duration-300 scroll-smooth"
               >
                 {/* My story */}
                 <div className="flex flex-col shrink-0">
@@ -1152,7 +1152,7 @@ const Home = () => {
                         setActiveStoryGroup(myStoryGroup);
                         setActiveStoryIndex(0);
                       }}
-                      className="w-[84px] h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group"
+                      className="w-[70px] h-[100px] sm:w-[84px] sm:h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group"
                     >
                       {myStoryGroup.stories[0]?.mediaType === "video" ? (
                         <video
@@ -1201,7 +1201,7 @@ const Home = () => {
                   ) : (
                     <div
                       onClick={() => setShowStoryModal(true)}
-                      className="w-[84px] h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group shrink-0"
+                      className="w-[70px] h-[100px] sm:w-[84px] sm:h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group shrink-0"
                     >
                       <img
                         loading="lazy"
@@ -1238,7 +1238,7 @@ const Home = () => {
                             setActiveStoryGroup(group);
                             setActiveStoryIndex(0);
                           }}
-                          className="w-[84px] h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group shrink-0"
+                          className="w-[70px] h-[100px] sm:w-[84px] sm:h-[120px] rounded-2xl overflow-hidden relative cursor-pointer hover:scale-105 transition-all duration-300 shadow-sm group shrink-0"
                         >
                           {group.stories[0]?.media ||
                           group.stories[0]?.mediaUrl ||
@@ -1869,7 +1869,7 @@ const Home = () => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="fixed inset-0 z-[100] bg-black/10"
+                  className="fixed inset-0 z-[100000] bg-black/40"
                   onClick={() => {
                     setShowViewersList(false);
                     setIsStoryPaused(false);
@@ -1880,7 +1880,7 @@ const Home = () => {
                   animate={{ y: 0 }}
                   exit={{ y: "100%" }}
                   transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                  className="fixed bottom-0 inset-x-0 sm:max-w-[400px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-t-[32px] z-[110] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20 dark:border-white/5"
+                  className="fixed bottom-0 inset-x-0 sm:max-w-[400px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-t-[32px] z-[100001] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20 dark:border-white/5"
                 >
                   {/* Handle bar */}
                   <div className="w-full flex justify-center pt-3 pb-1 shrink-0">

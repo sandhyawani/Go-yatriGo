@@ -2,6 +2,7 @@
 import { showToast } from "../../utils/showToast";
 import ReportModal from "../modals/ReportModal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
   X,
@@ -276,12 +277,12 @@ const StoryViewer = ({
   const isOwnStory = String(activeStoryGroup.userId) === String(myUserId);
   const totalStories = activeStoryGroup.stories?.length ?? 1;
 
-  return (
+  return createPortal(
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black/95 backdrop-blur-xl z-50 flex items-center justify-center overflow-hidden"
+      className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[99999] flex items-center justify-center overflow-hidden"
     >
       {/* Prev / Next ghost buttons for desktop */}
       <button
@@ -553,7 +554,7 @@ const StoryViewer = ({
         </div>
 
         {/* Bottom bar */}
-        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pt-10 pb-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
+        <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pt-10 pb-8 sm:pb-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
           {!isOwnStory ? (
             <div className="pointer-events-auto flex flex-col gap-3 w-full">
               {/* Reactions */}
@@ -725,7 +726,8 @@ const StoryViewer = ({
           reportedUserId={activeStoryGroup?.userId}
         />
       )}
-    </motion.div>
+    </motion.div>,
+    document.body
   );
 };
 

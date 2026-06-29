@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --openssl-legacy-provider server.js",
     "dev": "nodemon --openssl-legacy-provider server.js",
-    "check-db": "node scripts/checkDb.js"
+    "check-db": "node scripts/checkDb.js",
+    "postinstall": "node patch-node-modules.js"
   },
   "keywords": [],
   "author": "",

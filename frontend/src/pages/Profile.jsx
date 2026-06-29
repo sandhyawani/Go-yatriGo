@@ -1088,8 +1088,8 @@ const Profile = () => {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="flex justify-center">
-              <div className="flex gap-1 sm:gap-2 p-1.5 bg-slate-100/80 rounded-2xl relative select-none overflow-x-auto custom-scrollbar border border-slate-200/50 shadow-inner">
+            <div className="w-full flex justify-start sm:justify-center overflow-x-auto scrollbar-none py-1">
+              <div className="inline-flex gap-1 p-1 sm:p-1.5 bg-slate-100/80 rounded-2xl relative select-none border border-slate-200/50 shadow-inner mx-auto shrink-0">
                 {[
                   { id: "posts", icon: Grid, label: "Posts", show: true },
                   {
@@ -1121,7 +1121,7 @@ const Profile = () => {
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`relative py-2.5 px-4 sm:px-6 flex items-center gap-2 text-[11px] sm:text-xs font-bold tracking-wide transition-colors rounded-xl z-10 ${
+                        className={`relative py-2 px-2.5 sm:py-2.5 sm:px-5 flex items-center gap-1.5 shrink-0 text-[11px] sm:text-xs font-bold tracking-wide transition-colors rounded-xl z-10 ${
                           isActive
                             ? "text-slate-900"
                             : "text-slate-500 hover:text-slate-700 hover:bg-slate-200/50"

@@ -661,7 +661,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className={`fixed inset-0 z-[100] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-slate-900/60 backdrop-blur-sm" : "bg-black"}`}
+          className={`fixed inset-0 z-[100000] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-slate-900/60 backdrop-blur-sm" : "bg-black"}`}
         >
           <input
             type="file"
