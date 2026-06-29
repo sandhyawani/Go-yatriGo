@@ -895,7 +895,7 @@ const SocialSidebar = () => {
         </div>
       </nav>
 
-      {/* ── MOBILE TOP HEADER ── */}
+      {/* mobile top header */}
       <div className="lg:hidden sticky top-0 bg-white/95 backdrop-blur-md z-[990] px-4 h-12 border-b border-slate-100 flex justify-between items-center">
         <Link to="/" className="flex items-center gap-2">
           <div className="relative w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-md shadow-[#6C4DF6]/30 overflow-hidden">
@@ -943,7 +943,7 @@ const SocialSidebar = () => {
         </div>
       </div>
 
-      {/* ── MOBILE BOTTOM NAV ── */}
+      {/* mobile bottom nav */}
       {user && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-3 pb-safe">
           <Link

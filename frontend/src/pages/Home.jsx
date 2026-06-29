@@ -1121,7 +1121,7 @@ const Home = () => {
 
       <div className="max-w-7xl mx-auto pt-2 sm:pt-3 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_330px] gap-6 xl:gap-8">
-          {/* ── Center Feed ── */}
+          {/* main feed */}
           <div className="w-full max-w-2xl mx-auto space-y-5 min-w-0">
             {/* Story bar - Compact Horizontal Scroll */}
             <div className="relative group/storybar w-full max-w-full min-w-0">
@@ -1822,7 +1822,7 @@ const Home = () => {
             )}
           </div>
 
-          {/* ── Right sidebar ── */}
+          {/* right sidebar */}
           <RightSidebar
             user={user}
             suggestions={suggestions}
@@ -1859,7 +1859,7 @@ const Home = () => {
           )}
         </AnimatePresence>
 
-        {/* ── Viewers bottom sheet ── */}
+        {/* viewers bottom sheet */}
         <AnimatePresence>
           {showViewersList &&
             activeStoryGroup &&

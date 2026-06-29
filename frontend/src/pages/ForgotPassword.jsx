@@ -1,4 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
+
 import { showToast } from "../utils/showToast";
 import React, { useState } from "react";
 import axios from "../api/axios";
@@ -70,7 +70,7 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans overflow-hidden relative">
-      {/* ── Background ── */}
+      {/* background */}
       <div
         className="absolute inset-0 z-0 bg-cover bg-center opacity-10 scale-105"
         style={{ backgroundImage: `url(${travelBg})` }}
@@ -78,12 +78,12 @@ const ForgotPassword = () => {
       />
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
 
-      {/* ── Ambient glows ── */}
+      {/* ambient glows */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
-        {/* ── Left hero ── */}
+        {/* left hero */}
         <div className="hidden lg:flex lg:w-3/5 items-center justify-center p-12">
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -124,7 +124,7 @@ const ForgotPassword = () => {
           </motion.div>
         </div>
 
-        {/* ── Right form ── */}
+        {/* right form */}
         <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
           <motion.div
             initial={{ opacity: 0, x: 20 }}

@@ -83,7 +83,7 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-purple-500/30 py-10 md:py-16 flex items-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 w-full">
-        {/* ── Header ── */}
+        {/* header */}
         <div className="text-center max-w-2xl mx-auto mb-10">
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -117,7 +117,7 @@ const ContactUs = () => {
           transition={{ delay: 0.3 }}
           className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-purple-500/5 overflow-hidden flex flex-col md:flex-row"
         >
-          {/* ── Contact Methods (Sidebar) ── */}
+          {/* contact methods sidebar */}
           <div className="bg-purple-600 w-full md:w-2/5 p-8 text-white relative overflow-hidden flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl -mr-32 -mt-32 opacity-50 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl -ml-32 -mb-32 opacity-50 pointer-events-none" />
@@ -161,7 +161,7 @@ const ContactUs = () => {
             </div>
           </div>
 
-          {/* ── Contact Form ── */}
+          {/* contact form */}
           <div className="w-full md:w-3/5 p-8 md:p-10">
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

@@ -501,7 +501,7 @@ const StoryViewer = ({
               onClick={(e) => {
                 e.stopPropagation();
                 setIsStoryMuted((m) => !m);
-                // Synchronously call play() in the event handler to satisfy iOS Safari autoplay policies
+                // trigger audio play on click for iOS audio unmuting
                 if (
                   isStoryMuted &&
                   audioRef.current &&
@@ -521,7 +521,7 @@ const StoryViewer = ({
             </button>
           )}
 
-          {/* Stickers & Legacy Caption */}
+          {/* stickers & caption */}
           <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
               {storyMediaLoaded && currentStory?.stickers?.length > 0
@@ -532,7 +532,7 @@ const StoryViewer = ({
                       mode="viewer"
                     />
                   ))
-                : /* Legacy Caption Fallback */
+                : /* caption fallback */
                   storyMediaLoaded &&
                   currentStory?.caption && (
                     <motion.div
