@@ -6,6 +6,9 @@ let baseURL = process.env.REACT_APP_API_URL;
 if (!baseURL || (isProduction && baseURL.includes('localhost'))) {
   baseURL = 'https://go-yatrigo.onrender.com/api';
 }
+if (baseURL && !baseURL.endsWith('/api')) {
+  baseURL = baseURL.replace(/\/+$/, '') + '/api';
+}
 
 const axiosInstance = axios.create({
   baseURL,
