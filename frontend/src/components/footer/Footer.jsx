@@ -14,7 +14,7 @@ const Footer = () => {
           <Link to="/safety" className="hover:text-slate-800 transition-colors">Safety</Link>
         </div>
         <div className="text-[12px] font-medium text-slate-400 flex items-center gap-2">
-          <span>© {new Date().getFullYear()} Go Go YatriGo.</span>
+          <span>© {new Date().getFullYear()} Go  YatriGo.</span>
         </div>
       </div>
     </footer>

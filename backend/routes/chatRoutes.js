@@ -11,7 +11,8 @@ const {
   markMessagesSeen,
   deleteMessageForMe,
   unsendMessage,
-  clearChatForMe
+  clearChatForMe,
+  deleteChatForMe
 } = require("../controllers/chatController");
 
 const router = express.Router();
@@ -30,5 +31,6 @@ router.put("/room/:roomId/seen", verifyToken, markMessagesSeen);
 router.delete("/room/:roomId/messages/:messageId/delete-for-me", verifyToken, deleteMessageForMe);
 router.delete("/room/:roomId/messages/:messageId/unsend", verifyToken, unsendMessage);
 router.delete("/room/:roomId/clear", verifyToken, clearChatForMe);
+router.delete("/room/:roomId/delete-chat", verifyToken, deleteChatForMe);
 
 module.exports = router;

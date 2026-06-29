@@ -1,16 +1,14 @@
 export const GROUP_CATEGORIES = [
   "Adventure",
-  "Solo",
-  "Female Only",
   "Trekking",
+  "Heritage & Culture",
   "Spiritual",
   "Beach",
-  "Luxury",
-  "Budget-friendly",
-  "Weekend",
+  "Wildlife & Safari",
+  "Backpacking",
   "Roadtrip",
-  "Family-friendly",
-  "Photography"
+  "Wellness & Retreat",
+  "City Exploration"
 ];
 
 export const LIFECYCLE_STATUSES = {

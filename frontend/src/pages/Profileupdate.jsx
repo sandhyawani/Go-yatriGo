@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { showToast } from "../utils/showToast";
+import { getAvatarUrl } from "../utils/avatar";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -28,6 +29,7 @@ import {
   Loader2,
   Check,
   X,
+  ShieldAlert,
 } from "lucide-react";
 import moment from "moment";
 
@@ -48,17 +50,27 @@ const USERNAME_REGEX = /^[a-z0-9_](?:[a-z0-9._]{1,28}[a-z0-9_])$/;
 const MOBILE_REGEX = /^[+]?[\d\s().-]{7,20}$/;
 
 const normalizeSingleLine = (value) => value.replace(/\s+/g, " ").trim();
-const normalizeUsername = (value) => value.replace(/\s+/g, "").trim().toLowerCase();
+const normalizeUsername = (value) =>
+  value.replace(/\s+/g, "").trim().toLowerCase();
 const normalizeBio = (value) => value.replace(/\r\n/g, "\n").trim();
 const getProfileId = (profile) => profile?._id || profile?.id || "";
 
-const buildProfilePayload = ({ name, username, country, mobile, bio, interests }) => ({
+const buildProfilePayload = ({
+  name,
+  username,
+  country,
+  mobile,
+  bio,
+  interests,
+  govIdType,
+}) => ({
   name: normalizeSingleLine(name),
   username: normalizeUsername(username),
   country: normalizeSingleLine(country),
   mobile: normalizeSingleLine(mobile),
   bio: normalizeBio(bio),
   interests: interests || [],
+  govIdType: govIdType || "",
 });
 
 const getErrorMessage = (error) =>
@@ -82,7 +94,8 @@ const validateProfile = (payload) => {
     !USERNAME_REGEX.test(payload.username) ||
     payload.username.includes("..")
   ) {
-    nextErrors.username = "Use 3-30 lowercase letters, numbers, dots, or underscores.";
+    nextErrors.username =
+      "Use 3-30 lowercase letters, numbers, dots, or underscores.";
   }
 
   if (payload.country.length > MAX_COUNTRY_LENGTH) {
@@ -112,7 +125,11 @@ const FieldError = ({ id, message }) => {
   if (!message) return null;
 
   return (
-    <p id={id} role="alert" className="mt-1.5 flex items-center gap-1.5 px-1 text-[10px] font-bold text-red-500">
+    <p
+      id={id}
+      role="alert"
+      className="mt-1.5 flex items-center gap-1.5 px-1 text-[10px] font-bold text-red-500"
+    >
       <AlertCircle className="h-3 w-3 shrink-0" />
       <span>{message}</span>
     </p>
@@ -125,7 +142,7 @@ const Profileupdate = () => {
   const { state } = location;
   const { user, updateUser } = useAuth();
 
-  const profileUser = state?._id ? state : (state?.user || user);
+  const profileUser = state?._id ? state : state?.user || user;
   const profileUserId = getProfileId(profileUser);
   const isAdminMode = location.pathname.startsWith("/admin");
   const backPath = isAdminMode ? "/admin/profile" : "/profile";
@@ -153,8 +170,13 @@ const Profileupdate = () => {
 
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
-
   const previewUrlRef = useRef(null);
+  const fileInputRef = useRef(null);
+
+  const [govIdFile, setGovIdFile] = useState(null);
+  const [govIdPreview, setGovIdPreview] = useState("");
+  const govIdPreviewUrlRef = useRef(null);
+  const [govIdType, setGovIdType] = useState("");
 
   const pageMeta = useMemo(
     () =>
@@ -169,12 +191,21 @@ const Profileupdate = () => {
             subtitle: "Update how travelers see you on GoYatriGo",
             backLabel: "Back to Profile",
           },
-    [isAdminMode]
+    [isAdminMode],
   );
 
   const currentPayload = useMemo(
-    () => buildProfilePayload({ name, username, country, mobile, bio, interests }),
-    [name, username, country, mobile, bio, interests]
+    () =>
+      buildProfilePayload({
+        name,
+        username,
+        country,
+        mobile,
+        bio,
+        interests,
+        govIdType,
+      }),
+    [name, username, country, mobile, bio, interests, govIdType],
   );
 
   const originalPayload = useMemo(
@@ -186,15 +217,19 @@ const Profileupdate = () => {
         mobile: profileUser?.mobile || "",
         bio: profileUser?.bio || "",
         interests: profileUser?.interests || [],
+        govIdType: profileUser?.govIdType || "",
       }),
-    [profileUser]
+    [profileUser],
   );
 
   const hasChanges =
     Boolean(file) ||
     Object.keys(currentPayload).some((key) => {
       if (Array.isArray(currentPayload[key])) {
-        return JSON.stringify(currentPayload[key]) !== JSON.stringify(originalPayload[key]);
+        return (
+          JSON.stringify(currentPayload[key]) !==
+          JSON.stringify(originalPayload[key])
+        );
       }
       return currentPayload[key] !== originalPayload[key];
     });
@@ -211,13 +246,16 @@ const Profileupdate = () => {
     setMobile(profileUser.mobile || "");
     setBio(profileUser.bio || "");
     setInterests(profileUser.interests || []);
+    setGovIdType(profileUser.govIdType || "");
     setErrors({});
 
     let isActive = true;
 
     const fetchStats = async () => {
       try {
-        const res = await axios.get("/users/profile-stats", { withCredentials: true });
+        const res = await axios.get("/users/profile-stats", {
+          withCredentials: true,
+        });
         if (isActive && res.data.success) {
           setStats({
             postsCount: res.data.postsCount,
@@ -261,13 +299,19 @@ const Profileupdate = () => {
     if (!selectedFile) return;
 
     if (!ALLOWED_TYPES.includes(selectedFile.type)) {
-      showToast.error("Invalid file type", "Please upload a JPG, PNG, WebP, or GIF image.");
+      showToast.error(
+        "Invalid file type",
+        "Please upload a JPG, PNG, WebP, or GIF image.",
+      );
       event.target.value = "";
       return;
     }
 
     if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      showToast.error("File too large", `Image must be under ${MAX_FILE_SIZE_MB}MB.`);
+      showToast.error(
+        "File too large",
+        `Image must be under ${MAX_FILE_SIZE_MB}MB.`,
+      );
       event.target.value = "";
       return;
     }
@@ -283,9 +327,56 @@ const Profileupdate = () => {
     clearError("file");
   };
 
+  const clearFile = () => {
+    if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
+    if (govIdPreviewUrlRef.current)
+      URL.revokeObjectURL(govIdPreviewUrlRef.current);
+
+    setFile(null);
+    setPreview("");
+    setGovIdFile(null);
+    setGovIdPreview("");
+    setGovIdType("");
+    setErrors({});
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleGovIdChange = (e) => {
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
+
+    if (
+      !["image/jpeg", "image/png", "application/pdf"].includes(
+        selectedFile.type,
+      )
+    ) {
+      showToast.error(
+        "Invalid file type",
+        "Only JPG, PNG, and PDF files are allowed.",
+      );
+      return;
+    }
+
+    if (selectedFile.size > 10 * 1024 * 1024) {
+      showToast.error("File too large", "Government ID must be under 10MB.");
+      return;
+    }
+
+    const url = URL.createObjectURL(selectedFile);
+    if (govIdPreviewUrlRef.current)
+      URL.revokeObjectURL(govIdPreviewUrlRef.current);
+    govIdPreviewUrlRef.current = url;
+
+    setGovIdFile(selectedFile);
+    setGovIdPreview(url);
+  };
+
   const uploadImageToCloudinary = async (imageFile) => {
     if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      throw new Error("Image upload is not configured. Please contact support.");
+      throw new Error(
+        "Image upload is not configured. Please contact support.",
+      );
     }
 
     const data = new FormData();
@@ -294,7 +385,10 @@ const Profileupdate = () => {
 
     const imageUrl = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open("POST", `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`);
+      xhr.open(
+        "POST",
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+      );
       xhr.timeout = 45000;
 
       xhr.upload.onprogress = (event) => {
@@ -336,7 +430,10 @@ const Profileupdate = () => {
       const nextErrors = validateProfile(currentPayload);
       if (Object.keys(nextErrors).length > 0) {
         setErrors(nextErrors);
-        showToast.error("Check the highlighted fields", "Fix the profile details before saving.");
+        showToast.error(
+          "Check the highlighted fields",
+          "Fix the profile details before saving.",
+        );
         return;
       }
 
@@ -353,12 +450,22 @@ const Profileupdate = () => {
       if (file) {
         const uploadedImageUrl = await uploadImageToCloudinary(file);
         updatedProfile.img = uploadedImageUrl;
+        updatedProfile.pic = uploadedImageUrl;
+        updatedProfile.avatar = uploadedImageUrl;
+      }
+
+      if (govIdFile) {
+        const uploadedGovIdUrl = await uploadImageToCloudinary(govIdFile);
+        updatedProfile.govId = uploadedGovIdUrl;
+        // User uploads a new ID, so the status should reset to pending
+        updatedProfile.verificationStatus = "pending";
+        updatedProfile.verificationNote = "";
       }
 
       const response = await axios.put(
         `/users/${profileUserId}`,
         updatedProfile,
-        { withCredentials: true }
+        { withCredentials: true },
       );
 
       const refreshedUser = {
@@ -370,13 +477,15 @@ const Profileupdate = () => {
 
       updateUser(refreshedUser);
       setSaveSuccess(true);
-      // We will skip the default toast to focus on the premium modal
-      // showToast.success("Profile updated", "Your public identity has been saved.");
+      showToast.success(
+        "Profile updated",
+        "Your public identity has been saved.",
+      );
 
       setTimeout(() => {
         setSaveSuccess(false);
         navigate(successPath, { replace: true });
-      }, 2500);
+      }, 1000);
     } catch (error) {
       console.error(error);
       showToast.error("Update failed", getErrorMessage(error));
@@ -386,15 +495,14 @@ const Profileupdate = () => {
     }
   };
 
-
   const joinedDateFormatted = moment(stats.joinedDate).format("MMMM YYYY");
 
   return (
-    <div className="relative min-h-screen bg-[#FDFDFD] px-4 pb-20 pt-2 md:pt-4 font-sans antialiased text-[#111827] sm:px-6 lg:px-8">
+    <div className="relative min-h-screen bg-[#FDFDFD] px-4 pb-24 md:pb-8 pt-0 font-sans antialiased text-[#111827] sm:px-6 lg:px-8">
       <div className="pointer-events-none absolute top-10 right-0 h-[30rem] w-[30rem] rounded-full bg-gradient-to-br from-[#6C4DF6]/10 to-fuchsia-400/10 blur-[80px]" />
       <div className="pointer-events-none absolute bottom-40 left-0 h-[20rem] w-[20rem] rounded-full bg-gradient-to-tr from-[#6C4DF6]/10 to-transparent blur-[80px]" />
 
-      <div className="relative z-10 mx-auto max-w-5xl space-y-4">
+      <div className="relative z-10 mx-auto max-w-5xl space-y-2">
         <Link
           to={backPath}
           className="group inline-flex select-none items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#6C4DF6]"
@@ -405,27 +513,33 @@ const Profileupdate = () => {
           <span>{pageMeta.backLabel}</span>
         </Link>
 
-        <form id="profile-form" onSubmit={handleSubmit} className="grid grid-cols-1 gap-6 lg:grid-cols-12" noValidate>
+        <form
+          id="profile-form"
+          onSubmit={handleSubmit}
+          className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-star"
+          noValidate
+        >
           {/* LEFT COLUMN: Avatar & Stats */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="lg:col-span-5 flex flex-col gap-6"
+            className="lg:col-span-5 flex flex-col gap-3"
           >
             {/* Avatar Card */}
             <div className="rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl p-6 text-center shadow-[0_10px_40px_rgba(0,0,0,0.06)] relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#6C4DF6]/5 to-transparent"></div>
-              
+
               <div className="group relative inline-block select-none mb-4 mt-2">
                 <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full border-[6px] border-white shadow-xl ring-4 ring-[#6C4DF6]/20 transition-transform duration-300 group-hover:scale-105">
                   <img
                     src={
                       preview ||
-                      profileUser?.img ||
-                      profileUser?.pic ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                        profileUser?.name || (isAdminMode ? "Admin" : "Explorer")
-                      )}&background=6C4DF6&color=fff`
+                      getAvatarUrl(
+                        profileUser?.pic,
+                        profileUser?.img,
+                        profileUser?.avatar,
+                        profileUser?.name,
+                      )
                     }
                     className="h-full w-full object-cover bg-slate-50"
                     alt="Avatar"
@@ -446,6 +560,7 @@ const Profileupdate = () => {
                 <input
                   type="file"
                   id="file"
+                  ref={fileInputRef}
                   onChange={handleFileChange}
                   className="hidden"
                   accept="image/jpeg,image/png,image/webp,image/gif"
@@ -481,93 +596,107 @@ const Profileupdate = () => {
               )}
             </div>
 
-
-
             {/* Personality Card (Bio & Interests) */}
             <div className="rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] relative overflow-hidden">
-                <div>
-                  <label htmlFor="bio" className={labelClass}>
-                    Bio / About Me
-                  </label>
-                  <div className="group relative flex-1">
-                    <AlignLeft className="absolute left-4 top-4 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
-                    <textarea
-                      id="bio"
-                      rows="3"
-                      className={`${inputClass} pl-11 py-3 min-h-[80px] overflow-hidden`}
-                      value={bio}
-                      onInput={(e) => {
-                        e.target.style.height = 'auto';
-                        e.target.style.height = (e.target.scrollHeight) + 'px';
-                      }}
-                      onChange={(e) => {
-                        setBio(e.target.value);
-                        clearError("bio");
-                      }}
-                      placeholder="Share your travel spirit..."
-                      maxLength={MAX_BIO_LENGTH}
-                      aria-invalid={Boolean(errors.bio)}
-                      aria-describedby={errors.bio ? "bio-error bio-count" : "bio-count"}
-                    />
-                  </div>
-                  <div className="mt-1 flex items-center justify-between px-1 mb-4">
-                    <FieldError id="bio-error" message={errors.bio} />
-                    <span id="bio-count" className="ml-auto text-[10px] font-bold text-slate-400">
-                      {normalizeBio(bio).length} / {MAX_BIO_LENGTH}
-                    </span>
-                  </div>
+              <div>
+                <label htmlFor="bio" className={labelClass}>
+                  Bio / About Me
+                </label>
+                <div className="group relative flex-1">
+                  <AlignLeft className="absolute left-4 top-4 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
+                  <textarea
+                    id="bio"
+                    rows="3"
+                    className={`${inputClass} pl-11 py-3 min-h-[80px] overflow-hidden`}
+                    value={bio}
+                    onInput={(e) => {
+                      e.target.style.height = "auto";
+                      e.target.style.height = e.target.scrollHeight + "px";
+                    }}
+                    onChange={(e) => {
+                      setBio(e.target.value);
+                      clearError("bio");
+                    }}
+                    placeholder="Share your travel spirit..."
+                    maxLength={MAX_BIO_LENGTH}
+                    aria-invalid={Boolean(errors.bio)}
+                    aria-describedby={
+                      errors.bio ? "bio-error bio-count" : "bio-count"
+                    }
+                  />
                 </div>
+                <div className="mt-1 flex items-center justify-between px-1 mb-0">
+                  <FieldError id="bio-error" message={errors.bio} />
+                  <span
+                    id="bio-count"
+                    className="ml-auto text-[10px] font-bold text-slate-400"
+                  >
+                    {normalizeBio(bio).length} / {MAX_BIO_LENGTH}
+                  </span>
+                </div>
+              </div>
 
-                <div>
-                  <label className={labelClass}>Interests</label>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {interests.map((interest, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#6C4DF6]/20 text-[#6C4DF6] text-[10px] font-bold rounded-xl shadow-sm">
-                        {interest}
-                        <button
-                          type="button"
-                          onClick={() => setInterests(interests.filter((_, i) => i !== idx))}
-                          className="text-[#6C4DF6]/60 hover:text-[#6C4DF6] transition-colors focus:outline-none"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                  {interests.length < 10 && (
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        className={`${inputClass} flex-1`}
-                        placeholder="Add an interest (e.g. Photography)"
-                        value={newInterest}
-                        onChange={(e) => setNewInterest(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            if (newInterest.trim() && !interests.includes(newInterest.trim())) {
-                              setInterests([...interests, newInterest.trim()]);
-                              setNewInterest("");
-                            }
-                          }
-                        }}
-                      />
+              <div>
+                <label className={labelClass}>Interests</label>
+                <div className="flex flex-wrap gap-2 mb-1">
+                  {interests.map((interest, idx) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 px-2 py-1 bg-white border border-[#6C4DF6]/20 text-[#6C4DF6] text-[10px] font-bold rounded-xl shadow-sm"
+                    >
+                      {interest}
                       <button
                         type="button"
-                        onClick={() => {
-                          if (newInterest.trim() && !interests.includes(newInterest.trim())) {
+                        onClick={() =>
+                          setInterests(interests.filter((_, i) => i !== idx))
+                        }
+                        className="text-[#6C4DF6]/60 hover:text-[#6C4DF6] transition-colors focus:outline-none"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {interests.length < 10 && (
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      className={`${inputClass} flex-1`}
+                      placeholder="Add an interest (e.g. Photography)"
+                      value={newInterest}
+                      onChange={(e) => setNewInterest(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          if (
+                            newInterest.trim() &&
+                            !interests.includes(newInterest.trim())
+                          ) {
                             setInterests([...interests, newInterest.trim()]);
                             setNewInterest("");
                           }
-                        }}
-                        className="px-4 py-3 bg-[#6C4DF6]/10 text-[#6C4DF6] rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#6C4DF6]/20 transition-colors"
-                      >
-                        Add
-                      </button>
-                    </div>
-                  )}
-                  <FieldError id="interests-error" message={errors.interests} />
-                </div>
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (
+                          newInterest.trim() &&
+                          !interests.includes(newInterest.trim())
+                        ) {
+                          setInterests([...interests, newInterest.trim()]);
+                          setNewInterest("");
+                        }
+                      }}
+                      className="px-4 py-3 bg-[#6C4DF6]/10 text-[#6C4DF6] rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#6C4DF6]/20 transition-colors"
+                    >
+                      Add
+                    </button>
+                  </div>
+                )}
+                <FieldError id="interests-error" message={errors.interests} />
+              </div>
             </div>
           </motion.div>
 
@@ -594,8 +723,8 @@ const Profileupdate = () => {
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
                   <div>
                     <label htmlFor="name" className={labelClass}>
                       Full Name
@@ -615,7 +744,9 @@ const Profileupdate = () => {
                         autoComplete="name"
                         maxLength={MAX_NAME_LENGTH}
                         aria-invalid={Boolean(errors.name)}
-                        aria-describedby={errors.name ? "name-error" : undefined}
+                        aria-describedby={
+                          errors.name ? "name-error" : undefined
+                        }
                       />
                     </div>
                     <FieldError id="name-error" message={errors.name} />
@@ -635,13 +766,17 @@ const Profileupdate = () => {
                           setUsername(e.target.value.replace(/\s+/g, ""));
                           clearError("username");
                         }}
-                        onBlur={() => setUsername((value) => normalizeUsername(value))}
+                        onBlur={() =>
+                          setUsername((value) => normalizeUsername(value))
+                        }
                         placeholder="username"
                         required
                         autoComplete="username"
                         maxLength={MAX_USERNAME_LENGTH}
                         aria-invalid={Boolean(errors.username)}
-                        aria-describedby={errors.username ? "username-error" : undefined}
+                        aria-describedby={
+                          errors.username ? "username-error" : undefined
+                        }
                       />
                     </div>
                     <FieldError id="username-error" message={errors.username} />
@@ -681,64 +816,101 @@ const Profileupdate = () => {
                         inputMode="tel"
                         maxLength={MAX_MOBILE_LENGTH}
                         aria-invalid={Boolean(errors.mobile)}
-                        aria-describedby={errors.mobile ? "mobile-error" : undefined}
+                        aria-describedby={
+                          errors.mobile ? "mobile-error" : undefined
+                        }
                       />
                     </div>
                     <FieldError id="mobile-error" message={errors.mobile} />
                   </div>
                 </div>
 
-                <div>
-                  <label htmlFor="country" className={labelClass}>
-                    Country / Region
-                  </label>
-                  <div className="group relative">
-                    <Globe className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
-                    <input
-                      id="country"
-                      className={`${inputClass} pl-11`}
-                      value={country}
-                      onChange={(e) => {
-                        setCountry(e.target.value);
-                        clearError("country");
-                      }}
-                      placeholder="Where are you from?"
-                      autoComplete="country-name"
-                      maxLength={MAX_COUNTRY_LENGTH}
-                      aria-invalid={Boolean(errors.country)}
-                      aria-describedby={errors.country ? "country-error" : undefined}
-                    />
+                {(profileUser.verificationStatus === "rejected" ||
+                  !profileUser.verificationStatus ||
+                  profileUser.verificationStatus === "unverified") && (
+                  <div className="bg-red-50/50 border border-red-100 rounded-2xl p-5 mb-4">
+                    <h3 className="text-sm font-bold text-red-900 mb-1 flex items-center gap-2">
+                      <ShieldAlert className="w-4 h-4 text-red-600" />
+                      {profileUser.verificationStatus === "rejected"
+                        ? "Verification Rejected"
+                        : "Verification Required"}
+                    </h3>
+                    <p className="text-xs text-red-700 mb-4 leading-relaxed">
+                      {profileUser.verificationStatus === "rejected"
+                        ? `Your previous Government ID was rejected. Reason: ${profileUser.verificationNote || "Invalid ID"}. Please upload a clear, valid Government ID.`
+                        : "Upload a valid Government ID to get the Verified Traveler badge."}
+                    </p>
+                    <div className="mb-2">
+                      <label className="mb-2 ml-2 block select-none text-[10px] font-black uppercase tracking-widest text-slate-500">
+                        Document Type
+                      </label>
+                      <select
+                        className={`${inputClass} !py-2 mb-2`}
+                        value={govIdType}
+                        onChange={(e) => setGovIdType(e.target.value)}
+                      >
+                        <option value="" disabled>
+                          Select Document Type
+                        </option>
+                        <option value="Aadhaar Card">Aadhaar Card</option>
+                        <option value="PAN Card">PAN Card</option>
+                        <option value="Passport">Passport</option>
+                        <option value="Driving License">Driving License</option>
+                      </select>
+                    </div>
+
+                    <div className="relative group">
+                      <ShieldCheck
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-purple-500"}`}
+                      />
+                      <label
+                        htmlFor="govIdFile"
+                        className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-purple-500 hover:border-purple-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-slate-50 focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer ${!govIdType ? "opacity-50 pointer-events-none" : ""}`}
+                      >
+                        <span className="truncate">
+                          {govIdFile
+                            ? govIdFile.name
+                            : "Upload New Government ID..."}
+                        </span>
+                        {govIdPreview && (
+                          <img
+                            src={govIdPreview}
+                            alt="Gov ID"
+                            className="h-6 w-10 object-cover rounded shadow-sm border border-slate-200 ml-3 shrink-0"
+                          />
+                        )}
+                      </label>
+                      <input
+                        type="file"
+                        id="govIdFile"
+                        accept="image/jpeg,image/png,application/pdf"
+                        className="hidden"
+                        onChange={handleGovIdChange}
+                        disabled={!govIdType}
+                      />
+                    </div>
+                    <p className="text-[10px] font-semibold text-slate-500 mt-2 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> Uploading fake or
+                      unrelated documents may result in account restrictions.
+                    </p>
                   </div>
-                  <FieldError id="country-error" message={errors.country} />
-                </div>
+                )}
 
-
-
-                <div className="pt-2">
+                <div className="pt-1">
                   <button
                     type="submit"
                     disabled={loading || !hasChanges}
-                    className={`flex h-12 w-full md:w-auto md:px-10 items-center justify-center gap-2 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 ${
-                      saveSuccess 
-                        ? 'bg-emerald-500 shadow-emerald-500/20' 
-                        : 'bg-[#6C4DF6] shadow-[#6c4df6]/20 hover:bg-[#5b3ee0]'
-                    }`}
+                    className="flex h-11 w-full md:w-auto md:px-8 items-center justify-center gap-2 rounded-md text-sm font-semibold text-white bg-[#6C4DF6] hover:bg-[#5b3ee0] shadow-md shadow-[#6c4df6]/20 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {loading ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>Saving</span>
+                        <span>Saving...</span>
                       </>
                     ) : saveSuccess ? (
-                      <>
-                        <Check className="h-4 w-4" />
-                        <span>Saved Successfully</span>
-                      </>
+                      <span>Saved Successfully</span>
                     ) : (
-                      <>
-                        <span>{hasChanges ? "Save Changes" : "Saved"}</span>
-                        <Save className="h-4 w-4" />
-                      </>
+                      <span>{hasChanges ? "Save Changes" : "Saved"}</span>
                     )}
                   </button>
                 </div>
@@ -751,24 +923,39 @@ const Profileupdate = () => {
       {/* Mobile Bottom Navigation */}
       {!isAdminMode && (
         <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-[4.5rem] items-center justify-around border-t border-slate-100 bg-white/90 backdrop-blur-md px-4 pb-safe md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
-          <Link to="/" className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2">
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+          >
             <HomeIcon className="h-5 w-5" />
             <span className="text-[9px] font-bold">Home</span>
           </Link>
-          <Link to="/social/buddy" className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2">
+          <Link
+            to="/social/buddy"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+          >
             <Compass className="h-5 w-5" />
             <span className="text-[9px] font-bold">Explore</span>
           </Link>
-          <Link to="/social/buddy/new" className="relative -top-5 flex flex-col items-center">
+          <Link
+            to="/social/buddy/new"
+            className="relative -top-5 flex flex-col items-center"
+          >
             <div className="bg-[#6C4DF6] text-white p-3.5 rounded-2xl shadow-lg shadow-[#6c4df6]/30 transform rotate-3 hover:rotate-6 transition-transform">
               <Plus className="h-6 w-6" />
             </div>
           </Link>
-          <Link to="/social/chat" className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2">
+          <Link
+            to="/social/chat"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+          >
             <MessageCircle className="h-5 w-5" />
             <span className="text-[9px] font-bold">Chat</span>
           </Link>
-          <Link to="/profile" className="flex flex-col items-center gap-1 text-[#6C4DF6] transition-colors p-2">
+          <Link
+            to="/profile"
+            className="flex flex-col items-center gap-1 text-[#6C4DF6] transition-colors p-2"
+          >
             <div className="relative">
               <UserIcon className="h-5 w-5" />
               <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#6C4DF6] rounded-full"></div>
@@ -777,51 +964,6 @@ const Profileupdate = () => {
           </Link>
         </nav>
       )}
-
-      {/* Success Modal */}
-      <AnimatePresence>
-        {saveSuccess && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
-              animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-sm overflow-hidden rounded-3xl bg-gradient-to-br from-[#6C4DF6] to-[#5b3ce4] p-8 text-center shadow-2xl"
-            >
-              <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-              <div className="absolute -bottom-10 -left-10 h-40 w-40 rounded-full bg-white/10 blur-2xl" />
-              
-              <div className="relative z-10 flex flex-col items-center justify-center space-y-6">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ delay: 0.2, type: "spring", damping: 15 }}
-                  className="flex h-20 w-20 items-center justify-center rounded-full bg-white/20 shadow-inner backdrop-blur-md"
-                >
-                  <ShieldCheck className="h-10 w-10 text-white" />
-                </motion.div>
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-black text-white">Profile Updated</h3>
-                  <p className="text-sm font-medium text-white/80">
-                    Your public identity has been saved successfully.
-                  </p>
-                </div>
-                <motion.div 
-                  className="h-1 w-12 rounded-full bg-white/30"
-                  animate={{ width: ["0%", "100%"] }}
-                  transition={{ duration: 2, ease: "linear" }}
-                />
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 };

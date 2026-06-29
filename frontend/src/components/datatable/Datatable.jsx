@@ -13,6 +13,7 @@ import {
   Search,
   ShieldCheck,
   Trash2,
+  FileText,
 } from "lucide-react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
@@ -112,6 +113,14 @@ const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
           <button type="button" role="menuitem" onClick={() => onAction("view")}>
             <Eye /> View details
           </button>
+          {user.govId && (
+            <button type="button" role="menuitem" onClick={() => onAction("viewId")}>
+              <FileText /> View Gov ID
+            </button>
+          )}
+          <button type="button" role="menuitem" onClick={() => onAction("verify")}>
+            <ShieldCheck /> {user.isVerified ? "Unverify User" : "Verify Identity"}
+          </button>
           <button type="button" role="menuitem" onClick={() => onAction("edit")}>
             <Edit3 /> Edit user
           </button>
@@ -174,7 +183,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
   const { data, loading: dataLoading } = useFetch(`/${path}`);
 
   useEffect(() => {
-    setList(Array.isArray(data) ? data : []);
+    setList(Array.isArray(data) ? data : (Array.isArray(data?.users) ? data.users : []));
   }, [data]);
 
   const refreshParentMetrics = () => {
@@ -250,6 +259,62 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     }
   };
 
+  const handleViewId = (user) => {
+    if (!user.govId) {
+       Swal.fire("No Document", "This user has not uploaded a Government ID yet.", "info");
+       return;
+    }
+    Swal.fire({
+      title: `${user.name}'s Government ID`,
+      imageUrl: user.govId,
+      imageAlt: "Government ID",
+      width: 'auto',
+      imageHeight: 400,
+      confirmButtonText: "Close",
+      confirmButtonColor: "#9333ea",
+      customClass: { popup: "moderation-dialog" }
+    });
+  };
+
+  const handleVerify = async (user) => {
+    const action = user.isVerified ? "unverify" : "verify";
+    const actionLabel = user.isVerified ? "Unverify User" : "Verify Identity";
+    const confirmResult = await Swal.fire({
+      title: `${actionLabel} ${user.name}?`,
+      text: user.isVerified
+        ? "Their profile will no longer show the verified badge."
+        : "Their profile will show the verified badge.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonText: actionLabel,
+      confirmButtonColor: "#9333ea",
+      customClass: { popup: "moderation-dialog" },
+    });
+
+    if (!confirmResult.isConfirmed) return;
+
+    try {
+      setBusyUserId(user._id);
+      await axios.put(`/admin/user/${user._id}/verify`);
+      setList((previous) =>
+        previous.map((item) =>
+          item._id === user._id ? { ...item, isVerified: !user.isVerified } : item
+        )
+      );
+      Swal.fire({
+        icon: "success",
+        title: `User ${action === "verify" ? "verified" : "unverified"}`,
+        timer: 1300,
+        showConfirmButton: false,
+        customClass: { popup: "moderation-dialog" },
+      });
+    } catch (error) {
+      Swal.fire("Error", `Could not ${action} the user.`, "error");
+    } finally {
+      setBusyUserId(null);
+    }
+  };
+
   const handleSuspend = async (user) => {
     const action = user.isSuspended ? "unsuspend" : "suspend";
     const actionLabel = user.isSuspended ? "Unsuspend" : "Suspend";
@@ -321,7 +386,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     let baseList = Array.isArray(list) ? list : [];
 
     if (activeFilter === "admin") {
-      baseList = baseList.filter(item => item.isAdmin);
+      baseList = baseList.filter(item => item.isAdmin || item?.role?.toLowerCase() === "admin" || item?.type?.toLowerCase() === "admin");
     } else if (activeFilter === "suspended") {
       baseList = baseList.filter(item => item.isSuspended);
     } else if (activeFilter === "online") {
@@ -364,6 +429,8 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
   const handleUserAction = (action, user) => {
     setOpenMenuId(null);
     if (action === "view") handleView(user._id);
+    if (action === "viewId") handleViewId(user);
+    if (action === "verify") handleVerify(user);
     if (action === "edit") navigate("/update", { state: user });
     if (action === "warn") handleWarn(user);
     if (action === "suspend") handleSuspend(user);

@@ -1,20 +1,80 @@
 const mongoose = require("mongoose");
 
-const ReportSchema = new mongoose.Schema(
+// Schema for reporting users and content
+const reportSchema = new mongoose.Schema(
   {
-    reporter: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    reportedUser: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    targetType: { 
-      type: String, 
-      enum: ["user", "post", "group", "story", "comment"], 
-      required: true 
+    // User who submitted the report
+    reporter: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
     },
-    targetId: { type: mongoose.Schema.Types.ObjectId, required: true }, // ID of the post, comment, group, story, user
-    reason: { type: String, required: true },
-    status: { type: String, enum: ["pending", "resolved", "dismissed", "Pending", "Resolved"], default: "pending" },
-    adminNote: { type: String, default: "" }
+
+    // User being reported
+    reportedUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    // Type of reported content
+    targetType: {
+      type: String,
+      enum: ["user", "post", "group", "story", "comment"],
+      required: true,
+    },
+
+    // ID of the reported item
+    targetId: {
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      index: true,
+    },
+
+    // Reason for reporting
+    reason: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 500,
+    },
+
+    // Report review status
+    status: {
+      type: String,
+      enum: ["pending", "resolved", "dismissed"],
+      default: "pending",
+    },
+
+    // Optional note added by an administrator
+    adminNote: {
+      type: String,
+      trim: true,
+      default: "",
+      maxlength: 1000,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Adds createdAt and updatedAt
+  }
 );
 
-module.exports = mongoose.model("Report", ReportSchema);
+// ----------------------
+// Database Indexes
+// ----------------------
+
+// Reports submitted by a user
+reportSchema.index({ reporter: 1 });
+
+// Reports against a user
+reportSchema.index({ reportedUser: 1 });
+
+// Find reports for a specific item
+reportSchema.index({ targetType: 1, targetId: 1 });
+
+// Filter reports by status
+reportSchema.index({ status: 1 });
+
+module.exports = mongoose.model("Report", reportSchema);

@@ -17,7 +17,8 @@ import { useAuth } from "../../context/authContext";
 
 const navigation = [
   { label: "Overview", to: "/admin", end: true, Icon: LayoutDashboard },
-  { label: "Reports & Moderation", to: "/admin/reports", Icon: ShieldAlert, priority: true },
+  { label: "Verification Requests", to: "/admin/verifications", Icon: ShieldAlert, priority: true },
+  { label: "Reports & Moderation", to: "/admin/reports", Icon: ShieldAlert },
   { label: "User Directory", to: "/users", Icon: Users },
   { label: "Contact Requests", to: "/admin/contacts", Icon: Mail },
   { label: "Create Operator", to: "/adduser", Icon: UserPlus },

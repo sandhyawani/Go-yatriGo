@@ -1,186 +1,184 @@
+const express = require("express");
 const http = require("http");
 const path = require("path");
-
-require("./config/nodeCompatibility");
-require("dotenv").config();
-require("colors");
-
-const compression = require("compression");
-const cookieParser = require("cookie-parser");
 const cors = require("cors");
-const express = require("express");
+const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const { Server } = require("socket.io");
+
+require("dotenv").config();
+require("colors");
 
 const connectDB = require("./config/db");
 
 const app = express();
 const server = http.createServer(app);
-const port = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5000;
 
-const configuredOrigins = [
-  process.env.CLIENT_URL,
-  process.env.FRONTEND_URL,
-  process.env.REACT_APP_CLIENT_URL,
-  process.env.CORS_ORIGIN,
-]
-  .filter(Boolean)
-  .flatMap((origin) => origin.split(","))
-  .map((origin) => origin.trim())
+const configuredClientOrigins = (process.env.CLIENT_URL || "")
+  .split(",")
+  .map((origin) => origin.trim().replace(/\/$/, ""))
   .filter(Boolean);
 
-const defaultOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:3001",
-  "http://10.126.5.219:3000",
+const developmentClientOrigins =
+  process.env.NODE_ENV === "production"
+    ? []
+    : [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+      ];
+
+const allowedClientOrigins = [
+  ...new Set([...configuredClientOrigins, ...developmentClientOrigins]),
 ];
 
-const allowedOrigins = new Set([...configuredOrigins, ...defaultOrigins]);
-
 const corsOptions = {
-  credentials: true,
   origin(origin, callback) {
-    if (!origin || allowedOrigins.has(origin)) {
-      callback(null, true);
-      return;
+    if (!origin) {
+      return callback(null, true);
     }
 
-    callback(new Error(`CORS blocked origin: ${origin}`));
+    const normalizedOrigin = origin.replace(/\/$/, "");
+
+    if (allowedClientOrigins.includes(normalizedOrigin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error(`CORS blocked origin: ${origin}`));
   },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 };
 
+// Middleware
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
-app.use(compression());
+
 app.use(express.json({ limit: "25mb" }));
-app.use(express.urlencoded({ extended: true, limit: "25mb" }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev"));
 
-if (process.env.NODE_ENV !== "test") {
-  app.use(morgan("dev"));
-}
-
+// Static folders
 app.use("/images", express.static(path.join(__dirname, "images")));
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-app.get("/", (_req, res) => {
-  res.json({ message: "Backend API is running" });
+// Home route
+app.get("/", (req, res) => {
+  res.json({
+    message: "Go  YatriGo API is running",
+  });
 });
 
-app.get("/api/health", (_req, res) => {
-  res.json({ status: "ok", uptime: process.uptime() });
-});
+// Routes
+app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/posts", require("./routes/postRoutes"));
+app.use("/api/stories", require("./routes/storyRoutes"));
+app.use("/api/chat", require("./routes/chatRoutes"));
+app.use("/api/social", require("./routes/socialTravelRoute"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/contact", require("./routes/contactRoutes"));
+app.use("/api/emergency", require("./routes/emergencyRoutes"));
+app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/api/support", require("./routes/supportRoutes"));
+app.use("/api/upload", require("./routes/uploadRoute"));
+app.use("/api/security", require("./routes/securityRoutes"));
+app.use("/api/settings", require("./routes/settings"));
+app.use("/api/legal", require("./routes/legal"));
+app.use("/api/music", require("./routes/musicRoute"));
+app.use("/api/journeys", require("./routes/journeyRoutes"));
 
-function mountRoute(basePath, routePath) {
-  try {
-    app.use(basePath, require(routePath));
-    console.log(`Mounted ${basePath}`);
-  } catch (error) {
-    console.error(`Failed to mount ${basePath}: ${error.message}`);
-  }
-}
-
-mountRoute("/api/admin", "./routes/adminRoutes");
-mountRoute("/api/auth", "./routes/authRoutes");
-mountRoute("/api/chat", "./routes/chatRoutes");
-mountRoute("/api/contact", "./routes/contactRoutes");
-mountRoute("/api/emergency", "./routes/emergencyRoutes");
-mountRoute("/api/legal", "./routes/legal");
-mountRoute("/api/music", "./routes/musicRoute");
-mountRoute("/api/notifications", "./routes/notificationRoutes");
-mountRoute("/api/posts", "./routes/postRoutes");
-mountRoute("/api/security", "./routes/securityRoutes");
-mountRoute("/api/settings", "./routes/settings");
-mountRoute("/api/social", "./routes/socialTravelRoute");
-mountRoute("/api/stories", "./routes/storyRoutes");
-mountRoute("/api/support", "./routes/supportRoutes");
-mountRoute("/api/upload", "./routes/uploadRoute");
-mountRoute("/api/users", "./routes/userRoutes");
-
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({
-    message: `Route not found: ${req.method} ${req.originalUrl}`,
+    message: "Route not found",
   });
 });
 
-app.use((error, _req, res, _next) => {
-  const statusCode = error.status || error.statusCode || 500;
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error(err.message);
 
-  console.error(error.stack || error.message);
-  res.status(statusCode).json({
-    message: error.message || "Server error",
+  res.status(err.statusCode || 500).json({
+    message: err.message || "Server Error",
   });
 });
 
+// Socket.IO
 const io = new Server(server, {
-  cors: corsOptions,
+  cors: {
+    origin: allowedClientOrigins,
+    credentials: true,
+  },
 });
 
 const onlineUsers = new Map();
+app.set("io", io);
+app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {
-  socket.on("go_online", (userId) => {
-    if (!userId) return;
+  console.log("User connected:", socket.id);
 
-    onlineUsers.set(String(userId), socket.id);
-    socket.broadcast.emit("user_presence", { userId, online: true });
+  socket.on("go_online", (userId) => {
+    onlineUsers.set(userId, socket.id);
+
+    socket.broadcast.emit("user_presence", {
+      userId,
+      online: true,
+    });
   });
 
   socket.on("join_room", (roomId) => {
-    if (roomId) socket.join(String(roomId));
+    socket.join(roomId);
   });
 
-  socket.on("send_chat_message", (payload) => {
-    const roomId = payload && payload.roomId;
-    if (roomId) {
-      socket.to(String(roomId)).emit("receive_chat_message", payload);
-    }
+  socket.on("send_chat_message", (data) => {
+    socket.to(data.roomId).emit("receive_chat_message", data);
   });
 
-  socket.on("typing", (payload) => {
-    const roomId = payload && payload.roomId;
-    if (roomId) {
-      socket.to(String(roomId)).emit("is_typing", payload);
-    }
+  socket.on("typing", (data) => {
+    socket.to(data.roomId).emit("is_typing", data);
   });
 
-  socket.on("stop_typing", (payload) => {
-    const roomId = payload && payload.roomId;
-    if (roomId) {
-      socket.to(String(roomId)).emit("not_typing", payload);
-    }
+  socket.on("stop_typing", (data) => {
+    socket.to(data.roomId).emit("not_typing", data);
   });
 
-  socket.on("mark_messages_read", (payload) => {
-    const roomId = payload && payload.roomId;
-    if (roomId) {
-      socket.to(String(roomId)).emit("messages_read", payload);
-    }
+  socket.on("mark_messages_read", (data) => {
+    socket.to(data.roomId).emit("messages_read", data);
   });
 
   socket.on("disconnect", () => {
     for (const [userId, socketId] of onlineUsers.entries()) {
       if (socketId === socket.id) {
         onlineUsers.delete(userId);
-        socket.broadcast.emit("user_presence", { userId, online: false });
+
+        socket.broadcast.emit("user_presence", {
+          userId,
+          online: false,
+        });
+
         break;
       }
     }
+
+    console.log("User disconnected:", socket.id);
   });
 });
 
+// Connect Database and Start Server
 connectDB()
-  .catch((error) => {
-    console.error(`Database setup failed: ${error.message}`);
-  })
-  .finally(() => {
-    server.listen(port, () => {
-      console.log(`Server running on port ${port}`.cyan.bold);
+  .then(() => {
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`.cyan.bold);
     });
+  })
+  .catch((error) => {
+    console.error("Database connection failed:", error.message);
   });
 
 module.exports = { app, server, io };
-
-// Trigger restart

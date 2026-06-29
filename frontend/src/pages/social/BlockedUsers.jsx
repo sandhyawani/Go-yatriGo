@@ -33,7 +33,8 @@ const BlockedUsers = () => {
         setUsers(prev => prev.filter(u => u._id !== id));
         showToast.success("User unblocked");
         const freshSelf = await axios.get(`/users/${user._id}`, { withCredentials: true });
-        dispatch({ type: "LOGIN_SUCCESS", payload: { ...user, blockedUsers: freshSelf.data.blockedUsers } });
+        const selfData = freshSelf.data.user || freshSelf.data;
+        dispatch({ type: "LOGIN_SUCCESS", payload: { ...user, blockedUsers: selfData.blockedUsers } });
       }
     } catch (err) {
       showToast.error("Failed to unblock user");

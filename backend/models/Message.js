@@ -1,29 +1,131 @@
 const mongoose = require("mongoose");
 
-const MessageSchema = new mongoose.Schema(
+// Schema for chat messages
+const messageSchema = new mongoose.Schema(
   {
-    roomId: { type: mongoose.Schema.Types.ObjectId, ref: "ChatRoom", required: true },
-    sender: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    senderName: { type: String, required: true },
-    senderPic: { type: String },
-    text: { type: String }, // Kept for backward compatibility
-    content: { type: String }, // New preferred field for text
-    media: { type: String }, // Cloudinary URL
-    storyId: { type: mongoose.Schema.Types.ObjectId, ref: "Story" }, // For story replies
-    unreadBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], // For backward compatibility unread counts
-    seenBy: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    deliveredTo: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    // Chat room where the message belongs
+    roomId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ChatRoom",
+      required: true,
+      index: true,
+    },
+
+    // User who sent the message
+    sender: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    // Sender information (stored for faster retrieval)
+    senderName: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    senderPic: {
+      type: String,
+      default: "",
+    },
+
+    // Legacy text field (kept for backward compatibility)
+    text: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // Preferred message content field
+    content: {
+      type: String,
+      trim: true,
+      default: "",
+    },
+
+    // Media attachment (Cloudinary URL)
+    media: {
+      type: String,
+      default: "",
+    },
+
+    // Story reference for story replies
+    storyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Story",
+      default: null,
+    },
+
+    // Users who haven't read the message yet
+    unreadBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Users who have seen the message
+    seenBy: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Users to whom the message has been delivered
+    deliveredTo: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Emoji reactions
     reactions: [
       {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        emoji: { type: String }
-      }
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        emoji: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+      },
     ],
-    deletedFor: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
-    isUnsent: { type: Boolean, default: false },
-    unsentAt: { type: Date }
+
+    // Users who deleted the message from their chat
+    deletedFor: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Indicates whether the sender unsent the message
+    isUnsent: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Time when the message was unsent
+    unsentAt: {
+      type: Date,
+      default: null,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Adds createdAt and updatedAt
+  }
 );
 
-module.exports = mongoose.model("Message", MessageSchema);
+// Improve query performance
+messageSchema.index({ roomId: 1, createdAt: -1 });
+messageSchema.index({ sender: 1 });
+messageSchema.index({ storyId: 1 });
+
+module.exports = mongoose.model("Message", messageSchema);

@@ -1,38 +1,3 @@
-// import React, { useContext } from "react";
-// import { useLocation } from "react-router-dom";
-// import Footer from "../footer/Footer";
-// import SocialSidebar from "./SocialSidebar";
-// import RouteTour from "../../router/RouteTour";
-// import { AuthContext } from "../../context/authContext";
-// const Layout = () => {
-//   const { user } = useContext(AuthContext);
-//   const location = useLocation();
-
-//   const isAuthPage =
-//     location.pathname === "/login" ||
-//     location.pathname === "/register" ||
-//     location.pathname === "/reset-password";
-
-//   const hasNavigation = user && !isAuthPage;
-
-//   return (
-//     <div className="bg-[#FAFAFA] min-h-screen flex flex-col md:flex-row">
-//       {hasNavigation && <SocialSidebar />}
-
-//       <main className={`flex-1 w-full min-w-0 transition-all duration-300 relative z-10 ${
-//   hasNavigation ? 'md:ml-[230px] md:w-[calc(100%-230px)] md:px-6 md:py-5 pb-16 md:pb-0' : ''
-// }`}
-// >
-//         <RouteTour />
-//         {hasNavigation && <Footer />}
-//       </main>
-//     </div>
-//   );
-// };
-
-// export default Layout;
-
-
 import React, { useContext, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import Footer from "../footer/Footer";

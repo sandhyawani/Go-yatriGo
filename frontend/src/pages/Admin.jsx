@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -87,16 +88,22 @@ const STATUS_COLORS = {
 };
 
 const formatNumber = (number) =>
-  typeof number === "number" ? new Intl.NumberFormat("en-IN").format(number) : "--";
+  number !== null && number !== undefined && !isNaN(Number(number))
+    ? new Intl.NumberFormat("en-IN").format(Number(number))
+    : "--";
 
-const displayName = (person) => person?.username || person?.name || "Unknown user";
+const displayName = (person) =>
+  person?.username || person?.name || "Unknown user";
 
 const reportStatus = (report) => (report?.status || "pending").toLowerCase();
 
 const formatReportAge = (date) => {
   if (!date) return "Recently";
 
-  const elapsedMinutes = Math.max(0, Math.floor((Date.now() - new Date(date).getTime()) / 60000));
+  const elapsedMinutes = Math.max(
+    0,
+    Math.floor((Date.now() - new Date(date).getTime()) / 60000),
+  );
   if (elapsedMinutes < 60) return `${Math.max(1, elapsedMinutes)}m ago`;
   if (elapsedMinutes < 1440) return `${Math.floor(elapsedMinutes / 60)}h ago`;
   return `${Math.floor(elapsedMinutes / 1440)}d ago`;
@@ -127,7 +134,9 @@ const MetricCard = ({ config, value, index }) => {
         className={`pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br ${glowClass} to-transparent blur-2xl`}
       />
       <div className="relative flex items-start justify-between">
-        <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconClass}`}>
+        <span
+          className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${iconClass}`}
+        >
           <Icon className="h-4 w-4" />
         </span>
         {priority && (
@@ -137,7 +146,9 @@ const MetricCard = ({ config, value, index }) => {
         )}
       </div>
       <div className="relative mt-3">
-        <p className="text-xl font-bold tracking-tight text-slate-900">{formatNumber(value)}</p>
+        <p className="text-xl font-bold tracking-tight text-slate-900">
+          {formatNumber(value)}
+        </p>
         <p className="text-xs font-semibold text-slate-800">{label}</p>
         <p className="text-[10px] text-slate-500">{detail}</p>
       </div>
@@ -153,7 +164,11 @@ const MetricCard = ({ config, value, index }) => {
       className="h-full"
     >
       {to ? (
-        <Link to={to} className="block h-full" aria-label={`${label}: ${formatNumber(value)}`}>
+        <Link
+          to={to}
+          className="block h-full"
+          aria-label={`${label}: ${formatNumber(value)}`}
+        >
           {content}
         </Link>
       ) : (
@@ -170,7 +185,11 @@ const ChartTooltip = ({ active, payload, label }) => {
     <div className="rounded-xl border border-purple-200 bg-white/95 px-3 py-2 shadow-xl backdrop-blur">
       <p className="mb-1.5 text-xs font-medium text-slate-700">{label}</p>
       {payload.map((item) => (
-        <p key={item.dataKey} className="text-xs font-medium" style={{ color: item.color }}>
+        <p
+          key={item.dataKey}
+          className="text-xs font-medium"
+          style={{ color: item.color }}
+        >
           {item.name}: {item.value}
         </p>
       ))}
@@ -179,7 +198,9 @@ const ChartTooltip = ({ active, payload, label }) => {
 };
 
 const EmptyChart = ({ children }) => (
-  <div className="flex h-[160px] items-center justify-center text-sm text-slate-500">{children}</div>
+  <div className="flex h-[160px] items-center justify-center text-sm text-slate-500">
+    {children}
+  </div>
 );
 
 const Admin = () => {
@@ -204,8 +225,14 @@ const Admin = () => {
       setStats(data);
       setUpdatedAt(new Date());
     } catch (requestError) {
-      if (requestError.code !== "ERR_CANCELED" && requestError.name !== "CanceledError") {
-        setError(requestError?.response?.data?.message || "Unable to load moderation insights.");
+      if (
+        requestError.code !== "ERR_CANCELED" &&
+        requestError.name !== "CanceledError"
+      ) {
+        setError(
+          requestError?.response?.data?.message ||
+            "Unable to load moderation insights.",
+        );
       }
     } finally {
       if (!signal?.aborted) setLoading(false);
@@ -220,13 +247,17 @@ const Admin = () => {
 
   const metrics = useMemo(
     () => ({
-      totalUsers: stats?.metrics?.totalUsers ?? stats?.totalUsers ?? stats?.counts?.users,
+      totalUsers:
+        stats?.metrics?.totalUsers ?? stats?.totalUsers ?? stats?.counts?.users,
       activeUsers: stats?.metrics?.activeUsers ?? stats?.activeUsers,
-      reportsPending: stats?.metrics?.reportsPending ?? stats?.reports ?? stats?.counts?.reports,
+      reportsPending:
+        stats?.metrics?.reportsPending ??
+        stats?.reports ??
+        stats?.counts?.reports,
       suspendedUsers: stats?.metrics?.suspendedUsers ?? stats?.suspendedUsers,
       newPostsToday: stats?.metrics?.newPostsToday ?? stats?.newPostsToday,
     }),
-    [stats]
+    [stats],
   );
 
   const trend = useMemo(
@@ -237,7 +268,7 @@ const Admin = () => {
           weekday: "short",
         }),
       })),
-    [stats]
+    [stats],
   );
 
   const reportDistribution = stats?.reportStatusDistribution || [];
@@ -248,7 +279,8 @@ const Admin = () => {
   if (!user) return null;
 
   const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   return (
     <main
@@ -271,7 +303,8 @@ const Admin = () => {
                 Moderation Command Center
               </h1>
               <p className="mt-1 max-w-xl text-xs leading-5 text-slate-600">
-                Monitor community safety, review flagged content, and respond to trust signals in real time.
+                Monitor community safety, review flagged content, and respond to
+                trust signals in real time.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -281,7 +314,9 @@ const Admin = () => {
                 disabled={loading}
                 className="flex h-9 items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 text-xs font-medium text-slate-700 transition hover:bg-purple-50 hover:text-slate-900 disabled:opacity-60"
               >
-                <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                <RefreshCw
+                  className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
+                />
                 Refresh
               </button>
               <Link
@@ -295,7 +330,11 @@ const Admin = () => {
           </div>
           {updatedAt && (
             <p className="relative mt-3 text-[10px] text-slate-500">
-              Updated {updatedAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+              Updated{" "}
+              {updatedAt.toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           )}
         </motion.div>
@@ -309,17 +348,30 @@ const Admin = () => {
           >
             <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-purple-600" />
             <span className="flex-1">{error}</span>
-            <button type="button" onClick={() => fetchStats()} className="font-medium text-purple-900 hover:underline">
+            <button
+              type="button"
+              onClick={() => fetchStats()}
+              className="font-medium text-purple-900 hover:underline"
+            >
               Retry
             </button>
           </motion.div>
         )}
 
-        <div role="region" aria-label="Live platform metrics" className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div
+          role="region"
+          aria-label="Live platform metrics"
+          className="mb-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5"
+        >
           {loading && !stats
             ? KPI_CONFIG.map((card) => <MetricSkeleton key={card.key} />)
             : KPI_CONFIG.map((card, index) => (
-                <MetricCard key={card.key} config={card} value={metrics[card.key]} index={index} />
+                <MetricCard
+                  key={card.key}
+                  config={card}
+                  value={metrics[card.key]}
+                  index={index}
+                />
               ))}
         </div>
 
@@ -341,20 +393,30 @@ const Admin = () => {
               <div className="flex gap-3">
                 <span
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-                    hasReports ? "bg-purple-200 text-purple-700" : "bg-purple-100 text-purple-600"
+                    hasReports
+                      ? "bg-purple-200 text-purple-700"
+                      : "bg-purple-100 text-purple-600"
                   }`}
                 >
-                  {hasReports ? <ShieldAlert className="h-5 w-5" /> : <CheckCircle2 className="h-5 w-5" />}
+                  {hasReports ? (
+                    <ShieldAlert className="h-5 w-5" />
+                  ) : (
+                    <CheckCircle2 className="h-5 w-5" />
+                  )}
                 </span>
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                     Moderation alerts
                   </p>
                   <h2 className="text-lg font-semibold text-slate-900">
-                    {hasReports ? `${metrics.reportsPending} reports require review` : "Moderation queue is clear"}
+                    {hasReports
+                      ? `${metrics.reportsPending} reports require review`
+                      : "Moderation queue is clear"}
                   </h2>
                   <p className="text-xs text-slate-600">
-                    {hasReports ? "Investigate recent safety flags and take action." : "There are no pending reports right now."}
+                    {hasReports
+                      ? "Investigate recent safety flags and take action."
+                      : "There are no pending reports right now."}
                   </p>
                 </div>
               </div>
@@ -378,11 +440,17 @@ const Admin = () => {
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium text-slate-900">
                         {displayName(report.reportedUser)}
-                        <span className="ml-1.5 text-[10px] font-normal text-slate-500">{report.targetType}</span>
+                        <span className="ml-1.5 text-[10px] font-normal text-slate-500">
+                          {report.targetType}
+                        </span>
                       </p>
-                      <p className="truncate text-[11px] text-slate-600">{report.reason}</p>
+                      <p className="truncate text-[11px] text-slate-600">
+                        {report.reason}
+                      </p>
                     </div>
-                    <span className="shrink-0 text-xs text-slate-500">{formatReportAge(report.createdAt)}</span>
+                    <span className="shrink-0 text-xs text-slate-500">
+                      {formatReportAge(report.createdAt)}
+                    </span>
                   </Link>
                 ))
               ) : (
@@ -406,7 +474,9 @@ const Admin = () => {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Activity
                 </p>
-                <h2 className="text-base font-semibold text-slate-900">Recent reports</h2>
+                <h2 className="text-base font-semibold text-slate-900">
+                  Recent reports
+                </h2>
               </div>
               <Clock className="h-4 w-4 text-slate-500" />
             </div>
@@ -415,15 +485,23 @@ const Admin = () => {
                 recentReports.slice(0, 5).map((report) => {
                   const status = reportStatus(report);
                   return (
-                    <div key={report._id} className="flex items-center gap-2.5 rounded-lg px-1 py-2">
+                    <div
+                      key={report._id}
+                      className="flex items-center gap-2.5 rounded-lg px-1 py-2"
+                    >
                       <span
                         className="h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: STATUS_COLORS[status] || STATUS_COLORS.unknown }}
+                        style={{
+                          backgroundColor:
+                            STATUS_COLORS[status] || STATUS_COLORS.unknown,
+                        }}
                       />
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-xs text-slate-800">
                           {displayName(report.reportedUser)}
-                          <span className="ml-1 text-[10px] text-slate-500">reported for {report.targetType}</span>
+                          <span className="ml-1 text-[10px] text-slate-500">
+                            reported for {report.targetType}
+                          </span>
                         </p>
                       </div>
                       <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[9px] capitalize text-slate-600">
@@ -433,7 +511,9 @@ const Admin = () => {
                   );
                 })
               ) : (
-                <div className="py-8 text-center text-xs text-slate-500">No moderation activity recorded.</div>
+                <div className="py-8 text-center text-xs text-slate-500">
+                  No moderation activity recorded.
+                </div>
               )}
             </div>
           </motion.div>
@@ -453,7 +533,9 @@ const Admin = () => {
                 <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
                   Analytics
                 </p>
-                <h2 className="text-base font-semibold text-slate-900">Safety signals over 7 days</h2>
+                <h2 className="text-base font-semibold text-slate-900">
+                  Safety signals over 7 days
+                </h2>
               </div>
               <span className="flex items-center gap-1 rounded-md bg-purple-100 px-2 py-1 text-[10px] font-medium text-purple-700">
                 <TrendingUp className="h-3.5 w-3.5" />
@@ -462,18 +544,35 @@ const Admin = () => {
             </div>
             {trend.length ? (
               <ResponsiveContainer width="100%" height={180}>
-                <AreaChart data={trend} margin={{ top: 5, right: 5, left: -25, bottom: 0 }}>
+                <AreaChart
+                  data={trend}
+                  margin={{ top: 5, right: 5, left: -25, bottom: 0 }}
+                >
                   <defs>
                     <linearGradient id="postsColor" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity={0.42} />
+                      <stop
+                        offset="0%"
+                        stopColor="#8b5cf6"
+                        stopOpacity={0.42}
+                      />
                       <stop offset="100%" stopColor="#8b5cf6" stopOpacity={0} />
                     </linearGradient>
-                    <linearGradient id="reportsColor" x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient
+                      id="reportsColor"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
                       <stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.5} />
                       <stop offset="100%" stopColor="#d8b4fe" stopOpacity={0} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid stroke="rgba(148,163,184,0.10)" strokeDasharray="4 5" vertical={false} />
+                  <CartesianGrid
+                    stroke="rgba(148,163,184,0.10)"
+                    strokeDasharray="4 5"
+                    vertical={false}
+                  />
                   <XAxis
                     dataKey="label"
                     tick={{ fill: "#64748b", fontSize: 11 }}
@@ -506,7 +605,9 @@ const Admin = () => {
                 </AreaChart>
               </ResponsiveContainer>
             ) : (
-              <EmptyChart>Analytics will appear after the first sync.</EmptyChart>
+              <EmptyChart>
+                Analytics will appear after the first sync.
+              </EmptyChart>
             )}
           </motion.div>
 
@@ -521,7 +622,9 @@ const Admin = () => {
             <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
               Resolution mix
             </p>
-            <h2 className="text-base font-semibold text-slate-900">Report outcomes</h2>
+            <h2 className="text-base font-semibold text-slate-900">
+              Report outcomes
+            </h2>
             {reportDistribution.length ? (
               <>
                 <ResponsiveContainer width="100%" height={130}>
@@ -538,7 +641,10 @@ const Admin = () => {
                       {reportDistribution.map((item) => (
                         <Cell
                           key={item.name}
-                          fill={STATUS_COLORS[item.name.toLowerCase()] || STATUS_COLORS.unknown}
+                          fill={
+                            STATUS_COLORS[item.name.toLowerCase()] ||
+                            STATUS_COLORS.unknown
+                          }
                         />
                       ))}
                     </Pie>
@@ -550,10 +656,18 @@ const Admin = () => {
                     <div key={item.name} className="flex items-center text-xs">
                       <span
                         className="mr-2 h-2 w-2 rounded-full"
-                        style={{ backgroundColor: STATUS_COLORS[item.name.toLowerCase()] || STATUS_COLORS.unknown }}
+                        style={{
+                          backgroundColor:
+                            STATUS_COLORS[item.name.toLowerCase()] ||
+                            STATUS_COLORS.unknown,
+                        }}
                       />
-                      <span className="flex-1 capitalize text-slate-600">{item.name}</span>
-                      <span className="font-medium text-slate-800">{item.value}</span>
+                      <span className="flex-1 capitalize text-slate-600">
+                        {item.name}
+                      </span>
+                      <span className="font-medium text-slate-800">
+                        {item.value}
+                      </span>
                     </div>
                   ))}
                 </div>

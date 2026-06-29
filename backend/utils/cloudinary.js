@@ -1,23 +1,26 @@
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-const multer = require('multer');
-require('dotenv').config();
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const multer = require("multer");
+require("dotenv").config();
 
+// Configure Cloudinary
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Configure storage for uploaded files
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
+  cloudinary,
   params: {
-    folder: 'Go Go YatriGo_uploads',
-    allowedFormats: ['jpeg', 'png', 'jpg', 'webp', 'mp4', 'mov', 'avi'],
-    resource_type: 'auto'
+    folder: "GoGoYatriGo_uploads",
+    allowedFormats: ["jpg", "jpeg", "png", "webp", "mp4", "mov", "avi"],
+    resource_type: "auto",
   },
 });
 
-const uploadCloud = multer({ storage: storage });
+// Create multer upload instance
+const uploadCloud = multer({ storage });
 
 module.exports = { cloudinary, uploadCloud };

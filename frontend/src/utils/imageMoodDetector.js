@@ -1,7 +1,7 @@
 /**
  * Detects the dominant color/mood of an image using native HTML5 Canvas.
  * Keeps performance high by resizing to 64x64.
- * Fallbacks to "Wanderlust" and "Global Mix" if detection fails.
+ * Uses the default travel mix when detection fails.
  */
 export const detectImageMood = (imageUrl) => {
   return new Promise((resolve) => {
@@ -72,7 +72,7 @@ export const detectImageMood = (imageUrl) => {
           return;
         }
 
-        // Generic fallback
+        // Default mix
         resolve(fallback);
       };
 

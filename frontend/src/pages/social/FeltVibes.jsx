@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import React, { useState, useEffect, useContext, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../context/authContext";
@@ -11,19 +12,26 @@ import { getAvatarUrl } from "../../utils/avatar";
 const CreatorGroup = ({ authorId, groupData }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
-  
+
   // Sort items within group (newest first by default)
-  const sortedItems = [...groupData.items].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-  
-  const authorName = groupData.author?.name || groupData.author?.userName || "Traveler";
-  const authorPic = getAvatarUrl(groupData.author?.pic || groupData.author?.userPic, groupData.author?.img, authorName);
-  
+  const sortedItems = [...groupData.items].sort(
+    (a, b) => new Date(b.createdAt) - new Date(a.createdAt),
+  );
+
+  const authorName =
+    groupData.author?.name || groupData.author?.userName || "Traveler";
+  const authorPic = getAvatarUrl(
+    groupData.author?.pic || groupData.author?.userPic,
+    groupData.author?.img,
+    authorName,
+  );
+
   const displayItems = expanded ? sortedItems : sortedItems.slice(0, 3);
   const hasMore = sortedItems.length > 3;
   const remainingCount = sortedItems.length - 3;
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
@@ -32,19 +40,22 @@ const CreatorGroup = ({ authorId, groupData }) => {
       {/* Creator Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
         <div className="flex items-center gap-4">
-          <img 
-            src={authorPic} 
-            alt={authorName} 
+          <img
+            src={authorPic}
+            alt={authorName}
             className="w-14 h-14 rounded-full object-cover border-2 border-purple-100 shadow-sm"
           />
           <div>
             <h3 className="text-xl font-bold text-slate-900">{authorName}</h3>
             <p className="text-sm text-slate-500 font-medium mt-0.5">
-              <span className="text-purple-600 font-bold">{groupData.items.length}</span> memories inspired you
+              <span className="text-purple-600 font-bold">
+                {groupData.items.length}
+              </span>{" "}
+              memories inspired you
             </p>
           </div>
         </div>
-        <button 
+        <button
           onClick={() => navigate(`/profile/${authorId}`)}
           className="px-5 py-2.5 bg-slate-50 hover:bg-purple-50 text-slate-700 hover:text-purple-700 text-sm font-bold rounded-xl transition-colors border border-slate-200 hover:border-purple-200 w-fit"
         >
@@ -55,13 +66,13 @@ const CreatorGroup = ({ authorId, groupData }) => {
       {/* Cards */}
       <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide snap-x">
         <AnimatePresence mode="popLayout">
-          {displayItems.map(item => (
+          {displayItems.map((item) => (
             <div key={item._id} className="snap-start shrink-0">
               <CompactMemoryCard item={item} />
             </div>
           ))}
           {!expanded && hasMore && (
-            <motion.div 
+            <motion.div
               layout
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -69,9 +80,13 @@ const CreatorGroup = ({ authorId, groupData }) => {
               className="snap-start w-[200px] h-[260px] rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group"
             >
               <div className="w-14 h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 group-hover:shadow-md transition-all">
-                <span className="text-purple-600 font-bold text-xl">+{remainingCount}</span>
+                <span className="text-purple-600 font-bold text-xl">
+                  +{remainingCount}
+                </span>
               </div>
-              <span className="text-sm font-bold text-slate-600 group-hover:text-purple-700 transition-colors">View All Memories</span>
+              <span className="text-sm font-bold text-slate-600 group-hover:text-purple-700 transition-colors">
+                View All Memories
+              </span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -99,7 +114,9 @@ const FeltVibes = () => {
   const fetchFeltVibes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get("/social/felt-vibes", { withCredentials: true });
+      const res = await axios.get("/social/felt-vibes", {
+        withCredentials: true,
+      });
       if (res.data.success) {
         setFeltVibes(res.data.feltVibes || []);
       }
@@ -112,28 +129,37 @@ const FeltVibes = () => {
 
   const filteredVibes = useMemo(() => {
     if (activeFilter === "All") return feltVibes;
-    return feltVibes.filter(item => {
+    return feltVibes.filter((item) => {
       switch (activeFilter) {
-        case "Travel Memories": return item.postType === "travel_memory" || item.postType === "travel_photo" || item.postType === "travel_video" || item.type === "memory";
-        case "Stories": return item.postType === "story";
-        case "Groups": return item.postType === "group";
+        case "Travel Memories":
+          return (
+            item.postType === "travel_memory" ||
+            item.postType === "travel_photo" ||
+            item.postType === "travel_video" ||
+            item.type === "memory"
+          );
+        case "Stories":
+          return item.postType === "story";
+        case "Groups":
+          return item.postType === "group";
         // case "Documents": return item.postType === "document"; // Placeholder for future categories
         // case "Profile Updates": return item.postType === "profile_update"; // Placeholder for future categories
-        default: return true;
+        default:
+          return true;
       }
     });
   }, [feltVibes, activeFilter]);
 
   const groupedVibes = useMemo(() => {
     const groups = {};
-    filteredVibes.forEach(item => {
-      const authorId = item.author?._id || 'unknown';
+    filteredVibes.forEach((item) => {
+      const authorId = item.author?._id || "unknown";
       if (!groups[authorId]) {
         groups[authorId] = {
           author: item.author,
           items: [],
           latestDate: new Date(0),
-          totalFelt: 0
+          totalFelt: 0,
         };
       }
       groups[authorId].items.push(item);
@@ -141,10 +167,13 @@ const FeltVibes = () => {
       if (itemDate > groups[authorId].latestDate) {
         groups[authorId].latestDate = itemDate;
       }
-      groups[authorId].totalFelt += (item.likesCount || 0);
+      groups[authorId].totalFelt += item.likesCount || 0;
     });
 
-    const groupsArray = Object.entries(groups).map(([id, data]) => ({ id, ...data }));
+    const groupsArray = Object.entries(groups).map(([id, data]) => ({
+      id,
+      ...data,
+    }));
 
     return groupsArray.sort((a, b) => {
       if (sortBy === "Newest") return b.latestDate - a.latestDate;
@@ -157,9 +186,13 @@ const FeltVibes = () => {
   const stats = useMemo(() => {
     return {
       total: feltVibes.length,
-      memories: feltVibes.filter(i => ["travel_memory", "travel_photo", "travel_video", "memory"].includes(i.postType || i.type)).length,
-      stories: feltVibes.filter(i => i.postType === "story").length,
-      groups: feltVibes.filter(i => i.postType === "group").length,
+      memories: feltVibes.filter((i) =>
+        ["travel_memory", "travel_photo", "travel_video", "memory"].includes(
+          i.postType || i.type,
+        ),
+      ).length,
+      stories: feltVibes.filter((i) => i.postType === "story").length,
+      groups: feltVibes.filter((i) => i.postType === "group").length,
       // documents: feltVibes.filter(i => i.postType === "document").length, // Placeholder
       // profileUpdates: feltVibes.filter(i => i.postType === "profile_update").length, // Placeholder
     };
@@ -172,8 +205,7 @@ const FeltVibes = () => {
       <div className="fixed top-[-10%] right-[-5%] w-[400px] h-[400px] bg-purple-400/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 relative z-10">
-        
-        {/* Premium Header */}
+        {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
@@ -181,9 +213,10 @@ const FeltVibes = () => {
               Felt Vibes
             </h1>
             <p className="text-slate-500 font-medium mt-2 text-base">
-              A curated collection of travel memories and stories that inspired you.
+              A curated collection of travel memories and stories that inspired
+              you.
             </p>
-            
+
             {/* Top Statistics */}
             <div className="flex flex-wrap items-center gap-y-2 mt-4 text-xs font-bold text-slate-600 bg-white/60 backdrop-blur-md p-3 rounded-2xl border border-white/50 shadow-sm w-fit">
               <div className="flex items-center gap-1.5 px-3">
@@ -208,8 +241,8 @@ const FeltVibes = () => {
               {/* Placeholder for future category stats (e.g., Documents, Profile Updates) */}
             </div>
           </div>
-          <Link 
-            to="/social/explore" 
+          <Link
+            to="/social/explore"
             className="text-sm font-bold text-white bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 shadow-md shadow-purple-500/20 px-6 py-3.5 rounded-xl w-fit shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5"
           >
             Explore More
@@ -220,16 +253,25 @@ const FeltVibes = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           {/* Filters */}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide flex-1">
-            {filters.map(filter => {
+            {filters.map((filter) => {
               let count = 0;
               switch (filter) {
-                case "All": count = stats.total; break;
-                case "Travel Memories": count = stats.memories; break;
-                case "Stories": count = stats.stories; break;
-                case "Groups": count = stats.groups; break;
+                case "All":
+                  count = stats.total;
+                  break;
+                case "Travel Memories":
+                  count = stats.memories;
+                  break;
+                case "Stories":
+                  count = stats.stories;
+                  break;
+                case "Groups":
+                  count = stats.groups;
+                  break;
                 // case "Documents": count = stats.documents; break; // Placeholder
                 // case "Profile Updates": count = stats.profileUpdates; break; // Placeholder
-                default: break;
+                default:
+                  break;
               }
               return (
                 <button
@@ -254,15 +296,21 @@ const FeltVibes = () => {
               className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto justify-between"
             >
               <span className="flex items-center gap-1">
-                <span className="text-slate-400 font-medium">Sort by:</span> {sortBy}
+                <span className="text-slate-400 font-medium">Sort by:</span>{" "}
+                {sortBy}
               </span>
-              <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform ${isSortOpen ? "rotate-180" : ""}`} />
+              <ChevronDown
+                className={`w-4 h-4 text-slate-400 transition-transform ${isSortOpen ? "rotate-180" : ""}`}
+              />
             </button>
 
             <AnimatePresence>
               {isSortOpen && (
                 <>
-                  <div className="fixed inset-0 z-30" onClick={() => setIsSortOpen(false)} />
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setIsSortOpen(false)}
+                  />
                   <motion.div
                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -278,7 +326,9 @@ const FeltVibes = () => {
                           setIsSortOpen(false);
                         }}
                         className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors ${
-                          sortBy === option ? "text-purple-600 bg-purple-50/50 font-bold" : "text-slate-600 hover:bg-slate-50"
+                          sortBy === option
+                            ? "text-purple-600 bg-purple-50/50 font-bold"
+                            : "text-slate-600 hover:bg-slate-50"
                         }`}
                       >
                         {option}
@@ -299,10 +349,14 @@ const FeltVibes = () => {
           </div>
         ) : groupedVibes.length === 0 ? (
           <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-16 text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)] mt-10">
-            <div className="text-7xl mx-auto mb-6 opacity-80 drop-shadow-[0_0_30px_rgba(124,58,237,0.3)]">✨</div>
+            <div className="text-7xl mx-auto mb-6 opacity-80 drop-shadow-[0_0_30px_rgba(124,58,237,0.3)]">
+              ✨
+            </div>
             {feltVibes.length > 0 ? (
               <>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">No {activeFilter} Yet</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  No {activeFilter} Yet
+                </h3>
                 <p className="text-slate-500 max-w-md mx-auto font-medium text-base">
                   You have felt vibes in other categories.
                 </p>
@@ -315,9 +369,12 @@ const FeltVibes = () => {
               </>
             ) : (
               <>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">No Felt Vibes Yet</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                  No Felt Vibes Yet
+                </h3>
                 <p className="text-slate-500 max-w-md mx-auto font-medium text-base">
-                  Start exploring travel memories and react with "Felt This" to build your curated collection of inspiration.
+                  Start exploring travel memories and react with "Felt This" to
+                  build your curated collection of inspiration.
                 </p>
                 <button
                   onClick={() => navigate("/social/explore")}
@@ -332,10 +389,10 @@ const FeltVibes = () => {
           <div className="space-y-5">
             <AnimatePresence mode="popLayout">
               {groupedVibes.map((group) => (
-                <CreatorGroup 
-                  key={group.id} 
-                  authorId={group.id} 
-                  groupData={group} 
+                <CreatorGroup
+                  key={group.id}
+                  authorId={group.id}
+                  groupData={group}
                 />
               ))}
             </AnimatePresence>

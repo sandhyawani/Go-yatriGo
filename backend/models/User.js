@@ -35,6 +35,15 @@ const UserSchema = new mongoose.Schema(
     img: {
       type: String,
     },
+    govId: {
+      type: String,
+      default: "",
+    },
+    govIdType: {
+      type: String,
+      enum: ['Aadhaar Card', 'PAN Card', 'Passport', 'Driving License', ''],
+      default: '',
+    },
     mobile: {
       type: String,
       default: "",
@@ -65,13 +74,30 @@ const UserSchema = new mongoose.Schema(
       required: true,
       default: "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg",
     },
+    profilePic: {
+      type: String,
+      default: "",
+    },
+    profilePicture: {
+      type: String,
+      default: "",
+    },
     bio: {
       type: String,
-      default: "Hey there! I am using Go Go YatriGo.",
+      default: "Hey there! I am using Go YatriGo.",
     },
     isVerified: {
       type: Boolean,
       default: false,
+    },
+    verificationStatus: {
+      type: String,
+      enum: ['unverified', 'pending', 'verified', 'rejected'],
+      default: 'unverified',
+    },
+    verificationNote: {
+      type: String,
+      default: "",
     },
     completedTrips: {
       type: Number,
@@ -140,6 +166,10 @@ const UserSchema = new mongoose.Schema(
     resetPasswordToken: String,
     resetPasswordExpire: Date,
     isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    isDeactivated: {
       type: Boolean,
       default: false,
     },

@@ -40,7 +40,7 @@ class AudioManager {
     this.currentAudioNode = audioNode;
     
     // Play the new audio
-    audioNode.play().catch(e => console.log('Audio play failed:', e));
+    audioNode.play().catch(e => console.warn('Audio play failed:', e));
   }
 
   pause(audioId) {

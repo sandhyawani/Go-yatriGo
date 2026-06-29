@@ -5,7 +5,6 @@ const TravelGroup = require("../models/TravelGroup");
 const Report = require("../models/Report");
 const Notification = require("../models/Notification");
 const Session = require("../models/Session");
-
 const PLATFORM_TIME_ZONE = "Asia/Kolkata";
 const ACTIVE_WINDOW_MS = 30 * 60 * 1000;
 const PENDING_REPORT_STATUSES = ["pending", "Pending"];
@@ -40,7 +39,7 @@ const getStats = async (req, res) => {
     const todayStart = new Date(`${trendDays[6]}T00:00:00.000+05:30`);
     const trendStart = new Date(`${trendDays[0]}T00:00:00.000+05:30`);
     const activeSince = new Date(Date.now() - ACTIVE_WINDOW_MS);
-    const userScope = { isAdmin: { $ne: true }, isDeleted: { $ne: true } };
+    const userScope = { isDeleted: { $ne: true } };
 
     const [
       totalUsers,
@@ -70,7 +69,7 @@ const getStats = async (req, res) => {
           }
         },
         { $unwind: "$user" },
-        { $match: { "user.isAdmin": { $ne: true }, "user.isDeleted": { $ne: true } } },
+        { $match: { "user.isDeleted": { $ne: true } } },
         { $count: "value" }
       ]),
       Post.countDocuments(),
@@ -252,8 +251,8 @@ const suspendUser = async (req, res) => {
     await user.save();
     
     res.status(200).json({ success: true, message: "User suspended successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -262,13 +261,76 @@ const unsuspendUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.isSuspended = false;
     await user.save();
     
     res.status(200).json({ success: true, message: "User unsuspended successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Moderation: Get pending verifications
+const getPendingVerifications = async (req, res) => {
+  try {
+    const pendingUsers = await User.find({ verificationStatus: "pending" })
+      .select("-password")
+      .sort({ createdAt: -1 });
+    res.status(200).json(pendingUsers);
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Moderation: Approve Verification
+const approveVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isVerified = true;
+    user.verificationStatus = 'verified';
+    user.verificationNote = "";
+    await user.save();
+    
+    // Create notification
+    await Notification.create({
+      sender: req.user._id || req.user.id,
+      receiver: user._id,
+      type: "admin_warning", // reuse for now, or use system notification
+      message: "Congratulations! Your Government ID has been approved and you are now a Verified Traveler."
+    });
+
+    res.status(200).json({ success: true, message: `User verified successfully`, user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
+// Moderation: Reject Verification
+const rejectVerification = async (req, res) => {
+  try {
+    const { reason } = req.body;
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    user.isVerified = false;
+    user.verificationStatus = 'rejected';
+    user.verificationNote = reason || "Your ID could not be verified.";
+    await user.save();
+    
+    // Create notification
+    await Notification.create({
+      sender: req.user._id || req.user.id,
+      receiver: user._id,
+      type: "admin_warning", 
+      message: `Your Government ID verification was rejected. Reason: ${user.verificationNote}. You can upload a new ID in your profile settings.`
+    });
+
+    res.status(200).json({ success: true, message: `User verification rejected`, user });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -305,5 +367,8 @@ module.exports = {
   deleteReportedGroup,
   suspendUser,
   unsuspendUser,
-  warnUser
+  warnUser,
+  getPendingVerifications,
+  approveVerification,
+  rejectVerification,
 };

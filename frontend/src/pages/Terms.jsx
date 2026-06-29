@@ -27,12 +27,12 @@ const Terms = () => {
             
             <h2 className="text-xl font-bold text-white mb-4 mt-8">1. Acceptance of Terms</h2>
             <p className="mb-6">
-              By accessing and using Go Go YatriGo, you accept and agree to be bound by the terms and provision of this agreement.
+              By accessing and using Go YatriGo, you accept and agree to be bound by the terms and provision of this agreement.
             </p>
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">2. Description of Service</h2>
             <p className="mb-6">
-              Go Go YatriGo is a travel networking platform that connects travelers worldwide. We provide services including but not limited to connecting users, sharing travel experiences, and planning trips.
+              Go YatriGo is a travel networking platform that connects travelers worldwide. We provide services including but not limited to connecting users, sharing travel experiences, and planning trips.
             </p>
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">3. User Conduct</h2>
@@ -47,7 +47,7 @@ const Terms = () => {
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">4. Intellectual Property</h2>
             <p className="mb-6">
-              The service and its original content, features, and functionality are and will remain the exclusive property of Go Go YatriGo and its licensors.
+              The service and its original content, features, and functionality are and will remain the exclusive property of Go YatriGo and its licensors.
             </p>
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">5. Termination</h2>
@@ -57,7 +57,7 @@ const Terms = () => {
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">6. Limitation of Liability</h2>
             <p className="mb-6">
-              In no event shall Go Go YatriGo, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the service.
+              In no event shall Go  YatriGo, nor its directors, employees, partners, agents, suppliers, or affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, including without limitation, loss of profits, data, use, goodwill, or other intangible losses, resulting from your access to or use of or inability to access or use the service.
             </p>
 
             <h2 className="text-xl font-bold text-white mb-4 mt-8">7. Contact Us</h2>

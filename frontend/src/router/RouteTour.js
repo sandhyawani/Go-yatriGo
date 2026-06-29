@@ -1,9 +1,11 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import React, { useContext } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import Admin from "../pages/Admin";
 import AdminReports from "../pages/admin/AdminReports";
+import VerificationRequests from "../pages/admin/VerificationRequests";
 import AdminProfile from "../pages/admin/AdminProfile";
 import Register from "../pages/Register";
 import Userlist from "../pages/Userlist";
@@ -36,6 +38,9 @@ import FeltVibes from "../pages/social/FeltVibes";
 import BlockedUsers from "../pages/social/BlockedUsers";
 import EmergencyContacts from "../pages/social/EmergencyContacts";
 import HelpSupport from "../pages/social/HelpSupport";
+import ReportProblem from "../pages/social/ReportProblem";
+import MyJourneys from "../pages/social/MyJourneys";
+import JourneyDetailsPage from "../pages/social/JourneyDetailsPage";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user } = useContext(AuthContext);
@@ -52,7 +57,6 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 const RouteTour = () => {
-
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
@@ -95,6 +99,15 @@ const RouteTour = () => {
         element={
           <ProtectedRoute allowedRoles={["admin"]}>
             <AdminReports />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/verifications"
+        element={
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <VerificationRequests />
           </ProtectedRoute>
         }
       />
@@ -199,6 +212,33 @@ const RouteTour = () => {
       />
 
       <Route
+        path="/contact"
+        element={
+          <ProtectedRoute>
+            <ContactUs />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/report"
+        element={
+          <ProtectedRoute>
+            <ReportProblem />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/saved"
+        element={
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/social/buddy"
         element={
           <ProtectedRoute>
@@ -226,7 +266,34 @@ const RouteTour = () => {
       />
 
       <Route
+        path="/social/journeys"
+        element={
+          <ProtectedRoute>
+            <MyJourneys />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/social/journeys/:id"
+        element={
+          <ProtectedRoute>
+            <JourneyDetailsPage />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/social/chat"
+        element={
+          <ProtectedRoute>
+            <ChatRoom />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/social/chat/:roomId"
         element={
           <ProtectedRoute>
             <ChatRoom />
@@ -296,8 +363,6 @@ const RouteTour = () => {
           </ProtectedRoute>
         }
       />
-
-      
 
       <Route
         path="/felt-vibes"

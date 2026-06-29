@@ -156,7 +156,7 @@ const MemoryCard = ({ item, user }) => {
             {/* Quick Stats */}
             <div className="flex items-center gap-4 text-white/80 text-xs font-semibold">
               <div className="flex items-center gap-1.5">
-                <Heart className="w-3.5 h-3.5 fill-current text-purple-400" />
+                <span className="text-sm leading-none">✨</span>
                 <span>{item.likesCount || 0} Felt This</span>
               </div>
               {item.type !== "group" && (

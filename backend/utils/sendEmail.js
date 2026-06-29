@@ -3,7 +3,9 @@ const nodemailer = require("nodemailer");
 const sendEmail = async (options) => {
   // If email credentials are not set, just log to console (useful for development)
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn("⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables.");
+    console.warn(
+      "⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables.",
+    );
     console.warn("Email Details:");
     console.warn(`To: ${options.to}`);
     console.warn(`Subject: ${options.subject}`);
@@ -33,8 +35,6 @@ const sendEmail = async (options) => {
   };
 
   const info = await transporter.sendMail(message);
-
-  console.log("Message sent: %s", info.messageId);
 };
 
 module.exports = sendEmail;

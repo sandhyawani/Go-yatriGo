@@ -89,7 +89,7 @@ const TravelSafetyGuidelines = () => {
             <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4">
               <Phone className="w-6 h-6" />
             </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">Using Go Go YatriGo Safety Features</h3>
+            <h3 className="text-lg font-bold text-slate-800 mb-2">Using Go YatriGo Safety Features</h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
               <div className="bg-slate-50 p-4 rounded-2xl">
                 <h4 className="font-bold text-slate-700 text-sm mb-1">Emergency Contacts</h4>

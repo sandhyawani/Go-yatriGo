@@ -11,6 +11,9 @@ frontend/build/
 .env
 .env.*
 
+# Backup and local history
+.git_old/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
@@ -30,3 +33,8 @@ dist/
 
 # Misc
 *.log
+node_modules/
+frontend/node_modules/
+.cache/
+backend/.env
+.env

@@ -3,12 +3,34 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 
-// Get or Create Direct Chat Room with another user
+const emitRequestStatusUpdate = (req, room, userId) => {
+  const io = req.app.get("io");
+  const onlineUsers = req.app.get("onlineUsers");
+  if (io && room) {
+    const payload = {
+      roomId: room._id,
+      requestStatus: room.requestStatus,
+      room,
+      updatedBy: userId,
+      updatedAt: new Date()
+    };
+    io.to(room._id.toString()).emit("request_status_updated", payload);
+    if (onlineUsers && room.members) {
+      room.members.forEach(m => {
+        const socketId = onlineUsers.get(m.toString());
+        if (socketId) io.to(socketId).emit("request_status_updated", payload);
+      });
+    }
+  }
+};
+
+// Create a direct chat room or return existing room
 exports.getOrCreateDirectRoom = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const targetUserId = req.params.targetUserId;
-
+    
+ // Prevent users from chatting with themselves
     if (userId.toString() === targetUserId.toString()) {
       return res.status(400).json({ success: false, message: "You cannot chat with yourself" });
     }
@@ -68,8 +90,8 @@ exports.getUserRooms = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    // Find rooms containing the user
-    const rooms = await ChatRoom.find({ members: userId })
+    // Find rooms containing the user (and not hidden by them)
+    const rooms = await ChatRoom.find({ members: userId, hiddenFor: { $ne: userId } })
       .populate("members", "name username pic img")
       .populate("travelGroupId", "title destination coverImage status")
       .sort({ updatedAt: -1 });
@@ -134,7 +156,7 @@ exports.getRoomMessages = async (req, res) => {
     // We sort by -1 for pagination, but UI needs them in chronological order
     messages.reverse();
 
-    // Aggressive mark read fallback (client should use the new endpoint ideally)
+    // Mark older unread messages as well.
     if (page === 1) {
       await Message.updateMany(
         { roomId, unreadBy: userId },
@@ -241,8 +263,9 @@ exports.sendMessage = async (req, res) => {
 
     await message.save();
 
-    // Update room updatedAt
+    // Update room updatedAt and unhide for all members
     room.updatedAt = new Date();
+    room.hiddenFor = [];
     await room.save();
 
     res.status(201).json({ success: true, message });
@@ -271,6 +294,7 @@ exports.acceptMessageRequest = async (req, res) => {
       await currentUser.save();
     }
 
+    emitRequestStatusUpdate(req, room, userId);
     res.status(200).json({ success: true, message: "Request accepted", room });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -296,6 +320,7 @@ exports.declineMessageRequest = async (req, res) => {
       await currentUser.save();
     }
 
+    emitRequestStatusUpdate(req, room, userId);
     res.status(200).json({ success: true, message: "Request declined", room });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -312,6 +337,7 @@ exports.blockMessageRequest = async (req, res) => {
 
     room.requestStatus = "blocked";
     await room.save();
+    emitRequestStatusUpdate(req, room, userId);
     res.status(200).json({ success: true, message: "User blocked", room });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -409,6 +435,26 @@ exports.clearChatForMe = async (req, res) => {
     );
     
     res.status(200).json({ success: true, message: "Chat cleared for you" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.deleteChatForMe = async (req, res) => {
+  try {
+    const { roomId } = req.params;
+    const userId = req.user._id || req.user.id;
+    
+    await require('../models/Message').updateMany(
+      { roomId, deletedFor: { $ne: userId } },
+      { $push: { deletedFor: userId } }
+    );
+    
+    await ChatRoom.findByIdAndUpdate(roomId, {
+      $addToSet: { hiddenFor: userId }
+    });
+    
+    res.status(200).json({ success: true, message: "Chat deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

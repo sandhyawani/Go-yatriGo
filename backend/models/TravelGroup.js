@@ -1,73 +1,260 @@
 const mongoose = require("mongoose");
 
-const TravelGroupSchema = new mongoose.Schema(
+// Schema for travel buddy groups
+const travelGroupSchema = new mongoose.Schema(
   {
-    host: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    title: { type: String, required: true },
-    destination: { type: String, required: true },
-    from: { type: String, default: "" },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
-    maxMembers: { type: Number, required: true, default: 5 },
-    description: { type: String, required: true },
-    coverImage: { type: String, default: "" }, // base64 or URL
-    budget: { type: Number, default: 0 },
+    // Trip creator
+    host: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    // Trip title
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    // Destination
+    destination: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    // Starting location
+    from: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    // Trip dates
+    startDate: {
+      type: Date,
+      required: true,
+    },
+
+    endDate: {
+      type: Date,
+      required: true,
+    },
+
+    // Maximum travelers allowed
+    maxMembers: {
+      type: Number,
+      required: true,
+      default: 5,
+      min: 1,
+    },
+
+    // Trip description
+    description: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 2000,
+    },
+
+    // Cover image (Cloudinary URL)
+    coverImage: {
+      type: String,
+      default: "",
+    },
+
+    // Estimated budget
+    budget: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    // Group members
     members: [
       {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        role: { type: String, enum: ["host", "cohost", "member"], default: "member" },
-        joinedAt: { type: Date, default: Date.now }
-      }
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        role: {
+          type: String,
+          enum: ["host", "cohost", "member"],
+          default: "member",
+        },
+
+        joinedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
     ],
-    bannedUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    // Users banned from joining
+    bannedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Warning history
     warnings: [
       {
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        message: String,
-        createdAt: { type: Date, default: Date.now }
-      }
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        message: {
+          type: String,
+          trim: true,
+        },
+
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
     ],
+
+    // Activity log
     activityLogs: [
       {
-        action: String,
-        user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        performedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-        createdAt: { type: Date, default: Date.now }
-      }
+        action: {
+          type: String,
+          trim: true,
+        },
+
+        user: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        performedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
     ],
-    category: { type: String, default: "Adventure" },
-    isPrivate: { type: Boolean, default: false },
-    tags: [{ type: String }],
-    likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+
+    // Category
+    category: {
+      type: String,
+      default: "Adventure",
+      trim: true,
+    },
+
+    // Private/Public trip
+    isPrivate: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
+    // Search tags
+    tags: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+
+    // Users who liked the trip
+    likes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    // Current trip status
     status: {
       type: String,
       enum: ["open", "full", "completed", "cancelled"],
       default: "open",
+      index: true,
     },
-    completedAt: { type: Date },
-    cancelledAt: { type: Date },
-    cancelledBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    cancellationReason: { type: String },
-    isCancelled: { type: Boolean, default: false },
-    lastActivityAt: { type: Date },
+
+    completedAt: Date,
+
+    cancelledAt: Date,
+
+    cancelledBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+
+    cancellationReason: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+    },
+
+    isCancelled: {
+      type: Boolean,
+      default: false,
+    },
+
+    // Last activity timestamp
+    lastActivityAt: {
+      type: Date,
+      default: Date.now,
+    },
   },
-  { 
+  {
     timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
   }
 );
 
-TravelGroupSchema.virtual('lifecycleStatus').get(function() {
-  if (this.status === 'cancelled') return 'cancelled';
-  
+// ----------------------
+// Virtual Properties
+// ----------------------
+
+// Returns current lifecycle of the trip
+travelGroupSchema.virtual("lifecycleStatus").get(function () {
+  if (this.status === "cancelled") return "cancelled";
+
   const now = new Date();
-  if (this.endDate && this.endDate < now) return 'completed';
-  if (this.startDate && this.startDate > now) return 'upcoming';
-  return 'active'; // today is between startDate and endDate
+
+  if (this.endDate < now) return "completed";
+
+  if (this.startDate > now) return "upcoming";
+
+  return "active";
 });
 
-TravelGroupSchema.index({ host: 1 });
-TravelGroupSchema.index({ isPrivate: 1 });
+// ----------------------
+// Database Indexes
+// ----------------------
 
-module.exports = mongoose.model("TravelGroup", TravelGroupSchema);
+travelGroupSchema.index({ host: 1 });
+
+travelGroupSchema.index({ destination: 1 });
+
+travelGroupSchema.index({ category: 1 });
+
+travelGroupSchema.index({ startDate: 1 });
+
+travelGroupSchema.index({ status: 1 });
+
+travelGroupSchema.index({ isPrivate: 1 });
+
+travelGroupSchema.index({ createdAt: -1 });
+
+module.exports = mongoose.model("TravelGroup", travelGroupSchema);

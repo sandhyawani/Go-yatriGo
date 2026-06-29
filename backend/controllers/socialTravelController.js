@@ -9,35 +9,50 @@ const Notification = require("../models/Notification");
 const Report = require("../models/Report");
 const Block = require("../models/Block");
 const ChatRoom = require("../models/ChatRoom");
+const Journey = require("../models/Journey");
+const JourneyGallery = require("../models/JourneyGallery");
+const JourneyTimeline = require("../models/JourneyTimeline");
 
-// --- 1. TRAVEL GROUPS ---
+const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
-// Create Travel Group
+// Create a new travel group
 exports.createTravelBuddyTrip = async (req, res) => {
   try {
     const {
-      title, destination, startDate, endDate,
-      maxMembers, maxCompanions, // accept both field names
-      description, coverImage, category,
-      from, isPrivate, tags, budget
+      title,
+      destination,
+      startDate,
+      endDate,
+      maxMembers,
+      maxCompanions,
+      description,
+      coverImage,
+      category,
+      from,
+      isPrivate,
+      tags,
+      budget,
     } = req.body;
+
     const userId = req.user._id || req.user.id;
 
-    // Accept maxCompanions as alias for maxMembers (frontend sends maxCompanions)
-    const resolvedMaxMembers = maxMembers || maxCompanions;
+    // Support both maxMembers and maxCompanions from frontend
+    const totalMembers = maxMembers || maxCompanions;
 
-    // Identify which fields are missing for a clear error
-    const missing = [];
-    if (!title?.trim()) missing.push("title");
-    if (!destination?.trim()) missing.push("destination");
-    if (!startDate) missing.push("startDate");
-    if (!endDate) missing.push("endDate");
-    if (!description?.trim()) missing.push("description");
-    if (!resolvedMaxMembers) missing.push("maxCompanions/maxMembers");
+    const missingFields = [];
 
-    if (missing.length > 0) {
-      console.log("[createTravelBuddyTrip] Missing fields:", missing);
-      return res.status(400).json({ success: false, message: `Missing required fields: ${missing.join(", ")}` });
+    if (!title?.trim()) missingFields.push("title");
+    if (!destination?.trim()) missingFields.push("destination");
+    if (!startDate) missingFields.push("startDate");
+    if (!endDate) missingFields.push("endDate");
+    if (!description?.trim()) missingFields.push("description");
+    if (!totalMembers) missingFields.push("maxMembers");
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Missing required fields: ${missingFields.join(", ")}`,
+      });
     }
 
     const group = new TravelGroup({
@@ -46,7 +61,7 @@ exports.createTravelBuddyTrip = async (req, res) => {
       destination,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
-      maxMembers: Number(resolvedMaxMembers),
+      maxMembers: Number(totalMembers),
       description,
       coverImage: coverImage || "",
       category: category || "Adventure",
@@ -54,50 +69,99 @@ exports.createTravelBuddyTrip = async (req, res) => {
       isPrivate: isPrivate || false,
       tags: tags || [],
       budget: Number(budget) || 0,
-      members: [{ user: userId, role: "host" }] // Host is a member by default
+      members: [
+        {
+          user: userId,
+          role: "host",
+        },
+      ],
     });
 
     await group.save();
 
-    // Automatically create a Group Chat for this trip
+    // Create a group chat automatically for trip members
     const chatRoom = new ChatRoom({
       name: `${title} - Group Chat`,
       type: "group",
       members: [userId],
-      travelGroupId: group._id
+      travelGroupId: group._id,
     });
+
     await chatRoom.save();
 
-    res.status(201).json({ success: true, message: "Travel group created successfully", group });
+    res.status(201).json({
+      success: true,
+      message: "Travel group created successfully",
+      group,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get Explore Metadata (Dynamic Categories, Counts, Active Travelers)
+// Get explore page statistics and category information
 exports.getExploreMetadata = async (req, res) => {
   try {
     const now = new Date();
+    const archiveDate = new Date(Date.now() - THIRTY_DAYS_MS);
 
-    // 1. Calculate Categories (excluding cancelled)
-    const categoriesAggr = await TravelGroup.aggregate([
-      { $match: { status: { $ne: "cancelled" } } },
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-      { $sort: { count: -1 } }
+    const categoriesData = await TravelGroup.aggregate([
+      {
+        $match: {
+          status: { $ne: "cancelled" },
+          endDate: { $gte: archiveDate },
+        },
+      },
+      {
+        $group: {
+          _id: "$category",
+          count: { $sum: 1 },
+        },
+      },
+      {
+        $sort: { count: -1 },
+      },
     ]);
-    const categories = categoriesAggr.map(cat => ({ name: cat._id || "Other", count: cat.count }));
 
-    // 2. Lifecycle Status Counts
-    const totalGroups = await TravelGroup.countDocuments({});
-    const upcomingGroups = await TravelGroup.countDocuments({ status: { $ne: "cancelled" }, startDate: { $gt: now } });
-    const activeGroups = await TravelGroup.countDocuments({ status: { $ne: "cancelled" }, startDate: { $lte: now }, endDate: { $gte: now } });
-    const completedGroups = await TravelGroup.countDocuments({ status: { $ne: "cancelled" }, endDate: { $lt: now } });
-    const cancelledGroups = await TravelGroup.countDocuments({ status: "cancelled" });
+    const categories = categoriesData.map((item) => ({
+      name: item._id || "Other",
+      count: item.count,
+    }));
 
-    // 3. Online/Active Travelers
-    // Use users updated in the last 30 minutes as a real fallback
-    const thirtyMinsAgo = new Date(Date.now() - 30 * 60 * 1000);
-    const activeTravelers = await User.countDocuments({ updatedAt: { $gte: thirtyMinsAgo } });
+    const totalGroups = await TravelGroup.countDocuments({
+      endDate: { $gte: archiveDate },
+    });
+
+    const upcomingGroups = await TravelGroup.countDocuments({
+      status: { $ne: "cancelled" },
+      startDate: { $gt: now },
+    });
+
+    const activeGroups = await TravelGroup.countDocuments({
+      status: { $ne: "cancelled" },
+      startDate: { $lte: now },
+      endDate: { $gte: now },
+    });
+
+    const completedGroups = await TravelGroup.countDocuments({
+      status: { $ne: "cancelled" },
+      endDate: { $lt: now, $gte: archiveDate },
+    });
+
+    const cancelledGroups = await TravelGroup.countDocuments({
+      status: "cancelled",
+      endDate: { $gte: archiveDate },
+    });
+
+    // Count travelers active in the last 30 minutes
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    const activeTravelers = await User.countDocuments({
+      updatedAt: { $gte: thirtyMinutesAgo },
+    });
 
     res.status(200).json({
       success: true,
@@ -107,178 +171,327 @@ exports.getExploreMetadata = async (req, res) => {
         upcoming: upcomingGroups,
         active: activeGroups,
         completed: completedGroups,
-        cancelled: cancelledGroups
+        cancelled: cancelledGroups,
       },
-      onlineTravelers: activeTravelers
+      onlineTravelers: activeTravelers,
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get All Travel Groups
+// Get all travel groups
 exports.getAllTravelBuddyTrips = async (req, res) => {
   try {
-    const { destination, category, lifecycleStatus, sortBy, userId } = req.query;
+    const {
+      destination,
+      category,
+      lifecycleStatus,
+      sortBy,
+      userId,
+    } = req.query;
+
     let query = {};
 
     const currentUserId = req.user._id || req.user.id;
     const currentUser = await User.findById(currentUserId);
     const followingList = currentUser ? currentUser.following : [];
-    const privateUsers = await User.find({ privateAccount: true }).distinct('_id');
-    const privateUsersNotFollowed = privateUsers.filter(id => 
-      id.toString() !== currentUserId.toString() && 
-      !followingList.some(f => f.toString() === id.toString())
-    );
+
+    let privateUsersNotFollowed = [];
+
+    // Hide private accounts unless the current user follows them
+    if (!req.user || !req.user.isAdmin) {
+      const privateUsers = await User.find({
+        privateAccount: true,
+      }).distinct("_id");
+
+      privateUsersNotFollowed = privateUsers.filter(
+        (id) =>
+          id.toString() !== currentUserId.toString() &&
+          !followingList.some(
+            (f) => f.toString() === id.toString()
+          )
+      );
+    }
 
     const baseCondition = {
       $or: [
         { host: { $nin: privateUsersNotFollowed } },
-        { "members.user": currentUserId }
-      ]
+        { "members.user": currentUserId },
+      ],
     };
 
     if (userId) {
-      const targetUser = await User.findById(userId).lean().select("privateAccount followers");
-      if (targetUser && targetUser.privateAccount && currentUserId.toString() !== userId.toString()) {
-         const isFollower = targetUser.followers && targetUser.followers.some(f => f.toString() === currentUserId.toString());
-         if (!isFollower && (!req.user || !req.user.isAdmin)) {
-             return res.status(200).json({ success: true, trips: [], pagination: { total: 0, page: 1, limit: parseInt(req.query.limit) || 10, hasMore: false } });
-         }
+      const targetUser = await User.findById(userId)
+        .lean()
+        .select("privateAccount followers");
+
+      if (
+        targetUser &&
+        targetUser.privateAccount &&
+        currentUserId.toString() !== userId.toString()
+      ) {
+        const isFollower =
+          targetUser.followers &&
+          targetUser.followers.some(
+            (f) => f.toString() === currentUserId.toString()
+          );
+
+        if (!isFollower && (!req.user || !req.user.isAdmin)) {
+          return res.status(200).json({
+            success: true,
+            trips: [],
+            pagination: {
+              total: 0,
+              page: 1,
+              limit: parseInt(req.query.limit) || 10,
+              hasMore: false,
+            },
+          });
+        }
       }
 
       query.$and = [
         baseCondition,
-        { $or: [{ host: userId }, { "members.user": userId }] }
+        {
+          $or: [
+            { host: userId },
+            { "members.user": userId },
+          ],
+        },
       ];
     } else {
-      query.$or = baseCondition.$or;
+      const archiveDate = new Date(Date.now() - THIRTY_DAYS_MS);
+      query.$and = [
+        baseCondition,
+        { endDate: { $gte: archiveDate } }
+      ];
     }
 
     if (destination) {
       query.destination = new RegExp(destination, "i");
     }
+
     if (category && category !== "All") {
       query.category = new RegExp(category, "i");
     }
 
+    // Filter trips based on lifecycle status
     const now = new Date();
+
     if (lifecycleStatus && lifecycleStatus !== "All") {
-      if (lifecycleStatus.toLowerCase() === "cancelled") {
+      if ((lifecycleStatus || "").toLowerCase() === "cancelled") {
         query.status = "cancelled";
       } else {
         query.status = { $ne: "cancelled" };
-        if (lifecycleStatus.toLowerCase() === "upcoming") {
+
+        if ((lifecycleStatus || "").toLowerCase() === "upcoming") {
           query.startDate = { $gt: now };
-        } else if (lifecycleStatus.toLowerCase() === "active now" || lifecycleStatus.toLowerCase() === "active") {
+        } else if (
+          (lifecycleStatus || "").toLowerCase() === "active now" ||
+          (lifecycleStatus || "").toLowerCase() === "active"
+        ) {
           query.startDate = { $lte: now };
           query.endDate = { $gte: now };
-        } else if (lifecycleStatus.toLowerCase() === "completed") {
+        } else if (
+          (lifecycleStatus || "").toLowerCase() === "completed"
+        ) {
           query.endDate = { $lt: now };
         }
       }
     }
 
-    let sortObj = { createdAt: -1 };
-    if (sortBy === "Oldest") sortObj = { createdAt: 1 };
-    else if (sortBy === "Starting Soon") sortObj = { startDate: 1 };
-    else if (sortBy === "Recently Active") sortObj = { updatedAt: -1 };
-    else if (sortBy === "Newly Created") sortObj = { createdAt: -1 };
-    else if (sortBy === "Most Travelers") sortObj = { maxMembers: -1 }; 
-    else if (sortBy === "Highest Rated") sortObj = { createdAt: -1 }; 
-
-    // Cancelled trips always at the bottom
-    sortObj = { isCancelled: 1, ...sortObj };
-
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const total = await TravelGroup.countDocuments(query);
+    const allMatchingGroups = await TravelGroup.find(query)
+      .populate(
+        "host",
+        "name username pic img isVerified rating completedTrips"
+      )
+      .populate("members.user", "name username pic img");
 
-    const groups = await TravelGroup.find(query)
-      .populate("host", "name username pic img isVerified rating completedTrips")
-      .populate("members.user", "name username pic img")
-      .sort(sortObj)
-      .skip(skip)
-      .limit(limit);
+    const nowSort = new Date();
+    const nowTime = nowSort.getTime();
 
-    // Map fields for frontend compatibility
-    const groupIds = groups.map(g => g._id);
-    const allRequests = await JoinRequest.find({ groupId: { $in: groupIds } });
+    allMatchingGroups.sort((a, b) => {
+      const startA = new Date(a.startDate).getTime();
+      const startB = new Date(b.startDate).getTime();
+      const endA = new Date(a.endDate).getTime();
+      const endB = new Date(b.endDate).getTime();
 
-    const mapped = groups.map(g => {
-      const obj = g.toObject();
-      obj.userId = obj.host;            // frontend expects userId for host info
-      const membs = obj.members || [];
-      obj.companions = membs.map(m => m.user || m);     // frontend expects companions array
-      obj.maxCompanions = obj.maxMembers; // frontend expects maxCompanions for slot count
-      obj.joinRequests = allRequests.filter(req => req?.groupId?.toString() === obj?._id?.toString());
-      return obj;
+      const getLifecycleTier = (group, start, end) => {
+        if (group.status === "cancelled") return 4;
+        if (start <= nowTime && end >= nowTime) return 1; // Active
+        if (start > nowTime) return 2; // Upcoming
+        return 3; // Completed
+      };
+
+      if (!sortBy || sortBy === "Starting Soon") {
+        const tierA = getLifecycleTier(a, startA, endA);
+        const tierB = getLifecycleTier(b, startB, endB);
+        if (tierA !== tierB) return tierA - tierB;
+        if (tierA === 3) return endB - endA; // Completed: most recent first
+        return startA - startB; // Active or Upcoming: nearest start date first
+      }
+
+      if (sortBy === "Trending") {
+        const getTrendingScore = (g) => {
+          const memberCount = (g.members?.length || 0) * 4;
+          const likesCount = (g.likes?.length || 0) * 3;
+          const activityCount = (g.activityLogs?.length || 0) * 2;
+          const lastActivity = g.lastActivityAt ? new Date(g.lastActivityAt).getTime() : new Date(g.updatedAt || g.createdAt).getTime();
+          const hoursSinceActivity = Math.max(1, (nowTime - lastActivity) / (1000 * 60 * 60));
+          const bonus = Math.max(0, 100 - hoursSinceActivity);
+          return memberCount + likesCount + activityCount + bonus;
+        };
+        const diff = getTrendingScore(b) - getTrendingScore(a);
+        if (diff !== 0) return diff;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sortBy === "Popular" || sortBy === "Most Popular" || sortBy === "Most Travelers") {
+        const diff = (b.members?.length || 0) - (a.members?.length || 0);
+        if (diff !== 0) return diff;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      }
+
+      if (sortBy === "Highest Rated") {
+        const rateA = a.host?.rating || 0;
+        const rateB = b.host?.rating || 0;
+        if (rateB !== rateA) return rateB - rateA;
+        return (b.likes?.length || 0) - (a.likes?.length || 0);
+      }
+
+      // Default fallback / Newest / Newly Created / Recently Active
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     });
 
-    res.status(200).json({ 
-      success: true, 
-      trips: mapped,
+    const total = allMatchingGroups.length;
+    const groups = allMatchingGroups.slice(skip, skip + limit);
+
+    const groupIds = groups.map((group) => group._id);
+
+    const allRequests = await JoinRequest.find({
+      groupId: { $in: groupIds },
+    });
+
+    // Format data for frontend compatibility
+    const trips = groups.map((group) => {
+      const trip = group.toObject();
+
+      trip.userId = trip.host;
+
+      const members = trip.members || [];
+
+      trip.companions = members.map(
+        (member) => member.user || member
+      );
+
+      trip.maxCompanions = trip.maxMembers;
+
+      trip.joinRequests = allRequests.filter(
+        (request) =>
+          request?.groupId?.toString() === trip?._id?.toString()
+      );
+
+      return trip;
+    });
+
+    res.status(200).json({
+      success: true,
+      trips,
       pagination: {
         total,
         page,
         limit,
-        hasMore: total > skip + groups.length
-      }
+        hasMore: total > skip + groups.length,
+      },
     });
   } catch (error) {
     console.error("GET ALL TRIPS ERROR:", error);
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-// Get Liked Buddy Trips (Felt Vibes)
+
+// Get liked travel groups
 exports.getLikedBuddyTrips = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user.id;
 
-    const query = { likes: currentUserId };
-
-    const groups = await TravelGroup.find(query)
-      .populate("host", "name username pic img isVerified rating completedTrips")
+    const groups = await TravelGroup.find({
+      likes: currentUserId,
+    })
+      .populate(
+        "host",
+        "name username pic img isVerified rating completedTrips"
+      )
       .populate("members.user", "name username pic img")
       .sort({ createdAt: -1 });
 
-    const groupIds = groups.map(g => g._id);
-    const allRequests = await JoinRequest.find({ groupId: { $in: groupIds } });
+    const groupIds = groups.map((group) => group._id);
 
-    const mapped = groups.map(g => {
-      const obj = g.toObject();
-      obj.userId = obj.host; // frontend expects userId for host info
-      const membs = obj.members || [];
-      obj.companions = membs.map(m => m.user || m); 
-      obj.maxCompanions = obj.maxMembers;
-      obj.joinRequests = allRequests.filter(req => req?.groupId?.toString() === obj?._id?.toString());
-      return obj;
+    const allRequests = await JoinRequest.find({
+      groupId: { $in: groupIds },
     });
 
-    res.status(200).json({ 
-      success: true, 
-      trips: mapped
+    // Format data for frontend compatibility
+    const trips = groups.map((group) => {
+      const trip = group.toObject();
+
+      trip.userId = trip.host;
+
+      const members = trip.members || [];
+
+      trip.companions = members.map(
+        (member) => member.user || member
+      );
+
+      trip.maxCompanions = trip.maxMembers;
+
+      trip.joinRequests = allRequests.filter(
+        (request) =>
+          request?.groupId?.toString() === trip?._id?.toString()
+      );
+
+      return trip;
+    });
+
+    res.status(200).json({
+      success: true,
+      trips,
     });
   } catch (error) {
     console.error("GET LIKED TRIPS ERROR:", error);
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-
-// Get Felt Vibes Collection (Unified Memory/Story/Group aggregation)
+// Get user's felt vibes collection
 exports.getFeltVibesCollection = async (req, res) => {
   try {
     const currentUserId = req.user._id || req.user.id;
 
-    // 1. Fetch Liked Travel Memories (Posts)
-    const posts = await Post.find({ likes: currentUserId })
+    // Format liked memory posts
+    const posts = await Post.find({
+      likes: currentUserId,
+    })
       .populate("userId", "name username pic img isVerified")
       .lean();
 
-    const formattedPosts = posts.map(post => ({
+    const formattedPosts = posts.map((post) => ({
       _id: post._id,
       type: "memory",
       postType: post.postType || "travel_memory",
@@ -289,188 +502,283 @@ exports.getFeltVibesCollection = async (req, res) => {
       caption: post.caption || "",
       likesCount: post.likes ? post.likes.length : 0,
       commentsCount: post.comments ? post.comments.length : 0,
-      createdAt: post.createdAt
+      createdAt: post.createdAt,
     }));
 
-    // 2. Fetch Reacted Stories
-    const stories = await Story.find({ "storyReactions.userId": currentUserId })
+    // Format reacted stories
+    const stories = await Story.find({
+      "storyReactions.userId": currentUserId,
+    })
       .populate("userId", "name username pic img isVerified")
       .lean();
 
-    const formattedStories = stories.map(story => {
-      // Get the specific reaction the user made
-      const userReaction = story.storyReactions?.find(r => r.userId?.toString() === currentUserId.toString());
+    const formattedStories = stories.map((story) => {
+      const userReaction = story.storyReactions?.find(
+        (reaction) =>
+          reaction.userId?.toString() === currentUserId.toString()
+      );
+
       return {
         _id: story._id,
         type: "story",
-        postType: "story", // Uniform property for frontend filters
+        postType: "story",
         mediaUrl: story.media,
         mediaType: story.mediaType || "image",
-        author: story.userId || { name: story.userName, pic: story.userPic },
-        location: "", // Stories might not have location in this model
+        author:
+          story.userId || {
+            name: story.userName,
+            pic: story.userPic,
+          },
+        location: "",
         caption: story.caption || "",
-        likesCount: story.storyReactions ? story.storyReactions.length : 0,
-        commentsCount: story.comments ? story.comments.length : 0,
-        createdAt: userReaction ? userReaction.reactedAt : story.createdAt
+        likesCount: story.storyReactions
+          ? story.storyReactions.length
+          : 0,
+        commentsCount: story.comments
+          ? story.comments.length
+          : 0,
+        createdAt: userReaction
+          ? userReaction.reactedAt
+          : story.createdAt,
       };
     });
 
-    // 3. Fetch Liked Travel Groups
-    const groups = await TravelGroup.find({ likes: currentUserId })
-      .populate("host", "name username pic img isVerified rating")
+    // Format liked travel groups
+    const groups = await TravelGroup.find({
+      likes: currentUserId,
+    })
+      .populate(
+        "host",
+        "name username pic img isVerified rating"
+      )
       .lean();
 
-    const formattedGroups = groups.map(group => ({
+    const formattedGroups = groups.map((group) => ({
       _id: group._id,
       type: "group",
       postType: "group",
       mediaUrl: group.coverImage,
       mediaType: "image",
       author: group.host,
-      location: `${group.from ? group.from + ' → ' : ''}${group.destination}`,
+      location: `${group.from ? group.from + " → " : ""}${
+        group.destination
+      }`,
       caption: group.title || "",
       likesCount: group.likes ? group.likes.length : 0,
-      commentsCount: 0, // Groups don't have direct comments array
+      commentsCount: 0,
       createdAt: group.createdAt,
       extra: {
         startDate: group.startDate,
         endDate: group.endDate,
         status: group.lifecycleStatus,
-        slotsOpen: Math.max(0, group.maxMembers - (group.members ? group.members.length : 0))
-      }
+        slotsOpen: Math.max(
+          0,
+          group.maxMembers -
+            (group.members ? group.members.length : 0)
+        ),
+      },
     }));
 
-    // Combine all and sort
-    let allFeltVibes = [...formattedPosts, ...formattedStories, ...formattedGroups];
-    
-    // Sort logic
-    // 1. Travel Memories
-    // 2. Stories
-    // 3. Travel Groups
-    // 4. Documents
-    // 5. Profile Updates
-    // 6. General
+    let allFeltVibes = [
+      ...formattedPosts,
+      ...formattedStories,
+      ...formattedGroups,
+    ];
+
+    // Sort content by type and date
     const sortPriority = {
-      "travel_memory": 1,
-      "travel_photo": 1,
-      "travel_video": 1,
-      "memory": 1, // Fallback
-      "story": 2,
-      "group": 3,
-      "document": 4,
-      "profile_update": 5,
-      "general": 6
+      travel_memory: 1,
+      travel_photo: 1,
+      travel_video: 1,
+      memory: 1,
+      story: 2,
+      group: 3,
+      document: 4,
+      profile_update: 5,
+      general: 6,
     };
 
     allFeltVibes.sort((a, b) => {
       const priorityA = sortPriority[a.postType] || 6;
       const priorityB = sortPriority[b.postType] || 6;
-      
+
       if (priorityA !== priorityB) {
         return priorityA - priorityB;
       }
-      
-      // Secondary sort by date (newest first)
+
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    res.status(200).json({ 
-      success: true, 
-      feltVibes: allFeltVibes
+    res.status(200).json({
+      success: true,
+      feltVibes: allFeltVibes,
     });
   } catch (error) {
     console.error("GET FELT VIBES ERROR:", error);
-    res.status(500).json({ success: false, message: error.message });
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Toggle Like / Favourite a Travel Buddy Trip
+// Like or unlike a travel group
 exports.toggleLikeBuddyTrip = async (req, res) => {
   try {
     const groupId = req.params.id;
     const userId = req.user._id || req.user.id;
 
     const group = await TravelGroup.findById(groupId);
+
     if (!group) {
-      return res.status(404).json({ success: false, message: "Travel group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Travel group not found",
+      });
     }
 
-    const likeIdx = group.likes.findIndex(id => id.toString() === userId.toString());
+    const likeIndex = group.likes.findIndex(
+      (id) => id.toString() === userId.toString()
+    );
+
     let isLiked = false;
 
-    if (likeIdx === -1) {
+    if (likeIndex === -1) {
       group.likes.push(userId);
       isLiked = true;
     } else {
-      group.likes.splice(likeIdx, 1);
+      group.likes.splice(likeIndex, 1);
     }
 
     await group.save();
-    res.status(200).json({ success: true, isLiked, likesCount: group.likes.length });
+
+    res.status(200).json({
+      success: true,
+      isLiked,
+      likesCount: group.likes.length,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get Travel Group by ID
+// Get complete details of a travel group
 exports.getTravelBuddyTripById = async (req, res) => {
   try {
     const group = await TravelGroup.findById(req.params.id)
-      .populate("host", "name username pic img isVerified rating completedTrips interests bio")
-      .populate("members.user", "name username pic img interests completedTrips rating");
+      .populate(
+        "host",
+        "name username pic img isVerified rating completedTrips interests bio"
+      )
+      .populate(
+        "members.user",
+        "name username pic img interests completedTrips rating"
+      );
 
     if (!group) {
-      return res.status(404).json({ success: false, message: "Travel group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Travel group not found",
+      });
     }
 
-    // Find requests for this group
-    const requests = await JoinRequest.find({ groupId: group._id })
-      .populate("userId", "name username pic img rating completedTrips");
+    const requests = await JoinRequest.find({
+      groupId: group._id,
+    }).populate(
+      "userId",
+      "name username pic img rating completedTrips"
+    );
 
-    // Map properties for UI compatibility
     const groupObj = group.toObject();
-    
-    // Handle legacy members that are just ObjectIds (strings/ObjectIds)
+
+    // Support old member data format
     let processedMembers = groupObj.members || [];
-    if (processedMembers.length > 0 && !processedMembers[0].user && processedMembers[0]._id === undefined) {
-      // It's a legacy array of ObjectIds
-      const User = require("../models/User");
-      const users = await User.find({ _id: { $in: processedMembers } }).select("name username pic img interests completedTrips rating").lean();
-      
-      processedMembers = users.map(u => ({
-        user: u,
-        role: (group.host && group.host._id && u._id.toString() === group.host._id.toString()) ? 'host' : 'member',
-        joinedAt: group.createdAt
+
+    if (
+      processedMembers.length > 0 &&
+      !processedMembers[0].user &&
+      processedMembers[0]._id === undefined
+    ) {
+      const users = await User.find({
+        _id: { $in: processedMembers },
+      })
+        .select(
+          "name username pic img avatar profilePic profilePicture userPic interests completedTrips rating"
+        )
+        .lean();
+
+      processedMembers = users.map((user) => ({
+        user,
+        role:
+          group.host &&
+          group.host._id &&
+          user._id.toString() === group.host._id.toString()
+            ? "host"
+            : "member",
+        joinedAt: group.createdAt,
       }));
     }
-    
-    // Also inject host into processedMembers if not present, because new UI expects host in members list
+
+    // Ensure host is present in members list
     if (group.host) {
-      if (!processedMembers.some(m => m.user && m.user._id && m.user._id.toString() === group.host._id.toString())) {
-        const hostObj = group.host._id ? group.host : { _id: group.host };
-        processedMembers.unshift({ user: hostObj, role: 'host', joinedAt: group.createdAt });
+      const hostExists = processedMembers.some(
+        (member) =>
+          member.user &&
+          member.user._id &&
+          member.user._id.toString() === group.host._id.toString()
+      );
+
+      if (!hostExists) {
+        processedMembers.unshift({
+          user: group.host,
+          role: "host",
+          joinedAt: group.createdAt,
+        });
       }
     }
-    
-    groupObj.members = processedMembers;
-    const hostIdStr = group.host && group.host._id ? group.host._id.toString() : (group.host ? group.host.toString() : null);
-    groupObj.companions = processedMembers.map(m => m.user).filter(u => u && u._id && (hostIdStr ? u._id.toString() !== hostIdStr : true));
-    groupObj.joinRequests = requests.map(req => ({
-      _id: req._id,
-      userId: req.userId,
-      status: req.status,
-      message: req.message,
-      createdAt: req.createdAt
-    }));
-    groupObj.userId = group.host; // mapping userId to host for legacy compat
 
-    res.status(200).json({ success: true, trip: groupObj });
+    groupObj.members = processedMembers;
+
+    const hostId =
+      group.host && group.host._id
+        ? group.host._id.toString()
+        : null;
+
+    groupObj.companions = processedMembers
+      .map((member) => member.user)
+      .filter(
+        (user) =>
+          user &&
+          user._id &&
+          user._id.toString() !== hostId
+      );
+
+    groupObj.joinRequests = requests.map((request) => ({
+      _id: request._id,
+      userId: request.userId,
+      status: request.status,
+      message: request.message,
+      createdAt: request.createdAt,
+    }));
+
+    groupObj.userId = group.host;
+
+    res.status(200).json({
+      success: true,
+      trip: groupObj,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-// Request to Join Travel Group
+// Send a request to join a travel group
 exports.requestToJoinTrip = async (req, res) => {
   try {
     const groupId = req.params.id;
@@ -478,35 +786,69 @@ exports.requestToJoinTrip = async (req, res) => {
     const { message } = req.body;
 
     const group = await TravelGroup.findById(groupId);
+
     if (!group) {
-      return res.status(404).json({ success: false, message: "Travel group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Travel group not found",
+      });
     }
 
-    // Fix legacy members array format if needed
-    if (group.members && group.members.length > 0 && !group.members[0].user && group.members[0]._id === undefined) {
-      group.members = group.members.map(memberId => ({
+    // Support old member data format
+    if (
+      group.members &&
+      group.members.length > 0 &&
+      !group.members[0].user &&
+      group.members[0]._id === undefined
+    ) {
+      group.members = group.members.map((memberId) => ({
         user: memberId,
-        role: memberId.toString() === group.host.toString() ? 'host' : 'member',
-        joinedAt: group.createdAt || new Date()
+        role:
+          memberId.toString() === group.host.toString()
+            ? "host"
+            : "member",
+        joinedAt: group.createdAt || new Date(),
       }));
     }
 
     if (group.host.toString() === userId.toString()) {
-      return res.status(400).json({ success: false, message: "You are the host of this group" });
+      return res.status(400).json({
+        success: false,
+        message: "You are the host of this group",
+      });
     }
 
-    if (group.members.some(m => m.user && m.user.toString() === userId.toString())) {
-      return res.status(400).json({ success: false, message: "You are already a member of this group" });
+    if (
+      group.members.some(
+        (member) =>
+          member.user &&
+          member.user.toString() === userId.toString()
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already a member of this group",
+      });
     }
 
+    // Directly join public groups
     if (!group.isPrivate) {
       if (group.members.length >= group.maxMembers) {
-        return res.status(400).json({ success: false, message: "This travel group is already full" });
+        return res.status(400).json({
+          success: false,
+          message: "This travel group is already full",
+        });
       }
-      group.members.push({ user: userId, role: "member" });
+
+      group.members.push({
+        user: userId,
+        role: "member",
+      });
+
       if (group.members.length >= group.maxMembers) {
         group.status = "full";
       }
+
       await group.save();
 
       await ChatRoom.findOneAndUpdate(
@@ -515,84 +857,126 @@ exports.requestToJoinTrip = async (req, res) => {
       );
 
       const senderUser = await User.findById(userId);
+
       await Notification.create({
         sender: userId,
         receiver: group.host,
         type: "group_joined",
         group: group._id,
-        message: `${senderUser.name} joined your travel group "${group.title}".`
+        message: `${senderUser.name} joined your travel group "${group.title}".`,
       });
 
-      return res.status(200).json({ success: true, message: "Successfully joined the travel group", group });
+      return res.status(200).json({
+        success: true,
+        message: "Successfully joined the travel group",
+        group,
+      });
     }
 
-    // Check if duplicate requests exist
-    let requestObj = await JoinRequest.findOne({ groupId, userId });
+    let requestObj = await JoinRequest.findOne({
+      groupId,
+      userId,
+    });
+
     if (requestObj) {
       if (requestObj.status === "Pending") {
-        return res.status(400).json({ success: false, message: "You already have a pending join request" });
+        return res.status(400).json({
+          success: false,
+          message: "You already have a pending join request",
+        });
       }
+
       requestObj.status = "Pending";
       requestObj.message = message || "";
+
       await requestObj.save();
     } else {
       requestObj = new JoinRequest({
         groupId,
         userId,
         message: message || "",
-        status: "Pending"
+        status: "Pending",
       });
+
       await requestObj.save();
     }
 
-    // Notify host
     const senderUser = await User.findById(userId);
+
     await Notification.create({
       sender: userId,
       receiver: group.host,
       type: "join_request",
       group: group._id,
       joinRequest: requestObj._id,
-      message: `${senderUser.name} requested to join your travel group "${group.title}".`
+      message: `${senderUser.name} requested to join your travel group "${group.title}".`,
     });
 
-    res.status(200).json({ success: true, message: "Join request submitted successfully", request: requestObj });
+    res.status(200).json({
+      success: true,
+      message: "Join request submitted successfully",
+      request: requestObj,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-// Host Manage Request (Approve/Reject)
+// Approve or reject a travel group join request
 exports.manageJoinRequest = async (req, res) => {
   try {
-    const { requestId, status } = req.body; // status: "Approved" or "Rejected"
+    const { requestId, status } = req.body;
     const hostId = req.user._id || req.user.id;
 
     if (!requestId || !["Approved", "Rejected"].includes(status)) {
-      return res.status(400).json({ success: false, message: "Valid request ID and status required" });
+      return res.status(400).json({
+        success: false,
+        message: "Valid request ID and status required",
+      });
     }
 
     const requestObj = await JoinRequest.findById(requestId);
+
     if (!requestObj) {
-      return res.status(404).json({ success: false, message: "Request not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Request not found",
+      });
     }
 
     const group = await TravelGroup.findById(requestObj.groupId);
+
     if (!group) {
-      return res.status(404).json({ success: false, message: "Group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Group not found",
+      });
     }
 
-    // Fix legacy members array format if needed
-    if (group.members && group.members.length > 0 && !group.members[0].user && group.members[0]._id === undefined) {
-      group.members = group.members.map(memberId => ({
+    // Support old member data format
+    if (
+      group.members &&
+      group.members.length > 0 &&
+      !group.members[0].user &&
+      group.members[0]._id === undefined
+    ) {
+      group.members = group.members.map((memberId) => ({
         user: memberId,
-        role: memberId.toString() === group.host.toString() ? 'host' : 'member',
-        joinedAt: group.createdAt || new Date()
+        role:
+          memberId.toString() === group.host.toString()
+            ? "host"
+            : "member",
+        joinedAt: group.createdAt || new Date(),
       }));
     }
 
     if (group.host.toString() !== hostId.toString()) {
-      return res.status(403).json({ success: false, message: "Only the host can manage join requests" });
+      return res.status(403).json({
+        success: false,
+        message: "Only the host can manage join requests",
+      });
     }
 
     requestObj.status = status;
@@ -600,159 +984,271 @@ exports.manageJoinRequest = async (req, res) => {
 
     if (status === "Approved") {
       if (group.members.length >= group.maxMembers) {
-        return res.status(400).json({ success: false, message: "This travel group is already full" });
+        return res.status(400).json({
+          success: false,
+          message: "This travel group is already full",
+        });
       }
-      if (!group.members.some(m => m.user && m.user.toString() === requestObj.userId.toString())) {
-        group.members.push({ user: requestObj.userId, role: "member" });
+
+      if (
+        !group.members.some(
+          (member) =>
+            member.user &&
+            member.user.toString() === requestObj.userId.toString()
+        )
+      ) {
+        group.members.push({
+          user: requestObj.userId,
+          role: "member",
+        });
+
         if (group.members.length >= group.maxMembers) {
           group.status = "full";
         }
+
         await group.save();
 
-        if (ChatRoom) {
-          // Automatically add to ChatRoom for group chat
-          await ChatRoom.findOneAndUpdate(
-            { travelGroupId: group._id },
-            { $push: { members: requestObj.userId } }
-          );
-        }
+        // Add approved member to group chat
+        await ChatRoom.findOneAndUpdate(
+          { travelGroupId: group._id },
+          { $push: { members: requestObj.userId } }
+        );
       }
     }
 
-    // Create Notification
     await Notification.create({
       sender: hostId,
       receiver: requestObj.userId,
-      type: status === "Approved" ? "request_approved" : "request_rejected",
+      type:
+        status === "Approved"
+          ? "request_approved"
+          : "request_rejected",
       group: group._id,
-      message: `Your request to join "${group.title}" was ${status.toLowerCase()}.`
+      message: `Your request to join "${group.title}" was ${status.toLowerCase()}.`,
     });
 
-    // Remove the original pending join_request notification
     await Notification.findOneAndDelete({
       receiver: hostId,
       type: "join_request",
-      joinRequest: requestObj._id
+      joinRequest: requestObj._id,
     });
 
-    res.status(200).json({ success: true, message: `Request successfully ${status.toLowerCase()}`, request: requestObj });
+    res.status(200).json({
+      success: true,
+      message: `Request successfully ${status.toLowerCase()}`,
+      request: requestObj,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-// Leave Travel Group
+// Leave a travel group
 exports.leaveTravelBuddyTrip = async (req, res) => {
   try {
     const groupId = req.params.id;
     const userId = req.user._id || req.user.id;
 
     const group = await TravelGroup.findById(groupId);
+
     if (!group) {
-      return res.status(404).json({ success: false, message: "Travel group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Travel group not found",
+      });
     }
 
-    // Fix legacy members array format if needed
-    if (group.members && group.members.length > 0 && !group.members[0].user && group.members[0]._id === undefined) {
-      group.members = group.members.map(memberId => ({
+    // Support old member data format
+    if (
+      group.members &&
+      group.members.length > 0 &&
+      !group.members[0].user &&
+      group.members[0]._id === undefined
+    ) {
+      group.members = group.members.map((memberId) => ({
         user: memberId,
-        role: memberId.toString() === group.host.toString() ? 'host' : 'member',
-        joinedAt: group.createdAt || new Date()
+        role:
+          memberId.toString() === group.host.toString()
+            ? "host"
+            : "member",
+        joinedAt: group.createdAt || new Date(),
       }));
     }
 
     if (group.host.toString() === userId.toString()) {
-      return res.status(400).json({ success: false, message: "Hosts cannot leave their own group. Please complete or cancel the trip." });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Hosts cannot leave their own group. Please complete or cancel the trip.",
+      });
     }
 
-    group.members = group.members.filter(m => m.user && m.user.toString() !== userId.toString());
-    if (group.status === "full" && group.members.length < group.maxMembers) {
+    group.members = group.members.filter(
+      (member) =>
+        member.user &&
+        member.user.toString() !== userId.toString()
+    );
+
+    if (
+      group.status === "full" &&
+      group.members.length < group.maxMembers
+    ) {
       group.status = "open";
     }
-    if (!group.activityLogs) group.activityLogs = [];
-    group.activityLogs.push({ action: "Left the group", user: userId, performedBy: userId });
+
+    if (!group.activityLogs) {
+      group.activityLogs = [];
+    }
+
+    group.activityLogs.push({
+      action: "Left the group",
+      user: userId,
+      performedBy: userId,
+    });
+
     await group.save();
 
-    // Remove from ChatRoom members
+    // Remove member from group chat
     await ChatRoom.findOneAndUpdate(
       { travelGroupId: group._id },
       { $pull: { members: userId } }
     );
 
-    // Clean up join requests
-    await JoinRequest.deleteOne({ groupId, userId });
+    await JoinRequest.deleteOne({
+      groupId,
+      userId,
+    });
 
-    // Notify host
     const leavingUser = await User.findById(userId);
+
     if (Notification && leavingUser) {
       await Notification.create({
         sender: userId,
         receiver: group.host,
         type: "group_left",
         group: group._id,
-        message: `${leavingUser.name} left your travel group "${group.title}".`
+        message: `${leavingUser.name} left your travel group "${group.title}".`,
       });
     }
 
-    res.status(200).json({ success: true, message: "Left travel group successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Left travel group successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Delete Travel Group
+// Delete a travel group
 exports.deleteTravelBuddyTrip = async (req, res) => {
   try {
     const groupId = req.params.id;
-    const userId = req.user._id || req.user.id;
-
     const reqUserId = req.user._id || req.user.id;
 
     const group = await TravelGroup.findById(groupId);
+
     if (!group) {
-      return res.status(404).json({ success: false, message: "Travel group not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Travel group not found",
+      });
     }
 
-    // Fix legacy members array format if needed
-    if (group.members && group.members.length > 0 && !group.members[0].user && group.members[0]._id === undefined) {
-      group.members = group.members.map(memberId => ({
+    // Support old member data format
+    if (
+      group.members &&
+      group.members.length > 0 &&
+      !group.members[0].user &&
+      group.members[0]._id === undefined
+    ) {
+      group.members = group.members.map((memberId) => ({
         user: memberId,
-        role: memberId.toString() === group.host.toString() ? 'host' : 'member',
-        joinedAt: group.createdAt || new Date()
+        role:
+          memberId.toString() === group.host.toString()
+            ? "host"
+            : "member",
+        joinedAt: group.createdAt || new Date(),
       }));
     }
 
-    if (group.host.toString() !== reqUserId.toString() && !req.user.isAdmin) {
-      return res.status(403).json({ success: false, message: "Only the host can delete this group" });
+    if (
+      group.host.toString() !== reqUserId.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the host can delete this group",
+      });
     }
 
     await TravelGroup.findByIdAndDelete(groupId);
-    
-    // Clean up associated data
-    await ChatRoom.findOneAndDelete({ travelGroupId: groupId });
-    await JoinRequest.deleteMany({ groupId });
 
-    res.status(200).json({ success: true, message: "Travel group deleted successfully" });
+    // Remove related chat room and join requests
+    await ChatRoom.findOneAndDelete({
+      travelGroupId: groupId,
+    });
+
+    await JoinRequest.deleteMany({
+      groupId,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Travel group deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-// --- 2. TRAVEL POSTS (Instagram Style) ---
-
-// Create Travel Post
+// Create a travel memory post
 exports.createMemory = async (req, res) => {
   try {
-    const { caption, location, image, mediaUrl, mediaUrls, mediaType, tags, title, music, taggedUsers, disableComments, hideLikes } = req.body;
+    const {
+      caption,
+      location,
+      image,
+      mediaUrl,
+      mediaUrls,
+      mediaType,
+      tags,
+      title,
+      music,
+      taggedUsers,
+      disableComments,
+      hideLikes,
+      journeyId,
+    } = req.body;
+
     const userId = req.user._id || req.user.id;
 
-    if (!caption || (!image && !mediaUrl && (!mediaUrls || mediaUrls.length === 0))) {
-      return res.status(400).json({ success: false, message: "Caption and Media are required" });
+    if (
+      !caption ||
+      (!image &&
+        !mediaUrl &&
+        (!mediaUrls || mediaUrls.length === 0))
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Caption and Media are required",
+      });
     }
 
     const user = await User.findById(userId);
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const finalMediaUrl = mediaUrl || image;
@@ -766,102 +1262,194 @@ exports.createMemory = async (req, res) => {
       caption,
       location: location || "",
       tags: tags || [],
-      image: finalMediaUrl, // For backward compatibility
+      image: finalMediaUrl,
       mediaUrl: finalMediaUrl,
       mediaUrls: mediaUrls || [],
       mediaType: finalMediaType,
       music: music || undefined,
       taggedUsers: taggedUsers || [],
+      journeyId: journeyId || null,
       disableComments: disableComments || false,
       hideLikes: hideLikes || false,
       likes: [],
-      comments: []
+      comments: [],
     });
 
     await post.save();
-    res.status(201).json({ success: true, message: "Travel post created successfully", post });
+
+    if (journeyId && finalMediaUrl) {
+      try {
+        await JourneyGallery.create({
+          journeyId,
+          uploaderId: userId,
+          uploaderName: user.name,
+          uploaderPic: user.pic,
+          mediaUrl: finalMediaUrl,
+          mediaType: finalMediaType === "video" ? "video" : "image",
+          itemType: "post",
+          referenceId: post._id,
+          caption,
+        });
+
+        await JourneyTimeline.create({
+          journeyId,
+          userId,
+          userName: user.name,
+          userPic: user.pic,
+          eventType: "post_shared",
+          title: "Memory Shared",
+          description: caption.substring(0, 100),
+          mediaUrl: finalMediaUrl,
+          referenceId: post._id,
+        });
+
+        await Journey.findByIdAndUpdate(journeyId, { $inc: { "stats.postsCount": 1 } });
+      } catch (err) {
+        console.error("Error linking post to journey:", err);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Travel post created successfully",
+      post,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
-// Get Posts Feed (Followed users and own posts only)
+// Get travel memories feed
 exports.getAllMemories = async (req, res) => {
   try {
     const authUserId = req.user._id || req.user.id;
     const { userId: filterUserId, page = 1, limit = 10 } = req.query;
+
     const skip = (page - 1) * parseInt(limit);
-    
-    const user = await User.findById(authUserId).lean().select("following blockedUsers");
-    
+
+    const user = await User.findById(authUserId)
+      .lean()
+      .select("following blockedUsers");
+
     let query = {};
+
+    // Show a specific user's posts if requested
     if (filterUserId) {
-      const targetUser = await User.findById(filterUserId).lean().select("privateAccount followers");
-      if (targetUser && targetUser.privateAccount && authUserId.toString() !== filterUserId.toString()) {
-         const isFollower = targetUser.followers && targetUser.followers.some(f => f.toString() === authUserId.toString());
-         if (!isFollower && (!req.user || !req.user.isAdmin)) {
-             return res.status(200).json({ success: true, memories: [] });
-         }
+      const targetUser = await User.findById(filterUserId)
+        .lean()
+        .select("privateAccount followers");
+
+      if (
+        targetUser &&
+        targetUser.privateAccount &&
+        authUserId.toString() !== filterUserId.toString()
+      ) {
+        const isFollower =
+          targetUser.followers &&
+          targetUser.followers.some(
+            (f) => f.toString() === authUserId.toString()
+          );
+
+        if (!isFollower && (!req.user || !req.user.isAdmin)) {
+          return res.status(200).json({
+            success: true,
+            memories: [],
+          });
+        }
       }
+
       query.userId = filterUserId;
     } else {
-      const followingList = (user && user.following) ? user.following : [];
-      const allIds = [...followingList, authUserId];
-      query.userId = { $in: allIds };
+      const followingList =
+        user && user.following ? user.following : [];
+
+      query.userId = {
+        $in: [...followingList, authUserId],
+      };
     }
-    
-    let uniquePosts = await Post.find(query)
+
+    const posts = await Post.find(query)
       .lean()
-      .populate("userId", "name username pic img type isVerified rating")
+      .populate(
+        "userId",
+        "name username pic img type isVerified rating"
+      )
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(parseInt(limit));
 
-    const formattedPosts = uniquePosts.map(post => {
-      return {
-        ...post,
-        commentsCount: post.comments ? post.comments.length : 0,
-        comments: [] // empty comments array for initial load
-      };
-    });
+    // Format posts for frontend
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      commentsCount: post.comments
+        ? post.comments.length
+        : 0,
+      comments: [],
+    }));
 
-    res.status(200).json({ success: true, memories: formattedPosts });
+    res.status(200).json({
+      success: true,
+      memories: formattedPosts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Toggle Like Post
+// Like or unlike a travel memory
 exports.toggleLikeMemory = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id || req.user.id;
 
     const post = await Post.findById(postId);
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
 
-    const likeIdx = post.likes.findIndex(id => id.toString() === userId.toString());
+    const likeIdx = post.likes.findIndex(
+      (id) => id.toString() === userId.toString()
+    );
+
     let isLiked = false;
     let updatedPost;
 
     if (likeIdx === -1) {
-      updatedPost = await Post.findByIdAndUpdate(postId, {
-        $addToSet: { likes: userId }
-      }, { new: true });
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        {
+          $addToSet: { likes: userId },
+        },
+        { new: true }
+      );
+
       isLiked = true;
 
-      if (updatedPost && updatedPost.userId && updatedPost.userId.toString() !== userId.toString()) {
+      // Notify post owner when someone likes the post
+      if (
+        updatedPost &&
+        updatedPost.userId &&
+        updatedPost.userId.toString() !== userId.toString()
+      ) {
         try {
           const senderUser = await User.findById(userId);
+
           if (senderUser) {
             await Notification.create({
               sender: userId,
               receiver: updatedPost.userId,
               type: "post_like",
               post: updatedPost._id,
-              message: `${senderUser.name} liked your post.`
+              message: `${senderUser.name} liked your post.`,
             });
           }
         } catch (e) {
@@ -869,18 +1457,28 @@ exports.toggleLikeMemory = async (req, res) => {
         }
       }
     } else {
-      updatedPost = await Post.findByIdAndUpdate(postId, {
-        $pull: { likes: userId }
-      }, { new: true });
+      updatedPost = await Post.findByIdAndUpdate(
+        postId,
+        {
+          $pull: { likes: userId },
+        },
+        { new: true }
+      );
+
       isLiked = false;
-      
-      if (updatedPost && updatedPost.userId && updatedPost.userId.toString() !== userId.toString()) {
+
+      // Remove like notification when unlike happens
+      if (
+        updatedPost &&
+        updatedPost.userId &&
+        updatedPost.userId.toString() !== userId.toString()
+      ) {
         try {
           await Notification.findOneAndDelete({
             sender: userId,
             receiver: updatedPost.userId,
             type: "post_like",
-            post: updatedPost._id
+            post: updatedPost._id,
           });
         } catch (e) {
           console.error("Notification removal failed:", e);
@@ -888,14 +1486,24 @@ exports.toggleLikeMemory = async (req, res) => {
       }
     }
 
-    res.status(200).json({ success: true, likesCount: updatedPost.likes.length, isLiked, memory: updatedPost });
+    res.status(200).json({
+      success: true,
+      likesCount: updatedPost.likes.length,
+      isLiked,
+      memory: updatedPost,
+    });
   } catch (error) {
     console.error("Toggle memory like error:", error);
-    res.status(500).json({ success: false, message: "Error toggling like", error: error.message, stack: error.stack });
+
+    res.status(500).json({
+      success: false,
+      message: "Error toggling like",
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
-
-// Comment on Post
+// Add a comment to a travel memory
 exports.commentOnMemory = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -903,17 +1511,28 @@ exports.commentOnMemory = async (req, res) => {
     const { text } = req.body;
 
     if (!text) {
-      return res.status(400).json({ success: false, message: "Comment text is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Comment text is required",
+      });
     }
 
     const post = await Post.findById(postId);
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
 
     const user = await User.findById(userId);
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const comment = new Comment({
@@ -921,186 +1540,324 @@ exports.commentOnMemory = async (req, res) => {
       userId,
       userName: user.name,
       userPic: user.pic,
-      text
+      text,
     });
+
     await comment.save();
 
     post.comments.push(comment._id);
     await post.save();
 
-    // Notify post author
+    // Notify the post owner about the new comment
     if (post.userId.toString() !== userId.toString()) {
       await Notification.create({
         sender: userId,
         receiver: post.userId,
         type: "post_comment",
         post: post._id,
-        message: `${user.name} commented on your post: "${text.substring(0, 30)}..."`
+        message: `${user.name} commented on your post: "${text.substring(0, 30)}..."`,
       });
     }
 
-    // Populate and return post with updated comments
     const updatedPost = await Post.findById(postId)
       .populate("userId", "name username pic img")
       .populate({
         path: "comments",
-        populate: { path: "userId", select: "name username pic" }
+        populate: {
+          path: "userId",
+          select: "name username pic",
+        },
       });
 
-    const blockedUserIdsStr = user && user.blockedUsers ? user.blockedUsers.map(id => id.toString()) : [];
-    const p = updatedPost.toObject();
-    if (p.comments) {
-      p.comments = p.comments.filter(comment => {
+    // Hide comments from blocked users
+    const blockedUserIdsStr =
+      user && user.blockedUsers
+        ? user.blockedUsers.map((id) => id.toString())
+        : [];
+
+    const memory = updatedPost.toObject();
+
+    if (memory.comments) {
+      memory.comments = memory.comments.filter((comment) => {
         if (!comment.userId) return false;
-        const authorId = comment.userId._id ? comment.userId._id.toString() : comment.userId.toString();
+
+        const authorId = comment.userId._id
+          ? comment.userId._id.toString()
+          : comment.userId.toString();
+
         return !blockedUserIdsStr.includes(authorId);
       });
     }
 
-    res.status(200).json({ success: true, message: "Comment added successfully", memory: p });
+    res.status(200).json({
+      success: true,
+      message: "Comment added successfully",
+      memory,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Delete Comment
+// Delete a comment from a travel memory
 exports.deleteComment = async (req, res) => {
   try {
     const { postId, commentId } = req.params;
     const userId = req.user._id || req.user.id;
-    
+
     const post = await Post.findById(postId);
     const comment = await Comment.findById(commentId);
-    
+
     if (!post || !comment) {
-      return res.status(404).json({ success: false, message: "Not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Not found",
+      });
     }
-    
-    if (comment.userId.toString() !== userId.toString() && post.userId.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to delete this comment" });
+
+    if (
+      comment.userId.toString() !== userId.toString() &&
+      post.userId.toString() !== userId.toString()
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this comment",
+      });
     }
-    
+
     await Comment.findByIdAndDelete(commentId);
-    post.comments = post.comments.filter(id => id.toString() !== commentId.toString());
+
+    post.comments = post.comments.filter(
+      (id) => id.toString() !== commentId.toString()
+    );
+
     await post.save();
-    
-    // Populate and return updated post with filtered comments
+
     const updatedPost = await Post.findById(postId)
       .populate("userId", "name username pic img")
       .populate({
         path: "comments",
-        populate: { path: "userId", select: "name username pic" }
+        populate: {
+          path: "userId",
+          select: "name username pic",
+        },
       });
 
+    // Hide comments from blocked users
     const user = await User.findById(userId);
-    const blockedUserIdsStr = user && user.blockedUsers ? user.blockedUsers.map(id => id.toString()) : [];
-    const p = updatedPost.toObject();
-    if (p.comments) {
-      p.comments = p.comments.filter(comment => {
+
+    const blockedUserIds =
+      user && user.blockedUsers
+        ? user.blockedUsers.map((id) => id.toString())
+        : [];
+
+    const memory = updatedPost.toObject();
+
+    if (memory.comments) {
+      memory.comments = memory.comments.filter((comment) => {
         if (!comment.userId) return false;
-        const authorId = comment.userId._id ? comment.userId._id.toString() : comment.userId.toString();
-        return !blockedUserIdsStr.includes(authorId);
+
+        const authorId = comment.userId._id
+          ? comment.userId._id.toString()
+          : comment.userId.toString();
+
+        return !blockedUserIds.includes(authorId);
       });
     }
-    
-    res.status(200).json({ success: true, message: "Comment deleted successfully", memory: p });
+
+    res.status(200).json({
+      success: true,
+      message: "Comment deleted successfully",
+      memory,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Save Post
+// Save a travel memory
 exports.savePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id || req.user.id;
 
     const post = await Post.findById(postId);
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
 
-    const alreadySaved = await SavedPost.findOne({ userId, postId });
+    const alreadySaved = await SavedPost.findOne({
+      userId,
+      postId,
+    });
+
     if (alreadySaved) {
-      return res.status(200).json({ success: true, isSaved: true, message: "Post already saved" });
-    } else {
-      const saved = new SavedPost({ userId, postId });
-      await saved.save();
-      return res.status(200).json({ success: true, isSaved: true, message: "Post saved successfully" });
+      return res.status(200).json({
+        success: true,
+        isSaved: true,
+        message: "Post already saved",
+      });
     }
+
+    const savedPost = new SavedPost({
+      userId,
+      postId,
+    });
+
+    await savedPost.save();
+
+    res.status(200).json({
+      success: true,
+      isSaved: true,
+      message: "Post saved successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Unsave Post
+// Remove a post from saved collection
 exports.unsavePost = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id || req.user.id;
 
-    const alreadySaved = await SavedPost.findOne({ userId, postId });
+    const alreadySaved = await SavedPost.findOne({
+      userId,
+      postId,
+    });
+
     if (alreadySaved) {
-      await SavedPost.deleteOne({ _id: alreadySaved._id });
+      await SavedPost.deleteOne({
+        _id: alreadySaved._id,
+      });
     }
-    return res.status(200).json({ success: true, isSaved: false, message: "Post unsaved successfully" });
+
+    res.status(200).json({
+      success: true,
+      isSaved: false,
+      message: "Post unsaved successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get Saved Posts by User
+// Get all saved posts of the logged-in user
 exports.getSavedPosts = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const { idsOnly } = req.query;
 
-    let savedQuery = SavedPost.find({ userId }).sort({ createdAt: -1 });
+    let savedQuery = SavedPost.find({ userId }).sort({
+      createdAt: -1,
+    });
 
-    if (idsOnly === 'true') {
+    // Return only post IDs if requested
+    if (idsOnly === "true") {
       const saved = await savedQuery.select("postId").lean();
-      const posts = saved.map(s => ({ _id: s.postId }));
-      return res.status(200).json({ success: true, posts });
+
+      const posts = saved.map((item) => ({
+        _id: item.postId,
+      }));
+
+      return res.status(200).json({
+        success: true,
+        posts,
+      });
     }
 
     const saved = await savedQuery.populate({
       path: "postId",
-      populate: { path: "userId", select: "name username pic img" }
-    });
+      populate: {
+        path: "userId",
+        select: "name username pic img type isVerified rating",
+      },
+    }).lean();
 
-    const posts = saved.map(s => s.postId).filter(Boolean);
-    res.status(200).json({ success: true, posts });
+    const posts = saved
+      .map((item) => item.postId)
+      .filter(Boolean);
+
+    const formattedPosts = posts.map((post) => ({
+      ...post,
+      commentsCount: post.comments ? post.comments.length : 0,
+      comments: [],
+    }));
+
+    res.status(200).json({
+      success: true,
+      posts: formattedPosts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Delete Own Post
+// Delete a travel memory
 exports.deleteMemory = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id || req.user.id;
 
     const post = await Post.findById(postId);
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
 
-    if (post.userId.toString() !== userId.toString() && !req.user.isAdmin) {
-      return res.status(403).json({ success: false, message: "Not authorized to delete this post" });
+    // Allow only the post owner or admin to delete
+    if (
+      post.userId.toString() !== userId.toString() &&
+      !req.user.isAdmin
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this post",
+      });
     }
 
+    // Remove related comments and saved records
     await Comment.deleteMany({ postId });
     await SavedPost.deleteMany({ postId });
+
     await Post.findByIdAndDelete(postId);
 
-    res.status(200).json({ success: true, message: "Post deleted successfully" });
+    res.status(200).json({
+      success: true,
+      message: "Post deleted successfully",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Update Own Post (Memory)
+// Update a travel memory
 exports.updateMemory = async (req, res) => {
   try {
     const postId = req.params.id;
@@ -1108,12 +1865,20 @@ exports.updateMemory = async (req, res) => {
     const { caption, location, tags } = req.body;
 
     const post = await Post.findById(postId);
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
 
+    // Allow only the post owner to edit
     if (post.userId.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "You can only edit your own posts" });
+      return res.status(403).json({
+        success: false,
+        message: "You can only edit your own posts",
+      });
     }
 
     if (caption !== undefined) post.caption = caption;
@@ -1121,105 +1886,187 @@ exports.updateMemory = async (req, res) => {
     if (tags !== undefined) post.tags = tags;
 
     await post.save();
-    res.status(200).json({ success: true, message: "Post updated successfully", post });
+
+    res.status(200).json({
+      success: true,
+      message: "Post updated successfully",
+      post,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Get Liked Posts
+// Get all liked travel memories
 exports.getLikedPosts = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+
     const likedPosts = await Post.find({ likes: userId })
       .populate("userId", "name username pic img")
       .populate({
         path: "comments",
-        populate: { path: "userId", select: "name pic avatar username" }
+        populate: {
+          path: "userId",
+          select: "name pic avatar username",
+        },
       })
       .sort({ createdAt: -1 });
 
     const user = await User.findById(userId);
-    const blockedUserIdsStr = user && user.blockedUsers ? user.blockedUsers.map(id => id.toString()) : [];
-    const formattedPosts = likedPosts.map(post => {
-      const p = post.toObject ? post.toObject() : post;
-      if (p.comments) {
-        p.comments = p.comments.filter(comment => {
+
+    const blockedUserIds =
+      user && user.blockedUsers
+        ? user.blockedUsers.map((id) => id.toString())
+        : [];
+
+    // Remove comments from blocked users
+    const formattedPosts = likedPosts.map((post) => {
+      const memory = post.toObject();
+
+      if (memory.comments) {
+        memory.comments = memory.comments.filter((comment) => {
           if (!comment.userId) return false;
-          const authorId = comment.userId._id ? comment.userId._id.toString() : comment.userId.toString();
-          return !blockedUserIdsStr.includes(authorId);
+
+          const authorId = comment.userId._id
+            ? comment.userId._id.toString()
+            : comment.userId.toString();
+
+          return !blockedUserIds.includes(authorId);
         });
       }
-      return p;
+
+      return memory;
     });
 
-    res.status(200).json({ success: true, posts: formattedPosts });
+    res.status(200).json({
+      success: true,
+      posts: formattedPosts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-
-
+// Get comments of a travel memory
 exports.getMemoryComments = async (req, res) => {
   try {
     const postId = req.params.id;
     const userId = req.user._id || req.user.id;
-    const post = await Post.findById(postId).populate({
+
+    const post = await Post.findById(postId)
+      .populate({
         path: "comments",
-        populate: { path: "userId", select: "name username pic avatar" }
-    }).lean();
+        populate: {
+          path: "userId",
+          select: "name username pic avatar",
+        },
+      })
+      .lean();
+
     if (!post) {
-      return res.status(404).json({ success: false, message: "Post not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Post not found",
+      });
     }
+
     const user = await User.findById(userId).lean();
-    const blockedUserIdsStr = user && user.blockedUsers ? user.blockedUsers.map(id => id.toString()) : [];
-    const filteredComments = post.comments.filter(comment => {
+
+    const blockedUserIds =
+      user && user.blockedUsers
+        ? user.blockedUsers.map((id) => id.toString())
+        : [];
+
+    // Hide comments from blocked users
+    const filteredComments = post.comments.filter((comment) => {
       if (!comment.userId) return false;
-      const authorId = comment.userId._id ? comment.userId._id.toString() : comment.userId.toString();
-      return !blockedUserIdsStr.includes(authorId);
+
+      const authorId = comment.userId._id
+        ? comment.userId._id.toString()
+        : comment.userId.toString();
+
+      return !blockedUserIds.includes(authorId);
     });
-    res.status(200).json({ success: true, comments: filteredComments });
+
+    res.status(200).json({
+      success: true,
+      comments: filteredComments,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// --- 3. TRAVEL STORIES (24h Expiration) ---
-
-// Publish Story
+// Create a new travel story
 exports.createStory = async (req, res) => {
   try {
-    const { mediaType, caption, captionPosition, captionColor, visibility } = req.body;
+    const {
+      mediaType,
+      caption,
+      captionPosition,
+      captionColor,
+      visibility,
+      journeyId,
+    } = req.body;
+
     let { song, allowedUsers, hiddenFrom, stickers } = req.body;
+
     const userId = req.user._id || req.user.id;
 
-    if (song && typeof song === 'string') {
-      try { song = JSON.parse(song); } catch (e) {}
-    }
-    if (allowedUsers && typeof allowedUsers === 'string') {
-      try { allowedUsers = JSON.parse(allowedUsers); } catch (e) {}
-    }
-    if (hiddenFrom && typeof hiddenFrom === 'string') {
-      try { hiddenFrom = JSON.parse(hiddenFrom); } catch (e) {}
-    }
-    console.log("REQ BODY STICKERS:", req.body.stickers);
-    if (stickers) {
+    // Convert JSON strings to objects if needed
+    if (song && typeof song === "string") {
       try {
-        stickers = typeof stickers === 'string' ? JSON.parse(stickers) : stickers;
-      } catch (err) {
-        console.error("Invalid stickers JSON", err);
+        song = JSON.parse(song);
+      } catch (error) {}
+    }
+
+    if (allowedUsers && typeof allowedUsers === "string") {
+      try {
+        allowedUsers = JSON.parse(allowedUsers);
+      } catch (error) {}
+    }
+
+    if (hiddenFrom && typeof hiddenFrom === "string") {
+      try {
+        hiddenFrom = JSON.parse(hiddenFrom);
+      } catch (error) {}
+    }
+
+    if (stickers && typeof stickers === "string") {
+      try {
+        stickers = JSON.parse(stickers);
+      } catch (error) {
+        console.error("Invalid stickers format");
       }
     }
 
+    // Get uploaded media or media URL from request
     const media = req.file ? req.file.path : req.body.media;
+
     if (!media) {
-      return res.status(400).json({ success: false, message: "Media required" });
+      return res.status(400).json({
+        success: false,
+        message: "Media required",
+      });
     }
 
     const user = await User.findById(userId);
+
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const story = new Story({
@@ -1227,26 +2074,69 @@ exports.createStory = async (req, res) => {
       userName: user.name,
       userPic: user.pic,
       media,
-      mediaType: mediaType || 'image',
+      mediaType: mediaType || "image",
       caption: caption || "",
-      captionPosition: captionPosition || 'center',
-      captionColor: captionColor || 'white',
-      visibility: visibility || 'public',
-      allowedUsers: (visibility === 'private' && Array.isArray(allowedUsers)) ? allowedUsers : [],
+      captionPosition: captionPosition || "center",
+      captionColor: captionColor || "white",
+      visibility: visibility || "public",
+      journeyId: journeyId || null,
+      allowedUsers:
+        visibility === "private" && Array.isArray(allowedUsers)
+          ? allowedUsers
+          : [],
       hiddenFrom: Array.isArray(hiddenFrom) ? hiddenFrom : [],
       song: song || null,
-      stickers: Array.isArray(stickers) ? stickers : []
+      stickers: Array.isArray(stickers) ? stickers : [],
     });
 
     await story.save();
-    console.log("SAVED STORY:", story.stickers);
-    res.status(201).json({ success: true, message: "Story published", story });
+
+    if (journeyId && media) {
+      try {
+        await JourneyGallery.create({
+          journeyId,
+          uploaderId: userId,
+          uploaderName: user.name,
+          uploaderPic: user.pic,
+          mediaUrl: media,
+          mediaType: mediaType === "video" ? "video" : "image",
+          itemType: "story",
+          referenceId: story._id,
+          caption: caption || "",
+        });
+
+        await JourneyTimeline.create({
+          journeyId,
+          userId,
+          userName: user.name,
+          userPic: user.pic,
+          eventType: "story_shared",
+          title: "Story Shared",
+          description: caption ? caption.substring(0, 100) : "Shared a travel story snippet",
+          mediaUrl: media,
+          referenceId: story._id,
+        });
+
+        await Journey.findByIdAndUpdate(journeyId, { $inc: { "stats.storiesCount": 1 } });
+      } catch (err) {
+        console.error("Error linking story to journey:", err);
+      }
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Story published",
+      story,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// React to Story
+// React to a travel story
 exports.reactToStory = async (req, res) => {
   try {
     const storyId = req.params.id;
@@ -1254,169 +2144,218 @@ exports.reactToStory = async (req, res) => {
     const { emoji } = req.body;
 
     const story = await Story.findById(storyId);
+
     if (!story) {
-      return res.status(404).json({ success: false, message: "Story not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Story not found",
+      });
     }
 
-    const reactIdx = story.storyReactions.findIndex(r => r.userId?.toString() === userId.toString());
-    const currentUser = await User.findById(userId).select("name username pic img");
+    const reactIdx = story.storyReactions.findIndex(
+      (reaction) => reaction.userId?.toString() === userId.toString()
+    );
+
+    const currentUser = await User.findById(userId).select(
+      "name username pic img"
+    );
+
     const io = req.app.get("io");
-    
+
+    // Add a new reaction if the user hasn't reacted yet
     if (reactIdx === -1) {
-      story.storyReactions.push({ userId, emoji, reactedAt: new Date() });
-      
-      // Notify story owner
+      story.storyReactions.push({
+        userId,
+        emoji,
+        reactedAt: new Date(),
+      });
+
+      // Notify the story owner
       if (story.userId.toString() !== userId.toString()) {
         const notification = await Notification.create({
           sender: userId,
           receiver: story.userId,
           type: "story_like",
           story: story._id,
-          message: `${currentUser.name} reacted ${emoji} to your story.`
+          message: `${currentUser.name} reacted ${emoji} to your story.`,
         });
-        
+
+        // Send real-time notification using Socket.IO
         if (io) {
           io.to(story.userId.toString()).emit("story_reaction_update", {
             storyId: story._id,
             reaction: {
               userId: currentUser,
               emoji,
-              reactedAt: new Date()
-            }
+              reactedAt: new Date(),
+            },
           });
-          io.to(story.userId.toString()).emit("new_notification", notification);
+
+          io.to(story.userId.toString()).emit(
+            "new_notification",
+            notification
+          );
         }
 
-
-        // Send a direct message
+        // Create or find a direct chat
         const ChatRoom = require("../models/ChatRoom");
         const Message = require("../models/Message");
 
         let room = await ChatRoom.findOne({
           type: "direct",
-          members: { $all: [userId, story.userId] }
+          members: {
+            $all: [userId, story.userId],
+          },
         });
 
         if (!room) {
           const ownerUser = await User.findById(story.userId);
+
           room = new ChatRoom({
             name: ownerUser ? ownerUser.name : "Traveler",
             type: "direct",
             members: [userId, story.userId],
             requestStatus: "pending",
-            requestedBy: userId
+            requestedBy: userId,
           });
+
           await room.save();
         }
 
+        // Send reaction as a chat message
         const message = new Message({
           roomId: room._id,
           sender: userId,
           senderName: currentUser.name,
           senderPic: currentUser.pic || currentUser.img,
           text: `Reacted to your story: ${emoji}`,
-          unreadBy: [story.userId]
+          unreadBy: [story.userId],
         });
+
         await message.save();
 
         room.updatedAt = new Date();
         await room.save();
 
         if (io) {
-          io.to(room._id.toString()).emit("receive_chat_message", message);
+          io.to(room._id.toString()).emit(
+            "receive_chat_message",
+            message
+          );
         }
       }
     } else {
+      // Update existing reaction
       story.storyReactions[reactIdx].emoji = emoji;
       story.storyReactions[reactIdx].reactedAt = new Date();
-      
+
       if (io && story.userId.toString() !== userId.toString()) {
-        io.to(story.userId.toString()).emit("story_reaction_update", {
-          storyId: story._id,
-          reaction: {
-            userId: currentUser,
-            emoji,
-            reactedAt: new Date()
+        io.to(story.userId.toString()).emit(
+          "story_reaction_update",
+          {
+            storyId: story._id,
+            reaction: {
+              userId: currentUser,
+              emoji,
+              reactedAt: new Date(),
+            },
           }
-        });
+        );
       }
     }
 
     await story.save();
-    res.status(200).json({ success: true, message: "Reaction updated", storyReactions: story.storyReactions });
+
+    res.status(200).json({
+      success: true,
+      message: "Reaction updated",
+      storyReactions: story.storyReactions,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// --- 4. GLOBAL SEARCH LOGIC ---
-
-// Search travelers, posts, and travel groups
+// Search travelers, travel groups, and posts
 exports.globalSocialSearch = async (req, res) => {
   try {
     const q = req.query.q || "";
     const currentUserId = req.user._id || req.user.id;
 
-    if (!q || q.trim() === "") {
-      return res.status(200).json({ success: true, travelers: [], trips: [], memories: [] });
+    if (!q.trim()) {
+      return res.status(200).json({
+        success: true,
+        travelers: [],
+        trips: [],
+        memories: [],
+      });
     }
 
     const regex = new RegExp(q, "i");
 
+    // Search users, groups, and posts at the same time
     const [travelers, groups, posts] = await Promise.all([
-      // Search Travelers by name, username, location (country), interests
       User.find({
         _id: { $ne: currentUserId },
         type: { $in: ["traveler", "Traveler"] },
         $or: [
-          { name: { $regex: regex } },
-          { username: { $regex: regex } },
-          { country: { $regex: regex } },
-          { interests: { $regex: regex } }
-        ]
+          { name: regex },
+          { username: regex },
+          { country: regex },
+          { interests: regex },
+        ],
       })
-      .select("name username pic img type isVerified rating completedTrips interests")
-      .limit(10),
+        .select(
+          "name username pic img avatar profilePic profilePicture userPic type isVerified rating completedTrips interests"
+        )
+        .limit(10),
 
-      // Search Groups by destination, title, category
       TravelGroup.find({
         $or: [
-          { destination: { $regex: regex } },
-          { title: { $regex: regex } },
-          { category: { $regex: regex } }
-        ]
+          { destination: regex },
+          { title: regex },
+          { category: regex },
+        ],
       })
-      .populate("host", "name username pic img isVerified")
-      .limit(10),
+        .populate("host", "name username pic img avatar isVerified")
+        .limit(10),
 
-      // Search Posts by caption, location, tags
       Post.find({
         $or: [
-          { caption: { $regex: regex } },
-          { location: { $regex: regex } },
-          { tags: { $regex: regex } }
-        ]
+          { caption: regex },
+          { location: regex },
+          { tags: regex },
+        ],
       })
-      .populate("userId", "name username pic img isVerified")
-      .limit(10)
+        .populate("userId", "name username pic img avatar isVerified")
+        .limit(10),
     ]);
 
-    // Map keys for compatibility with frontend components
-    const mappedGroups = groups.map(g => {
-      const gObj = g.toObject();
-      gObj.userId = g.host;
-      return gObj;
+    // Format group data for frontend
+    const trips = groups.map((group) => {
+      const trip = group.toObject();
+      trip.userId = group.host;
+      return trip;
     });
 
-    res.status(200).json({ success: true, travelers, trips: mappedGroups, memories: posts });
+    res.status(200).json({
+      success: true,
+      travelers,
+      trips,
+      memories: posts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// --- 5. STORY REPLY (DM) ---
-
-// Reply to a story — creates/finds direct DM room and sends the reply as a message
+// Reply to a travel story
 exports.replyToStory = async (req, res) => {
   try {
     const senderId = req.user._id || req.user.id;
@@ -1424,178 +2363,254 @@ exports.replyToStory = async (req, res) => {
     const { text, storyId } = req.body;
 
     if (!text || !text.trim()) {
-      return res.status(400).json({ success: false, message: "Reply text is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Reply text is required",
+      });
     }
+
     if (senderId.toString() === storyOwnerId.toString()) {
-      return res.status(400).json({ success: false, message: "Cannot reply to your own story" });
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reply to your own story",
+      });
     }
 
     const senderUser = await User.findById(senderId);
     const ownerUser = await User.findById(storyOwnerId);
+
     if (!senderUser || !ownerUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    // Get or create direct chat room
+    // Find or create a direct chat room
     let room = await ChatRoom.findOne({
       type: "direct",
-      members: { $all: [senderId, storyOwnerId] }
+      members: {
+        $all: [senderId, storyOwnerId],
+      },
     });
 
     if (!room) {
       room = new ChatRoom({
         name: ownerUser.name,
         type: "direct",
-        members: [senderId, storyOwnerId]
+        members: [senderId, storyOwnerId],
       });
+
       await room.save();
     }
 
     const Message = require("../models/Message");
+
+    // Save the reply as a chat message
     const message = new Message({
       roomId: room._id,
       sender: senderId,
       senderName: senderUser.name,
       senderPic: senderUser.pic,
-      text: `${text}`,
-      unreadBy: [storyOwnerId]
+      text,
+      unreadBy: [storyOwnerId],
     });
+
     await message.save();
 
     room.updatedAt = new Date();
     await room.save();
 
-    // Notify story owner
+    // Notify the story owner
     const notification = await Notification.create({
       sender: senderId,
       receiver: storyOwnerId,
       type: "story_reply",
       story: storyId || undefined,
-      message: `${senderUser.name} replied to your story: "${text.substring(0, 40)}"`
+      message: `${senderUser.name} replied to your story: "${text.substring(0, 40)}"`,
     });
 
+    // Send updates in real time using Socket.IO
     const io = req.app.get("io");
+
     if (io) {
-      io.to(storyOwnerId.toString()).emit("new_notification", notification);
-      io.to(room._id.toString()).emit("receive_chat_message", message);
+      io.to(storyOwnerId.toString()).emit(
+        "new_notification",
+        notification
+      );
+
+      io.to(room._id.toString()).emit(
+        "receive_chat_message",
+        message
+      );
     }
 
-    res.status(200).json({ success: true, message: "Story reply sent!", roomId: room._id });
+    res.status(200).json({
+      success: true,
+      message: "Story reply sent!",
+      roomId: room._id,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+// --- 6. SETTINGS & SEARCH ---
 
-// --- 4. SETTINGS & ACCOUNT ---
-
+// Get all blocked users
 exports.getBlockedUsers = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId).populate("blockedUsers", "name username pic img");
-    res.status(200).json({ success: true, blockedUsers: user.blockedUsers || [] });
+
+    const user = await User.findById(userId).populate(
+      "blockedUsers",
+      "name username pic img"
+    );
+
+    res.status(200).json({
+      success: true,
+      blockedUsers: user.blockedUsers || [],
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Unblock a user
 exports.unblockUser = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const targetUserId = req.params.userId;
 
     const user = await User.findById(userId);
-    user.blockedUsers = user.blockedUsers.filter(id => id.toString() !== targetUserId.toString());
+
+    user.blockedUsers = user.blockedUsers.filter(
+      (id) => id.toString() !== targetUserId.toString()
+    );
+
     await user.save();
-    
-    // Also remove from Block collection if it exists
+
+    // Remove block record if it exists
     if (mongoose.models.Block) {
-      await mongoose.model('Block').deleteOne({ blocker: userId, blocked: targetUserId });
+      await mongoose
+        .model("Block")
+        .deleteOne({ blocker: userId, blocked: targetUserId });
     }
 
-    res.status(200).json({ success: true, message: "User unblocked" });
+    res.status(200).json({
+      success: true,
+      message: "User unblocked",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Get emergency contacts
 exports.getEmergencyContacts = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+
     const user = await User.findById(userId);
-    res.status(200).json({ success: true, contacts: user.emergencyContacts || [] });
+
+    res.status(200).json({
+      success: true,
+      contacts: user.emergencyContacts || [],
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// --- 4. GLOBAL SEARCH LOGIC ---
-
-// Search travelers, posts, and travel groups
+// Search travelers, travel groups, and posts
 exports.globalSocialSearch = async (req, res) => {
   try {
     const q = req.query.q || "";
     const currentUserId = req.user._id || req.user.id;
 
-    if (!q || q.trim() === "") {
-      return res.status(200).json({ success: true, travelers: [], trips: [], memories: [] });
+    if (!q.trim()) {
+      return res.status(200).json({
+        success: true,
+        travelers: [],
+        trips: [],
+        memories: [],
+      });
     }
 
     const regex = new RegExp(q, "i");
 
+    // Search users, groups, and posts together
     const [travelers, groups, posts] = await Promise.all([
-      // Search Travelers by name, username, location (country), interests
       User.find({
         _id: { $ne: currentUserId },
         type: { $in: ["traveler", "Traveler"] },
         $or: [
-          { name: { $regex: regex } },
-          { username: { $regex: regex } },
-          { country: { $regex: regex } },
-          { interests: { $regex: regex } }
-        ]
+          { name: regex },
+          { username: regex },
+          { country: regex },
+          { interests: regex },
+        ],
       })
-      .select("name username pic img type isVerified rating completedTrips interests")
-      .limit(10),
+        .select(
+          "name username pic img avatar profilePic profilePicture userPic type isVerified rating completedTrips interests"
+        )
+        .limit(10),
 
-      // Search Groups by destination, title, category
       TravelGroup.find({
         $or: [
-          { destination: { $regex: regex } },
-          { title: { $regex: regex } },
-          { category: { $regex: regex } }
-        ]
+          { destination: regex },
+          { title: regex },
+          { category: regex },
+        ],
       })
-      .populate("host", "name username pic img isVerified")
-      .limit(10),
+        .populate("host", "name username pic img avatar isVerified")
+        .limit(10),
 
-      // Search Posts by caption, location, tags
       Post.find({
         $or: [
-          { caption: { $regex: regex } },
-          { location: { $regex: regex } },
-          { tags: { $regex: regex } }
-        ]
+          { caption: regex },
+          { location: regex },
+          { tags: regex },
+        ],
       })
-      .populate("userId", "name username pic img isVerified")
-      .limit(10)
+        .populate("userId", "name username pic img avatar isVerified")
+        .limit(10),
     ]);
 
-    // Map keys for compatibility with frontend components
-    const mappedGroups = groups.map(g => {
-      const gObj = g.toObject();
-      gObj.userId = g.host;
-      return gObj;
+    // Format groups for frontend
+    const trips = groups.map((group) => {
+      const trip = group.toObject();
+      trip.userId = group.host;
+      return trip;
     });
 
-    res.status(200).json({ success: true, travelers, trips: mappedGroups, memories: posts });
+    res.status(200).json({
+      success: true,
+      travelers,
+      trips,
+      memories: posts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
-
 // --- 5. STORY REPLY (DM) ---
 
-// Reply to a story — creates/finds direct DM room and sends the reply as a message
+// Reply to a travel story
 exports.replyToStory = async (req, res) => {
   try {
     const senderId = req.user._id || req.user.id;
@@ -1603,46 +2618,63 @@ exports.replyToStory = async (req, res) => {
     const { text, storyId } = req.body;
 
     if (!text || !text.trim()) {
-      return res.status(400).json({ success: false, message: "Reply text is required" });
+      return res.status(400).json({
+        success: false,
+        message: "Reply text is required",
+      });
     }
+
     if (senderId.toString() === storyOwnerId.toString()) {
-      return res.status(400).json({ success: false, message: "Cannot reply to your own story" });
+      return res.status(400).json({
+        success: false,
+        message: "Cannot reply to your own story",
+      });
     }
 
     const senderUser = await User.findById(senderId);
     const ownerUser = await User.findById(storyOwnerId);
+
     if (!senderUser || !ownerUser) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
-    // Get or create direct chat room
+    // Find or create a direct chat room
     let room = await ChatRoom.findOne({
       type: "direct",
-      members: { $all: [senderId, storyOwnerId] }
+      members: {
+        $all: [senderId, storyOwnerId],
+      },
     });
 
     if (!room) {
       room = new ChatRoom({
         name: ownerUser.name,
         type: "direct",
-        members: [senderId, storyOwnerId]
+        members: [senderId, storyOwnerId],
       });
+
       await room.save();
     }
 
     const Message = require("../models/Message");
+
+    // Save the story reply as a chat message
     let message = new Message({
       roomId: room._id,
       sender: senderId,
       senderName: senderUser.name,
       senderPic: senderUser.pic,
-      text: `${text}`,
+      text,
       storyId: storyId || undefined,
-      unreadBy: [storyOwnerId]
+      unreadBy: [storyOwnerId],
     });
+
     await message.save();
-    
-    // Populate story to show in the reply
+
+    // Attach story details if available
     if (storyId) {
       await message.populate("storyId", "media mediaType caption");
     }
@@ -1650,167 +2682,289 @@ exports.replyToStory = async (req, res) => {
     room.updatedAt = new Date();
     await room.save();
 
-    // Notify story owner
+    // Create a notification for the story owner
     const notification = await Notification.create({
       sender: senderId,
       receiver: storyOwnerId,
       type: "story_reply",
       story: storyId || undefined,
-      message: `${senderUser.name} replied to your story: "${text.substring(0, 40)}"`
+      message: `${senderUser.name} replied to your story: "${text.substring(
+        0,
+        40
+      )}"`,
     });
 
+    // Send the message and notification in real time
     const io = req.app.get("io");
+
     if (io) {
-      io.to(storyOwnerId.toString()).emit("new_notification", notification);
-      io.to(room._id.toString()).emit("receive_chat_message", message);
+      io.to(storyOwnerId.toString()).emit(
+        "new_notification",
+        notification
+      );
+
+      io.to(room._id.toString()).emit(
+        "receive_chat_message",
+        message
+      );
     }
 
-    res.status(200).json({ success: true, message: "Story reply sent!", roomId: room._id });
+    res.status(200).json({
+      success: true,
+      message: "Story reply sent!",
+      roomId: room._id,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
+// --- 6. SETTINGS & ACCOUNT ---
 
-// --- 4. SETTINGS & ACCOUNT ---
-
+// Get all blocked users
 exports.getBlockedUsers = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId).populate("blockedUsers", "name username pic img");
-    res.status(200).json({ success: true, blockedUsers: user.blockedUsers || [] });
+
+    const user = await User.findById(userId).populate(
+      "blockedUsers",
+      "name username pic img"
+    );
+
+    res.status(200).json({
+      success: true,
+      blockedUsers: user.blockedUsers || [],
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Unblock a user
 exports.unblockUser = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const targetUserId = req.params.userId;
 
     const user = await User.findById(userId);
-    user.blockedUsers = user.blockedUsers.filter(id => id.toString() !== targetUserId.toString());
+
+    user.blockedUsers = user.blockedUsers.filter(
+      (id) => id.toString() !== targetUserId.toString()
+    );
+
     await user.save();
-    
-    // Also remove from Block collection if it exists
+
+    // Remove block record if available
     if (mongoose.models.Block) {
-      await mongoose.model('Block').deleteOne({ blocker: userId, blocked: targetUserId });
+      await mongoose
+        .model("Block")
+        .deleteOne({ blocker: userId, blocked: targetUserId });
     }
 
-    res.status(200).json({ success: true, message: "User unblocked" });
+    res.status(200).json({
+      success: true,
+      message: "User unblocked",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Get emergency contacts
 exports.getEmergencyContacts = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+
     const user = await User.findById(userId);
-    res.status(200).json({ success: true, contacts: user.emergencyContacts || [] });
+
+    res.status(200).json({
+      success: true,
+      contacts: user.emergencyContacts || [],
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Add a new emergency contact
 exports.addEmergencyContact = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+
     const user = await User.findById(userId);
-    
+
+    // Keep only one primary contact
     if (req.body.isPrimary) {
-      user.emergencyContacts.forEach(c => c.isPrimary = false);
+      user.emergencyContacts.forEach((contact) => {
+        contact.isPrimary = false;
+      });
     }
-    
+
     user.emergencyContacts.push(req.body);
+
     await user.save();
-    res.status(201).json({ success: true, contacts: user.emergencyContacts });
+
+    res.status(201).json({
+      success: true,
+      contacts: user.emergencyContacts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Update an emergency contact
 exports.updateEmergencyContact = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const contactId = req.params.id;
+
     const user = await User.findById(userId);
-    
+
     const contact = user.emergencyContacts.id(contactId);
-    if (!contact) return res.status(404).json({ success: false, message: "Contact not found" });
-    
-    if (req.body.isPrimary) {
-      user.emergencyContacts.forEach(c => c.isPrimary = false);
+
+    if (!contact) {
+      return res.status(404).json({
+        success: false,
+        message: "Contact not found",
+      });
     }
-    
+
+    // Keep only one primary contact
+    if (req.body.isPrimary) {
+      user.emergencyContacts.forEach((item) => {
+        item.isPrimary = false;
+      });
+    }
+
     Object.assign(contact, req.body);
+
     await user.save();
-    
-    res.status(200).json({ success: true, contacts: user.emergencyContacts });
+
+    res.status(200).json({
+      success: true,
+      contacts: user.emergencyContacts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Delete an emergency contact
 exports.deleteEmergencyContact = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const contactId = req.params.id;
+
     const user = await User.findById(userId);
-    
-    user.emergencyContacts = user.emergencyContacts.filter(c => c._id.toString() !== contactId.toString());
+
+    user.emergencyContacts = user.emergencyContacts.filter(
+      (contact) => contact._id.toString() !== contactId.toString()
+    );
+
     await user.save();
-    
-    res.status(200).json({ success: true, contacts: user.emergencyContacts });
+
+    res.status(200).json({
+      success: true,
+      contacts: user.emergencyContacts,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// Cancel Travel Group
+// Cancel a travel group
 exports.cancelTravelBuddyTrip = async (req, res) => {
   try {
-    const trip = await TravelGroup.findById(req.params.id).populate('members.user');
-    if (!trip) return res.status(404).json({ success: false, message: 'Trip not found' });
+    const trip = await TravelGroup.findById(req.params.id).populate(
+      "members.user"
+    );
 
-    // Only host or admin can cancel
-    if (trip.host.toString() !== (req.user._id || req.user.id).toString() && req.user.role !== 'admin') {
-      return res.status(403).json({ success: false, message: 'Only the host can cancel this trip.' });
+    if (!trip) {
+      return res.status(404).json({
+        success: false,
+        message: "Trip not found",
+      });
     }
 
-    if (trip.status === 'cancelled') {
-      return res.status(400).json({ success: false, message: 'Trip is already cancelled.' });
+    // Only the host or admin can cancel the trip
+    if (
+      trip.host.toString() !== (req.user._id || req.user.id).toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the host can cancel this trip.",
+      });
     }
 
-    trip.status = 'cancelled';
+    if (trip.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Trip is already cancelled.",
+      });
+    }
+
+    trip.status = "cancelled";
     trip.isCancelled = true;
     trip.cancelledAt = new Date();
     trip.cancelledBy = req.user._id || req.user.id;
-    trip.cancellationReason = req.body.cancellationReason || '';
+    trip.cancellationReason = req.body.cancellationReason || "";
 
     await trip.save();
 
-    // Create notifications for all joined members
-    if (trip.members && trip.members.length > 0) {
+    // Notify all members about the cancellation
+    if (trip.members?.length) {
       const notifications = trip.members
-        .filter(member => member._id.toString() !== (req.user._id || req.user.id).toString())
-        .map(member => ({
+        .filter(
+          (member) =>
+            member._id.toString() !==
+            (req.user._id || req.user.id).toString()
+        )
+        .map((member) => ({
           sender: req.user._id || req.user.id,
           receiver: member._id,
-          type: 'trip_cancelled',
+          type: "trip_cancelled",
           group: trip._id,
-          message: `The host has cancelled the travel group "${trip.title}".`
+          message: `The host has cancelled the travel group "${trip.title}".`,
         }));
-      
-      if (notifications.length > 0) {
-        const Notification = require('../models/Notification');
+
+      if (notifications.length) {
+        const Notification = require("../models/Notification");
         await Notification.insertMany(notifications);
       }
     }
 
-    res.status(200).json({ success: true, message: 'Trip has been cancelled.', trip });
+    res.status(200).json({
+      success: true,
+      message: "Trip has been cancelled.",
+      trip,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
@@ -1992,7 +3146,7 @@ const checkGroupAndRoles = async (groupId, reqUserId, targetMemberId) => {
   const group = await TravelGroup.findById(groupId);
   if (!group) throw new Error("Group not found");
 
-  // Fix legacy members array format if needed
+  // Handle legacy format for members array if it lacks proper objects
   if (group.members && group.members.length > 0 && !group.members[0].user && group.members[0]._id === undefined) {
     group.members = group.members.map(memberId => ({
       user: memberId,

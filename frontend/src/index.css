@@ -134,6 +134,11 @@ h1, h2, h3, h4, h5, h6 {
   @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
 }
 
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -214,7 +219,7 @@ h1, h2, h3, h4, h5, h6 {
   100% { transform: scaleY(0.4); }
 }
 
-/* SweetAlert2 Modern Purple Theme Overrides */
+/* SweetAlert purple theme */
 div:where(.swal2-container) div:where(.swal2-popup) {
   border-radius: 28px !important;
   padding: 2.5rem 2rem !important;

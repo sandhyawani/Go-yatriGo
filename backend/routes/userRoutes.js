@@ -32,6 +32,7 @@ const {
   verifyUser,
   verifyAdmin,
   protect,
+  optionalVerifyToken,
 } = require("../middleware/verifyToken");
 
 const router = express.Router();
@@ -80,8 +81,8 @@ router.get("/checkadmin/:id", verifyAdmin, (req, res, next) => {
 router.put("/:id", verifyUser, updateUser);
 //delete
 router.delete("/:id", verifyUser, deleteUser);
-//get
-router.get("/:id", verifyToken, getUser);
+//get (publicly accessible so profiles can be viewed without login)
+router.get("/:id", optionalVerifyToken, getUser);
 //get all
 router.get("/", verifyAdmin, getAllUsers);
 

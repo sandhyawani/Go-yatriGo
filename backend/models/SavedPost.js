@@ -1,14 +1,40 @@
 const mongoose = require("mongoose");
 
-const SavedPostSchema = new mongoose.Schema(
+// Schema for storing users' saved posts
+const savedPostSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    postId: { type: mongoose.Schema.Types.ObjectId, ref: "Post", required: true }
+    // User who saved the post
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+      index: true,
+    },
+
+    // Saved post
+    postId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+      required: true,
+      index: true,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true, // Automatically adds createdAt and updatedAt
+  }
 );
 
-// Prevent duplicate saves
-SavedPostSchema.index({ userId: 1, postId: 1 }, { unique: true });
+// ----------------------
+// Database Indexes
+// ----------------------
 
-module.exports = mongoose.model("SavedPost", SavedPostSchema);
+// Prevent duplicate saves by the same user
+savedPostSchema.index(
+  { userId: 1, postId: 1 },
+  { unique: true }
+);
+
+// Speed up fetching saved posts
+savedPostSchema.index({ userId: 1, createdAt: -1 });
+
+module.exports = mongoose.model("SavedPost", savedPostSchema);

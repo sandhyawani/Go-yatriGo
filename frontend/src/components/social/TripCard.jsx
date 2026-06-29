@@ -28,12 +28,22 @@ const TripCard = ({ trip, user, handleLike }) => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'active now':
-      case 'active': return 'bg-green-500/90 text-white border border-white/20';
+      case 'active': return 'bg-rose-500/90 text-white border border-white/20';
       case 'upcoming': return 'bg-white/95 text-[#111827] border border-white/40 shadow-sm';
       case 'completed': return 'bg-black/60 text-white border border-white/20';
       case 'cancelled': return 'bg-red-500/90 text-white border border-white/20';
       default: return 'bg-white/90 text-slate-700 border border-white/20';
     }
+  };
+
+  const formatBadgeLabel = (status) => {
+    if (!status) return "";
+    const s = status.toLowerCase();
+    if (s === "completed") return "Completed";
+    if (s === "upcoming") return "Upcoming";
+    if (s === "active now" || s === "active") return "Active Now";
+    if (s === "cancelled") return "Cancelled";
+    return status.charAt(0).toUpperCase() + status.slice(1);
   };
 
   return (
@@ -65,7 +75,7 @@ const TripCard = ({ trip, user, handleLike }) => {
         {/* Top Badges */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start z-10">
           <span className={`text-[10px] font-bold tracking-wide px-3 py-1 rounded-full backdrop-blur-md ${getStatusColor(trip.lifecycleStatus)}`}>
-            {trip.lifecycleStatus}
+            {formatBadgeLabel(trip.lifecycleStatus)}
           </span>
           <button 
             onClick={(e) => handleLike(trip._id, e)}
@@ -167,7 +177,7 @@ const TripCard = ({ trip, user, handleLike }) => {
                 }
               }}
               className={`px-5 py-2.5 text-[12px] font-black tracking-wide rounded-full shadow-md transition-all active:scale-95 ${
-                hasJoined ? "bg-green-500 text-white shadow-green-500/25" :
+                hasJoined ? "bg-slate-800 text-white shadow-slate-800/25" :
                 hasRequested ? "bg-amber-500 text-white shadow-amber-500/25" :
                 slotsOpen > 0 ? "bg-gradient-to-r from-[#6C4DF6] to-[#8B74FE] text-white shadow-[#6C4DF6]/25 hover:shadow-lg hover:shadow-[#6C4DF6]/40" :
                 "bg-slate-100 text-slate-400 shadow-none"

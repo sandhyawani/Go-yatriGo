@@ -1,26 +1,35 @@
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 
+// Get all notifications for logged-in user
 exports.getNotifications = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const currentUser = await User.findById(userId);
-    const blockedUsers = currentUser ? (currentUser.blockedUsers || []) : [];
 
-    const notifications = await Notification.find({ 
+    const currentUser = await User.findById(userId);
+    const blockedUsers = currentUser?.blockedUsers || [];
+
+    const notifications = await Notification.find({
       receiver: userId,
-      sender: { $nin: blockedUsers } 
+      sender: { $nin: blockedUsers },
     })
       .populate("sender", "name pic img type isVerified")
       .populate("group", "title from destination")
       .sort({ createdAt: -1 });
 
-    res.status(200).json({ success: true, notifications });
+    res.status(200).json({
+      success: true,
+      notifications,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Mark a single notification as read
 exports.markAsRead = async (req, res) => {
   try {
     const notification = await Notification.findByIdAndUpdate(
@@ -28,21 +37,49 @@ exports.markAsRead = async (req, res) => {
       { isRead: true },
       { new: true }
     );
+
     if (!notification) {
-      return res.status(404).json({ success: false, message: "Notification not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Notification not found",
+      });
     }
-    res.status(200).json({ success: true, notification });
+
+    res.status(200).json({
+      success: true,
+      notification,
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
+// Mark all notifications as read
 exports.markAllAsRead = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    await Notification.updateMany({ receiver: userId, isRead: false }, { isRead: true });
-    res.status(200).json({ success: true, message: "All notifications marked as read" });
+
+    await Notification.updateMany(
+      {
+        receiver: userId,
+        isRead: false,
+      },
+      {
+        isRead: true,
+      }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "All notifications marked as read",
+    });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };

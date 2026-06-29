@@ -258,7 +258,7 @@ const AddUser = () => {
 
         <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
           <aside className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="h-28 bg-gradient-to-r from-violet-600 via-indigo-600 to-blue-600" />
+            <div className="h-28 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600" />
 
             <div className="-mt-14 px-6 pb-6">
               <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-lg">

@@ -12,5 +12,6 @@ router.patch('/2fa', settingsController.update2FA);
 router.get('/login-activity', settingsController.getLoginActivity);
 router.post('/logout-other-devices', settingsController.logoutOtherDevices);
 router.post('/delete-account', settingsController.deleteAccount);
+router.post('/deactivate-account', settingsController.deactivateAccount);
 
 module.exports = router;

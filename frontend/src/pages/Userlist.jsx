@@ -35,7 +35,11 @@ const Userlist = ({ columns }) => {
     reFetch: refreshStats,
   } = useFetch("/admin/stats");
 
-  const users = Array.isArray(usersData) ? usersData : [];
+  const users = Array.isArray(usersData)
+    ? usersData
+    : Array.isArray(usersData?.users)
+      ? usersData.users
+      : [];
   const metrics = [
     {
       label: "Total Users",
@@ -55,7 +59,7 @@ const Userlist = ({ columns }) => {
     },
     {
       label: "Admins",
-      value: usersLoading ? null : users.filter((user) => user.isAdmin).length,
+      value: usersLoading ? null : users.filter((user) => user.isAdmin || user?.role?.toLowerCase() === "admin" || user?.type?.toLowerCase() === "admin").length,
       detail: "Privileged access",
       icon: ShieldCheck,
       tone: "purple",
@@ -125,12 +129,12 @@ const Userlist = ({ columns }) => {
 
     doc.setFontSize(20).setTextColor(80, 53, 192);
     doc.setFont("helvetica", "bold");
-    doc.text("Go Go YatriGo", 14, 15);
+    doc.text("GoYatriGo", 14, 15);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10).setTextColor(50, 55, 65);
     doc.text("User Details Report", 14, 23);
     doc.text(`Report Generated: ${dateStr}`, 14, 30);
-    doc.text("Go Go YatriGo.co, Connaught Place, New Delhi, India", 14, 37);
+    doc.text("Go YatriGo.co, Connaught Place, New Delhi, India", 14, 37);
     doc.autoTable({
       head: [tableColumn],
       body: tableRows,

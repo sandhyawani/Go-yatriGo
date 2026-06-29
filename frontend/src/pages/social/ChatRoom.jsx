@@ -1,25 +1,46 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import { showToast } from "../../utils/showToast";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "../../api/axios";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
 import {
-  MessageSquare, Send, Users, Compass, ArrowLeft, Search,
-  Smile, MoreVertical, Paperclip, Phone, Video, Check, CheckCheck, Mic, Reply, SmilePlus, X, ChevronDown, Square, Shield
+  MessageSquare,
+  Send,
+  Users,
+  Compass,
+  ArrowLeft,
+  Search,
+  Smile,
+  MoreVertical,
+  Paperclip,
+  Phone,
+  Video,
+  Check,
+  CheckCheck,
+  Mic,
+  Reply,
+  SmilePlus,
+  X,
+  ChevronDown,
+  Square,
+  Shield,
+  Trash2,
 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker from "emoji-picker-react";
 import ChatBubble from "../../components/chat/ChatBubble";
 import StoryViewer from "../../components/story/StoryViewer";
 import Swal from "sweetalert2";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from "framer-motion";
 
 const ChatRoom = () => {
   const { user, dispatch } = useContext(AuthContext);
   const navigate = useNavigate();
   const location = useLocation();
+  const { roomId } = useParams();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("chats");
@@ -52,7 +73,7 @@ const ChatRoom = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
-  
+
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerIntervalRef = useRef(null);
@@ -73,9 +94,17 @@ const ChatRoom = () => {
   const textareaRef = useRef(null);
   const fileInputRef = useRef(null);
 
+  const isMyRequest = (r) => {
+    if (!r || !r.requestedBy || !user) return false;
+    const reqId =
+      typeof r.requestedBy === "object" ? r.requestedBy._id : r.requestedBy;
+    const myId = user._id || user.id;
+    return reqId?.toString() === myId?.toString();
+  };
+
   useEffect(() => {
     fetchChannels();
-  }, []);
+  }, [roomId, location.state]);
 
   useEffect(() => {
     if (!socket) return;
@@ -105,7 +134,7 @@ const ChatRoom = () => {
             m._id === message._id ||
             (m.createdAt === message.createdAt &&
               m.text === message.text &&
-              m.sender === message.sender)
+              m.sender === message.sender),
         );
         if (exists) return prev;
         return [...prev, message];
@@ -125,7 +154,7 @@ const ChatRoom = () => {
             };
           }
           return r;
-        })
+        }),
       );
     };
 
@@ -133,10 +162,13 @@ const ChatRoom = () => {
       setMessages((prev) =>
         prev.map((m) => {
           if (m.unreadBy?.includes(readByUserId)) {
-            return { ...m, unreadBy: m.unreadBy.filter((id) => id !== readByUserId) };
+            return {
+              ...m,
+              unreadBy: m.unreadBy.filter((id) => id !== readByUserId),
+            };
           }
           return m;
-        })
+        }),
       );
     };
 
@@ -154,8 +186,32 @@ const ChatRoom = () => {
 
     const onMessageUnsent = ({ roomId, messageId }) => {
       setMessages((prev) =>
-        prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
+        prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m)),
       );
+    };
+
+    const onRequestStatusUpdated = ({
+      roomId,
+      requestStatus,
+      room,
+      updatedBy,
+    }) => {
+      setRooms((prev) =>
+        prev.map((r) =>
+          r._id === roomId ? { ...r, ...room, requestStatus } : r,
+        ),
+      );
+      setActiveRoom((prev) =>
+        prev?._id === roomId ? { ...prev, ...room, requestStatus } : prev,
+      );
+      if (
+        updatedBy &&
+        user &&
+        updatedBy !== user._id &&
+        requestStatus === "accepted"
+      ) {
+        showToast.success("Your message request was accepted!");
+      }
     };
 
     socket.on("connect", onConnect);
@@ -166,6 +222,7 @@ const ChatRoom = () => {
     socket.on("is_typing", onIsTyping);
     socket.on("not_typing", onNotTyping);
     socket.on("message:unsent", onMessageUnsent);
+    socket.on("request_status_updated", onRequestStatusUpdated);
 
     return () => {
       socket.off("connect", onConnect);
@@ -176,6 +233,7 @@ const ChatRoom = () => {
       socket.off("is_typing", onIsTyping);
       socket.off("not_typing", onNotTyping);
       socket.off("message:unsent", onMessageUnsent);
+      socket.off("request_status_updated", onRequestStatusUpdated);
     };
   }, [socket, user, activeRoom]);
 
@@ -183,15 +241,20 @@ const ChatRoom = () => {
     if (activeRoom && user && socketConnected && socket) {
       const unread = messages.filter((m) => m.unreadBy?.includes(user._id));
       if (unread.length > 0) {
-        socket.emit("mark_messages_read", { roomId: activeRoom._id, userId: user._id });
+        socket.emit("mark_messages_read", {
+          roomId: activeRoom._id,
+          userId: user._id,
+        });
         setMessages((prev) =>
           prev.map((m) => ({
             ...m,
             unreadBy: m.unreadBy?.filter((id) => id !== user._id),
-          }))
+          })),
         );
         setRooms((prev) =>
-          prev.map((r) => (r._id === activeRoom._id ? { ...r, unreadCount: 0 } : r))
+          prev.map((r) =>
+            r._id === activeRoom._id ? { ...r, unreadCount: 0 } : r,
+          ),
         );
       }
     }
@@ -201,33 +264,42 @@ const ChatRoom = () => {
     try {
       setLoading(true);
       const targetUserId = location.state?.targetUserId;
-      const targetGroupId = location.state?.groupId;
+      const targetGroupId = location.state?.groupId || roomId;
       let roomRes;
 
       if (targetUserId) {
-        roomRes = await axios.post(`/chat/room/direct/${targetUserId}`, {}, { withCredentials: true });
+        roomRes = await axios.post(
+          `/chat/room/direct/${targetUserId}`,
+          {},
+          { withCredentials: true },
+        );
         window.history.replaceState({}, document.title);
       }
 
       const res = await axios.get("/chat/rooms", { withCredentials: true });
-      const notifRes = await axios.get("/notifications", { withCredentials: true });
+      const notifRes = await axios.get("/notifications", {
+        withCredentials: true,
+      });
       if (res.data.success) {
         setRooms(res.data.rooms);
+        if (socket && res.data.rooms) {
+          res.data.rooms.forEach((r) => socket.emit("join_room", r._id));
+        }
         if (targetUserId && roomRes?.data?.room) {
-          const matched = res.data.rooms.find((r) => r._id === roomRes.data.room._id);
+          if (socket) socket.emit("join_room", roomRes.data.room._id);
+          const matched = res.data.rooms.find(
+            (r) => r._id === roomRes.data.room._id,
+          );
           if (matched) selectRoom(matched);
         } else if (targetGroupId) {
           window.history.replaceState({}, document.title);
-          console.log("DEBUG CHAT MATCHING: targetGroupId=", targetGroupId);
-          console.log("DEBUG CHAT MATCHING: rooms=", res.data.rooms);
-          const matched = res.data.rooms.find(
-            (r) => {
-              const rGroupId = typeof r.travelGroupId === 'object' ? r.travelGroupId?._id : r.travelGroupId;
-              console.log("Checking room:", r._id, "rGroupId:", rGroupId);
-              return rGroupId === targetGroupId || r._id === targetGroupId;
-            }
-          );
-          console.log("DEBUG CHAT MATCHING: matched=", matched);
+          const matched = res.data.rooms.find((r) => {
+            const rGroupId =
+              typeof r.travelGroupId === "object"
+                ? r.travelGroupId?._id
+                : r.travelGroupId;
+            return rGroupId === targetGroupId || r._id === targetGroupId;
+          });
           if (matched) selectRoom(matched);
         }
       }
@@ -246,13 +318,19 @@ const ChatRoom = () => {
     setMessages([]);
     setInputText("");
     if (room.type === "direct") {
-      setActiveTab(room.requestStatus === "pending" ? "requests" : "chats");
+      setActiveTab(
+        room.requestStatus === "pending" && !isMyRequest(room)
+          ? "requests"
+          : "chats",
+      );
     } else {
       setActiveTab("groups");
     }
     try {
       socket.emit("join_room", room._id);
-      const res = await axios.get(`/chat/room/${room._id}/messages`, { withCredentials: true });
+      const res = await axios.get(`/chat/room/${room._id}/messages`, {
+        withCredentials: true,
+      });
       if (res.data.success) setMessages(res.data.messages || []);
       setTimeout(scrollToBottom, 100);
     } catch {
@@ -263,12 +341,17 @@ const ChatRoom = () => {
   const handleSelectGlobalUser = async (targetUser) => {
     try {
       setLoading(true);
-      const res = await axios.post(`/chat/room/direct/${targetUser._id}`, {}, { withCredentials: true });
+      const res = await axios.post(
+        `/chat/room/direct/${targetUser._id}`,
+        {},
+        { withCredentials: true },
+      );
       if (res.data.success) {
         const newRoom = res.data.room;
-        const existingRoom = rooms.find(r => r._id === newRoom._id);
+        const existingRoom = rooms.find((r) => r._id === newRoom._id);
         if (!existingRoom) {
-          setRooms(prev => [newRoom, ...prev]);
+          setRooms((prev) => [newRoom, ...prev]);
+          if (socket) socket.emit("join_room", newRoom._id);
         }
         setSearchQuery("");
         setGlobalUsers([]);
@@ -289,7 +372,9 @@ const ChatRoom = () => {
     const timer = setTimeout(async () => {
       try {
         setIsSearchingGlobal(true);
-        const res = await axios.get(`/users/search?q=${searchQuery}`, { withCredentials: true });
+        const res = await axios.get(`/users/search?q=${searchQuery}`, {
+          withCredentials: true,
+        });
         if (res.data.success) {
           setGlobalUsers(res.data.users || []);
         }
@@ -362,15 +447,16 @@ const ChatRoom = () => {
       if (replyToMsg) {
         payload.replyTo = {
           _id: replyToMsg._id,
-          senderName: replyToMsg.sender?.name || replyToMsg.senderName || "User",
-          text: replyToMsg.text
+          senderName:
+            replyToMsg.sender?.name || replyToMsg.senderName || "User",
+          text: replyToMsg.text,
         };
       }
 
       const res = await axios.post(
         `/chat/room/${activeRoom._id}/message`,
         payload,
-        { withCredentials: true }
+        { withCredentials: true },
       );
       if (res.data.success) {
         setMessages((prev) => [...prev, res.data.message]);
@@ -444,28 +530,39 @@ const ChatRoom = () => {
       setTimeout(() => setAudioBlob(null), 100);
     }
   };
-  
+
   const handleReaction = async (messageId, emoji) => {
     // Optimistic UI update
-    setMessages((prev) => prev.map(m => {
-      if(m._id === messageId) {
-        const existingReactions = m.reactions || [];
-        return { ...m, reactions: [...existingReactions, { emoji, userId: user?._id }] };
-      }
-      return m;
-    }));
+    setMessages((prev) =>
+      prev.map((m) => {
+        if (m._id === messageId) {
+          const existingReactions = m.reactions || [];
+          return {
+            ...m,
+            reactions: [...existingReactions, { emoji, userId: user?._id }],
+          };
+        }
+        return m;
+      }),
+    );
   };
-  
+
   const handleOpenStory = async (storyId) => {
     try {
-      const res = await axios.get(`/social/story/${storyId}`, { withCredentials: true });
+      const res = await axios.get(`/social/story/${storyId}`, {
+        withCredentials: true,
+      });
       if (res.data.success && res.data.story) {
         const story = res.data.story;
         const group = {
           userId: story.userId._id,
           userName: story.userId.name || story.userName,
-          userPic: story.userId.avatar || story.userId.pic || story.userId.img || story.userPic,
-          stories: [story]
+          userPic:
+            story.userId.avatar ||
+            story.userId.pic ||
+            story.userId.img ||
+            story.userPic,
+          stories: [story],
         };
         setActiveStoryGroup(group);
         setActiveStoryIndex(0);
@@ -488,14 +585,23 @@ const ChatRoom = () => {
   const handleRequestAction = async (action) => {
     try {
       toast.loading(`Processing...`, { id: "req" });
-      const res = await axios.put(`/chat/room/${activeRoom._id}/${action}`, {}, { withCredentials: true });
+      const res = await axios.put(
+        `/chat/room/${activeRoom._id}/${action}`,
+        {},
+        { withCredentials: true },
+      );
       if (res.data.success) {
         showToast.success(`Request ${action}ed!`, { id: "req" });
-        setActiveRoom((prev) => ({ ...prev, requestStatus: res.data.room.requestStatus }));
+        setActiveRoom((prev) => ({
+          ...prev,
+          requestStatus: res.data.room.requestStatus,
+        }));
         setRooms((prev) =>
           prev.map((r) =>
-            r._id === activeRoom._id ? { ...r, requestStatus: res.data.room.requestStatus } : r
-          )
+            r._id === activeRoom._id
+              ? { ...r, requestStatus: res.data.room.requestStatus }
+              : r,
+          ),
         );
         if (action === "accept") setActiveTab("chats");
         else setActiveRoom(null);
@@ -508,8 +614,16 @@ const ChatRoom = () => {
   const handleAcceptFollow = async (e, requesterId) => {
     e.stopPropagation();
     try {
-      await axios.post(`/users/${requesterId}/follow-request/accept`, {}, { withCredentials: true });
-      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.sender._id === requesterId)));
+      await axios.post(
+        `/users/${requesterId}/follow-request/accept`,
+        {},
+        { withCredentials: true },
+      );
+      setNotifications((prev) =>
+        prev.filter(
+          (n) => !(n.type === "follow_request" && n.sender._id === requesterId),
+        ),
+      );
       showToast.success("Follow request accepted");
     } catch (err) {
       showToast.error("Failed to accept request");
@@ -519,14 +633,27 @@ const ChatRoom = () => {
   const handleRejectFollow = async (e, requesterId) => {
     e.stopPropagation();
     try {
-      await axios.post(`/users/${requesterId}/follow-request/reject`, {}, { withCredentials: true });
-      setNotifications(prev => prev.filter(n => !(n.type === 'follow_request' && n.sender._id === requesterId)));
-    } catch(err) { console.error(err); }
+      await axios.post(
+        `/users/${requesterId}/follow-request/reject`,
+        {},
+        { withCredentials: true },
+      );
+      setNotifications((prev) =>
+        prev.filter(
+          (n) => !(n.type === "follow_request" && n.sender._id === requesterId),
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleDeleteForMe = async (messageId) => {
     try {
-      const res = await axios.delete(`/chat/room/${activeRoom._id}/messages/${messageId}/delete-for-me`, { withCredentials: true });
+      const res = await axios.delete(
+        `/chat/room/${activeRoom._id}/messages/${messageId}/delete-for-me`,
+        { withCredentials: true },
+      );
       if (res.data.success) {
         setMessages((prev) => prev.filter((m) => m._id !== messageId));
       }
@@ -537,10 +664,13 @@ const ChatRoom = () => {
 
   const handleUnsend = async (messageId) => {
     try {
-      const res = await axios.delete(`/chat/room/${activeRoom._id}/messages/${messageId}/unsend`, { withCredentials: true });
+      const res = await axios.delete(
+        `/chat/room/${activeRoom._id}/messages/${messageId}/unsend`,
+        { withCredentials: true },
+      );
       if (res.data.success) {
         setMessages((prev) =>
-          prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
+          prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m)),
         );
       }
     } catch (err) {
@@ -554,12 +684,18 @@ const ChatRoom = () => {
       const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
       if (!otherUser) return;
       toast.loading("Reporting user...", { id: "report" });
-      const res = await axios.post(`/users/report/${otherUser._id}`, { reason: "Inappropriate behavior in chat" }, { withCredentials: true });
+      const res = await axios.post(
+        `/users/report/${otherUser._id}`,
+        { reason: "Inappropriate behavior in chat" },
+        { withCredentials: true },
+      );
       if (res.data.success) {
         showToast.success("User reported", { id: "report" });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Error reporting user", { id: "report" });
+      showToast.error(err.response?.data?.message || "Error reporting user", {
+        id: "report",
+      });
     }
   };
 
@@ -568,23 +704,34 @@ const ChatRoom = () => {
       setShowHeaderOptions(false);
       const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
       if (!otherUser) return;
-      
+
       const isBlocked = user?.blockedUsers?.includes(otherUser._id);
 
       if (!isBlocked) {
         setShowBlockModal(true);
         return;
       }
-      
-      toast.loading('Unblocking user...', { id: "block" });
-      const res = await axios.post(`/users/unblock/${otherUser._id}`, {}, { withCredentials: true });
+
+      toast.loading("Unblocking user...", { id: "block" });
+      const res = await axios.post(
+        `/users/unblock/${otherUser._id}`,
+        {},
+        { withCredentials: true },
+      );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
-        const freshSelf = await axios.get(`/users/${user._id}`, { withCredentials: true });
-        dispatch({ type: "LOGIN_SUCCESS", payload: { ...user, blockedUsers: freshSelf.data.blockedUsers } });
+        const freshSelf = await axios.get(`/users/${user._id}`, {
+          withCredentials: true,
+        });
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers },
+        });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Action failed", { id: "block" });
+      showToast.error(err.response?.data?.message || "Action failed", {
+        id: "block",
+      });
     }
   };
 
@@ -592,17 +739,28 @@ const ChatRoom = () => {
     try {
       const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
       if (!otherUser) return;
-      
+
       setShowBlockModal(false);
-      toast.loading('Blocking user...', { id: "block" });
-      const res = await axios.post(`/users/block/${otherUser._id}`, {}, { withCredentials: true });
+      toast.loading("Blocking user...", { id: "block" });
+      const res = await axios.post(
+        `/users/block/${otherUser._id}`,
+        {},
+        { withCredentials: true },
+      );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
-        const freshSelf = await axios.get(`/users/${user._id}`, { withCredentials: true });
-        dispatch({ type: "LOGIN_SUCCESS", payload: { ...user, blockedUsers: freshSelf.data.blockedUsers } });
+        const freshSelf = await axios.get(`/users/${user._id}`, {
+          withCredentials: true,
+        });
+        dispatch({
+          type: "LOGIN_SUCCESS",
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers },
+        });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Action failed", { id: "block" });
+      showToast.error(err.response?.data?.message || "Action failed", {
+        id: "block",
+      });
     }
   };
 
@@ -610,28 +768,77 @@ const ChatRoom = () => {
     try {
       setShowHeaderOptions(false);
       toast.loading("Clearing chat...", { id: "clear" });
-      const res = await axios.delete(`/chat/room/${activeRoom._id}/clear`, { withCredentials: true });
+      const res = await axios.delete(`/chat/room/${activeRoom._id}/clear`, {
+        withCredentials: true,
+      });
       if (res.data.success) {
         setMessages([]);
         showToast.success("Chat cleared", { id: "clear" });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Error clearing chat", { id: "clear" });
+      showToast.error(err.response?.data?.message || "Error clearing chat", {
+        id: "clear",
+      });
     }
   };
 
+  const handleDeleteChat = async (roomToDelete = activeRoom, e) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    if (!roomToDelete) return;
 
-  const scrollToBottom = () => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  useEffect(() => { scrollToBottom(); }, [messages]);
+    const result = await Swal.fire({
+      title: "Delete chat?",
+      text: "Messages will be cleared and this conversation will be removed from your chat list.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, delete",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      setShowHeaderOptions(false);
+      toast.loading("Deleting chat...", { id: "delete-chat" });
+      const res = await axios.delete(
+        `/chat/room/${roomToDelete._id}/delete-chat`,
+        { withCredentials: true },
+      );
+      if (res.data.success) {
+        setRooms((prev) => prev.filter((r) => r._id !== roomToDelete._id));
+        if (activeRoom?._id === roomToDelete._id) {
+          setActiveRoom(null);
+          setMessages([]);
+        }
+        showToast.success("Chat deleted", { id: "delete-chat" });
+      }
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Error deleting chat", {
+        id: "delete-chat",
+      });
+    }
+  };
+
+  const scrollToBottom = () =>
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (headerOptionsRef.current && !headerOptionsRef.current.contains(event.target)) {
+      if (
+        headerOptionsRef.current &&
+        !headerOptionsRef.current.contains(event.target)
+      ) {
         setShowHeaderOptions(false);
       }
     };
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         setShowHeaderOptions(false);
       }
     };
@@ -645,18 +852,37 @@ const ChatRoom = () => {
     };
   }, [showHeaderOptions]);
 
-  const activeChats = rooms.filter((r) => r.type === "direct" && r.requestStatus === "accepted");
-  const requestChats = rooms.filter((r) => r.type === "direct" && r.requestStatus === "pending");
-  const followRequests = notifications.filter(n => n.type === 'follow_request');
+  const activeChats = rooms.filter(
+    (r) =>
+      r.type === "direct" &&
+      (r.requestStatus === "accepted" ||
+        (r.requestStatus === "pending" && isMyRequest(r))),
+  );
+  const requestChats = rooms.filter(
+    (r) =>
+      r.type === "direct" && r.requestStatus === "pending" && !isMyRequest(r),
+  );
+  const followRequests = notifications.filter(
+    (n) => n.type === "follow_request",
+  );
   const groupChats = rooms.filter((r) => r.type === "group" || r.travelGroupId);
   const displayedRooms =
-    activeTab === "chats" ? activeChats : activeTab === "requests" ? requestChats : groupChats;
+    activeTab === "chats"
+      ? activeChats
+      : activeTab === "requests"
+        ? requestChats
+        : groupChats;
   const filteredRooms = displayedRooms.filter((r) =>
-    r.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    r.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const formatTime = (d) =>
-    d ? new Date(d).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+    d
+      ? new Date(d).toLocaleTimeString([], {
+          hour: "numeric",
+          minute: "2-digit",
+        })
+      : "";
 
   const formatDateLabel = (d) => {
     if (!d) return "";
@@ -666,10 +892,14 @@ const ChatRoom = () => {
     yesterday.setDate(yesterday.getDate() - 1);
     if (date.toDateString() === today.toDateString()) return "Today";
     if (date.toDateString() === yesterday.toDateString()) return "Yesterday";
-    return date.toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+    return date.toLocaleDateString([], {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
-  const getAvatar = (pic, name) => getAvatarUrl(pic, pic, name);
+  const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
 
   return (
     <div className="h-[calc(100dvh-120px)] lg:h-[calc(100dvh-48px)] w-full max-w-7xl mx-auto flex bg-white overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
@@ -687,12 +917,16 @@ const ChatRoom = () => {
             <h2 className="text-[15px] font-bold text-slate-900">Messages</h2>
             <span
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                socketConnected ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600"
+                socketConnected
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-amber-50 text-amber-600"
               }`}
             >
               <span
                 className={`w-1.5 h-1.5 rounded-full ${
-                  socketConnected ? "bg-emerald-500" : "bg-amber-400 animate-pulse"
+                  socketConnected
+                    ? "bg-emerald-500"
+                    : "bg-amber-400 animate-pulse"
                 }`}
               />
               {socketConnected ? "Online" : "Connecting"}
@@ -709,7 +943,7 @@ const ChatRoom = () => {
               className="w-full bg-slate-50 text-[13px] pl-8 pr-8 py-2 rounded-lg outline-none border border-slate-200 focus:border-[#6C4DF6]/40 focus:ring-2 focus:ring-[#6C4DF6]/10 transition-all"
             />
             {searchQuery && (
-              <button 
+              <button
                 onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
@@ -724,163 +958,229 @@ const ChatRoom = () => {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={`flex-1 py-1.5 text-[11px] font-semibold capitalize rounded-md transition-all ${
-                  activeTab === tab 
-                    ? "bg-white shadow-sm text-[#534AB7] border-b-2 border-[#534AB7]" 
+                  activeTab === tab
+                    ? "bg-white shadow-sm text-[#534AB7] border-b-2 border-[#534AB7]"
                     : "text-slate-500 hover:text-slate-700"
                 }`}
               >
                 {tab}
-                {tab === "requests" && (requestChats.length + followRequests.length) > 0 && (
-                  <span className="ml-1 bg-[#FF5A7A] text-white px-1 py-0.5 rounded-full text-[9px]">
-                    {requestChats.length + followRequests.length}
-                  </span>
-                )}
+                {tab === "requests" &&
+                  requestChats.length + followRequests.length > 0 && (
+                    <span className="ml-1 bg-[#FF5A7A] text-white px-1 py-0.5 rounded-full text-[9px]">
+                      {requestChats.length + followRequests.length}
+                    </span>
+                  )}
               </button>
             ))}
           </div>
         </div>
 
         {/* Room List */}
-        <div role="listbox" className="flex-1 overflow-y-auto cs p-1.5 space-y-0.5">
-          {loading
-            ? Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="p-3 rounded-xl animate-pulse flex gap-3">
-                  <div className="w-10 h-10 bg-slate-100 rounded-full shrink-0" />
-                  <div className="flex-1 space-y-2 py-1">
-                    <div className="h-2.5 bg-slate-100 rounded w-1/2" />
-                    <div className="h-2.5 bg-slate-100 rounded w-3/4" />
-                  </div>
+        <div
+          role="listbox"
+          className="flex-1 overflow-y-auto cs p-1.5 space-y-0.5"
+        >
+          {loading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-3 rounded-xl animate-pulse flex gap-3">
+                <div className="w-10 h-10 bg-slate-100 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2 py-1">
+                  <div className="h-2.5 bg-slate-100 rounded w-1/2" />
+                  <div className="h-2.5 bg-slate-100 rounded w-3/4" />
                 </div>
-              ))
-            : (filteredRooms.length === 0 && (activeTab !== "requests" || followRequests.filter(n => !searchQuery || n.sender?.name?.toLowerCase().includes(searchQuery.toLowerCase())).length === 0) && (!searchQuery || (globalUsers.filter(u => !filteredRooms.some(r => r.type === "direct" && r.members?.some(m => m._id === u._id))).length === 0 && !isSearchingGlobal)))
-            ? (
-              <div className="text-center py-10 px-4 select-none">
-                <MessageSquare className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-                <p className="text-xs font-medium text-slate-400">
-                  {searchQuery ? (
-                    "No users or conversations found"
-                  ) : (
-                    <>
-                      {activeTab === "chats" && "No conversations yet"}
-                      {activeTab === "requests" && "No pending requests"}
-                      {activeTab === "groups" && "No group chats yet"}
-                    </>
-                  )}
-                </p>
               </div>
-            )
-            : (
-              <>
-                {searchQuery && (filteredRooms.length > 0 || globalUsers.length > 0) && (
+            ))
+          ) : filteredRooms.length === 0 &&
+            (activeTab !== "requests" ||
+              followRequests.filter(
+                (n) =>
+                  !searchQuery ||
+                  n.sender?.name
+                    ?.toLowerCase()
+                    .includes(searchQuery.toLowerCase()),
+              ).length === 0) &&
+            (!searchQuery ||
+              (globalUsers.filter(
+                (u) =>
+                  !filteredRooms.some(
+                    (r) =>
+                      r.type === "direct" &&
+                      r.members?.some((m) => m._id === u._id),
+                  ),
+              ).length === 0 &&
+                !isSearchingGlobal)) ? (
+            <div className="text-center py-10 px-4 select-none">
+              <MessageSquare className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+              <p className="text-xs font-medium text-slate-400">
+                {searchQuery ? (
+                  "No users or conversations found"
+                ) : (
+                  <>
+                    {activeTab === "chats" && "No conversations yet"}
+                    {activeTab === "requests" && "No pending requests"}
+                    {activeTab === "groups" && "No group chats yet"}
+                  </>
+                )}
+              </p>
+            </div>
+          ) : (
+            <>
+              {searchQuery &&
+                (filteredRooms.length > 0 || globalUsers.length > 0) && (
                   <div className="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
                     Existing Chats
                   </div>
                 )}
-                {filteredRooms.map((room) => {
-                  const isSelected = activeRoom?._id === room._id;
-                  const otherMember = room.members?.find((m) => m._id !== user?._id);
-                  const isOnline = otherMember && onlineUsers.has(otherMember._id);
-                  const isTyping = typingUsers[room._id];
-                  const isBlockedByMe = otherMember && user?.blockedUsers?.includes(otherMember._id);
+              {filteredRooms.map((room) => {
+                const isSelected = activeRoom?._id === room._id;
+                const otherMember = room.members?.find(
+                  (m) => m._id !== user?._id,
+                );
+                const isOnline =
+                  otherMember && onlineUsers.has(otherMember._id);
+                const isTyping = typingUsers[room._id];
+                const isBlockedByMe =
+                  otherMember && user?.blockedUsers?.includes(otherMember._id);
 
-                  return (
-                    <button
-                      key={room._id}
-                      role="option"
-                      aria-selected={isSelected}
-                      onClick={() => selectRoom(room)}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 ${
-                        isSelected ? "bg-[#EEEDFE] shadow-sm border border-purple-100/50" : "hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
-                      }`}
-                    >
-                      <div className="relative shrink-0">
-                        {room.type === "group" ? (
-                          <div className="w-10 h-10 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
-                            <Users className="w-5 h-5 text-[#6C4DF6]" />
-                          </div>
-                        ) : (
-                          <img
-                            src={getAvatar(room.pic, room.name)}
-                            alt={room.name}
-                            className={`w-10 h-10 rounded-full object-cover ${isBlockedByMe ? "opacity-50 grayscale" : ""}`}
-                          />
-                        )}
-                        {isOnline && room.type === "direct" && !isBlockedByMe && (
-                          <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                        )}
-                      </div>
-
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex justify-between items-center mb-0.5">
-                          <div className="flex items-center gap-1.5 truncate">
-                            <span
-                              className={`text-[13px] truncate ${
-                                room.unreadCount > 0 ? "font-bold text-slate-900" : "font-medium text-slate-700"
-                              }`}
-                            >
-                              {room.name}
-                            </span>
-                            {isBlockedByMe && (
-                              <span className="bg-slate-100 text-slate-500 text-[10px] rounded-full px-2 py-0.5 shrink-0">
-                                🔒 Blocked
-                              </span>
-                            )}
-                          </div>
-                          {room.latestMessage && (
-                            <span
-                              className={`text-[10px] whitespace-nowrap ml-2 ${
-                                room.unreadCount > 0 ? "font-bold text-[#6C4DF6]" : "text-slate-400"
-                              }`}
-                            >
-                              {formatTime(room.latestMessage.createdAt)}
-                            </span>
-                          )}
+                return (
+                  <div
+                    key={room._id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => selectRoom(room)}
+                    className={`group relative w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-3 cursor-pointer ${
+                      isSelected
+                        ? "bg-[#EEEDFE] shadow-sm border border-purple-100/50"
+                        : "hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
+                    }`}
+                  >
+                    <div className="relative shrink-0">
+                      {room.type === "group" ? (
+                        <div className="w-10 h-10 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
+                          <Users className="w-5 h-5 text-[#6C4DF6]" />
                         </div>
-                        <div className="flex justify-between items-center">
-                          <p
-                            className={`text-[12px] truncate pr-2 ${
-                              room.unreadCount > 0 ? "font-medium text-[#2C2C2A]" : "font-normal text-[#888780]"
+                      ) : (
+                        <img
+                          src={getAvatar(room, room.name)}
+                          alt={room.name}
+                          className={`w-10 h-10 rounded-full object-cover ${isBlockedByMe ? "opacity-50 grayscale" : ""}`}
+                        />
+                      )}
+                      {isOnline && room.type === "direct" && !isBlockedByMe && (
+                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0 flex flex-col justify-center">
+                      <div className="flex justify-between items-center mb-0.5">
+                        <div className="flex items-center gap-1.5 truncate">
+                          <span
+                            className={`text-[13px] truncate ${
+                              room.unreadCount > 0
+                                ? "font-bold text-slate-900"
+                                : "font-medium text-slate-700"
                             }`}
                           >
-                            {isTyping ? (
-                              <span className="text-[#6C4DF6] italic">{isTyping} typing...</span>
-                            ) : room.latestMessage ? (
-                              room.latestMessage.text
-                            ) : (
-                              "Start chatting"
-                            )}
-                          </p>
-                          {room.unreadCount > 0 && !isSelected && (
-                            <span className="bg-[#6C4DF6] text-white min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold shrink-0">
-                              {room.unreadCount}
+                            {room.name}
+                          </span>
+                          {isBlockedByMe && (
+                            <span className="bg-slate-100 text-slate-500 text-[10px] rounded-full px-2 py-0.5 shrink-0">
+                              🔒 Blocked
                             </span>
                           )}
                         </div>
+                        {room.latestMessage && (
+                          <span
+                            className={`text-[10px] whitespace-nowrap ml-2 ${
+                              room.unreadCount > 0
+                                ? "font-bold text-[#6C4DF6]"
+                                : "text-slate-400"
+                            }`}
+                          >
+                            {formatTime(room.latestMessage.createdAt)}
+                          </span>
+                        )}
                       </div>
-                    </button>
-                  );
-                })}
+                      <div className="flex justify-between items-center">
+                        <p
+                          className={`text-[12px] truncate pr-2 ${
+                            room.unreadCount > 0
+                              ? "font-medium text-[#2C2C2A]"
+                              : "font-normal text-[#888780]"
+                          }`}
+                        >
+                          {isTyping ? (
+                            <span className="text-[#6C4DF6] italic">
+                              {isTyping} typing...
+                            </span>
+                          ) : room.latestMessage ? (
+                            room.latestMessage.text
+                          ) : (
+                            "Start chatting"
+                          )}
+                        </p>
+                        {room.unreadCount > 0 && !isSelected && (
+                          <span className="bg-[#6C4DF6] text-white min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold shrink-0">
+                            {room.unreadCount}
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
-                {activeTab === "requests" && followRequests.filter(n => !searchQuery || n.sender?.name?.toLowerCase().includes(searchQuery.toLowerCase())).map((n) => (
+                    <button
+                      onClick={(e) => handleDeleteChat(room, e)}
+                      title="Delete chat"
+                      className={`p-1.5 rounded-lg hover:bg-red-100 text-slate-400 hover:text-red-500 transition-all shrink-0 ${
+                        isSelected
+                          ? "opacity-100"
+                          : "opacity-0 group-hover:opacity-100"
+                      }`}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                );
+              })}
+
+              {activeTab === "requests" &&
+                followRequests
+                  .filter(
+                    (n) =>
+                      !searchQuery ||
+                      n.sender?.name
+                        ?.toLowerCase()
+                        .includes(searchQuery.toLowerCase()),
+                  )
+                  .map((n) => (
                     <div
                       key={n._id}
                       className={`w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 border border-transparent`}
                     >
-                      <div className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity" onClick={() => navigate(`/profile/${n.sender?._id}`)}>
-                          <img
-                            src={getAvatar(n.sender?.pic, n.sender?.name)}
-                            alt={n.sender?.name}
-                            className="w-10 h-10 rounded-full object-cover"
-                          />
+                      <div
+                        className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => navigate(`/profile/${n.sender?._id}`)}
+                      >
+                        <img
+                          src={getAvatar(n.sender, n.sender?.name)}
+                          alt={n.sender?.name}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
                       </div>
 
                       <div className="flex-1 min-w-0 flex flex-col justify-center">
                         <div className="flex justify-between items-center mb-0.5">
-                          <div className="flex items-center gap-1.5 truncate cursor-pointer hover:opacity-80" onClick={() => navigate(`/profile/${n.sender?._id}`)}>
+                          <div
+                            className="flex items-center gap-1.5 truncate cursor-pointer hover:opacity-80"
+                            onClick={() =>
+                              navigate(`/profile/${n.sender?._id}`)
+                            }
+                          >
                             <span className="text-[13px] truncate font-medium text-slate-700 hover:underline">
                               {n.sender?.name}
                             </span>
-                            <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider">Follow</span>
+                            <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider">
+                              Follow
+                            </span>
                           </div>
                           <span className="text-[10px] whitespace-nowrap ml-2 text-slate-400">
                             {formatTime(n.createdAt)}
@@ -888,27 +1188,59 @@ const ChatRoom = () => {
                         </div>
                         <div className="flex justify-between items-center mt-1">
                           <div className="flex gap-2 w-full">
-                            <button onClick={(e) => handleAcceptFollow(e, n.sender?._id)} className="flex-1 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded hover:bg-[#5b3ee0] transition-colors">Accept</button>
-                            <button onClick={(e) => handleRejectFollow(e, n.sender?._id)} className="flex-1 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded hover:bg-slate-200 transition-colors">Decline</button>
+                            <button
+                              onClick={(e) =>
+                                handleAcceptFollow(e, n.sender?._id)
+                              }
+                              className="flex-1 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded hover:bg-[#5b3ee0] transition-colors"
+                            >
+                              Accept
+                            </button>
+                            <button
+                              onClick={(e) =>
+                                handleRejectFollow(e, n.sender?._id)
+                              }
+                              className="flex-1 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded hover:bg-slate-200 transition-colors"
+                            >
+                              Decline
+                            </button>
                           </div>
                         </div>
                       </div>
                     </div>
-                ))}
+                  ))}
 
-                {searchQuery && (
-                  <>
-                    <div className="px-3 pt-4 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                      People
+              {searchQuery && (
+                <>
+                  <div className="px-3 pt-4 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                    People
+                  </div>
+                  {isSearchingGlobal ? (
+                    <div className="p-3 text-center text-xs text-slate-400 animate-pulse">
+                      Searching...
                     </div>
-                    {isSearchingGlobal ? (
-                      <div className="p-3 text-center text-xs text-slate-400 animate-pulse">Searching...</div>
-                    ) : globalUsers.filter(u => !filteredRooms.some(r => r.type === "direct" && r.members?.some(m => m._id === u._id))).length === 0 ? (
-                      <div className="p-3 text-center text-xs text-slate-400">No new people found</div>
-                    ) : (
-                      globalUsers
-                        .filter(u => !filteredRooms.some(r => r.type === "direct" && r.members?.some(m => m._id === u._id)))
-                        .map((u) => (
+                  ) : globalUsers.filter(
+                      (u) =>
+                        !filteredRooms.some(
+                          (r) =>
+                            r.type === "direct" &&
+                            r.members?.some((m) => m._id === u._id),
+                        ),
+                    ).length === 0 ? (
+                    <div className="p-3 text-center text-xs text-slate-400">
+                      No new people found
+                    </div>
+                  ) : (
+                    globalUsers
+                      .filter(
+                        (u) =>
+                          !filteredRooms.some(
+                            (r) =>
+                              r.type === "direct" &&
+                              r.members?.some((m) => m._id === u._id),
+                          ),
+                      )
+                      .map((u) => (
                         <button
                           key={u._id}
                           onClick={() => handleSelectGlobalUser(u)}
@@ -916,7 +1248,7 @@ const ChatRoom = () => {
                         >
                           <div className="relative shrink-0">
                             <img
-                              src={getAvatar(u.pic || u.profilePicture, u.name)}
+                              src={getAvatar(u, u.name)}
                               alt={u.name}
                               className="w-10 h-10 rounded-full object-cover"
                             />
@@ -936,12 +1268,11 @@ const ChatRoom = () => {
                           </div>
                         </button>
                       ))
-                    )}
-                  </>
-                )}
-              </>
-            )
-          }
+                  )}
+                </>
+              )}
+            </>
+          )}
         </div>
       </aside>
 
@@ -969,13 +1300,15 @@ const ChatRoom = () => {
                     </div>
                   ) : (
                     <img
-                      src={getAvatar(activeRoom.pic, activeRoom.name)}
+                      src={getAvatar(activeRoom, activeRoom.name)}
                       alt=""
                       className="w-9 h-9 rounded-full object-cover"
                     />
                   )}
                   {activeRoom.type === "direct" &&
-                    onlineUsers.has(activeRoom.members?.find((m) => m._id !== user?._id)?._id) && (
+                    onlineUsers.has(
+                      activeRoom.members?.find((m) => m._id !== user?._id)?._id,
+                    ) && (
                       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                     )}
                 </div>
@@ -988,20 +1321,36 @@ const ChatRoom = () => {
                       </span>
                     )}
                   </h3>
-                  <div className={`text-[11px] font-medium mt-0.5 ${
-                    activeRoom.type === "group"
-                      ? "text-slate-400"
-                      : onlineUsers.has(activeRoom.members?.find((m) => m._id !== user?._id)?._id)
-                      ? "text-emerald-500"
-                      : "text-slate-400"
-                  }`}>
-                    {activeRoom.type === "direct" && user?.blockedUsers?.includes(activeRoom.members?.find((m) => m._id !== user?._id)?._id) ? (
-                      <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">🔒 Blocked</span>
-                    ) : activeRoom.type === "group"
-                      ? `${activeRoom.members?.length || 0} members`
-                      : onlineUsers.has(activeRoom.members?.find((m) => m._id !== user?._id)?._id)
-                      ? "Online"
-                      : "Offline" /* // TODO: replace with lastSeen from API */}
+                  <div
+                    className={`text-[11px] font-medium mt-0.5 ${
+                      activeRoom.type === "group"
+                        ? "text-slate-400"
+                        : onlineUsers.has(
+                              activeRoom.members?.find(
+                                (m) => m._id !== user?._id,
+                              )?._id,
+                            )
+                          ? "text-emerald-500"
+                          : "text-slate-400"
+                    }`}
+                  >
+                    {activeRoom.type === "direct" &&
+                    user?.blockedUsers?.includes(
+                      activeRoom.members?.find((m) => m._id !== user?._id)?._id,
+                    ) ? (
+                      <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
+                        🔒 Blocked
+                      </span>
+                    ) : activeRoom.type === "group" ? (
+                      `${activeRoom.members?.length || 0} members`
+                    ) : onlineUsers.has(
+                        activeRoom.members?.find((m) => m._id !== user?._id)
+                          ?._id,
+                      ) ? (
+                      "Online"
+                    ) : (
+                      "Offline"
+                    )}
                   </div>
                 </div>
               </div>
@@ -1015,14 +1364,20 @@ const ChatRoom = () => {
                     <Compass className="w-3.5 h-3.5" /> Trip
                   </Link>
                 )}
-                <button aria-label="Start voice call" className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex">
+                <button
+                  aria-label="Start voice call"
+                  className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
+                >
                   <Phone className="w-4 h-4" />
                 </button>
-                <button aria-label="Start video call" className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex">
+                <button
+                  aria-label="Start video call"
+                  className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
+                >
                   <Video className="w-4 h-4" />
                 </button>
                 <div ref={headerOptionsRef}>
-                  <button 
+                  <button
                     onClick={() => setShowHeaderOptions(!showHeaderOptions)}
                     aria-label="More options"
                     className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
@@ -1031,23 +1386,43 @@ const ChatRoom = () => {
                   </button>
                   {showHeaderOptions && (
                     <div className="absolute right-4 top-14 z-[9999] w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden py-1 flex flex-col">
-                      {activeRoom.type === "direct" && (() => {
-                        const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
-                        const isBlocked = otherUser && user?.blockedUsers?.includes(otherUser._id);
-                        return (
-                          <>
-                            <button onClick={handleReportUser} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors">
-                              Report User
-                            </button>
-                            <button onClick={handleBlockUser} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors">
-                              {isBlocked ? 'Unblock User' : 'Block User'}
-                            </button>
-                            <div className="border-t border-slate-100"></div>
-                          </>
-                        )
-                      })()}
-                      <button onClick={handleClearChat} className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors">
+                      {activeRoom.type === "direct" &&
+                        (() => {
+                          const otherUser = activeRoom.members?.find(
+                            (m) => m._id !== user?._id,
+                          );
+                          const isBlocked =
+                            otherUser &&
+                            user?.blockedUsers?.includes(otherUser._id);
+                          return (
+                            <>
+                              <button
+                                onClick={handleReportUser}
+                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                              >
+                                Report User
+                              </button>
+                              <button
+                                onClick={handleBlockUser}
+                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                              >
+                                {isBlocked ? "Unblock User" : "Block User"}
+                              </button>
+                              <div className="border-t border-slate-100"></div>
+                            </>
+                          );
+                        })()}
+                      <button
+                        onClick={handleClearChat}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                      >
                         Clear Chat
+                      </button>
+                      <button
+                        onClick={(e) => handleDeleteChat(activeRoom, e)}
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
+                      >
+                        <Trash2 className="w-4 h-4" /> Delete Chat
                       </button>
                     </div>
                   )}
@@ -1056,7 +1431,7 @@ const ChatRoom = () => {
             </div>
 
             {/* Messages */}
-            <div 
+            <div
               className="flex-1 overflow-y-auto cs px-5 sm:px-8 py-6 space-y-3 bg-gradient-to-b from-white to-purple-50/30 relative"
               aria-live="polite"
               ref={chatContainerRef}
@@ -1071,22 +1446,38 @@ const ChatRoom = () => {
                   activeRoom.requestStatus === "pending" &&
                   activeRoom.requestedBy !== user?._id ? (
                     <>
-                      <h4 className="text-sm font-bold text-slate-600">Message Request</h4>
-                      <p className="text-xs text-slate-400 mt-1">Accept the request below to reply.</p>
+                      <h4 className="text-sm font-bold text-slate-600">
+                        Message Request
+                      </h4>
+                      <p className="text-xs text-slate-400 mt-1">
+                        Accept the request below to reply.
+                      </p>
                     </>
                   ) : (
                     <>
-                      <h4 className="text-base font-bold text-slate-700">Start your travel conversation ✈️</h4>
-                      <p className="text-[13px] text-slate-400 mt-1.5 max-w-[250px] leading-relaxed">Say hello and start planning your next great adventure!</p>
+                      <h4 className="text-base font-bold text-slate-700">
+                        Start your travel conversation ✈️
+                      </h4>
+                      <p className="text-[13px] text-slate-400 mt-1.5 max-w-[250px] leading-relaxed">
+                        Say hello and start planning your next great adventure!
+                      </p>
                     </>
                   )}
                 </div>
               ) : (
                 messages.map((msg, index) => {
-                  const isSelf = msg.sender === user?._id || msg.sender?._id === user?._id;
-                  const showDate = index === 0 || new Date(msg.createdAt).toDateString() !== new Date(messages[index - 1].createdAt).toDateString();
-                  const showAvatar = !isSelf && (index === 0 || messages[index - 1].sender !== msg.sender || showDate);
-                  
+                  const isSelf =
+                    msg.sender === user?._id || msg.sender?._id === user?._id;
+                  const showDate =
+                    index === 0 ||
+                    new Date(msg.createdAt).toDateString() !==
+                      new Date(messages[index - 1].createdAt).toDateString();
+                  const showAvatar =
+                    !isSelf &&
+                    (index === 0 ||
+                      messages[index - 1].sender !== msg.sender ||
+                      showDate);
+
                   return (
                     <div key={msg._id || index}>
                       {showDate && (
@@ -1096,7 +1487,7 @@ const ChatRoom = () => {
                           </span>
                         </div>
                       )}
-                      <ChatBubble 
+                      <ChatBubble
                         msg={msg}
                         isSelf={isSelf}
                         showAvatar={showAvatar}
@@ -1119,7 +1510,9 @@ const ChatRoom = () => {
 
               {typingUsers[activeRoom._id] && (
                 <div className="flex items-end gap-2 justify-start">
-                  {activeRoom.type === "group" && <div className="w-7 shrink-0" />}
+                  {activeRoom.type === "group" && (
+                    <div className="w-7 shrink-0" />
+                  )}
                   <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-sm px-3.5 py-2.5 shadow-sm flex items-center gap-1">
                     {[0, 150, 300].map((delay) => (
                       <div
@@ -1135,7 +1528,8 @@ const ChatRoom = () => {
             </div>
 
             {/* Input / Request Area */}
-            {activeRoom.type === "direct" && activeRoom.requestStatus === "pending" ? (
+            {activeRoom.type === "direct" &&
+            activeRoom.requestStatus === "pending" ? (
               activeRoom.requestedBy === user?._id ||
               activeRoom.requestedBy?.toString() === user?._id?.toString() ? (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
@@ -1164,21 +1558,35 @@ const ChatRoom = () => {
                   </div>
                 </div>
               )
-            ) : activeRoom.type === "direct" && (() => {
-                const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
-                const isBlockedByMe = otherUser && user?.blockedUsers?.includes(otherUser._id);
-                return isBlockedByMe || activeRoom.requestStatus === "declined" || activeRoom.requestStatus === "blocked";
+            ) : activeRoom.type === "direct" &&
+              (() => {
+                const otherUser = activeRoom.members?.find(
+                  (m) => m._id !== user?._id,
+                );
+                const isBlockedByMe =
+                  otherUser && user?.blockedUsers?.includes(otherUser._id);
+                return (
+                  isBlockedByMe ||
+                  activeRoom.requestStatus === "declined" ||
+                  activeRoom.requestStatus === "blocked"
+                );
               })() ? (
               <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
                 <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
-                  🔒 You blocked this user. <button onClick={handleBlockUser} className="text-[#6C4DF6] font-bold ml-1 hover:underline">Unblock</button>
+                  🔒 You blocked this user.{" "}
+                  <button
+                    onClick={handleBlockUser}
+                    className="text-[#6C4DF6] font-bold ml-1 hover:underline"
+                  >
+                    Unblock
+                  </button>
                 </div>
               </div>
             ) : (
               <div className="p-3 bg-white border-t border-slate-100 shrink-0 relative flex flex-col">
                 {/* Scroll to bottom button */}
                 {showScrollBottom && (
-                  <button 
+                  <button
                     onClick={scrollToBottom}
                     className="absolute -top-12 right-6 p-2 bg-[#7F77DD] text-white rounded-full shadow-lg hover:bg-[#6b62d6] transition-all z-20"
                   >
@@ -1191,13 +1599,19 @@ const ChatRoom = () => {
                   <div className="mb-2 p-2 bg-slate-50 border-l-4 border-[#7F77DD] rounded-r-lg flex items-center justify-between shadow-sm mx-2 mt-1">
                     <div className="flex-1 overflow-hidden">
                       <div className="text-[11px] font-bold text-[#7F77DD]">
-                        Replying to {replyToMsg.sender?.name || replyToMsg.senderName || "User"}
+                        Replying to{" "}
+                        {replyToMsg.sender?.name ||
+                          replyToMsg.senderName ||
+                          "User"}
                       </div>
                       <div className="text-[12px] text-slate-600 truncate">
                         {replyToMsg.text || "Media"}
                       </div>
                     </div>
-                    <button onClick={() => setReplyToMsg(null)} className="p-1 text-slate-400 hover:text-slate-700">
+                    <button
+                      onClick={() => setReplyToMsg(null)}
+                      className="p-1 text-slate-400 hover:text-slate-700"
+                    >
                       <X className="w-4 h-4" />
                     </button>
                   </div>
@@ -1207,9 +1621,16 @@ const ChatRoom = () => {
                 {selectedFile && (
                   <div className="mb-2 self-start flex items-center gap-2 bg-slate-100 px-3 py-1.5 rounded-full mx-2 text-[12px] font-medium text-slate-700">
                     <Paperclip className="w-3.5 h-3.5 text-[#7F77DD]" />
-                    <span className="max-w-[150px] truncate">{selectedFile.name}</span>
-                    <span className="text-slate-400">({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)</span>
-                    <button onClick={() => setSelectedFile(null)} className="ml-1 text-slate-400 hover:text-rose-500">
+                    <span className="max-w-[150px] truncate">
+                      {selectedFile.name}
+                    </span>
+                    <span className="text-slate-400">
+                      ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
+                    <button
+                      onClick={() => setSelectedFile(null)}
+                      className="ml-1 text-slate-400 hover:text-rose-500"
+                    >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1221,14 +1642,21 @@ const ChatRoom = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
                       <span className="text-rose-600 font-bold text-sm">
-                        {Math.floor(recordingTime / 60)}:{(recordingTime % 60).toString().padStart(2, '0')}
+                        {Math.floor(recordingTime / 60)}:
+                        {(recordingTime % 60).toString().padStart(2, "0")}
                       </span>
                     </div>
                     <div className="flex gap-2">
-                      <button onClick={stopVoiceRecording} className="p-1.5 bg-rose-100 text-rose-600 rounded-full hover:bg-rose-200">
+                      <button
+                        onClick={stopVoiceRecording}
+                        className="p-1.5 bg-rose-100 text-rose-600 rounded-full hover:bg-rose-200"
+                      >
                         <Square className="w-4 h-4" />
                       </button>
-                      <button onClick={cancelVoiceRecording} className="p-1.5 bg-slate-200 text-slate-600 rounded-full hover:bg-slate-300">
+                      <button
+                        onClick={cancelVoiceRecording}
+                        className="p-1.5 bg-slate-200 text-slate-600 rounded-full hover:bg-slate-300"
+                      >
                         <X className="w-4 h-4" />
                       </button>
                     </div>
@@ -1240,7 +1668,10 @@ const ChatRoom = () => {
                   <div className="mb-2 self-start flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full mx-2 text-[12px] font-medium text-emerald-700 border border-emerald-100">
                     <Mic className="w-3.5 h-3.5 text-emerald-500" />
                     <span>Voice Message</span>
-                    <button onClick={() => setAudioBlob(null)} className="ml-1 text-emerald-400 hover:text-rose-500">
+                    <button
+                      onClick={() => setAudioBlob(null)}
+                      className="ml-1 text-emerald-400 hover:text-rose-500"
+                    >
                       <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -1248,11 +1679,14 @@ const ChatRoom = () => {
 
                 {showEmojiPicker && (
                   <div className="absolute bottom-full left-4 mb-2 z-50 shadow-xl rounded-2xl overflow-hidden border border-slate-100">
-                    <EmojiPicker onEmojiClick={handleEmojiClick} theme="light" />
+                    <EmojiPicker
+                      onEmojiClick={handleEmojiClick}
+                      theme="light"
+                    />
                   </div>
                 )}
                 <div className="flex items-end gap-2 bg-white rounded-2xl px-2 py-1.5 shadow-sm border border-slate-200 focus-within:border-[#7F77DD] focus-within:ring-2 focus-within:ring-[#7F77DD]/20 transition-all mx-2 mb-1">
-                  <button 
+                  <button
                     onClick={() => setShowEmojiPicker((prev) => !prev)}
                     aria-label="Open emoji picker"
                     className="p-2 text-slate-400 hover:text-[#7F77DD] rounded-lg transition-colors shrink-0"
@@ -1266,7 +1700,7 @@ const ChatRoom = () => {
                     accept="image/*,video/*"
                     onChange={handleFileChange}
                   />
-                  <button 
+                  <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isSending}
                     aria-label="Attach file"
@@ -1283,25 +1717,38 @@ const ChatRoom = () => {
                     rows={1}
                     className="flex-1 max-h-[120px] bg-transparent text-[14px] text-slate-800 px-1 py-2 resize-none outline-none placeholder-slate-400 cs min-h-[36px]"
                   />
-                  {!isRecording && !inputText.trim() && !audioBlob && !selectedFile && (
-                    <button 
-                      onClick={startVoiceRecording}
-                      disabled={isSending}
-                      aria-label="Record voice message"
-                      className={`p-2 rounded-lg transition-colors shrink-0 hidden sm:block ${isSending ? "text-slate-300" : "text-slate-400 hover:text-[#7F77DD]"}`}
-                    >
-                      <Mic className="w-4.5 h-4.5" />
-                    </button>
-                  )}
+                  {!isRecording &&
+                    !inputText.trim() &&
+                    !audioBlob &&
+                    !selectedFile && (
+                      <button
+                        onClick={startVoiceRecording}
+                        disabled={isSending}
+                        aria-label="Record voice message"
+                        className={`p-2 rounded-lg transition-colors shrink-0 hidden sm:block ${isSending ? "text-slate-300" : "text-slate-400 hover:text-[#7F77DD]"}`}
+                      >
+                        <Mic className="w-4.5 h-4.5" />
+                      </button>
+                    )}
                   <div className="flex flex-col justify-end h-full mb-0.5">
-                    <div className="text-center text-[9px] text-slate-300 -mt-3 mb-1 w-full hidden sm:block pointer-events-none opacity-60">Enter to send · Shift+Enter for new line</div>
+                    <div className="text-center text-[9px] text-slate-300 -mt-3 mb-1 w-full hidden sm:block pointer-events-none opacity-60">
+                      Enter to send · Shift+Enter for new line
+                    </div>
                     <button
                       onClick={handleSendMessage}
-                      disabled={isSending || (!inputText.trim() && !selectedFile && !audioBlob)}
-                      aria-disabled={isSending || (!inputText.trim() && !selectedFile && !audioBlob) ? "true" : "false"}
+                      disabled={
+                        isSending ||
+                        (!inputText.trim() && !selectedFile && !audioBlob)
+                      }
+                      aria-disabled={
+                        isSending ||
+                        (!inputText.trim() && !selectedFile && !audioBlob)
+                          ? "true"
+                          : "false"
+                      }
                       aria-label="Send message"
                       className={`p-2.5 rounded-xl flex items-center justify-center shrink-0 transition-all ${
-                        (inputText.trim() || selectedFile || audioBlob)
+                        inputText.trim() || selectedFile || audioBlob
                           ? "bg-[#7F77DD] text-white hover:bg-[#6b62d6] shadow-md hover:shadow-lg hover:scale-105 active:scale-95"
                           : "bg-slate-100 text-[#7F77DD] opacity-35 pointer-events-none"
                       }`}
@@ -1318,7 +1765,9 @@ const ChatRoom = () => {
             <div className="w-16 h-16 bg-white rounded-2xl border border-slate-100 flex items-center justify-center mb-4 shadow-sm">
               <MessageSquare className="w-7 h-7 text-[#6C4DF6]" />
             </div>
-            <h3 className="text-base font-bold text-slate-800">Your Messages</h3>
+            <h3 className="text-base font-bold text-slate-800">
+              Your Messages
+            </h3>
             <p className="text-[13px] text-slate-400 mt-1.5 max-w-[220px] leading-relaxed">
               Select a conversation to start chatting with your travel squad.
             </p>
@@ -1328,7 +1777,7 @@ const ChatRoom = () => {
 
       <AnimatePresence>
         {showBlockModal && activeRoom && (
-          <div 
+          <div
             className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-0"
             onClick={() => setShowBlockModal(false)}
           >
@@ -1341,30 +1790,38 @@ const ChatRoom = () => {
               onClick={(e) => e.stopPropagation()}
             >
               {(() => {
-                const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
+                const otherUser = activeRoom.members?.find(
+                  (m) => m._id !== user?._id,
+                );
                 return (
                   <>
-                    <img 
-                      src={getAvatar(otherUser?.pic, otherUser?.name)} 
-                      alt="" 
+                    <img
+                      src={getAvatar(otherUser, otherUser?.name)}
+                      alt=""
                       className="w-[72px] h-[72px] rounded-full object-cover shadow-sm mb-3 border border-slate-100"
                     />
                     <h3 className="text-[18px] font-bold text-slate-900 leading-tight">
                       Block {otherUser?.name}?
                     </h3>
                     {otherUser?.username && (
-                      <p className="text-[14px] font-medium text-slate-500 mb-5">@{otherUser.username}</p>
+                      <p className="text-[14px] font-medium text-slate-500 mb-5">
+                        @{otherUser.username}
+                      </p>
                     )}
                     {!otherUser?.username && <div className="h-5"></div>}
-                    
+
                     <div className="text-[13.5px] text-slate-600 mb-6 space-y-3 w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left">
                       <p className="flex items-start gap-2">
                         <span className="text-slate-400 mt-0.5">•</span>
-                        <span>You won't be able to send messages to each other.</span>
+                        <span>
+                          You won't be able to send messages to each other.
+                        </span>
                       </p>
                       <p className="flex items-start gap-2">
                         <span className="text-slate-400 mt-0.5">•</span>
-                        <span>Existing chat history will remain available.</span>
+                        <span>
+                          Existing chat history will remain available.
+                        </span>
                       </p>
                       <p className="flex items-start gap-2">
                         <span className="text-slate-400 mt-0.5">•</span>

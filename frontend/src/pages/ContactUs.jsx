@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import { showToast } from "../utils/showToast";
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ShieldCheck, Sparkles } from "lucide-react";
@@ -5,7 +6,7 @@ import { motion } from "framer-motion";
 import Swal from "sweetalert2";
 import axios from "../api/axios";
 
-// ─── Validators ───────────────────────────────────────────────────────────────
+// Validators
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INITIAL_FORM = { name: "", email: "", subject: "", message: "" };
 
@@ -15,32 +16,33 @@ const validate = ({ name, email, subject, message }) => {
   if (!EMAIL_REGEX.test(email)) return "Please enter a valid email address.";
   if (!subject.trim()) return "Subject is required.";
   if (!message.trim()) return "Message cannot be empty.";
-  if (message.trim().length < 10) return "Message must be at least 10 characters.";
+  if (message.trim().length < 10)
+    return "Message must be at least 10 characters.";
   return null;
 };
 
-// ─── Static contact info ──────────────────────────────────────────────────────
+// Static contact info
 const CONTACT_INFO = [
   {
     icon: Mail,
     title: "Email",
     detail: "support@gogoyatrigo.com",
     href: "mailto:support@gogoyatrigo.com",
-    color: "from-purple-500 to-indigo-500"
+    color: "from-purple-500 to-indigo-500",
   },
   {
     icon: Phone,
     title: "Phone",
     detail: "+91 (800) YATRI-GO",
     href: "tel:+918009284446",
-    color: "from-purple-400 to-purple-600"
+    color: "from-purple-400 to-purple-600",
   },
   {
     icon: MapPin,
     title: "Office",
     detail: "Cyber City, Gurugram, India",
     href: "https://maps.google.com/?q=Cyber+City+Gurugram",
-    color: "from-purple-500 to-fuchsia-500"
+    color: "from-purple-500 to-fuchsia-500",
   },
 ];
 
@@ -49,7 +51,7 @@ const inputClass =
 const labelClass =
   "text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1 mb-1.5 block";
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// Component
 const ContactUs = () => {
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,7 +83,6 @@ const ContactUs = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-purple-500/30 py-10 md:py-16 flex items-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 w-full">
-        
         {/* ── Header ── */}
         <div className="text-center max-w-2xl mx-auto mb-10">
           <motion.div
@@ -110,7 +111,7 @@ const ContactUs = () => {
           </motion.p>
         </div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
@@ -120,33 +121,42 @@ const ContactUs = () => {
           <div className="bg-purple-600 w-full md:w-2/5 p-8 text-white relative overflow-hidden flex flex-col justify-between">
             <div className="absolute top-0 right-0 w-64 h-64 bg-purple-500 rounded-full blur-3xl -mr-32 -mt-32 opacity-50 pointer-events-none" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl -ml-32 -mb-32 opacity-50 pointer-events-none" />
-            
+
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-6">Contact Information</h3>
               <div className="space-y-6">
-                {CONTACT_INFO.map(({ icon: Icon, title, detail, href }, idx) => (
-                  <a
-                    key={title}
-                    href={href}
-                    target={href.startsWith("http") ? "_blank" : undefined}
-                    rel={href.startsWith("http") ? "noopener noreferrer" : undefined}
-                    className="flex items-start gap-4 group hover:-translate-y-1 transition-transform"
-                  >
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
-                      <Icon className="w-5 h-5 text-purple-100" />
-                    </div>
-                    <div>
-                      <p className="text-[11px] text-purple-200 uppercase tracking-wider font-bold mb-0.5">{title}</p>
-                      <p className="text-sm font-semibold">{detail}</p>
-                    </div>
-                  </a>
-                ))}
+                {CONTACT_INFO.map(
+                  ({ icon: Icon, title, detail, href }, idx) => (
+                    <a
+                      key={title}
+                      href={href}
+                      target={href.startsWith("http") ? "_blank" : undefined}
+                      rel={
+                        href.startsWith("http")
+                          ? "noopener noreferrer"
+                          : undefined
+                      }
+                      className="flex items-start gap-4 group hover:-translate-y-1 transition-transform"
+                    >
+                      <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
+                        <Icon className="w-5 h-5 text-purple-100" />
+                      </div>
+                      <div>
+                        <p className="text-[11px] text-purple-200 uppercase tracking-wider font-bold mb-0.5">
+                          {title}
+                        </p>
+                        <p className="text-sm font-semibold">{detail}</p>
+                      </div>
+                    </a>
+                  ),
+                )}
               </div>
             </div>
-            
+
             <div className="relative z-10 mt-12 pt-8 border-t border-white/20">
               <p className="text-xs text-purple-200 leading-relaxed font-medium">
-                We're committed to your safety. Join thousands of travelers who trust our protocol.
+                We're committed to your safety. Join thousands of travelers who
+                trust our protocol.
               </p>
             </div>
           </div>
@@ -156,7 +166,9 @@ const ContactUs = () => {
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div>
-                  <label htmlFor="contact-name" className={labelClass}>Your Name</label>
+                  <label htmlFor="contact-name" className={labelClass}>
+                    Your Name
+                  </label>
                   <input
                     id="contact-name"
                     type="text"
@@ -169,7 +181,9 @@ const ContactUs = () => {
                   />
                 </div>
                 <div>
-                  <label htmlFor="contact-email" className={labelClass}>Email Address</label>
+                  <label htmlFor="contact-email" className={labelClass}>
+                    Email Address
+                  </label>
                   <input
                     id="contact-email"
                     type="email"
@@ -183,7 +197,9 @@ const ContactUs = () => {
               </div>
 
               <div>
-                <label htmlFor="contact-subject" className={labelClass}>Subject</label>
+                <label htmlFor="contact-subject" className={labelClass}>
+                  Subject
+                </label>
                 <input
                   id="contact-subject"
                   type="text"
@@ -197,7 +213,9 @@ const ContactUs = () => {
               </div>
 
               <div>
-                <label htmlFor="contact-message" className={labelClass}>Message</label>
+                <label htmlFor="contact-message" className={labelClass}>
+                  Message
+                </label>
                 <textarea
                   id="contact-message"
                   rows={4}
@@ -213,7 +231,9 @@ const ContactUs = () => {
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
                 <div className="flex items-center gap-2 text-slate-500">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
-                  <span className="text-xs font-semibold">Your data is secure</span>
+                  <span className="text-xs font-semibold">
+                    Your data is secure
+                  </span>
                 </div>
                 <button
                   type="submit"
@@ -221,7 +241,9 @@ const ContactUs = () => {
                   className="w-full sm:w-auto px-8 py-3 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm"
                 >
                   {isSubmitting ? "Sending..." : "Send Message"}
-                  <Send className={`w-4 h-4 ${isSubmitting ? 'animate-pulse' : ''}`} />
+                  <Send
+                    className={`w-4 h-4 ${isSubmitting ? "animate-pulse" : ""}`}
+                  />
                 </button>
               </div>
             </form>

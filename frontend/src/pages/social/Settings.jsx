@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AuthContext } from "../../context/authContext";
-import { Shield, Lock, Activity, LogOut, AlertTriangle, User, Headphones, FileText, Bell, ChevronRight, X, Heart, Bookmark, EyeOff, MessageSquare, Compass } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Shield, Lock, Activity, LogOut, AlertTriangle, User, Headphones, Bell, X, Sparkles, Bookmark, EyeOff, MessageSquare, Compass } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import SettingsRow from "../../components/SettingsRow";
 import { showToast } from "../../utils/showToast";
 import axios from "../../api/axios";
@@ -60,10 +60,70 @@ const DeleteAccountModal = ({ isOpen, onClose, onConfirm }) => {
   );
 };
 
+const DeactivateAccountModal = ({ isOpen, onClose, onConfirm }) => {
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!password) {
+      return showToast.error("Please enter your current password");
+    }
+    
+    setIsLoading(true);
+    await onConfirm(password);
+    setIsLoading(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+      <div className="bg-white rounded-3xl p-6 max-w-md w-full shadow-2xl relative">
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+        <div className="flex flex-col items-center text-center mb-6">
+          <div className="p-4 bg-amber-50 text-amber-600 rounded-full mb-4">
+            <AlertTriangle className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-black text-slate-800">Deactivate Account?</h2>
+          <p className="text-sm text-slate-500 mt-2">
+            Your profile will be temporarily hidden. You can easily reactivate your account anytime simply by logging back in.
+          </p>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Current Password</label>
+            <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className="w-full p-3 rounded-xl bg-slate-50 border border-slate-200 text-sm focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500 outline-none" required />
+          </div>
+          <button type="submit" disabled={isLoading} className="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition-colors disabled:opacity-50">
+            {isLoading ? "Deactivating..." : "Deactivate Account"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
 const Settings = () => {
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
+
+  const handleDeactivateAccount = async (password) => {
+    try {
+      const res = await axios.post("/settings/deactivate-account", { password }, { withCredentials: true });
+      if (res.data.success) {
+        showToast.success("Account deactivated successfully. Log in anytime to reactivate.");
+        await logout();
+        navigate("/login");
+      }
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to deactivate account");
+    }
+  };
 
   const handleDeleteAccount = async (password) => {
     try {
@@ -104,8 +164,8 @@ const Settings = () => {
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">1. Account</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
               <SettingsRow icon={User} title="Edit Profile" subtitle="Public travel identity" to="/updateProfile" colorClass="text-blue-500 bg-blue-50" />
-              <SettingsRow icon={Lock} title="Change Password" subtitle="Update your password" to="/settings/security" colorClass="text-indigo-500 bg-indigo-50" />
-              <SettingsRow icon={Activity} title="Login Activity" subtitle="Where you're logged in" to="/settings/security" colorClass="text-cyan-500 bg-cyan-50" />
+              <SettingsRow icon={Lock} title="Change Password" subtitle="Update your password" to="/settings/security?tab=password" colorClass="text-indigo-500 bg-indigo-50" />
+              <SettingsRow icon={Activity} title="Login Activity" subtitle="Where you're logged in" to="/settings/security?tab=sessions" colorClass="text-cyan-500 bg-cyan-50" />
             </div>
           </div>
 
@@ -123,7 +183,7 @@ const Settings = () => {
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">3. Content</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
               <SettingsRow icon={Bookmark} title="Saved Posts" subtitle="Your bookmarked memories" to="/saved" colorClass="text-emerald-500 bg-emerald-50" />
-              <SettingsRow icon={Heart} title="Felt Vibes" subtitle="Collections of vibes you've felt" to="/felt-vibes" colorClass="text-pink-500 bg-pink-50" />
+              <SettingsRow icon={Sparkles} title="Felt Vibes" subtitle="Collections of vibes you've felt" to="/felt-vibes" colorClass="text-amber-500 bg-amber-50" />
               <SettingsRow icon={Compass} title="My Travel Groups" subtitle="Groups you manage or joined" to="/social/buddy?filter=hosted" colorClass="text-amber-500 bg-amber-50" />
             </div>
           </div>
@@ -151,7 +211,7 @@ const Settings = () => {
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">6. Account Management</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
               <SettingsRow icon={LogOut} title="Log Out" onClick={handleLogout} colorClass="text-slate-500 bg-slate-50" />
-              <SettingsRow icon={AlertTriangle} title="Deactivate Account" subtitle="Temporarily hide your profile" to="/settings/security" colorClass="text-rose-500 bg-rose-50" />
+              <SettingsRow icon={AlertTriangle} title="Deactivate Account" subtitle="Temporarily hide your profile" onClick={() => setIsDeactivateModalOpen(true)} colorClass="text-amber-600 bg-amber-50" />
               <SettingsRow icon={AlertTriangle} title="Delete Account" subtitle="Permanently delete your data" onClick={() => setIsDeleteModalOpen(true)} danger colorClass="text-rose-500 bg-rose-50" />
             </div>
           </div>
@@ -160,6 +220,11 @@ const Settings = () => {
 
       </div>
 
+      <DeactivateAccountModal
+        isOpen={isDeactivateModalOpen}
+        onClose={() => setIsDeactivateModalOpen(false)}
+        onConfirm={handleDeactivateAccount}
+      />
       <DeleteAccountModal 
         isOpen={isDeleteModalOpen} 
         onClose={() => setIsDeleteModalOpen(false)} 
