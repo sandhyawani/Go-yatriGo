@@ -3,14 +3,18 @@ import React, { useState, useEffect } from "react";
 import { Search, Users, ShieldCheck, Check, Globe } from "lucide-react";
 import axiosInstance from "../../api/axios";
 import Avatar from "../common/Avatar";
+import { useAuth } from "../../context/authContext";
 
 const MemberSelector = ({
   selectedIds = [],
   onChange,
   excludeUserIds = [],
 }) => {
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("Friends"); // Friends, Followers, Previous Companions
   const [users, setUsers] = useState([]);
+  const [followersList, setFollowersList] = useState([]);
+  const [followingList, setFollowingList] = useState([]);
   const [previousCompanions, setPreviousCompanions] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
@@ -18,13 +22,22 @@ const MemberSelector = ({
 
   useEffect(() => {
     setLoading(true);
-    Promise.all([
+    const userId = user?._id || localStorage.getItem("userId") || "";
+    const fetchPromises = [
       axiosInstance.get("/users/search").catch(() => ({ data: [] })),
       axiosInstance
         .get("/journeys/previous-companions")
         .catch(() => ({ data: { companions: [] } })),
-    ])
-      .then(([usersRes, compRes]) => {
+    ];
+    if (userId) {
+      fetchPromises.push(
+        axiosInstance.get(`/users/${userId}/followers`).catch(() => ({ data: { followers: [] } })),
+        axiosInstance.get(`/users/${userId}/following`).catch(() => ({ data: { following: [] } }))
+      );
+    }
+
+    Promise.all(fetchPromises)
+      .then(([usersRes, compRes, followersRes, followingRes]) => {
         const list = Array.isArray(usersRes.data)
           ? usersRes.data
           : usersRes.data?.users || [];
@@ -32,6 +45,13 @@ const MemberSelector = ({
           (u) => !excludeUserIds.includes(u._id),
         );
         setUsers(filteredUsers);
+
+        if (followersRes?.data?.followers) {
+          setFollowersList(followersRes.data.followers.filter((u) => !excludeUserIds.includes(u._id)));
+        }
+        if (followingRes?.data?.following) {
+          setFollowingList(followingRes.data.following.filter((u) => !excludeUserIds.includes(u._id)));
+        }
 
         const compList = compRes.data?.companions || [];
         let finalCompanions = compList.filter(
@@ -62,7 +82,7 @@ const MemberSelector = ({
       })
       .catch((err) => console.error("Error loading travelers:", err))
       .finally(() => setLoading(false));
-  }, []);
+  }, [user?._id]);
 
   const toggleUser = (userId) => {
     if (selectedIds.includes(userId)) {
@@ -102,10 +122,16 @@ const MemberSelector = ({
     return {};
   };
 
-  let rawList =
-    activeTab === "Previous Companions"
-      ? previousCompanions
-      : users.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
+  let rawList = [];
+  if (activeTab === "Previous Companions") {
+    rawList = previousCompanions;
+  } else if (activeTab === "Followers") {
+    rawList = followersList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
+  } else {
+    // Friends / Connections tab: show following list if available, else fall back to all users
+    const sourceList = followingList.length > 0 ? followingList : users;
+    rawList = sourceList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
+  }
 
   // Search filtering
   const searchKw = search.toLowerCase().trim();
