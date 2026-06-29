@@ -29,7 +29,7 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import Cropper from "react-easy-crop";
-import axios from "axios";
+import axios from "../../api/axios";
 import { showToast } from "../../utils/showToast";
 import { Search } from "lucide-react";
 import { useAuth } from "../../context/authContext";
