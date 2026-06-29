@@ -291,7 +291,7 @@ const VerificationRequests = () => {
                   </div>
                   <button
                     onClick={() => setSelectedUser(user)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-slate-50 hover:bg-cyan-50 border border-slate-200 hover:border-cyan-200 hover:text-cyan-700 text-slate-700 text-sm font-semibold transition-all shadow-sm"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 border border-purple-600 text-white text-sm font-semibold transition-all shadow-md shadow-purple-600/20"
                   >
                     <FileText className="w-4 h-4" />
                     Quick View
@@ -360,7 +360,7 @@ const VerificationRequests = () => {
                       onClick={() =>
                         handleDownload(selectedUser.govId, selectedUser.name)
                       }
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-cyan-50 hover:text-cyan-700 hover:border-cyan-200 transition group tooltip-trigger"
+                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition group tooltip-trigger"
                     >
                       <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
                     </button>
