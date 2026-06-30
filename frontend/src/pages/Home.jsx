@@ -259,9 +259,6 @@ const Home = () => {
     }
   };
 
-  const [storyReplyText, setStoryReplyText] = useState("");
-  const [replyingToStory, setReplyingToStory] = useState(false);
-
   const socket = useContext(SocketContext);
   const [onlineUsersMap, setOnlineUsersMap] = useState({});
   const lastTapTime = useRef({});
@@ -801,54 +798,6 @@ const Home = () => {
       /* user cancelled share */
     }
   }, []);
-
-  // Story reply
-  const handleStoryReply = useCallback(async () => {
-    if (!storyReplyText.trim() || !activeStoryGroup) return;
-    setReplyingToStory(true);
-    try {
-      const currentStory = activeStoryGroup.stories[activeStoryIndex];
-      const targetUserId = (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString();
-      const res = await axios.post(
-        `/social/story/reply/${targetUserId}`,
-        { text: storyReplyText, storyId: currentStory?._id },
-        { withCredentials: true },
-      );
-      if (res.data.success) {
-        showToast.success(
-          `Reply sent to ${activeStoryGroup.userName.split(" ")[0]}! 💬`,
-        );
-        setStoryReplyText("");
-      }
-    } catch {
-      showToast.error("Failed to send reply");
-    } finally {
-      setReplyingToStory(false);
-    }
-  }, [storyReplyText, activeStoryGroup, activeStoryIndex]);
-
-  // Story reaction
-  const handleStoryReaction = useCallback(
-    async (emoji) => {
-      if (!activeStoryGroup) return;
-      try {
-        const currentStory = activeStoryGroup.stories[activeStoryIndex];
-        const res = await axios.post(
-          `/social/story/${currentStory?._id}/react`,
-          { emoji },
-          { withCredentials: true },
-        );
-        if (res.data.success) {
-          showToast.success(`${emoji} Sent!`);
-          fetchFeedData();
-        }
-      } catch {
-        showToast.error("Failed to send reaction");
-      }
-    },
-    [activeStoryGroup, activeStoryIndex, fetchFeedData],
-  );
-
   // Follow / unfollow
   const handleFollowToggle = useCallback(
     async (targetUser) => {
@@ -1850,13 +1799,8 @@ const Home = () => {
               activeStoryGroup={activeStoryGroup}
               activeStoryIndex={activeStoryIndex}
               myUserId={myUserId}
-              storyReplyText={storyReplyText}
-              setStoryReplyText={setStoryReplyText}
-              replyingToStory={replyingToStory}
               isStoryMuted={isStoryMuted}
               setIsStoryMuted={setIsStoryMuted}
-              handleStoryReaction={handleStoryReaction}
-              handleStoryReply={handleStoryReply}
               handleDeleteStory={handleDeleteStory}
               setShowViewersList={setShowViewersList}
               isStoryPaused={isStoryPaused}

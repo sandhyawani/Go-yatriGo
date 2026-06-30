@@ -166,10 +166,6 @@ const Profile = () => {
       setActiveStoryGroup(null);
     }
   };
-
-  const handleStoryReaction = async () => {};
-  const handleStoryReply = async () => {};
-
   // Selected memory modal
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [likeAnimation, setLikeAnimation] = useState(false);
@@ -2321,14 +2317,9 @@ const Profile = () => {
           <StoryViewer
             activeStoryGroup={activeStoryGroup}
             activeStoryIndex={activeStoryIndex}
-            myUserId={currentUser?._id || currentUser?.id}
-            storyReplyText={storyReplyText}
-            setStoryReplyText={setStoryReplyText}
-            replyingToStory={replyingToStory}
+            myUserId={currentUser?._id}
             isStoryMuted={isStoryMuted}
             setIsStoryMuted={setIsStoryMuted}
-            handleStoryReaction={handleStoryReaction}
-            handleStoryReply={handleStoryReply}
             handleDeleteStory={handleDeleteStory}
             setShowViewersList={setShowViewersList}
             isStoryPaused={isStoryPaused}

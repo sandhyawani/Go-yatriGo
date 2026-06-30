@@ -104,6 +104,9 @@ const ChatRoom = () => {
 
   useEffect(() => {
     fetchChannels();
+    const handleRefresh = () => fetchChannels();
+    window.addEventListener("refresh_chats", handleRefresh);
+    return () => window.removeEventListener("refresh_chats", handleRefresh);
   }, [roomId, location.state]);
 
   useEffect(() => {
@@ -1860,8 +1863,6 @@ const ChatRoom = () => {
         activeStoryIndex={activeStoryIndex}
         setActiveStoryGroup={setActiveStoryGroup}
         setActiveStoryIndex={setActiveStoryIndex}
-        handleStoryReply={() => {}}
-        handleStoryReaction={() => {}}
         myUserId={user?._id}
         user={user}
         closeStoryViewer={() => setActiveStoryGroup(null)}

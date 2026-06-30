@@ -23,18 +23,15 @@ import { getAvatarUrl } from "../../utils/avatar";
 import AudioManager from "../../utils/AudioManager";
 import Swal from "sweetalert2";
 import StorySticker from "./StorySticker";
+import { SocketContext } from "../../context/SocketContext";
+import { useContext } from "react";
 
 const StoryViewer = ({
   activeStoryGroup,
   activeStoryIndex,
   myUserId,
-  storyReplyText,
-  setStoryReplyText,
-  replyingToStory,
   isStoryMuted,
   setIsStoryMuted,
-  handleStoryReaction,
-  handleStoryReply,
   handleDeleteStory,
   setShowViewersList,
   isStoryPaused,
@@ -50,6 +47,57 @@ const StoryViewer = ({
   const [isTabActive, setIsTabActive] = useState(true);
   const [reportModal, setReportModal] = useState({ isOpen: false });
   const [showViewersLocal, setShowViewersLocal] = useState(false);
+  const [storyReplyText, setStoryReplyText] = useState("");
+  const [replyingToStory, setReplyingToStory] = useState(false);
+  const socket = useContext(SocketContext);
+
+  // Story reply
+  const handleStoryReply = async () => {
+    if (!storyReplyText.trim() || !activeStoryGroup) return;
+    setReplyingToStory(true);
+    try {
+      const currentStory = activeStoryGroup.stories[activeStoryIndex];
+      const targetUserId = (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString();
+      const res = await axios.post(
+        `/social/story/reply/${targetUserId}`,
+        { text: storyReplyText, storyId: currentStory?._id },
+        { withCredentials: true },
+      );
+      if (res.data.success) {
+        showToast.success(
+          `Reply sent to ${activeStoryGroup.userName.split(" ")[0]}! 💬`,
+        );
+        setStoryReplyText("");
+        if (socket && res.data.chatMessage) {
+          socket.emit("send_chat_message", res.data.chatMessage);
+        }
+        window.dispatchEvent(new CustomEvent("refresh_chats"));
+      }
+    } catch {
+      showToast.error("Failed to send reply");
+    } finally {
+      setReplyingToStory(false);
+    }
+  };
+
+  // Story reaction
+  const handleStoryReaction = async (emoji) => {
+    if (!activeStoryGroup) return;
+    try {
+      const currentStory = activeStoryGroup.stories[activeStoryIndex];
+      const res = await axios.post(
+        `/social/story/${currentStory?._id}/react`,
+        { emoji },
+        { withCredentials: true },
+      );
+      if (res.data.success) {
+        showToast.success(`${emoji} Sent!`);
+        window.dispatchEvent(new CustomEvent("refresh_chats"));
+      }
+    } catch {
+      showToast.error("Failed to send reaction");
+    }
+  };
 
   const handleAvatarError = useCallback((e, name) => {
     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=6C4DF6&color=fff`;

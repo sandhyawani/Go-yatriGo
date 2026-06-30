@@ -2405,6 +2405,8 @@ exports.replyToStory = async (req, res) => {
         name: ownerUser.name,
         type: "direct",
         members: [senderId, storyOwnerId],
+        requestStatus: "pending",
+        requestedBy: senderId
       });
 
       await room.save();
@@ -2463,6 +2465,7 @@ exports.replyToStory = async (req, res) => {
       success: true,
       message: "Story reply sent!",
       roomId: room._id,
+      chatMessage: message,
     });
   } catch (error) {
     res.status(500).json({
