@@ -90,5 +90,21 @@ module.exports = {
       }
     },
   },
-  plugins: [require("tw-elements/dist/plugin")],
+  plugins: [
+    require("tw-elements/dist/plugin"),
+    function ({ addUtilities }) {
+      addUtilities({
+        '.pb-safe': {
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        },
+        '.pt-safe': {
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+        },
+        '.pb-nav': {
+          // Combined: 64px (h-16 nav) + safe-area bottom
+          paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))',
+        },
+      });
+    },
+  ],
 };

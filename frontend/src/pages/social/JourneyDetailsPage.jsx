@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   useParams,
   Link,
@@ -136,7 +136,7 @@ const JourneyDetailsPage = () => {
     "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-5 space-y-5 animate-fade-in pb-20">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-14 lg:pt-5 pb-20 space-y-5 animate-fade-in">
       {/* Top Nav Back & Actions */}
       <div className="flex items-center justify-between">
         <Link

@@ -1,4 +1,4 @@
-﻿import { showToast } from "../utils/showToast";
+import { showToast } from "../utils/showToast";
 import React, {
   useState,
   useEffect,
