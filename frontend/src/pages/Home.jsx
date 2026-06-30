@@ -1874,7 +1874,7 @@ const Home = () => {
         <AnimatePresence>
           {showViewersList &&
             activeStoryGroup &&
-            activeStoryGroup.userId?.toString() === myUserId && (
+            (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString() === myUserId && (
               <>
                 <motion.div
                   initial={{ opacity: 0 }}

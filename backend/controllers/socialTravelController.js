@@ -2415,8 +2415,11 @@ exports.replyToStory = async (req, res) => {
       senderName: senderUser.name,
       senderPic: senderUser.pic,
       text,
+      content: text,
       storyId: storyId || null,
       unreadBy: [storyOwnerId],
+      deliveredTo: [senderId],
+      seenBy: [senderId]
     });
 
     await message.save();
@@ -2425,6 +2428,7 @@ exports.replyToStory = async (req, res) => {
     }
 
     room.updatedAt = new Date();
+    room.hiddenFor = [];
     await room.save();
 
     // Notify the story owner
@@ -2614,119 +2618,8 @@ exports.globalSocialSearch = async (req, res) => {
     });
   }
 };
-// --- 5. STORY REPLY (DM) ---
 
-// Reply to a travel story
-exports.replyToStory = async (req, res) => {
-  try {
-    const senderId = req.user._id || req.user.id;
-    const storyOwnerId = req.params.storyUserId;
-    const { text, storyId } = req.body;
 
-    if (!text || !text.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "Reply text is required",
-      });
-    }
-
-    if (senderId.toString() === storyOwnerId.toString()) {
-      return res.status(400).json({
-        success: false,
-        message: "Cannot reply to your own story",
-      });
-    }
-
-    const senderUser = await User.findById(senderId);
-    const ownerUser = await User.findById(storyOwnerId);
-
-    if (!senderUser || !ownerUser) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
-
-    // Find or create a direct chat room
-    let room = await ChatRoom.findOne({
-      type: "direct",
-      members: {
-        $all: [senderId, storyOwnerId],
-      },
-    });
-
-    if (!room) {
-      room = new ChatRoom({
-        name: ownerUser.name,
-        type: "direct",
-        members: [senderId, storyOwnerId],
-      });
-
-      await room.save();
-    }
-
-    const Message = require("../models/Message");
-
-    // Save the story reply as a chat message
-    let message = new Message({
-      roomId: room._id,
-      sender: senderId,
-      senderName: senderUser.name,
-      senderPic: senderUser.pic,
-      text,
-      storyId: storyId || undefined,
-      unreadBy: [storyOwnerId],
-    });
-
-    await message.save();
-
-    // Attach story details if available
-    if (storyId) {
-      await message.populate("storyId", "media mediaType caption");
-    }
-
-    room.updatedAt = new Date();
-    await room.save();
-
-    // Create a notification for the story owner
-    const notification = await Notification.create({
-      sender: senderId,
-      receiver: storyOwnerId,
-      type: "story_reply",
-      story: storyId || undefined,
-      message: `${senderUser.name} replied to your story: "${text.substring(
-        0,
-        40
-      )}"`,
-    });
-
-    // Send the message and notification in real time
-    const io = req.app.get("io");
-
-    if (io) {
-      io.to(storyOwnerId.toString()).emit(
-        "new_notification",
-        notification
-      );
-
-      io.to(room._id.toString()).emit(
-        "receive_chat_message",
-        message
-      );
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Story reply sent!",
-      roomId: room._id,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 // --- 6. SETTINGS & ACCOUNT ---
 
 // Get all blocked users
