@@ -808,6 +808,9 @@ const acceptFollowRequest = async (req, res) => {
     res.status(200).json({
       success: true,
       message: "Follow request accepted successfully",
+      followersCount: currentUser.followers.length,
+      followingCount: currentUser.following.length,
+      requesterFollowingCount: requesterUser.following.length,
     });
   } catch (error) {
     res.status(500).json({

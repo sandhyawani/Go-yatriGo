@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
-import { showToast } from "../utils/showToast";
+﻿import { showToast } from "../utils/showToast";
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";

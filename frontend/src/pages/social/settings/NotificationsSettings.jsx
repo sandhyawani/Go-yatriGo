@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
-import React, { useEffect, useState } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Bell, ArrowLeft } from "lucide-react";
 import SettingsToggle from "../../../components/SettingsToggle";

@@ -1,4 +1,3 @@
-
 import { showToast } from "../../utils/showToast";
 import ReportModal from "../modals/ReportModal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
@@ -72,6 +71,9 @@ const StoryViewer = ({
           socket.emit("send_chat_message", res.data.chatMessage);
         }
         window.dispatchEvent(new CustomEvent("refresh_chats"));
+        if (res.data.chatMessage) {
+          window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));
+        }
       }
     } catch {
       showToast.error("Failed to send reply");
@@ -92,7 +94,13 @@ const StoryViewer = ({
       );
       if (res.data.success) {
         showToast.success(`${emoji} Sent!`);
+        if (socket && res.data.chatMessage) {
+          socket.emit("send_chat_message", res.data.chatMessage);
+        }
         window.dispatchEvent(new CustomEvent("refresh_chats"));
+        if (res.data.chatMessage) {
+          window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));
+        }
       }
     } catch {
       showToast.error("Failed to send reaction");

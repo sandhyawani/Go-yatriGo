@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
-import React, { useState, useEffect, useContext, useRef } from "react";
+﻿import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import {
@@ -272,14 +271,7 @@ const Profile = () => {
     const targetId = isOwnProfile ? currentUser?._id || currentUser?.id : id;
     if (!targetId) return;
 
-    if (isOwnProfile && currentUser) {
-      const selfData = { ...currentUser, canViewContent: true };
-      setProfileUser(selfData);
-      setCurrentUserData(selfData);
-      setLoading(false);
-    } else {
-      setLoading(true);
-    }
+    setLoading(true);
 
     try {
       const res = await axios.get(`/users/${targetId}`, {
@@ -317,7 +309,7 @@ const Profile = () => {
       );
       navigate("/social/buddy");
     } finally {
-      if (!isOwnProfile) setLoading(false);
+      setLoading(false);
     }
   };
 
@@ -469,6 +461,9 @@ const Profile = () => {
       );
       if (res.data.success) {
         showToast.success("Follow request accepted");
+
+        // Update logged-in user's Redux state immediately so hasPendingRequestForMe
+        // flips to false and the Accept/Decline buttons disappear without a flash
         const freshSelf = await axios.get(`/users/${currentUser._id}`, {
           withCredentials: true,
         });
@@ -479,8 +474,11 @@ const Profile = () => {
             ...currentUser,
             followRequests: selfData.followRequests,
             followers: selfData.followers,
+            following: selfData.following,
           },
         });
+
+        // Re-fetch the viewed profile from the DB to get the real, updated counts
         fetchProfile();
       }
     } catch (err) {

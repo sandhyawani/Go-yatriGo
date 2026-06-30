@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import React, { useState, useEffect } from "react";
 import { Search, Users, ShieldCheck, Check, Globe } from "lucide-react";
 import axiosInstance from "../../api/axios";

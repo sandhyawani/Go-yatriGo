@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 // import React, { Fragment, useContext, useState, useEffect } from "react";
 // import { Link, useNavigate, useLocation } from "react-router-dom";
 // import { Menu, Transition } from "@headlessui/react";

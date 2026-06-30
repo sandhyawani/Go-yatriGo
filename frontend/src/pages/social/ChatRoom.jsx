@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
-import { showToast } from "../../utils/showToast";
+﻿import { showToast } from "../../utils/showToast";
 import { toast } from "sonner";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "../../api/axios";
@@ -105,8 +104,20 @@ const ChatRoom = () => {
   useEffect(() => {
     fetchChannels();
     const handleRefresh = () => fetchChannels();
+    const handleMessageSent = (e) => {
+      if (e.detail && e.detail.roomId === roomId) {
+        setMessages((prev) => {
+          if (prev.some((m) => m._id === e.detail._id)) return prev;
+          return [...prev, e.detail];
+        });
+      }
+    };
     window.addEventListener("refresh_chats", handleRefresh);
-    return () => window.removeEventListener("refresh_chats", handleRefresh);
+    window.addEventListener("message_sent", handleMessageSent);
+    return () => {
+      window.removeEventListener("refresh_chats", handleRefresh);
+      window.removeEventListener("message_sent", handleMessageSent);
+    };
   }, [roomId, location.state]);
 
   useEffect(() => {
@@ -132,14 +143,36 @@ const ChatRoom = () => {
 
     const onReceiveChatMessage = (message) => {
       setMessages((prev) => {
-        const exists = prev.some(
-          (m) =>
-            m._id === message._id ||
-            (m.createdAt === message.createdAt &&
-              m.text === message.text &&
-              m.sender === message.sender),
-        );
-        if (exists) return prev;
+        // If this is a reaction message, replace any existing one for the same storyId+sender
+        const isReaction =
+          (message.text || "").startsWith("Reacted to your story:") ||
+          (message.content || "").startsWith("Reacted to your story:");
+
+        if (isReaction && message.storyId) {
+          const storyRef =
+            typeof message.storyId === "object"
+              ? message.storyId._id
+              : message.storyId;
+          const existingIdx = prev.findIndex(
+            (m) =>
+              (m.sender === message.sender ||
+                m.sender?._id === message.sender) &&
+              ((typeof m.storyId === "object"
+                ? m.storyId?._id
+                : m.storyId)?.toString() === storyRef?.toString()) &&
+              ((m.text || "").startsWith("Reacted to your story:") ||
+                (m.content || "").startsWith("Reacted to your story:"))
+          );
+          if (existingIdx !== -1) {
+            // Replace the existing reaction message in-place
+            const updated = [...prev];
+            updated[existingIdx] = message;
+            return updated;
+          }
+        }
+
+        // Deduplicate by _id
+        if (prev.some((m) => m._id === message._id)) return prev;
         return [...prev, message];
       });
       scrollToBottom();
@@ -159,6 +192,34 @@ const ChatRoom = () => {
           return r;
         }),
       );
+    };
+
+    // Dedicated handler for reaction updates emitted by the backend
+    const onStoryReactionMessageUpdated = (message) => {
+      setMessages((prev) => {
+        const storyRef =
+          typeof message.storyId === "object"
+            ? message.storyId?._id
+            : message.storyId;
+        const idx = prev.findIndex(
+          (m) =>
+            m._id === message._id ||
+            ((m.sender === message.sender ||
+              m.sender?._id === message.sender) &&
+              (typeof m.storyId === "object"
+                ? m.storyId?._id
+                : m.storyId
+              )?.toString() === storyRef?.toString() &&
+              (m.text || "").startsWith("Reacted to your story:"))
+        );
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = message;
+          return updated;
+        }
+        // If not found, append as new
+        return [...prev, message];
+      });
     };
 
     const onMessagesRead = ({ roomId, readByUserId }) => {
@@ -221,6 +282,7 @@ const ChatRoom = () => {
     socket.on("disconnect", onDisconnect);
     socket.on("user_presence", onUserPresence);
     socket.on("receive_chat_message", onReceiveChatMessage);
+    socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
     socket.on("messages_read", onMessagesRead);
     socket.on("is_typing", onIsTyping);
     socket.on("not_typing", onNotTyping);
@@ -232,6 +294,7 @@ const ChatRoom = () => {
       socket.off("disconnect", onDisconnect);
       socket.off("user_presence", onUserPresence);
       socket.off("receive_chat_message", onReceiveChatMessage);
+      socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
       socket.off("messages_read", onMessagesRead);
       socket.off("is_typing", onIsTyping);
       socket.off("not_typing", onNotTyping);
@@ -1485,6 +1548,25 @@ const ChatRoom = () => {
                       messages[index - 1].sender !== msg.sender ||
                       showDate);
 
+                  // Instagram-style: hide duplicate story preview for consecutive
+                  // messages referencing the same story (show it only on the first one)
+                  const currentStoryRef = msg.storyId
+                    ? typeof msg.storyId === "object"
+                      ? msg.storyId._id
+                      : msg.storyId
+                    : null;
+                  const prevMsg = index > 0 ? messages[index - 1] : null;
+                  const prevStoryRef = prevMsg?.storyId
+                    ? typeof prevMsg.storyId === "object"
+                      ? prevMsg.storyId._id
+                      : prevMsg.storyId
+                    : null;
+                  const hideStoryPreview =
+                    !!currentStoryRef &&
+                    !!prevStoryRef &&
+                    currentStoryRef?.toString() === prevStoryRef?.toString() &&
+                    !showDate;
+
                   return (
                     <div key={msg._id || index}>
                       {showDate && (
@@ -1509,6 +1591,7 @@ const ChatRoom = () => {
                         formatTime={formatTime}
                         activeMessageOptions={activeMessageOptions}
                         setActiveMessageOptions={setActiveMessageOptions}
+                        hideStoryPreview={hideStoryPreview}
                       />
                     </div>
                   );

@@ -1,5 +1,4 @@
-/* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
-import { showToast } from "../utils/showToast";
+﻿import { showToast } from "../utils/showToast";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";

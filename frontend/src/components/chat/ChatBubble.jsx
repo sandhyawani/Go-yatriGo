@@ -16,7 +16,8 @@ const ChatBubble = ({
   onStoryClick,
   formatTime,
   activeMessageOptions,
-  setActiveMessageOptions
+  setActiveMessageOptions,
+  hideStoryPreview = false,
 }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [lightboxData, setLightboxData] = useState({ isOpen: false, url: null, type: null });
@@ -123,7 +124,7 @@ const ChatBubble = ({
               )}
 
               {/* Story Reply / Reaction Snippet Popup */}
-              {msg.storyId && typeof msg.storyId === 'object' && (
+              {!hideStoryPreview && msg.storyId && typeof msg.storyId === 'object' && (
                 <div 
                   className={`mb-2.5 p-2 rounded-xl text-[12px] flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
                     isSelf 

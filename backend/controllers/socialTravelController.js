@@ -2227,21 +2227,38 @@ exports.reactToStory = async (req, res) => {
         await room.save();
       }
 
-      // Send reaction as a chat message
-      const message = new Message({
+      // Upsert reaction as a chat message (update existing instead of creating duplicates)
+      let message = await Message.findOne({
         roomId: room._id,
         sender: userId,
-        senderName: currentUser.name,
-        senderPic: currentUser.pic || currentUser.img,
-        text: `Reacted to your story: ${emoji}`,
-        content: `Reacted to your story: ${emoji}`,
         storyId: story._id,
-        unreadBy: [story.userId],
-        deliveredTo: [userId],
-        seenBy: [userId],
+        text: { $regex: /^Reacted to your story:/ },
       });
 
-      await message.save();
+      if (message) {
+        // Update the existing reaction message
+        message.text = `Reacted to your story: ${emoji}`;
+        message.content = `Reacted to your story: ${emoji}`;
+        message.updatedAt = new Date();
+        await message.save();
+      } else {
+        // Create a new reaction message
+        message = new Message({
+          roomId: room._id,
+          sender: userId,
+          senderName: currentUser.name,
+          senderPic: currentUser.pic || currentUser.img,
+          text: `Reacted to your story: ${emoji}`,
+          content: `Reacted to your story: ${emoji}`,
+          storyId: story._id,
+          unreadBy: [story.userId],
+          deliveredTo: [userId],
+          seenBy: [userId],
+        });
+        await message.save();
+      }
+
+      // Always populate story before emitting
       await message.populate("storyId", "media mediaType caption");
       chatMessageToReturn = message;
 
@@ -2250,7 +2267,9 @@ exports.reactToStory = async (req, res) => {
       await room.save();
 
       if (io) {
-        io.to(room._id.toString()).emit("receive_chat_message", message);
+        // Emit a dedicated event for reaction updates so the client can upsert
+        io.to(room._id.toString()).emit("story_reaction_message_updated", message.toObject());
+        io.to(room._id.toString()).emit("receive_chat_message", message.toObject());
       }
     }
 
@@ -2414,6 +2433,7 @@ exports.replyToStory = async (req, res) => {
     });
 
     await message.save();
+    // Always populate story fields before emitting so the chat UI has the preview
     if (message.storyId) {
       await message.populate("storyId", "media mediaType caption");
     }
@@ -2440,9 +2460,10 @@ exports.replyToStory = async (req, res) => {
         notification
       );
 
+      // Emit the fully-populated message so the receiver gets the story preview
       io.to(room._id.toString()).emit(
         "receive_chat_message",
-        message
+        message.toObject()
       );
     }
 
