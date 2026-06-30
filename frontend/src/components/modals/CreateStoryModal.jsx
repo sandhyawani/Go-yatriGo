@@ -99,6 +99,7 @@ const popularDestinations = [
 const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const audioRef = useRef(null);
   const previewRef = useRef(null);
 
@@ -198,7 +199,6 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [previewTrackId, setPreviewTrackId] = useState(null);
-  const [hasPromptedFilePicker, setHasPromptedFilePicker] = useState(false);
 
   const [visibility, setVisibility] = useState("public");
   const [allowedUsers, setAllowedUsers] = useState([]);
@@ -366,26 +366,11 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
     return () => clearTimeout(timeout);
   }, [musicSearchQuery, activeOverlay, selectedMusicLang]);
 
-  useEffect(() => {
-    if (isOpen && !hasPromptedFilePicker && step === 1 && !mediaFile) {
-      setHasPromptedFilePicker(true);
-      const timer = setTimeout(() => {
-        fileInputRef.current?.click();
-      }, 100);
-      const handleFocus = () => {
-        setTimeout(() => {
-          if (!fileInputRef.current?.value && step === 1 && !mediaFile) {
-            handleClose();
-          }
-        }, 300);
-      };
-      window.addEventListener("focus", handleFocus, { once: true });
-      return () => {
-        clearTimeout(timer);
-        window.removeEventListener("focus", handleFocus);
-      };
-    }
-  }, [isOpen, hasPromptedFilePicker, step, mediaFile]);
+  // Note: We intentionally do NOT auto-click the file input or auto-close
+  // on window focus. On iOS/Android the native file picker fires a window
+  // 'focus' event on close (even after a successful pick), which would kill
+  // the modal before the file is processed. The step-1 UI has a full-screen
+  // tap target and a "Choose Media" button for the user to open the picker.
 
   const resetState = () => {
     setStep(1);
@@ -407,7 +392,6 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
     setIsSelectingHiddenUsers(false);
     setSelectedSong(null);
     setIsPlaying(false);
-    setHasPromptedFilePicker(false);
     if (audioRef.current) {
       audioRef.current.pause();
     }
@@ -675,10 +659,20 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           exit={{ opacity: 0 }}
           className={`fixed inset-0 z-[100000] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-slate-900/60 backdrop-blur-sm" : "bg-black"}`}
         >
+          {/* Gallery file input — all media */}
           <input
             type="file"
             ref={fileInputRef}
             accept="image/*,video/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          {/* Camera input — direct camera capture */}
+          <input
+            type="file"
+            ref={cameraInputRef}
+            accept="image/*,video/*"
+            capture="environment"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -700,8 +694,9 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                   });
               }}
             >
+              {/* Tap-to-select area */}
               <div
-                className="flex-1 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:bg-purple-50/50 hover:border-purple-300 transition-all cursor-pointer group min-h-[300px]"
+                className="flex-1 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:bg-purple-50/50 hover:border-purple-300 transition-all cursor-pointer group min-h-[220px] active:bg-purple-50"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-200">
@@ -710,26 +705,34 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                 <h3 className="text-xl font-bold text-slate-800 mb-2">
                   Share Your Journey
                 </h3>
-                <p className="text-sm text-slate-500 mb-6">
-                  Upload a photo or video (max 1 min) from your adventure.
+                <p className="text-sm text-slate-500 mb-4">
+                  Tap to pick from gallery, or use the buttons below.
                 </p>
                 <div className="text-[11px] font-bold text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                  JPG • PNG • MP4 (MAX 1 MIN)
+                  JPG · PNG · MP4 (MAX 1 MIN)
                 </div>
               </div>
 
-              <div className="mt-5 flex gap-3 shrink-0">
+              {/* Action buttons — three options on mobile */}
+              <div className="mt-5 flex gap-2 shrink-0">
                 <button
                   onClick={handleClose}
-                  className="flex-1 py-3.5 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+                  className="py-3.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
                 >
                   Cancel
+                </button>
+                {/* Camera button — opens native camera directly on mobile */}
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 py-3.5 rounded-xl font-bold text-[#6C4DF6] border-2 border-[#6C4DF6]/30 bg-[#6C4DF6]/5 hover:bg-[#6C4DF6]/10 transition-all flex items-center justify-center gap-2"
+                >
+                  📷 Camera
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
                   className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-md hover:-translate-y-0.5 transition-all"
                 >
-                  Choose Media
+                  Gallery
                 </button>
               </div>
             </motion.div>
