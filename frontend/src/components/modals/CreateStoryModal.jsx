@@ -431,11 +431,24 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
     if (file.type.startsWith("video/")) {
       if (file.size > 50 * 1024 * 1024)
         return showToast.error("Video must be under 50MB");
-      setMediaType("video");
-      setMediaUrl(URL.createObjectURL(file));
-      setMediaFile(file);
-      setStep(2);
-      setActiveOverlay(null);
+
+      const videoElem = document.createElement("video");
+      videoElem.preload = "metadata";
+      videoElem.onloadedmetadata = () => {
+        window.URL.revokeObjectURL(videoElem.src);
+        if (videoElem.duration > 61) {
+          return showToast.error("Story video duration cannot exceed 1 minute (60 seconds)!");
+        }
+        setMediaType("video");
+        setMediaUrl(URL.createObjectURL(file));
+        setMediaFile(file);
+        setStep(2);
+        setActiveOverlay(null);
+      };
+      videoElem.onerror = () => {
+        showToast.error("Failed to load video metadata");
+      };
+      videoElem.src = URL.createObjectURL(file);
     } else if (file.type.startsWith("image/")) {
       if (file.size > 10 * 1024 * 1024)
         return showToast.error("Image must be under 10MB");
@@ -699,10 +712,10 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                   Share Your Journey
                 </h3>
                 <p className="text-sm text-slate-500 mb-6">
-                  Upload a photo or video from your latest adventure.
+                  Upload a photo or video (max 1 min) from your adventure.
                 </p>
                 <div className="text-[11px] font-bold text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                  JPG • PNG • MP4 • MOV
+                  JPG • PNG • MP4 (MAX 1 MIN)
                 </div>
               </div>
 
@@ -731,7 +744,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
               className="relative w-full h-full max-w-[430px] mx-auto sm:h-[95vh] sm:rounded-[36px] overflow-hidden bg-black shadow-2xl flex flex-col"
               ref={previewRef}
             >
-              <div className="absolute inset-0 z-0 bg-slate-50">
+              <div className="absolute inset-0 z-0 bg-black flex items-center justify-center">
                 {mediaType === "video" ? (
                   <video
                     src={mediaUrl}
@@ -739,13 +752,13 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                     loop
                     muted
                     playsInline
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-black"
                   />
                 ) : (
                   <img
                     src={mediaUrl}
                     alt="Preview"
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain bg-black"
                   />
                 )}
               </div>

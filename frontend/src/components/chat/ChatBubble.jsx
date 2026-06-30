@@ -95,7 +95,7 @@ const ChatBubble = ({
             msg.isUnsent 
               ? "bg-slate-50 border border-slate-200 text-slate-400 italic rounded-[18px]"
               : isSelf
-                ? "bg-[#7F77DD] text-white rounded-[18px] rounded-br-[4px] shadow-[0_4px_15px_-5px_rgba(127,119,221,0.3)]"
+                ? "bg-gradient-to-r from-[#6C4DF6] to-[#8553F4] text-white rounded-[18px] rounded-br-[4px] shadow-[0_4px_20px_-3px_rgba(108,77,246,0.45)] font-medium"
                 : "bg-[#F1EFE8] border border-slate-100 text-[#2C2C2A] rounded-[18px] rounded-bl-[4px] shadow-[0_2px_10px_-4px_rgba(0,0,0,0.05)] hover:shadow-md"
           }`}
           onContextMenu={(e) => {
@@ -103,7 +103,9 @@ const ChatBubble = ({
             setActiveMessageOptions(activeMessageOptions === msg._id ? null : msg._id);
           }}
           onClick={() => {
-            if (activeMessageOptions === msg._id) setActiveMessageOptions(null);
+            if (!msg.isUnsent && activeRoomType === "group") {
+              setActiveMessageOptions(activeMessageOptions === msg._id ? null : msg._id);
+            }
           }}
         >
           {msg.isUnsent ? (
@@ -120,23 +122,33 @@ const ChatBubble = ({
                 </div>
               )}
 
-              {/* Story Reply Snippet */}
+              {/* Story Reply / Reaction Snippet Popup */}
               {msg.storyId && typeof msg.storyId === 'object' && (
                 <div 
-                  className={`mb-2 p-1.5 rounded-lg text-[12px] opacity-95 flex gap-2 items-center cursor-pointer ${isSelf ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"} transition-colors`} 
+                  className={`mb-2.5 p-2 rounded-xl text-[12px] flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
+                    isSelf 
+                      ? "bg-white/15 border-white/25 text-white hover:bg-white/25" 
+                      : "bg-[#6C4DF6]/10 border-[#6C4DF6]/20 text-slate-800 hover:bg-[#6C4DF6]/15"
+                  } transition-all`} 
                   onClick={(e) => { 
                     e.stopPropagation(); 
                     if (onStoryClick) onStoryClick(msg.storyId._id); 
                   }}
                 >
-                  {msg.storyId.mediaType === 'video' ? (
-                    <video src={msg.storyId.media} className="w-10 h-14 object-cover rounded-md shrink-0" />
-                  ) : (
-                    <img src={msg.storyId.media} className="w-10 h-14 object-cover rounded-md shrink-0" alt="Story" />
-                  )}
-                  <div className="flex-1 min-w-0 pr-2">
-                    <div className="font-bold mb-0.5 opacity-90 text-[11px] uppercase tracking-wider text-[#6C4DF6]">Replied to story</div>
-                    <div className="truncate text-[12px] font-medium opacity-80">{msg.storyId.caption || "View story attachment"}</div>
+                  <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
+                    {msg.storyId.mediaType === 'video' ? (
+                      <video src={msg.storyId.media} className="w-full h-full object-cover" muted />
+                    ) : (
+                      <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0 pr-1">
+                    <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-100" : "text-[#6C4DF6]"}`}>
+                      {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Replied to story"}
+                    </div>
+                    <div className={`truncate text-[12.5px] font-medium ${isSelf ? "text-white/95" : "text-slate-700"}`}>
+                      {msg.storyId.caption || "View story attachment"}
+                    </div>
                   </div>
                 </div>
               )}

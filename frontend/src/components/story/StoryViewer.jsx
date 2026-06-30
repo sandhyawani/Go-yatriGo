@@ -454,14 +454,14 @@ const StoryViewer = ({
                 loop={false}
                 muted={isStoryMuted}
                 playsInline
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onLoadedMetadata={() => setStoryMediaLoaded(true)}
               />
             ) : (
               <img
                 src={mediaUrl}
                 alt="Story"
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onLoad={() => setStoryMediaLoaded(true)}
               />
             )}
