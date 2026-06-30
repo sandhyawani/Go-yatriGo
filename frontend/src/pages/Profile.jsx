@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import {
@@ -924,7 +924,19 @@ const Profile = () => {
                       </AnimatePresence>
                     </div>
                   </div>
-                ) : null}
+                ) : (
+                  <div className="flex gap-2 justify-center sm:justify-start w-full">
+                    <button
+                      onClick={() =>
+                        navigate("/updateProfile", { state: profileUser })
+                      }
+                      className="flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-bold bg-slate-100 text-slate-800 hover:bg-slate-200 active:scale-95 transition-all shadow-sm"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                      Edit Profile
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Row 2: Stats (Instagram style inline with more space) */}

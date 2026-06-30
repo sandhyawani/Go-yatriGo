@@ -895,120 +895,153 @@ const SocialSidebar = () => {
         </div>
       </nav>
 
-      {/* mobile top header */}
-      <div className="lg:hidden sticky top-0 bg-white/95 backdrop-blur-md z-[990] px-4 h-12 border-b border-slate-100 flex justify-between items-center">
-        {location.pathname.startsWith("/settings/") ? (
-          <Link
-            to="/settings"
-            className="flex items-center gap-2 text-slate-800 font-extrabold text-[15px] hover:text-purple-600 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-purple-600" />
-            <span>Settings</span>
-          </Link>
-        ) : (
-          <Link to="/" className="flex items-center gap-2">
-            <div className="relative w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-md shadow-[#6C4DF6]/30 overflow-hidden">
-              <div className="absolute top-[-2px] right-[-2px] w-4 h-4 bg-white/30 rounded-full blur-[2px]"></div>
-              <span className="relative z-10 text-white font-extrabold text-[13px] tracking-tighter flex items-center drop-shadow-sm">
-                G<span className="text-[#FFD166] -ml-[1px] mt-[1px]">Y</span>
-              </span>
-            </div>
-            <span className="text-[17px] font-black tracking-tight text-slate-900">
-              Go YatriGo.
-            </span>
-          </Link>
-        )}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => setIsSearchOpen(true)}
-            className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-          >
-            <Search className="w-4.5 h-4.5" />
-          </button>
-          {user && (
-            <>
-              <button
-                onClick={() => {
-                  setShowNotifPanel((prev) => !prev);
-                  if (!showNotifPanel && unreadCount > 0) handleMarkAllRead();
-                }}
-                className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
-              >
-                <Bell className="w-4.5 h-4.5" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#FF5A7A] text-white text-[7px] font-black rounded-full flex items-center justify-center">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
+      {/* mobile top header — hidden on full-screen focused routes */}
+      {(() => {
+        const path = location.pathname;
+        const hideTopHeader =
+          /^\/social\/chat\/.+/.test(path) ||
+          path.startsWith("/social/buddy/new") ||
+          path.startsWith("/social/buddy/edit") ||
+          path.startsWith("/social/journey/") ||
+          path.startsWith("/updateProfile");
+
+        if (hideTopHeader) return null;
+
+        return (
+          <div className="lg:hidden sticky top-0 bg-white/95 backdrop-blur-md z-[990] px-4 h-12 border-b border-slate-100 flex justify-between items-center">
+            {location.pathname.startsWith("/settings/") ? (
               <Link
                 to="/settings"
-                aria-label="Settings"
+                className="flex items-center gap-2 text-slate-800 font-extrabold text-[15px] hover:text-purple-600 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-purple-600" />
+                <span>Settings</span>
+              </Link>
+            ) : (
+              <Link to="/" className="flex items-center gap-2">
+                <div className="relative w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-md shadow-[#6C4DF6]/30 overflow-hidden">
+                  <div className="absolute top-[-2px] right-[-2px] w-4 h-4 bg-white/30 rounded-full blur-[2px]"></div>
+                  <span className="relative z-10 text-white font-extrabold text-[13px] tracking-tighter flex items-center drop-shadow-sm">
+                    G<span className="text-[#FFD166] -ml-[1px] mt-[1px]">Y</span>
+                  </span>
+                </div>
+                <span className="text-[17px] font-black tracking-tight text-slate-900">
+                  Go YatriGo.
+                </span>
+              </Link>
+            )}
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setIsSearchOpen(true)}
                 className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
               >
-                <Settings className="w-4.5 h-4.5" />
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
+                <Search className="w-4.5 h-4.5" />
+              </button>
+              {user && (
+                <>
+                  <button
+                    onClick={() => {
+                      setShowNotifPanel((prev) => !prev);
+                      if (!showNotifPanel && unreadCount > 0) handleMarkAllRead();
+                    }}
+                    className="relative p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+                  >
+                    <Bell className="w-4.5 h-4.5" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1.5 right-1.5 w-3 h-3 bg-[#FF5A7A] text-white text-[7px] font-black rounded-full flex items-center justify-center">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                  <Link
+                    to="/settings"
+                    aria-label="Settings"
+                    className="p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-colors"
+                  >
+                    <Settings className="w-4.5 h-4.5" />
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
-      {/* mobile bottom nav */}
-      {user && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-3 pb-safe">
-          <Link
-            to="/"
-            className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
-              location.pathname === "/"
-                ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            <HomeIcon className="w-5 h-5" />
-          </Link>
+      {/* mobile bottom nav — hidden on full-screen focused routes like individual chat, settings pages, trip creation, etc. */}
+      {user && (() => {
+        const path = location.pathname;
+        // Hide on any route where the user is doing a focused task
+        const hideBottomNav =
+          // Inside a specific chat room (e.g. /social/chat/roomId)
+          /^\/social\/chat\/.+/.test(path) ||
+          // Settings sub-pages
+          path.startsWith("/settings/") ||
+          // Trip creation / edit
+          path.startsWith("/social/buddy/new") ||
+          path.startsWith("/social/buddy/edit") ||
+          // Journey workspace
+          path.startsWith("/social/journey/") ||
+          // Update profile
+          path.startsWith("/updateProfile");
 
-          <Link
-            to="/social/buddy"
-            className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
-              location.pathname.startsWith("/social/buddy")
-                ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            <Compass className="w-5 h-5" />
-          </Link>
+        if (hideBottomNav) return null;
 
-          {/* FAB Create */}
-          <button
-            onClick={() => setIsOpen(true)}
-            className="p-2.5 bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white rounded-2xl shadow-md shadow-[#6C4DF6]/25 active:scale-95 transition-transform"
-          >
-            <PlusSquare className="w-5 h-5" />
-          </button>
+        return (
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-3 pb-safe">
+            <Link
+              to="/"
+              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+                location.pathname === "/"
+                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <HomeIcon className="w-5 h-5" />
+            </Link>
 
-          <Link
-            to="/social/chat"
-            className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
-              location.pathname.startsWith("/social/chat")
-                ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            <MessageSquare className="w-5 h-5" />
-          </Link>
+            <Link
+              to="/social/buddy"
+              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+                location.pathname.startsWith("/social/buddy")
+                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Compass className="w-5 h-5" />
+            </Link>
 
-          <Link
-            to="/profile"
-            className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
-              location.pathname === "/profile"
-                ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
-                : "text-slate-400 hover:text-slate-600"
-            }`}
-          >
-            <User className="w-5 h-5" />
-          </Link>
-        </nav>
-      )}
+            {/* FAB Create */}
+            <button
+              onClick={() => setIsOpen(true)}
+              className="p-2.5 bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white rounded-2xl shadow-md shadow-[#6C4DF6]/25 active:scale-95 transition-transform"
+            >
+              <PlusSquare className="w-5 h-5" />
+            </button>
+
+            <Link
+              to="/social/chat"
+              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+                location.pathname.startsWith("/social/chat")
+                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <MessageSquare className="w-5 h-5" />
+            </Link>
+
+            <Link
+              to="/profile"
+              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+                location.pathname === "/profile"
+                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <User className="w-5 h-5" />
+            </Link>
+          </nav>
+        );
+      })()}
 
       {/* Mobile Create Sheet */}
       <AnimatePresence>
@@ -1040,6 +1073,25 @@ const SocialSidebar = () => {
                 <button
                   onClick={() => {
                     setIsOpen(false);
+                    setIsCreateStoryOpen(true);
+                  }}
+                  className="w-full text-left flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
+                >
+                  <div className="p-2.5 bg-emerald-50 rounded-lg text-emerald-500">
+                    <PlusSquare className="w-4.5 h-4.5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-800">
+                      Create Story
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Share moments for 24h
+                    </p>
+                  </div>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsOpen(false);
                     setIsCreatePostOpen(true);
                   }}
                   className="w-full text-left flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
@@ -1061,7 +1113,7 @@ const SocialSidebar = () => {
                   onClick={() => setIsOpen(false)}
                   className="flex items-center gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100 transition-colors"
                 >
-                  <div className="p-2.5 bg-emerald-50 rounded-lg text-emerald-500">
+                  <div className="p-2.5 bg-amber-50 rounded-lg text-amber-500">
                     <Compass className="w-4.5 h-4.5" />
                   </div>
                   <div>
