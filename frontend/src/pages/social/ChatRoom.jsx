@@ -1114,7 +1114,11 @@ const ChatRoom = () => {
                               {isTyping} typing...
                             </span>
                           ) : room.latestMessage ? (
-                            room.latestMessage.text
+                            room.latestMessage.storyId
+                              ? room.latestMessage.text?.startsWith("Reacted")
+                                ? room.latestMessage.text
+                                : `💬 Story reply: ${room.latestMessage.text}`
+                              : room.latestMessage.text
                           ) : (
                             "Start chatting"
                           )}

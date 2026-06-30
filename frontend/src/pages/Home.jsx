@@ -808,8 +808,9 @@ const Home = () => {
     setReplyingToStory(true);
     try {
       const currentStory = activeStoryGroup.stories[activeStoryIndex];
+      const targetUserId = (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString();
       const res = await axios.post(
-        `/social/story/reply/${activeStoryGroup.userId}`,
+        `/social/story/reply/${targetUserId}`,
         { text: storyReplyText, storyId: currentStory?._id },
         { withCredentials: true },
       );

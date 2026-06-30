@@ -96,9 +96,9 @@ exports.getUserRooms = async (req, res) => {
       .populate("travelGroupId", "title destination coverImage status")
       .sort({ updatedAt: -1 });
 
-    // For each room, let's fetch the latest message and unread count
     const roomsWithDetails = await Promise.all(rooms.map(async (room) => {
       const latestMessage = await Message.findOne({ roomId: room._id })
+        .populate("storyId", "media mediaType caption")
         .sort({ createdAt: -1 });
 
       const unreadCount = await Message.countDocuments({
