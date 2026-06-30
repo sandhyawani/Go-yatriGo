@@ -2229,14 +2229,18 @@ exports.reactToStory = async (req, res) => {
           senderName: currentUser.name,
           senderPic: currentUser.pic || currentUser.img,
           text: `Reacted to your story: ${emoji}`,
+          content: `Reacted to your story: ${emoji}`,
           storyId: story._id,
           unreadBy: [story.userId],
+          deliveredTo: [userId],
+          seenBy: [userId],
         });
 
         await message.save();
         await message.populate("storyId", "media mediaType caption");
 
         room.updatedAt = new Date();
+        room.hiddenFor = [];
         await room.save();
 
         if (io) {
