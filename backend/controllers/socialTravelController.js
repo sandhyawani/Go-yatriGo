@@ -2161,6 +2161,7 @@ exports.reactToStory = async (req, res) => {
     );
 
     const io = req.app.get("io");
+    let chatMessageToReturn = null;
 
     // Add a new reaction if the user hasn't reacted yet
     if (reactIdx === -1) {
@@ -2182,91 +2183,74 @@ exports.reactToStory = async (req, res) => {
 
         // Send real-time notification using Socket.IO
         if (io) {
-          io.to(story.userId.toString()).emit("story_reaction_update", {
-            storyId: story._id,
-            reaction: {
-              userId: currentUser,
-              emoji,
-              reactedAt: new Date(),
-            },
-          });
-
-          io.to(story.userId.toString()).emit(
-            "new_notification",
-            notification
-          );
-        }
-
-        // Create or find a direct chat
-        const ChatRoom = require("../models/ChatRoom");
-        const Message = require("../models/Message");
-
-        let room = await ChatRoom.findOne({
-          type: "direct",
-          members: {
-            $all: [userId, story.userId],
-          },
-        });
-
-        if (!room) {
-          const ownerUser = await User.findById(story.userId);
-
-          room = new ChatRoom({
-            name: ownerUser ? ownerUser.name : "Traveler",
-            type: "direct",
-            members: [userId, story.userId],
-            requestStatus: "pending",
-            requestedBy: userId,
-          });
-
-          await room.save();
-        }
-
-        // Send reaction as a chat message
-        const message = new Message({
-          roomId: room._id,
-          sender: userId,
-          senderName: currentUser.name,
-          senderPic: currentUser.pic || currentUser.img,
-          text: `Reacted to your story: ${emoji}`,
-          content: `Reacted to your story: ${emoji}`,
-          storyId: story._id,
-          unreadBy: [story.userId],
-          deliveredTo: [userId],
-          seenBy: [userId],
-        });
-
-        await message.save();
-        await message.populate("storyId", "media mediaType caption");
-
-        room.updatedAt = new Date();
-        room.hiddenFor = [];
-        await room.save();
-
-        if (io) {
-          io.to(room._id.toString()).emit(
-            "receive_chat_message",
-            message
-          );
+          io.to(story.userId.toString()).emit("new_notification", notification);
         }
       }
     } else {
       // Update existing reaction
       story.storyReactions[reactIdx].emoji = emoji;
       story.storyReactions[reactIdx].reactedAt = new Date();
+    }
 
-      if (io && story.userId.toString() !== userId.toString()) {
-        io.to(story.userId.toString()).emit(
-          "story_reaction_update",
-          {
-            storyId: story._id,
-            reaction: {
-              userId: currentUser,
-              emoji,
-              reactedAt: new Date(),
-            },
-          }
-        );
+    if (io && story.userId.toString() !== userId.toString()) {
+      io.to(story.userId.toString()).emit("story_reaction_update", {
+        storyId: story._id,
+        reaction: {
+          userId: currentUser,
+          emoji,
+          reactedAt: new Date(),
+        },
+      });
+    }
+
+    // Always create/update a chat message if reacting to someone else's story
+    if (story.userId.toString() !== userId.toString()) {
+      const ChatRoom = require("../models/ChatRoom");
+      const Message = require("../models/Message");
+
+      let room = await ChatRoom.findOne({
+        type: "direct",
+        members: {
+          $all: [userId, story.userId],
+        },
+      });
+
+      if (!room) {
+        const ownerUser = await User.findById(story.userId);
+        room = new ChatRoom({
+          name: ownerUser ? ownerUser.name : "Traveler",
+          type: "direct",
+          members: [userId, story.userId],
+          requestStatus: "pending",
+          requestedBy: userId,
+        });
+        await room.save();
+      }
+
+      // Send reaction as a chat message
+      const message = new Message({
+        roomId: room._id,
+        sender: userId,
+        senderName: currentUser.name,
+        senderPic: currentUser.pic || currentUser.img,
+        text: `Reacted to your story: ${emoji}`,
+        content: `Reacted to your story: ${emoji}`,
+        storyId: story._id,
+        unreadBy: [story.userId],
+        deliveredTo: [userId],
+        seenBy: [userId],
+      });
+
+      await message.save();
+      await message.populate("storyId", "media mediaType caption");
+      chatMessageToReturn = message;
+
+      room.updatedAt = new Date();
+      room.hiddenFor = [];
+      await room.save();
+
+      if (io) {
+        io.to(room._id.toString()).emit("receive_chat_message", message);
       }
     }
 
@@ -2276,6 +2260,7 @@ exports.reactToStory = async (req, res) => {
       success: true,
       message: "Reaction updated",
       storyReactions: story.storyReactions,
+      chatMessage: chatMessageToReturn,
     });
   } catch (error) {
     res.status(500).json({
