@@ -12,7 +12,7 @@ const TravelSafetyGuidelines = () => {
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
           <button 
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/settings')}
             className="p-2 hover:bg-slate-200 rounded-full transition-colors"
           >
             <ChevronLeft className="w-6 h-6 text-slate-700" />

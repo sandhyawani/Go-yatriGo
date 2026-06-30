@@ -43,45 +43,45 @@ const CompactMemoryCard = ({ item }) => {
         return {
           icon: <Clapperboard className="w-3 h-3" />,
           label: "Story",
-          bg: "bg-white/90 text-purple-600",
+          bg: "bg-white/95 text-purple-600",
         };
       case "group":
         return {
           icon: <Users className="w-3 h-3" />,
-          label: "Travel Group",
-          bg: "bg-white/90 text-blue-600",
+          label: "Group",
+          bg: "bg-white/95 text-blue-600",
         };
       case "document":
         return {
           icon: <FileText className="w-3 h-3" />,
           label: "Document",
-          bg: "bg-white/90 text-amber-600",
+          bg: "bg-white/95 text-amber-600",
         };
       case "profile_update":
         return {
           icon: <User className="w-3 h-3" />,
-          label: "Profile Update",
-          bg: "bg-white/90 text-emerald-600",
+          label: "Profile",
+          bg: "bg-white/95 text-emerald-600",
         };
       case "travel_memory":
       case "travel_photo":
       case "memory":
         return {
           icon: <MapPin className="w-3 h-3" />,
-          label: "Travel Memory",
-          bg: "bg-white/90 text-rose-600",
+          label: "Memory",
+          bg: "bg-white/95 text-rose-600",
         };
       case "travel_video":
         return {
           icon: <Video className="w-3 h-3" />,
-          label: "Travel Video",
-          bg: "bg-white/90 text-indigo-600",
+          label: "Video",
+          bg: "bg-white/95 text-indigo-600",
         };
       default:
         return {
           icon: <ImageIcon className="w-3 h-3" />,
           label: "Memory",
-          bg: "bg-white/90 text-slate-600",
+          bg: "bg-white/95 text-slate-600",
         };
     }
   };
@@ -105,8 +105,8 @@ const CompactMemoryCard = ({ item }) => {
       exit={{ opacity: 0, scale: 0.9 }}
       transition={{ duration: 0.3 }}
       onClick={handleCardClick}
-      className={`relative overflow-hidden cursor-pointer group flex-shrink-0 transition-all duration-300 w-[200px] h-[260px] 
-        ${isNonTravel ? "rounded-2xl border-2 border-slate-200 bg-slate-50" : "rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1"}
+      className={`relative overflow-hidden cursor-pointer group shrink-0 transition-all duration-300 w-full sm:w-[200px] h-[210px] sm:h-[260px] 
+        ${isNonTravel ? "rounded-2xl border-2 border-slate-200 bg-slate-50" : "rounded-2xl sm:rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl shadow-[0_4px_20px_rgba(0,0,0,0.06)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1"}
       `}
     >
       <div
@@ -189,21 +189,21 @@ const CompactMemoryCard = ({ item }) => {
 
         {/* Top Badge */}
         <div
-          className={`absolute top-3 left-3 z-10 ${isNonTravel ? "top-5 left-5" : ""}`}
+          className={`absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-10 ${isNonTravel ? "top-4 left-4" : ""}`}
         >
           <div
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full backdrop-blur-md text-[10px] font-bold tracking-wide shadow-sm ${badge.bg}`}
+            className={`flex items-center gap-1 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full backdrop-blur-md text-[9px] sm:text-[10px] font-bold tracking-wide shadow-sm ${badge.bg}`}
           >
             {badge.icon}
-            {badge.label}
+            <span>{badge.label}</span>
           </div>
         </div>
 
-        {/* Hover Gradient Overlay */}
+        {/* hover overlay */}
         <div
-          className={`absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4 ${isNonTravel ? "m-4 rounded-xl" : ""}`}
+          className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 sm:p-4 ${isNonTravel ? "m-4 rounded-xl" : ""}`}
         >
-          <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+          <div className="transform translate-y-0 sm:translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
             {item.title && (
               <h3 className="text-white font-extrabold text-sm leading-tight mb-1.5 drop-shadow-md line-clamp-2">
                 {item.title}

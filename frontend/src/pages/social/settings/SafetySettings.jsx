@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldAlert, BookOpen, AlertCircle } from 'lucide-react';
+import { ShieldAlert, BookOpen, AlertCircle, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SettingsToggle from '../../../components/SettingsToggle';
 import axios from '../../../api/axios';
@@ -28,6 +28,13 @@ const SafetySettings = () => {
   return (
     <div className="w-full max-w-7xl mx-auto pb-20">
       <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-6">
+        <Link
+          to="/settings"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold shadow-sm transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 text-purple-600" />
+          <span>Back to Settings</span>
+        </Link>
         <div className="mb-8">
           <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
             <ShieldAlert className="w-6 h-6 text-brand-500" />

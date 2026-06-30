@@ -63,6 +63,7 @@ import {
   Sparkles,
   MessageSquare as MessageSquareIcon,
   Navigation,
+  ArrowLeft,
 } from "lucide-react";
 import axios from "../../api/axios";
 import moment from "moment";
@@ -897,17 +898,27 @@ const SocialSidebar = () => {
 
       {/* mobile top header */}
       <div className="lg:hidden sticky top-0 bg-white/95 backdrop-blur-md z-[990] px-4 h-12 border-b border-slate-100 flex justify-between items-center">
-        <Link to="/" className="flex items-center gap-2">
-          <div className="relative w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-md shadow-[#6C4DF6]/30 overflow-hidden">
-            <div className="absolute top-[-2px] right-[-2px] w-4 h-4 bg-white/30 rounded-full blur-[2px]"></div>
-            <span className="relative z-10 text-white font-extrabold text-[13px] tracking-tighter flex items-center drop-shadow-sm">
-              G<span className="text-[#FFD166] -ml-[1px] mt-[1px]">Y</span>
+        {location.pathname.startsWith("/settings/") ? (
+          <Link
+            to="/settings"
+            className="flex items-center gap-2 text-slate-800 font-extrabold text-[15px] hover:text-purple-600 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5 text-purple-600" />
+            <span>Settings</span>
+          </Link>
+        ) : (
+          <Link to="/" className="flex items-center gap-2">
+            <div className="relative w-7 h-7 rounded-[10px] bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-md shadow-[#6C4DF6]/30 overflow-hidden">
+              <div className="absolute top-[-2px] right-[-2px] w-4 h-4 bg-white/30 rounded-full blur-[2px]"></div>
+              <span className="relative z-10 text-white font-extrabold text-[13px] tracking-tighter flex items-center drop-shadow-sm">
+                G<span className="text-[#FFD166] -ml-[1px] mt-[1px]">Y</span>
+              </span>
+            </div>
+            <span className="text-[17px] font-black tracking-tight text-slate-900">
+              Go YatriGo.
             </span>
-          </div>
-          <span className="text-[17px] font-black tracking-tight text-slate-900">
-            Go YatriGo.
-          </span>
-        </Link>
+          </Link>
+        )}
         <div className="flex items-center gap-1">
           <button
             onClick={() => setIsSearchOpen(true)}

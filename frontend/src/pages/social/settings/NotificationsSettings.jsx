@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars, react-hooks/exhaustive-deps, jsx-a11y/alt-text, jsx-a11y/img-redundant-alt */
 import React, { useEffect, useState } from "react";
-import { Bell } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Bell, ArrowLeft } from "lucide-react";
 import SettingsToggle from "../../../components/SettingsToggle";
 import axios from "../../../api/axios";
 
@@ -25,6 +26,13 @@ const NotificationsSettings = () => {
   return (
     <div className="w-full max-w-7xl mx-auto pb-20">
       <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-6">
+        <Link
+          to="/settings"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold shadow-sm transition-all"
+        >
+          <ArrowLeft className="w-4 h-4 text-purple-600" />
+          <span>Back to Settings</span>
+        </Link>
         <div className="mb-8">
           <h1 className="text-2xl font-black text-slate-800">Notifications</h1>
           <p className="text-sm text-slate-500 font-medium mt-1">
