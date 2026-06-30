@@ -2,6 +2,9 @@
 
 A full-stack MERN (MongoDB, Express, React, Node.js) application designed to connect travelers and create a vibrant travel community. Go yatriGo enables users to find travel buddies, share experiences, and explore the world together.
 
+## 🌐 Live Demo
+Experience the live application here: **[https://go-yatri-go.vercel.app](https://go-yatri-go.vercel.app)**
+
 ## 📱 Features
 
 ### User Management
