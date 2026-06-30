@@ -1005,41 +1005,80 @@ const Home = () => {
     [fetchFeedData],
   );
 
+  // Derived values for stories
+  const myStoryGroup = useMemo(
+    () => stories.find((g) => (g.userId?._id || g.userId)?.toString() === myUserId),
+    [stories, myUserId],
+  );
+  const otherStories = useMemo(
+    () => stories.filter((g) => (g.userId?._id || g.userId)?.toString() !== myUserId),
+    [stories, myUserId],
+  );
+  const sortedStories = useMemo(() => {
+    return [...otherStories].sort((a, b) => {
+      const aHasUnviewed = a.stories?.some(
+        (s) => !s.viewedBy?.includes(myUserId),
+      );
+      const bHasUnviewed = b.stories?.some(
+        (s) => !s.viewedBy?.includes(myUserId),
+      );
+      if (aHasUnviewed && !bHasUnviewed) return -1;
+      if (!aHasUnviewed && bHasUnviewed) return 1;
+      const aLatest = Math.max(
+        ...(a.stories || []).map((s) => new Date(s.createdAt).getTime()),
+      );
+      const bLatest = Math.max(
+        ...(b.stories || []).map((s) => new Date(s.createdAt).getTime()),
+      );
+      return bLatest - aLatest;
+    });
+  }, [otherStories, myUserId]);
+
   // Story navigation
   const nextStory = useCallback(() => {
     if (!activeStoryGroup) return;
     if (activeStoryIndex < activeStoryGroup.stories.length - 1) {
       setActiveStoryIndex((prev) => prev + 1);
     } else {
-      const groupIdx = stories.findIndex(
-        (g) => g.userId === activeStoryGroup.userId,
-      );
-      if (groupIdx < stories.length - 1) {
-        setActiveStoryGroup(stories[groupIdx + 1]);
-        setActiveStoryIndex(0);
-      } else {
+      const activeId = (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString();
+      if (activeId === myUserId) {
         setActiveStoryGroup(null);
+      } else {
+        const groupIdx = sortedStories.findIndex(
+          (g) => (g.userId?._id || g.userId)?.toString() === activeId,
+        );
+        if (groupIdx !== -1 && groupIdx < sortedStories.length - 1) {
+          setActiveStoryGroup(sortedStories[groupIdx + 1]);
+          setActiveStoryIndex(0);
+        } else {
+          setActiveStoryGroup(null);
+        }
       }
     }
-  }, [activeStoryGroup, activeStoryIndex, stories]);
+  }, [activeStoryGroup, activeStoryIndex, sortedStories, myUserId]);
 
   const prevStory = useCallback(() => {
     if (!activeStoryGroup) return;
     if (activeStoryIndex > 0) {
       setActiveStoryIndex((prev) => prev - 1);
     } else {
-      const groupIdx = stories.findIndex(
-        (g) => g.userId === activeStoryGroup.userId,
-      );
-      if (groupIdx > 0) {
-        const prevGroup = stories[groupIdx - 1];
-        setActiveStoryGroup(prevGroup);
-        setActiveStoryIndex(prevGroup.stories.length - 1);
-      } else {
+      const activeId = (activeStoryGroup.userId?._id || activeStoryGroup.userId)?.toString();
+      if (activeId === myUserId) {
         setActiveStoryGroup(null);
+      } else {
+        const groupIdx = sortedStories.findIndex(
+          (g) => (g.userId?._id || g.userId)?.toString() === activeId,
+        );
+        if (groupIdx > 0) {
+          const prevGroup = sortedStories[groupIdx - 1];
+          setActiveStoryGroup(prevGroup);
+          setActiveStoryIndex(prevGroup.stories.length - 1);
+        } else {
+          setActiveStoryGroup(null);
+        }
       }
     }
-  }, [activeStoryGroup, activeStoryIndex, stories]);
+  }, [activeStoryGroup, activeStoryIndex, sortedStories, myUserId]);
 
   // Search
   const handleSearchInput = useCallback((e) => {
@@ -1068,39 +1107,10 @@ const Home = () => {
     }, 400);
   }, []);
 
-  // Derived values
-  const myStoryGroup = useMemo(
-    () => stories.find((g) => g.userId?.toString() === myUserId),
-    [stories, myUserId],
-  );
-  const otherStories = useMemo(
-    () => stories.filter((g) => g.userId?.toString() !== myUserId),
-    [stories, myUserId],
-  );
   const isPostCreator = useCallback(
     (post) => (post.userId?._id || post.userId)?.toString() === myUserId,
     [myUserId],
   );
-
-  const sortedStories = useMemo(() => {
-    return [...otherStories].sort((a, b) => {
-      const aHasUnviewed = a.stories?.some(
-        (s) => !s.viewedBy?.includes(myUserId),
-      );
-      const bHasUnviewed = b.stories?.some(
-        (s) => !s.viewedBy?.includes(myUserId),
-      );
-      if (aHasUnviewed && !bHasUnviewed) return -1;
-      if (!aHasUnviewed && bHasUnviewed) return 1;
-      const aLatest = Math.max(
-        ...(a.stories || []).map((s) => new Date(s.createdAt).getTime()),
-      );
-      const bLatest = Math.max(
-        ...(b.stories || []).map((s) => new Date(s.createdAt).getTime()),
-      );
-      return bLatest - aLatest;
-    });
-  }, [otherStories, myUserId]);
 
   const scrollStories = useCallback((direction) => {
     if (storyContainerRef.current) {
