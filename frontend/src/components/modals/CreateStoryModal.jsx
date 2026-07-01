@@ -106,6 +106,17 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
   const [step, setStep] = useState(1);
   const [activeOverlay, setActiveOverlay] = useState(null);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
+
   const [mediaFile, setMediaFile] = useState(null);
   const [mediaUrl, setMediaUrl] = useState("");
   const [mediaType, setMediaType] = useState("image");

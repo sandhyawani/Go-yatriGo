@@ -90,6 +90,17 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 
   const [musicResults, setMusicResults] = useState([]);
   const [isSearchingMusic, setIsSearchingMusic] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   const [trendingMusic, setTrendingMusic] = useState([]);
   const [selectedMusicLang, setSelectedMusicLang] = useState("");
 
@@ -836,6 +847,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               <video
                                 src={m.preview}
                                 className="w-full h-full object-cover"
+                                muted
+                                playsInline
                               />
                             ) : (
                               <img
@@ -955,6 +968,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       <video
                         src={mediaFiles[currentMediaIndex].preview}
                         controls
+                        muted
+                        playsInline
                         className="max-h-[300px] w-full bg-black object-contain md:h-full md:max-h-[500px]"
                       />
                     ) : mediaFiles.length > 0 ? (

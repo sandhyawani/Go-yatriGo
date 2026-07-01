@@ -1344,6 +1344,8 @@ const Profile = () => {
                               <video
                                 src={story.media}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                                muted
+                                playsInline
                               />
                             ) : (
                               <img
@@ -2059,6 +2061,7 @@ const Profile = () => {
                   controls
                   autoPlay
                   loop
+                  playsInline
                   className="max-w-full max-h-[85vh] object-contain rounded-2xl"
                 />
               ) : (

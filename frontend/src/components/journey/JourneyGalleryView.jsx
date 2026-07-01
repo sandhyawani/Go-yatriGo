@@ -221,6 +221,8 @@ const JourneyGalleryView = ({ journeyId }) => {
                   <video
                     src={item.mediaUrl}
                     className="w-full h-full object-cover opacity-80"
+                    muted
+                    playsInline
                   />
                   <Film className="w-8 h-8 text-white absolute" />
                 </div>
@@ -340,6 +342,8 @@ const JourneyGalleryView = ({ journeyId }) => {
                             <video
                               src={previewUrl}
                               className="w-full h-full object-cover"
+                              muted
+                              playsInline
                             />
                             <Film className="w-5 h-5 text-white absolute drop-shadow" />
                           </>

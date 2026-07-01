@@ -298,3 +298,27 @@ div:where(.swal2-icon).swal2-info {
   border-color: var(--primary-300) !important;
   color: var(--primary-300) !important;
 }
+
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .pl-safe {
+    padding-left: env(safe-area-inset-left);
+  }
+  .pr-safe {
+    padding-right: env(safe-area-inset-right);
+  }
+  .pb-nav {
+    padding-bottom: calc(env(safe-area-inset-bottom) + 4.5rem);
+  }
+  .mb-safe {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  .mt-safe {
+    margin-top: env(safe-area-inset-top);
+  }
+}

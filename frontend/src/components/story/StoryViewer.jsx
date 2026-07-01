@@ -50,6 +50,17 @@ const StoryViewer = ({
   const [replyingToStory, setReplyingToStory] = useState(false);
   const socket = useContext(SocketContext);
 
+  useEffect(() => {
+    if (activeStoryGroup) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeStoryGroup]);
+
   // Story reply
   const handleStoryReply = async () => {
     if (!storyReplyText.trim() || !activeStoryGroup) return;
@@ -493,6 +504,7 @@ const StoryViewer = ({
                   src={mediaUrl}
                   muted
                   loop
+                  playsInline
                   className="w-full h-full object-cover blur-[40px] scale-110 brightness-50"
                 />
               ) : (

@@ -138,7 +138,7 @@ const ChatBubble = ({
                 >
                   <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
                     {msg.storyId.mediaType === 'video' ? (
-                      <video src={msg.storyId.media} className="w-full h-full object-cover" muted />
+                      <video src={msg.storyId.media} className="w-full h-full object-cover" muted playsInline />
                     ) : (
                       <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
                     )}
@@ -284,6 +284,7 @@ const ChatBubble = ({
               className="max-w-full max-h-[90vh] object-contain rounded-lg"
               controls
               autoPlay
+              playsInline
               onClick={(e) => e.stopPropagation()}
             />
           ) : (

@@ -1145,6 +1145,8 @@ const Home = () => {
                         <video
                           src={myStoryGroup.stories[0]?.media}
                           className="w-full h-full object-cover"
+                          muted
+                          playsInline
                         />
                       ) : (
                         <img
@@ -1234,6 +1236,8 @@ const Home = () => {
                               <video
                                 src={group.stories[0]?.media}
                                 className="w-full h-full object-cover"
+                                muted
+                                playsInline
                               />
                             ) : (
                               <img
