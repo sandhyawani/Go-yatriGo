@@ -155,6 +155,26 @@ io.on("connection", (socket) => {
     socket.to(data.roomId).emit("messages_read", data);
   });
 
+  socket.on("message_delivered", async (data) => {
+    try {
+      const Message = require("./models/Message");
+      const message = await Message.findByIdAndUpdate(
+        data.messageId,
+        { $addToSet: { deliveredTo: data.userId } },
+        { new: true }
+      );
+      if (message) {
+        socket.to(data.roomId).emit("message_delivered_update", {
+          roomId: data.roomId,
+          messageId: data.messageId,
+          userId: data.userId,
+        });
+      }
+    } catch (err) {
+      console.error("Error updating message delivery status:", err);
+    }
+  });
+
   socket.on("disconnect", () => {
     for (const [userId, socketId] of onlineUsers.entries()) {
       if (socketId === socket.id) {

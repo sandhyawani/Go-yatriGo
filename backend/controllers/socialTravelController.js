@@ -2217,11 +2217,13 @@ exports.reactToStory = async (req, res) => {
 
       if (!room) {
         const ownerUser = await User.findById(story.userId);
+        const isMutual = ownerUser && ownerUser.followers?.some(id => id.toString() === userId.toString()) && 
+                         ownerUser.following?.some(id => id.toString() === userId.toString());
         room = new ChatRoom({
           name: ownerUser ? ownerUser.name : "Traveler",
           type: "direct",
           members: [userId, story.userId],
-          requestStatus: "pending",
+          requestStatus: isMutual ? "accepted" : "pending",
           requestedBy: userId,
         });
         await room.save();
@@ -2405,11 +2407,13 @@ exports.replyToStory = async (req, res) => {
     });
 
     if (!room) {
+      const isMutual = ownerUser && ownerUser.followers?.some(id => id.toString() === senderId.toString()) && 
+                       ownerUser.following?.some(id => id.toString() === senderId.toString());
       room = new ChatRoom({
         name: ownerUser.name,
         type: "direct",
         members: [senderId, storyOwnerId],
-        requestStatus: "pending",
+        requestStatus: isMutual ? "accepted" : "pending",
         requestedBy: senderId
       });
 

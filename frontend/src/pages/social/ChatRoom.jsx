@@ -72,11 +72,19 @@ const ChatRoom = () => {
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [hasMoreMessages, setHasMoreMessages] = useState(false);
+  const [messagesPage, setMessagesPage] = useState(1);
+  const [loadingMessages, setLoadingMessages] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerIntervalRef = useRef(null);
   const chatContainerRef = useRef(null);
+  const activeRoomRef = useRef(activeRoom);
+
+  useEffect(() => {
+    activeRoomRef.current = activeRoom;
+  }, [activeRoom]);
 
   const handleEmojiClick = (emojiObject) => {
     setInputText((prev) => prev + emojiObject.emoji);
@@ -127,6 +135,7 @@ const ChatRoom = () => {
     const onConnect = () => {
       setSocketConnected(true);
       if (user) socket.emit("go_online", user._id);
+      if (activeRoomRef.current) syncRoomMessages(activeRoomRef.current);
     };
 
     const onDisconnect = () => setSocketConnected(false);
@@ -188,12 +197,32 @@ const ChatRoom = () => {
               latestMessage: message,
               updatedAt: new Date().toISOString(),
               unreadCount:
-                r._id !== activeRoom?._id && message.sender !== user?._id
+                r._id !== activeRoomRef.current?._id && message.sender !== user?._id
                   ? (r.unreadCount || 0) + 1
                   : r.unreadCount,
             };
           }
           return r;
+        }),
+      );
+      if (socketConnected && socket && message.sender !== (user._id || user.id)) {
+        socket.emit("message_delivered", {
+          roomId: message.roomId,
+          messageId: message._id,
+          userId: user._id || user.id,
+        });
+      }
+    };
+
+    const onMessageDelivered = ({ roomId, messageId, userId }) => {
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m._id === messageId) {
+            const deliveredTo = [...(m.deliveredTo || [])];
+            if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+            return { ...m, deliveredTo };
+          }
+          return m;
         }),
       );
     };
@@ -287,6 +316,7 @@ const ChatRoom = () => {
     socket.on("user_presence", onUserPresence);
     socket.on("initial_online_users", onInitialOnlineUsers);
     socket.on("receive_chat_message", onReceiveChatMessage);
+    socket.on("message_delivered_update", onMessageDelivered);
     socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
     socket.on("messages_read", onMessagesRead);
     socket.on("is_typing", onIsTyping);
@@ -300,6 +330,7 @@ const ChatRoom = () => {
       socket.off("user_presence", onUserPresence);
       socket.off("initial_online_users", onInitialOnlineUsers);
       socket.off("receive_chat_message", onReceiveChatMessage);
+      socket.off("message_delivered_update", onMessageDelivered);
       socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
       socket.off("messages_read", onMessagesRead);
       socket.off("is_typing", onIsTyping);
@@ -307,7 +338,7 @@ const ChatRoom = () => {
       socket.off("message:unsent", onMessageUnsent);
       socket.off("request_status_updated", onRequestStatusUpdated);
     };
-  }, [socket, user, activeRoom]);
+  }, [socket, user]);
 
   useEffect(() => {
     if (activeRoom && user && socketConnected && socket) {
@@ -385,10 +416,28 @@ const ChatRoom = () => {
     }
   };
 
+  const syncRoomMessages = async (room) => {
+    if (!room) return;
+    try {
+      const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
+        withCredentials: true,
+      });
+      if (res.data.success) {
+        setMessages(res.data.messages || []);
+        setHasMoreMessages(res.data.hasMore);
+        setMessagesPage(1);
+      }
+    } catch (err) {
+      console.error("Failed to sync room messages:", err);
+    }
+  };
+
   const selectRoom = async (room) => {
     setActiveRoom(room);
     setMessages([]);
     setInputText("");
+    setMessagesPage(1);
+    setHasMoreMessages(false);
     if (room.type === "direct") {
       setActiveTab(
         room.requestStatus === "pending" && !isMyRequest(room)
@@ -400,13 +449,20 @@ const ChatRoom = () => {
     }
     try {
       socket.emit("join_room", room._id);
-      const res = await axios.get(`/chat/room/${room._id}/messages`, {
+      setLoadingMessages(true);
+      const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
         withCredentials: true,
       });
-      if (res.data.success) setMessages(res.data.messages || []);
+      if (res.data.success) {
+        setMessages(res.data.messages || []);
+        setHasMoreMessages(res.data.hasMore);
+        setMessagesPage(1);
+      }
       setTimeout(scrollToBottom, 100);
     } catch {
       showToast.error("Failed to retrieve chat history");
+    } finally {
+      setLoadingMessages(false);
     }
   };
 
@@ -493,6 +549,26 @@ const ChatRoom = () => {
 
     if (socketConnected) socket.emit("stop_typing", { roomId: activeRoom._id });
 
+    const clientMsgId = `opt-${Date.now()}`;
+    const optimisticMsg = {
+      _id: clientMsgId,
+      roomId: activeRoom._id,
+      sender: user._id || user.id,
+      senderName: user.name,
+      senderPic: user.pic,
+      text: textToSend,
+      content: textToSend,
+      media: selectedFile ? URL.createObjectURL(selectedFile) : (audioBlob ? URL.createObjectURL(audioBlob) : null),
+      isAudio: !!audioBlob,
+      isPending: true,
+      createdAt: new Date().toISOString(),
+      unreadBy: activeRoom.members.filter(m => m !== (user._id || user.id)),
+      seenBy: [user._id || user.id]
+    };
+
+    setMessages((prev) => [...prev, optimisticMsg]);
+    setTimeout(scrollToBottom, 50);
+
     try {
       let mediaUrl = null;
 
@@ -531,13 +607,16 @@ const ChatRoom = () => {
         { withCredentials: true },
       );
       if (res.data.success) {
-        setMessages((prev) => [...prev, res.data.message]);
+        setMessages((prev) =>
+          prev.map((m) => (m._id === clientMsgId ? res.data.message : m))
+        );
         if (socketConnected && socket) {
           socket.emit("send_chat_message", res.data.message);
         }
         setReplyToMsg(null);
       }
     } catch (err) {
+      setMessages((prev) => prev.filter((m) => m._id !== clientMsgId));
       showToast.error(err.response?.data?.message || "Error sending message");
     } finally {
       setIsSending(false);
@@ -644,9 +723,48 @@ const ChatRoom = () => {
     }
   };
 
+  const loadMoreMessages = async () => {
+    if (loadingMessages || !hasMoreMessages || !activeRoom) return;
+
+    try {
+      setLoadingMessages(true);
+      const nextPage = messagesPage + 1;
+      const res = await axios.get(
+        `/chat/room/${activeRoom._id}/messages?page=${nextPage}&limit=50`,
+        { withCredentials: true }
+      );
+
+      if (res.data.success) {
+        const newMsgs = res.data.messages || [];
+        const container = chatContainerRef.current;
+        const previousScrollHeight = container ? container.scrollHeight : 0;
+
+        setMessages((prev) => [...newMsgs, ...prev]);
+        setHasMoreMessages(res.data.hasMore);
+        setMessagesPage(nextPage);
+
+        if (container) {
+          setTimeout(() => {
+            container.scrollTop = container.scrollHeight - previousScrollHeight;
+          }, 0);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      showToast.error("Failed to load older messages");
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
   const handleScroll = () => {
     if (!chatContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+
+    if (scrollTop === 0 && hasMoreMessages && !loadingMessages) {
+      loadMoreMessages();
+    }
+
     if (scrollHeight - scrollTop - clientHeight > 200) {
       setShowScrollBottom(true);
     } else {

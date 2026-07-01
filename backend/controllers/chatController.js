@@ -167,6 +167,12 @@ exports.getRoomMessages = async (req, res) => {
       );
     }
 
+    // Mark messages as delivered to the current user
+    await Message.updateMany(
+      { roomId, sender: { $ne: userId }, deliveredTo: { $ne: userId } },
+      { $addToSet: { deliveredTo: userId } }
+    );
+
     res.status(200).json({ success: true, messages, page, hasMore: messages.length === limit });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

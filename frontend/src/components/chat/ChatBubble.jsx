@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Check, CheckCheck, SmilePlus, Reply, X } from 'lucide-react';
+import { Check, CheckCheck, SmilePlus, Reply, X, Loader2 } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 
 const ChatBubble = ({
@@ -206,10 +206,18 @@ const ChatBubble = ({
           >
             <span>{formatTime(msg.createdAt)}</span>
             {isSelf && !msg.isUnsent && (
-              !msg.unreadBy || msg.unreadBy.length === 0 ? (
+              msg.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin text-white/50" />
+              ) : !msg.unreadBy || msg.unreadBy.length === 0 ? (
                 <CheckCheck className="w-3.5 h-3.5 text-[#38bdf8] drop-shadow-sm" /> /* blue double tick = seen */
+              ) : msg.deliveredTo && msg.deliveredTo.filter(id => {
+                const uid = typeof id === "object" ? id._id : id;
+                const senderId = typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+                return uid?.toString() !== senderId?.toString();
+              }).length > 0 ? (
+                <CheckCheck className="w-3.5 h-3.5 text-white/60 drop-shadow-sm" /> /* grey/white double tick = delivered */
               ) : (
-                <Check className="w-3.5 h-3.5 text-white/80" /> /* single tick = sent (fallback double for delivered not fully supported by backend) */
+                <Check className="w-3.5 h-3.5 text-white/40" /> /* single tick = sent */
               )
             )}
           </div>
