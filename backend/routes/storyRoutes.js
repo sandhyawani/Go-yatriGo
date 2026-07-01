@@ -62,10 +62,25 @@ router.post("/:id/view", userMiddleware, async (req, res) => {
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
-    if (!story.views.includes(req.user)) {
-      story.views.push(req.user);
-      await story.save();
+    const userId = req.user._id;
+
+    // Update views array (ObjectIds)
+    if (!story.views.includes(userId)) {
+      story.views.push(userId);
     }
+
+    // Update viewedBy array (ObjectIds)
+    if (story.viewedBy && !story.viewedBy.includes(userId)) {
+      story.viewedBy.push(userId);
+    }
+
+    // Update viewers array (detailed objects)
+    const hasViewer = story.viewers.some(v => v.userId && v.userId.toString() === userId.toString());
+    if (!hasViewer) {
+      story.viewers.push({ userId, viewedAt: new Date() });
+    }
+
+    await story.save();
     res.status(200).json({ success: true, story });
   } catch (error) {
     console.error("View story error:", error);
@@ -79,11 +94,14 @@ router.post("/:id/like", userMiddleware, checkSuspended, async (req, res) => {
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
-    const likeIndex = story.likes.indexOf(req.user);
+    const userId = req.user._id;
+    if (!story.reactions) story.reactions = [];
+
+    const likeIndex = story.reactions.findIndex(id => id.toString() === userId.toString());
     if (likeIndex === -1) {
-      story.likes.push(req.user);
+      story.reactions.push(userId);
     } else {
-      story.likes.splice(likeIndex, 1);
+      story.reactions.splice(likeIndex, 1);
     }
     await story.save();
     res.status(200).json({ success: true, story });

@@ -966,6 +966,22 @@ const Home = () => {
     [fetchFeedData],
   );
 
+  const handleStoryViewed = useCallback((storyId) => {
+    setStories((prev) =>
+      prev.map((g) => ({
+        ...g,
+        stories: g.stories?.map((s) => {
+          if (s._id === storyId) {
+            const viewedBy = [...(s.viewedBy || [])];
+            if (!viewedBy.includes(myUserId)) viewedBy.push(myUserId);
+            return { ...s, viewedBy };
+          }
+          return s;
+        }) ?? g.stories,
+      })),
+    );
+  }, [myUserId]);
+
   // Derived values for stories
   const myStoryGroup = useMemo(
     () => stories.find((g) => (g.userId?._id || g.userId)?.toString() === myUserId),
@@ -1820,7 +1836,7 @@ const Home = () => {
               nextStory={nextStory}
               prevStory={prevStory}
               stories={stories}
-              fetchFeedData={fetchFeedData}
+              onStoryViewed={handleStoryViewed}
             />
           )}
         </AnimatePresence>

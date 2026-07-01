@@ -39,7 +39,7 @@ const StoryViewer = ({
   nextStory,
   prevStory,
   stories,
-  fetchFeedData,
+  onStoryViewed,
 }) => {
   const [storyMediaLoaded, setStoryMediaLoaded] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);
@@ -134,11 +134,11 @@ const StoryViewer = ({
             {},
             { withCredentials: true },
           )
-          .then(() => fetchFeedData?.())
+          .then(() => onStoryViewed?.(currentStory._id))
           .catch(() => {});
       }
     }
-  }, [activeStoryGroup, activeStoryIndex, myUserId, fetchFeedData]);
+  }, [activeStoryGroup, activeStoryIndex, myUserId, onStoryViewed]);
 
   // Tab visibility
   useEffect(() => {
