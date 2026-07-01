@@ -213,7 +213,7 @@ exports.deleteAccount = async (req, res) => {
       user: req.user.id,
     });
 
-    res.clearCookie("token", {
+    res.clearCookie("access_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
@@ -274,8 +274,7 @@ exports.deactivateAccount = async (req, res) => {
       user: req.user.id,
     });
 
-    res.clearCookie("access_token");
-    res.clearCookie("token", {
+    res.clearCookie("access_token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",

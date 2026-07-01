@@ -20,6 +20,10 @@ export const SocketProvider = ({ children }) => {
         query: { userId: user._id }
       });
       
+      newSocket.on("connect", () => {
+        newSocket.emit("go_online", user._id);
+      });
+      
       setSocket(newSocket);
 
       return () => {

@@ -128,8 +128,11 @@ io.on("connection", (socket) => {
 
     socket.broadcast.emit("user_presence", {
       userId,
-      online: true,
+      status: "online",
     });
+
+    // Send the list of current online user IDs to the user who just went online
+    socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
   });
 
   socket.on("join_room", (roomId) => {
@@ -159,7 +162,7 @@ io.on("connection", (socket) => {
 
         socket.broadcast.emit("user_presence", {
           userId,
-          online: false,
+          status: "offline",
         });
 
         break;

@@ -1,4 +1,4 @@
-﻿import { showToast } from "../../utils/showToast";
+import { showToast } from "../../utils/showToast";
 import { toast } from "sonner";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "../../api/axios";
@@ -141,6 +141,10 @@ const ChatRoom = () => {
       });
     };
 
+    const onInitialOnlineUsers = (userIds) => {
+      setOnlineUsers(new Set(userIds));
+    };
+
     const onReceiveChatMessage = (message) => {
       setMessages((prev) => {
         // If this is a reaction message, replace any existing one for the same storyId+sender
@@ -281,6 +285,7 @@ const ChatRoom = () => {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("user_presence", onUserPresence);
+    socket.on("initial_online_users", onInitialOnlineUsers);
     socket.on("receive_chat_message", onReceiveChatMessage);
     socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
     socket.on("messages_read", onMessagesRead);
@@ -293,6 +298,7 @@ const ChatRoom = () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("user_presence", onUserPresence);
+      socket.off("initial_online_users", onInitialOnlineUsers);
       socket.off("receive_chat_message", onReceiveChatMessage);
       socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
       socket.off("messages_read", onMessagesRead);

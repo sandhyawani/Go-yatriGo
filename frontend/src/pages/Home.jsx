@@ -337,10 +337,21 @@ const Home = () => {
       setOnlineUsersMap((prev) => ({ ...prev, [userId]: status === "online" }));
     };
 
+    const handleInitialOnlineUsers = (userIds) => {
+      setOnlineUsersMap((prev) => {
+        const next = { ...prev };
+        userIds.forEach((id) => {
+          next[id] = true;
+        });
+        return next;
+      });
+    };
+
     socket.on("story_viewer_update", updateStoryViewers);
     socket.on("story_reaction_update", updateStoryReactions);
     socket.on("new_notification", handleNewNotification);
     socket.on("user_presence", handleUserPresence);
+    socket.on("initial_online_users", handleInitialOnlineUsers);
 
     return () => {
       socket.off("connect", onConnect);
@@ -348,6 +359,7 @@ const Home = () => {
       socket.off("story_reaction_update", updateStoryReactions);
       socket.off("new_notification", handleNewNotification);
       socket.off("user_presence", handleUserPresence);
+      socket.off("initial_online_users", handleInitialOnlineUsers);
     };
   }, [socket, myUserId]);
 
