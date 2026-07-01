@@ -65,6 +65,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
@@ -281,32 +282,71 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
       return;
     }
 
-    const newMediaObjects = newFiles.map((file) => ({
-      file,
-      preview: URL.createObjectURL(file),
-      type: file.type.startsWith("video/") ? "video" : "image",
-      crop: { x: 0, y: 0 },
-      zoom: 1,
-      aspect: 4 / 5,
-      rotation: 0,
-      croppedAreaPixels: null,
-      croppedImage: null,
-    }));
+    // Use FileReader instead of createObjectURL — prevents black preview
+    // on mobile Safari/Chrome where blob URL decoding can be deferred
+    const readPromises = newFiles.map(
+      (file) =>
+        new Promise((resolve) => {
+          if (file.type.startsWith("video/")) {
+            // Videos work fine with blob URLs (they use <video> tag, not canvas)
+            resolve({
+              file,
+              preview: URL.createObjectURL(file),
+              type: "video",
+              crop: { x: 0, y: 0 },
+              zoom: 1,
+              aspect: 4 / 5,
+              rotation: 0,
+              croppedAreaPixels: null,
+              croppedImage: null,
+            });
+          } else {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              resolve({
+                file,
+                preview: ev.target.result, // data:image/... always renders on mobile
+                type: "image",
+                crop: { x: 0, y: 0 },
+                zoom: 1,
+                aspect: 4 / 5,
+                rotation: 0,
+                croppedAreaPixels: null,
+                croppedImage: null,
+              });
+            };
+            reader.onerror = () => {
+              resolve({
+                file,
+                preview: URL.createObjectURL(file), // fallback
+                type: "image",
+                crop: { x: 0, y: 0 },
+                zoom: 1,
+                aspect: 4 / 5,
+                rotation: 0,
+                croppedAreaPixels: null,
+                croppedImage: null,
+              });
+            };
+            reader.readAsDataURL(file);
+          }
+        }),
+    );
 
-    setMediaFiles((prev) => [...prev, ...newMediaObjects]);
-    setCurrentMediaIndex(mediaFiles.length); // Focus on the first newly added image
+    Promise.all(readPromises).then((newMediaObjects) => {
+      setMediaFiles((prev) => [...prev, ...newMediaObjects]);
+      setCurrentMediaIndex(mediaFiles.length); // Focus on the first newly added image
 
-    // If any new file is a video, or we have mixed, we might skip crop step for videos.
-    // For simplicity, we go to crop step if it's an image, else caption if all videos.
-    const hasImage = newMediaObjects.some((m) => m.type === "image");
+      const hasImage = newMediaObjects.some((m) => m.type === "image");
 
-    if (hasImage) {
-      setMediaType(mediaFiles.length > 0 ? "carousel" : "image");
-      setStep("crop");
-    } else {
-      setMediaType(mediaFiles.length > 0 ? "carousel" : "video");
-      setStep("caption");
-    }
+      if (hasImage) {
+        setMediaType(mediaFiles.length > 0 ? "carousel" : "image");
+        setStep("crop");
+      } else {
+        setMediaType(mediaFiles.length > 0 ? "carousel" : "video");
+        setStep("caption");
+      }
+    });
   };
 
   const handleFileChange = (e) => {
@@ -455,6 +495,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
     }
 
     setLoading(true);
+    setUploadProgress(0);
 
     try {
       let finalMediaUrls = [];
@@ -467,6 +508,11 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
           const uploadRes = await axios.post("/upload", formData, {
             withCredentials: true,
             timeout: 0, // Disable timeout for large uploads
+            onUploadProgress: (progressEvent) => {
+              if (progressEvent.total) {
+                setUploadProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+              }
+            },
           });
 
           if (!uploadRes.data.success) throw new Error("Video upload failed");
@@ -478,6 +524,11 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
             {
               withCredentials: true,
               timeout: 0, // Disable timeout for large uploads
+              onUploadProgress: (progressEvent) => {
+                if (progressEvent.total) {
+                  setUploadProgress(Math.round((progressEvent.loaded / progressEvent.total) * 100));
+                }
+              },
             },
           );
 
@@ -514,13 +565,12 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
       } else {
         showToast.error(res.data?.message || "Failed to create post.");
       }
-    } catch (error) {
-      console.error("Post creation error:", error);
-      showToast.error(
-        error.response?.data?.message || "Failed to create post.",
-      );
+    } catch (err) {
+      console.error(err);
+      showToast.error("Failed to share memory");
     } finally {
       setLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -1644,11 +1694,21 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 
             {loading && (
               <div className="absolute inset-0 z-[100000] flex items-center justify-center rounded-[32px] bg-white/65 backdrop-blur-sm">
-                <div className="flex flex-col items-center gap-3 rounded-3xl bg-white px-8 py-6 shadow-2xl">
+                <div className="flex flex-col items-center gap-4 rounded-3xl bg-white px-8 py-6 shadow-2xl w-[280px]">
                   <Loader2 className="h-9 w-9 animate-spin text-violet-600" />
-                  <p className="text-sm font-extrabold text-slate-700">
-                    Sharing your memory...
-                  </p>
+                  <div className="flex flex-col items-center gap-1.5 w-full">
+                    <p className="text-sm font-extrabold text-slate-700 text-center">
+                      {uploadProgress > 0 && uploadProgress < 100 ? `Uploading (${uploadProgress}%)` : "Sharing your memory..."}
+                    </p>
+                    {uploadProgress > 0 && uploadProgress < 100 && (
+                      <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-violet-600 transition-all duration-300 rounded-full" 
+                          style={{ width: `${uploadProgress}%` }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}

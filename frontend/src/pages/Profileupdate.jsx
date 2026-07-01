@@ -4,6 +4,7 @@ import { useLocation, useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/authContext";
 import { showToast } from "../utils/showToast";
 import { getAvatarUrl } from "../utils/avatar";
+import { compressImage } from "../utils/compressImage";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
@@ -373,23 +374,29 @@ const Profileupdate = () => {
   };
 
   const uploadImageToCloudinary = async (imageFile) => {
-    if (!CLOUD_NAME || !UPLOAD_PRESET) {
-      throw new Error(
-        "Image upload is not configured. Please contact support.",
-      );
-    }
-
+    const compressed = await compressImage(imageFile);
     const data = new FormData();
-    data.append("file", imageFile);
-    data.append("upload_preset", UPLOAD_PRESET);
+    data.append("image", compressed);
+
+    const uploadUrl = axios.defaults.baseURL ? `${axios.defaults.baseURL}/upload` : "/api/upload";
 
     const imageUrl = await new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open(
-        "POST",
-        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-      );
+      xhr.open("POST", uploadUrl);
       xhr.timeout = 45000;
+
+      // Attach token from localStorage
+      try {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          if (user && user.token) {
+            xhr.setRequestHeader("Authorization", `Bearer ${user.token}`);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to attach auth header:", err);
+      }
 
       xhr.upload.onprogress = (event) => {
         if (event.lengthComputable) {
@@ -400,11 +407,11 @@ const Profileupdate = () => {
       xhr.onload = () => {
         try {
           const response = JSON.parse(xhr.responseText);
-          if (xhr.status === 200 && response.secure_url) {
-            resolve(response.secure_url);
+          if (xhr.status === 200 && response.url) {
+            resolve(response.url);
             return;
           }
-          reject(new Error(response.error?.message || "Upload failed"));
+          reject(new Error(response.message || "Upload failed"));
         } catch {
           reject(new Error("Invalid upload response"));
         }

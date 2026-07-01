@@ -18,6 +18,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { AuthContext } from "../context/authContext";
+import { compressImage } from "../utils/compressImage";
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/sign.jpg";
 import travelBg from "../assets/images/bg.jpg";
@@ -207,42 +208,36 @@ const Register = () => {
       let govIdUrl = "";
 
       if (file || govIdFile) {
-        if (!CLOUD_NAME || !UPLOAD_PRESET) {
-          throw new Error("Image upload is not configured. Contact support.");
-        }
-
         if (file) {
+          const compressed = await compressImage(file);
           const data = new FormData();
-          data.append("file", file);
-          data.append("upload_preset", UPLOAD_PRESET);
+          data.append("image", compressed);
 
-          const uploadRes = await fetch(
-            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-            { method: "POST", body: data },
-          ).then((res) => res.json());
+          const uploadRes = await axios.post("/upload", data, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
 
-          if (!uploadRes.secure_url) {
-            throw new Error(uploadRes.error?.message || "Image upload failed.");
+          if (!uploadRes.data.success || !uploadRes.data.url) {
+            throw new Error(uploadRes.data.message || "Image upload failed.");
           }
-          imageUrl = uploadRes.secure_url;
+          imageUrl = uploadRes.data.url;
         }
 
         if (govIdFile) {
+          const compressed = await compressImage(govIdFile);
           const data = new FormData();
-          data.append("file", govIdFile);
-          data.append("upload_preset", UPLOAD_PRESET);
+          data.append("image", compressed);
 
-          const uploadRes = await fetch(
-            `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-            { method: "POST", body: data },
-          ).then((res) => res.json());
+          const uploadRes = await axios.post("/upload", data, {
+            headers: { "Content-Type": "multipart/form-data" },
+          });
 
-          if (!uploadRes.secure_url) {
+          if (!uploadRes.data.success || !uploadRes.data.url) {
             throw new Error(
-              uploadRes.error?.message || "Gov ID upload failed.",
+              uploadRes.data.message || "Gov ID upload failed.",
             );
           }
-          govIdUrl = uploadRes.secure_url;
+          govIdUrl = uploadRes.data.url;
         }
       }
 
