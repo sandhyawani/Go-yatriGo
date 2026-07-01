@@ -19,7 +19,17 @@ const CLOUDINARY_URL =
 const CLOUDINARY_PRESET =
   process.env.REACT_APP_CLOUDINARY_PRESET || "upload";
 
-const ALLOWED_FILE_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const ALLOWED_FILE_TYPES = [
+  "image/jpeg", "image/png", "image/webp", "image/gif",
+  "image/heic", "image/heif", "image/avif", "image/bmp",
+];
+const ALLOWED_EXTENSIONS = ["jpg","jpeg","png","gif","webp","heic","heif","avif","bmp"];
+const isAllowedImage = (file) => {
+  if (file.type && ALLOWED_FILE_TYPES.includes(file.type)) return true;
+  // Fallback for iOS HEIC files that report an empty MIME type
+  const ext = file.name?.split(".").pop()?.toLowerCase();
+  return ALLOWED_EXTENSIONS.includes(ext);
+};
 const MAX_FILE_SIZE_MB = 5;
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MOBILE_REGEX = /^\d{10}$/;
@@ -55,10 +65,10 @@ function getFieldError(form) {
     };
   }
   if (form.file) {
-    if (!ALLOWED_FILE_TYPES.includes(form.file.type)) {
+    if (!isAllowedImage(form.file)) {
       return {
         field: "file",
-        message: "Only JPEG, PNG, WebP, or GIF images are allowed.",
+        message: "Only image files (JPEG, PNG, WebP, GIF, HEIC, etc.) are allowed.",
       };
     }
     if (form.file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
@@ -303,7 +313,7 @@ const AddUser = () => {
                   id="file"
                   name="file"
                   type="file"
-                  accept={ALLOWED_FILE_TYPES.join(",")}
+                  accept="image/*,.heic,.heif"
                   className="hidden"
                   onChange={(e) => updateField("file", e.target.files?.[0] ?? null)}
                 />

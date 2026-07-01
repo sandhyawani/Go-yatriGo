@@ -22,7 +22,7 @@ const JourneyDetails = ({ journey }) => {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Compact Quick Specs Bento Ribbon */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {/* Destination */}
         <div className="bg-white dark:bg-slate-900/80 p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3.5 hover:border-purple-500/30 transition-all">
           <div className="p-2.5 bg-purple-50 dark:bg-purple-950/40 text-[#6C4DF6] dark:text-purple-400 rounded-xl shrink-0">

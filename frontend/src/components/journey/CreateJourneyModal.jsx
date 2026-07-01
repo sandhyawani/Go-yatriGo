@@ -249,27 +249,25 @@ const CreateJourneyModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-xl bg-white dark:bg-slate-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[95dvh] sm:max-h-[92vh]">
         {/* Header */}
-        <div className="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
+        <div className="bg-white dark:bg-slate-900 px-4 py-4 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#6C4DF6] rounded-2xl shadow-md shadow-[#6C4DF6]/20">
-              <Compass className="w-6 h-6 text-white animate-spin-slow" />
+            <div className="p-2 bg-[#6C4DF6] rounded-xl shadow-md shadow-[#6C4DF6]/20">
+              <Compass className="w-5 h-5 text-white animate-spin-slow" />
             </div>
             <div>
-              <h2 className="text-base font-extrabold flex items-center gap-2">
-                Launch Collaborative Journey{" "}
-                <Sparkles className="w-4 h-4 text-amber-500" />
+              <h2 className="text-sm font-extrabold flex items-center gap-1.5">
+                Launch Journey <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               </h2>
-              <p className="text-xs text-slate-500">
-                {step === 1 && "Step 1: Define getaway parameters"}
-                {step === 2 && "Step 2: Invite Your Squad"}
-                {step === 3 && "Step 3: Review headquarters blueprint & launch"}
+              <p className="text-[11px] text-slate-500">
+                {step === 1 && "Step 1: Define your getaway"}
+                {step === 2 && "Step 2: Invite your squad"}
+                {step === 3 && "Step 3: Review & launch"}
               </p>
             </div>
           </div>
-
           <button
             onClick={onClose}
             className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 transition-colors"
@@ -319,7 +317,7 @@ const CreateJourneyModal = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 overflow-y-auto flex-1 custom-scrollbar space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 custom-scrollbar space-y-5">
           {/* Journey details */}
           {step === 1 && (
             <form
@@ -327,7 +325,7 @@ const CreateJourneyModal = ({
               onSubmit={handleNextStep1}
               className="space-y-4"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                     Journey Title *
@@ -338,7 +336,7 @@ const CreateJourneyModal = ({
                     value={formData.title}
                     onChange={(e) => handleChange("title", e.target.value)}
                     placeholder="e.g. Summer EuroTrip 2026..."
-                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
                   />
                 </div>
 
@@ -351,7 +349,7 @@ const CreateJourneyModal = ({
                     onChange={(e) =>
                       handleChange("journeyType", e.target.value)
                     }
-                    className="w-full px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer"
                   >
                     <option value="Shared Journey">👥 Shared Journey</option>
                     <option value="Solo Journey">👤 Solo Journey</option>
@@ -359,13 +357,13 @@ const CreateJourneyModal = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                     Destination *
                   </label>
                   <div className="relative">
-                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                    <MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                     <input
                       type="text"
                       required
@@ -374,7 +372,7 @@ const CreateJourneyModal = ({
                         handleChange("destination", e.target.value)
                       }
                       placeholder="Where are you heading?"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
                     />
                   </div>
                 </div>
@@ -384,44 +382,28 @@ const CreateJourneyModal = ({
                     Destination Type
                   </label>
                   <div className="relative">
-                    <Compass className="w-4 h-4 text-slate-400 absolute left-3.5 top-3 pointer-events-none" />
+                    <Compass className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5 pointer-events-none" />
                     <select
                       value={formData.destinationType}
                       onChange={(e) =>
                         handleChange("destinationType", e.target.value)
                       }
-                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer appearance-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer appearance-none"
                     >
-                      <option value="🏔️ Mountain / Station">
-                        🏔️ Mountain / Station
-                      </option>
-                      <option value="🏖️ Beach / Coastal">
-                        🏖️ Beach / Coastal
-                      </option>
-                      <option value="🏙️ City / Metropolitan">
-                        🏙️ City / Metropolitan
-                      </option>
-                      <option value="🌿 Wildlife / Nature">
-                        🌿 Wildlife / Nature
-                      </option>
-                      <option value="🏛️ Heritage / Historical">
-                        🏛️ Heritage / Historical
-                      </option>
-                      <option value="🏜️ Desert / Dunes">
-                        🏜️ Desert / Dunes
-                      </option>
-                      <option value="🏞️ Countryside / Rural">
-                        🏞️ Countryside / Rural
-                      </option>
-                      <option value="⛺ Adventure Camp">
-                        ⛺ Adventure Camp
-                      </option>
+                      <option value="🏔️ Mountain / Station">🏔️ Mountain / Station</option>
+                      <option value="🏖️ Beach / Coastal">🏖️ Beach / Coastal</option>
+                      <option value="🏙️ City / Metropolitan">🏙️ City / Metropolitan</option>
+                      <option value="🌿 Wildlife / Nature">🌿 Wildlife / Nature</option>
+                      <option value="🏛️ Heritage / Historical">🏛️ Heritage / Historical</option>
+                      <option value="🏜️ Desert / Dunes">🏜️ Desert / Dunes</option>
+                      <option value="🏞️ Countryside / Rural">🏞️ Countryside / Rural</option>
+                      <option value="⛺ Adventure Camp">⛺ Adventure Camp</option>
                     </select>
                   </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
                     Start Date
@@ -432,7 +414,7 @@ const CreateJourneyModal = ({
                     min={todayStr}
                     value={formData.startDate}
                     onChange={(e) => handleChange("startDate", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs outline-none"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
                   />
                 </div>
                 <div>
@@ -445,7 +427,7 @@ const CreateJourneyModal = ({
                     min={formData.startDate || todayStr}
                     value={formData.endDate}
                     onChange={(e) => handleChange("endDate", e.target.value)}
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs outline-none"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
                   />
                 </div>
               </div>
@@ -529,11 +511,11 @@ const CreateJourneyModal = ({
                   Notes & Goals
                 </label>
                 <textarea
-                  rows="2"
+                  rows="3"
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
                   placeholder="What is this getaway all about? Add fun goals or squad vibes..."
-                  className="w-full px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs outline-none"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
                 />
               </div>
             </form>
@@ -710,7 +692,7 @@ const CreateJourneyModal = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 flex justify-between gap-3 bg-slate-50 dark:bg-slate-950">
+        <div className="px-4 py-3 border-t border-slate-100 dark:border-slate-800 flex justify-between gap-3 bg-slate-50 dark:bg-slate-950">
           {step > 1 ? (
             <button
               type="button"
@@ -722,7 +704,7 @@ const CreateJourneyModal = ({
                     : step - 1,
                 )
               }
-              className="flex items-center gap-1 px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
+              className="flex items-center gap-1 px-4 py-3 rounded-2xl text-xs font-bold text-slate-600 hover:bg-slate-200 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" /> Back
             </button>
@@ -730,7 +712,7 @@ const CreateJourneyModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-5 py-2.5 rounded-2xl text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+              className="px-4 py-3 rounded-2xl text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
               Cancel
             </button>
@@ -740,10 +722,10 @@ const CreateJourneyModal = ({
             <button
               form="step1Form"
               type="submit"
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
             >
               {formData.journeyType === "Solo Journey"
-                ? "Next: Review Blueprint"
+                ? "Next: Review"
                 : "Next: Invite Squad"}{" "}
               <ArrowRight className="w-4 h-4" />
             </button>
@@ -753,9 +735,9 @@ const CreateJourneyModal = ({
             <button
               type="button"
               onClick={handleNextStep2}
-              className="flex items-center gap-1.5 px-6 py-2.5 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
             >
-              Next: Review Blueprint <ArrowRight className="w-4 h-4" />
+              Next: Review <ArrowRight className="w-4 h-4" />
             </button>
           )}
 
@@ -764,7 +746,7 @@ const CreateJourneyModal = ({
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-black shadow-xl shadow-[#6C4DF6]/40 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap ml-auto"
+              className="flex-1 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-black shadow-xl shadow-[#6C4DF6]/40 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
               {loading ? "Launching..." : "🚀 Launch Journey"}
             </button>

@@ -90,7 +90,7 @@ const JourneyTimelineView = ({
       </div>
 
       {/* Timeline List */}
-      <div className="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      <div className="bg-white dark:bg-slate-900 p-4 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
         {timeline.length === 0 ? (
           <div className="py-12 text-center text-slate-400">
             <Clock className="w-10 h-10 mx-auto mb-2 opacity-30" />
@@ -111,9 +111,9 @@ const JourneyTimelineView = ({
                 </div>
 
                 {/* Content Box */}
-                <div className="bg-slate-50 dark:bg-slate-800/40 p-5 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 transition-all">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
+                <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 transition-all">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="text-xs font-bold text-slate-800 dark:text-slate-100">
                         {item.title}
                       </span>
@@ -123,7 +123,7 @@ const JourneyTimelineView = ({
                         </span>
                       )}
                     </div>
-                    <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium">
+                    <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium shrink-0">
                       <Clock className="w-3 h-3" /> {formatTime(item.createdAt)}
                     </span>
                   </div>
@@ -134,11 +134,11 @@ const JourneyTimelineView = ({
 
                   {/* Uploader Footer or Media */}
                   {item.mediaUrl && (
-                    <div className="mt-3 rounded-xl overflow-hidden max-h-60 w-full sm:w-80 bg-black/5">
+                    <div className="mt-3 rounded-xl overflow-hidden w-full bg-black/5">
                       <img
                         src={item.mediaUrl}
                         alt="Timeline Capture"
-                        className="w-full h-full object-cover"
+                        className="w-full object-cover max-h-60"
                       />
                     </div>
                   )}

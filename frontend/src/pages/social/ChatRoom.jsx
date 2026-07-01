@@ -1911,7 +1911,7 @@ const ChatRoom = () => {
                     type="file"
                     ref={fileInputRef}
                     hidden
-                    accept="image/*,video/*"
+                    accept="image/*,video/*,.heic,.heif"
                     onChange={handleFileChange}
                   />
                   <button

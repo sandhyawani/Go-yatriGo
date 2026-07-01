@@ -21,6 +21,7 @@ import {
   Sparkles,
   MessageSquare as MessageSquareIcon,
   Navigation,
+  Map,
   ArrowLeft,
 } from "lucide-react";
 import axios from "../../api/axios";
@@ -946,27 +947,41 @@ const SocialSidebar = () => {
         if (hideBottomNav) return null;
 
         return (
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-3 pb-safe">
+          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-1 pb-safe">
             <Link
               to="/"
-              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
                 location.pathname === "/"
-                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  ? "text-[#6C4DF6]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <HomeIcon className="w-5 h-5" />
+              <span className="text-[9px] font-bold leading-none">Home</span>
             </Link>
 
             <Link
               to="/social/buddy"
-              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
                 location.pathname.startsWith("/social/buddy")
-                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  ? "text-[#6C4DF6]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <Compass className="w-5 h-5" />
+              <span className="text-[9px] font-bold leading-none">Explore</span>
+            </Link>
+
+            <Link
+              to="/social/journeys"
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
+                location.pathname.startsWith("/social/journeys")
+                  ? "text-[#6C4DF6]"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Map className="w-5 h-5" />
+              <span className="text-[9px] font-bold leading-none">Journeys</span>
             </Link>
 
             <Link
@@ -983,31 +998,36 @@ const SocialSidebar = () => {
             {/* FAB Create */}
             <button
               onClick={() => setIsOpen(true)}
-              className="p-2.5 bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white rounded-2xl shadow-md shadow-[#6C4DF6]/25 active:scale-95 transition-transform"
+              className="flex flex-col items-center justify-center gap-0.5 px-2 py-1"
             >
-              <PlusSquare className="w-5 h-5" />
+              <div className="p-1.5 bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white rounded-xl shadow-md shadow-[#6C4DF6]/25 active:scale-95 transition-transform">
+                <PlusSquare className="w-5 h-5" />
+              </div>
+              <span className="text-[9px] font-bold leading-none text-slate-400">Create</span>
             </button>
 
             <Link
               to="/social/chat"
-              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
                 location.pathname.startsWith("/social/chat")
-                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  ? "text-[#6C4DF6]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <MessageSquare className="w-5 h-5" />
+              <span className="text-[9px] font-bold leading-none">Messages</span>
             </Link>
 
             <Link
               to="/profile"
-              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
                 location.pathname === "/profile"
-                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  ? "text-[#6C4DF6]"
                   : "text-slate-400 hover:text-slate-600"
               }`}
             >
               <User className="w-5 h-5" />
+              <span className="text-[9px] font-bold leading-none">Profile</span>
             </Link>
           </nav>
         );

@@ -36,8 +36,8 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-lg bg-white dark:bg-slate-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[88vh]">
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -84,23 +84,25 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
-          <span className="text-xs font-bold text-slate-500">
-            {selectedIds.length} Selected
-          </span>
-          <div className="flex gap-2">
+        <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-xs font-bold text-slate-500">
+              {selectedIds.length} Selected
+            </span>
+          </div>
+          <div className="flex gap-2 w-full">
             <button
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-800"
+              className="flex-1 py-3 rounded-xl text-sm font-bold text-slate-500 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={handleSendInvites}
               disabled={selectedIds.length === 0 || loading}
-              className="px-6 py-2 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50"
+              className="flex-1 py-3 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-sm font-bold shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50 active:scale-95"
             >
-              {loading ? "Sending..." : "Send Invites"}
+              {loading ? "Sending..." : `Send Invite${selectedIds.length > 1 ? "s" : ""}`}
             </button>
           </div>
         </div>

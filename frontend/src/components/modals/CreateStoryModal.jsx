@@ -418,6 +418,14 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
 
+  // Helper: detect image by MIME type OR file extension (needed for iOS HEIC files
+  // which often report file.type as "" in mobile browsers)
+  const isImageFile = (file) => {
+    if (file.type && file.type.startsWith("image/")) return true;
+    const ext = file.name?.split(".").pop()?.toLowerCase();
+    return ["jpg","jpeg","png","gif","webp","heic","heif","avif","bmp","tiff","tif"].includes(ext);
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -443,11 +451,12 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
         showToast.error("Failed to load video metadata");
       };
       videoElem.src = URL.createObjectURL(file);
-    } else if (file.type.startsWith("image/")) {
+    } else if (isImageFile(file)) {
       if (file.size > 10 * 1024 * 1024)
         return showToast.error("Image must be under 10MB");
       // Use FileReader instead of createObjectURL — prevents black preview
-      // on mobile Safari where blob URL decoding can be deferred/fail
+      // on mobile Safari where blob URL decoding can be deferred/fail.
+      // Also works for HEIC files which may not have a recognised MIME type.
       const reader = new FileReader();
       reader.onload = (ev) => {
         setMediaType("image");
@@ -747,7 +756,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           <input
             type="file"
             ref={fileInputRef}
-            accept="image/*,video/*"
+            accept="image/*,video/*,.heic,.heif"
             className="hidden"
             onChange={handleFileChange}
           />
@@ -755,7 +764,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           <input
             type="file"
             ref={cameraInputRef}
-            accept="image/*,video/*"
+            accept="image/*,video/*,.heic,.heif"
             capture="environment"
             className="hidden"
             onChange={handleFileChange}

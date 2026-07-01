@@ -370,7 +370,7 @@ const Register = () => {
                       type="file"
                       id="file"
                       className="hidden"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      accept="image/*,.heic,.heif"
                       onChange={handleFileChange}
                     />
                   </label>
@@ -576,7 +576,7 @@ const Register = () => {
                     type="file"
                     id="govIdFile"
                     className="hidden"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    accept="image/*,.heic,.heif"
                     onChange={handleGovIdChange}
                   />
                 </div>

@@ -172,7 +172,7 @@ const UpdateuserA = () => {
                     id="file"
                     name="file"
                     className="hidden"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    accept="image/*,.heic,.heif"
                     onChange={handleFileChange}
                   />
                 </div>

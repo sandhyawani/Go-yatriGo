@@ -1,4 +1,4 @@
-﻿import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef } from "react";
 import axios from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 import {
@@ -342,7 +342,7 @@ const CreateBuddyTrip = () => {
                 type="file"
                 ref={fileInputRef}
                 onChange={handleImageChange}
-                accept="image/*"
+                accept="image/*,.heic,.heif"
                 className="hidden"
               />
             </div>

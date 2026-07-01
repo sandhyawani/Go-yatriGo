@@ -260,6 +260,14 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
     };
   }, []);
 
+  // Helper: detect image by MIME type OR file extension (for iOS HEIC/HEIF
+  // files which may report file.type as "" in mobile browsers)
+  const isImageFile = (file) => {
+    if (file.type && file.type.startsWith("image/")) return true;
+    const ext = file.name?.split(".").pop()?.toLowerCase();
+    return ["jpg","jpeg","png","gif","webp","heic","heif","avif","bmp","tiff","tif"].includes(ext);
+  };
+
   const validateFile = (selectedFile) => {
     if (!selectedFile) return false;
 
@@ -268,7 +276,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
         showToast.error("Video size must be less than 25MB.");
         return false;
       }
-    } else if (selectedFile.type.startsWith("image/")) {
+    } else if (isImageFile(selectedFile)) {
       if (selectedFile.size > MAX_IMAGE_SIZE) {
         showToast.error("Image size must be less than 10MB.");
         return false;
@@ -791,7 +799,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       type="file"
                       ref={fileInputRef}
                       className="hidden"
-                      accept="image/*,video/*"
+                      accept="image/*,video/*,.heic,.heif"
                       multiple
                       onChange={handleFileChange}
                     />
@@ -801,7 +809,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 
               {step === "crop" && mediaFiles[currentMediaIndex] && (
                 <div className="flex flex-1 flex-col bg-slate-950">
-                  <div className="relative min-h-[300px] flex-1 md:min-h-[400px]">
+                  <div className="relative h-[300px] md:h-auto md:min-h-[400px] md:flex-1">
                     <Cropper
                       image={mediaFiles[currentMediaIndex].preview}
                       crop={crop}
@@ -966,11 +974,14 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                     {mediaFiles.length > 0 &&
                     mediaFiles[currentMediaIndex]?.type === "video" ? (
                       <video
+                        key={mediaFiles[currentMediaIndex].preview}
                         src={mediaFiles[currentMediaIndex].preview}
                         controls
+                        autoPlay
                         muted
                         playsInline
-                        className="max-h-[300px] w-full bg-black object-contain md:h-full md:max-h-[500px]"
+                        style={{ minHeight: "200px" }}
+                        className="h-[260px] w-full bg-black object-contain md:h-full md:max-h-[500px]"
                       />
                     ) : mediaFiles.length > 0 ? (
                       <img
@@ -979,7 +990,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           mediaFiles[currentMediaIndex]?.preview
                         }
                         alt="Preview"
-                        className="max-h-[300px] w-full object-contain md:h-full md:max-h-[500px]"
+                        className="h-[260px] w-full object-contain bg-slate-100 md:h-full md:max-h-[500px]"
                       />
                     ) : null}
 

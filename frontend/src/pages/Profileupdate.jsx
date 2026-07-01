@@ -570,7 +570,7 @@ const Profileupdate = () => {
                   ref={fileInputRef}
                   onChange={handleFileChange}
                   className="hidden"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
+                  accept="image/*,.heic,.heif"
                   disabled={loading}
                 />
                 <FieldError id="file-error" message={errors.file} />
