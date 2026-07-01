@@ -1,4 +1,3 @@
-require("../config/nodeCompatibility");
 
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
@@ -6,10 +5,6 @@ const Session = require("../models/Session");
 const asyncHandler = require("express-async-handler");
 const { getJwtSecret } = require("../config/jwt");
 
-/**
- * Update the last active time of the current session.
- * This runs in the background and does not block the request.
- */
 const markSessionActive = (token) => {
   Session.updateOne(
     { token, status: "active" },
@@ -18,13 +13,6 @@ const markSessionActive = (token) => {
     console.error("[Session] Failed to update activity:", error.message);
   });
 };
-
-/**
- * Verify JWT token.
- * Supports authentication using either:
- * 1. Cookie (access_token)
- * 2. Authorization: Bearer <token>
- */
 const verifyToken = (req, res, next) => {
   try {
     // Read token from Authorization header
@@ -80,11 +68,6 @@ const verifyAdmin = (req, res, next) => {
     next();
   });
 };
-
-/**
- * Authenticate user and load complete user details.
- * Used for protected routes that require full user information.
- */
 const protect = asyncHandler(async (req, res, next) => {
   let token = req.cookies.access_token;
 

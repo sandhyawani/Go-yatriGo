@@ -21,7 +21,6 @@ import {
   Sparkles,
   MessageSquare as MessageSquareIcon,
   Navigation,
-  Map,
   ArrowLeft,
 } from "lucide-react";
 import axios from "../../api/axios";
@@ -899,6 +898,17 @@ const SocialSidebar = () => {
               </button>
               {user && (
                 <>
+                  <Link
+                    to="/social/journeys"
+                    aria-label="Journeys"
+                    className={`p-2 rounded-lg hover:bg-slate-100 transition-colors ${
+                      location.pathname.startsWith("/social/journeys")
+                        ? "text-[#6C4DF6]"
+                        : "text-slate-500"
+                    }`}
+                  >
+                    <Navigation className="w-4.5 h-4.5" />
+                  </Link>
                   <button
                     onClick={() => {
                       setShowNotifPanel((prev) => !prev);
@@ -970,29 +980,6 @@ const SocialSidebar = () => {
             >
               <Compass className="w-5 h-5" />
               <span className="text-[9px] font-bold leading-none">Explore</span>
-            </Link>
-
-            <Link
-              to="/social/journeys"
-              className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
-                location.pathname.startsWith("/social/journeys")
-                  ? "text-[#6C4DF6]"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <Map className="w-5 h-5" />
-              <span className="text-[9px] font-bold leading-none">Journeys</span>
-            </Link>
-
-            <Link
-              to="/social/journeys"
-              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
-                location.pathname.startsWith("/social/journeys")
-                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
-                  : "text-slate-400 hover:text-slate-600"
-              }`}
-            >
-              <Navigation className="w-5 h-5" />
             </Link>
 
             {/* FAB Create */}

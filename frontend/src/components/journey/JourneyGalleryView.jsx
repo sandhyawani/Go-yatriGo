@@ -7,7 +7,6 @@ import {
   Sparkles,
   Check,
   FileText,
-  Trash2,
 } from "lucide-react";
 import axiosInstance from "../../api/axios";
 
@@ -70,7 +69,18 @@ const JourneyGalleryView = ({ journeyId }) => {
 
     setSelectedFile(file);
     setDetectedType(type);
-    setPreviewUrl(URL.createObjectURL(file));
+
+    if (isVideo) {
+      // Videos render fine with blob URLs since <video> doesn't rely on canvas decoding
+      setPreviewUrl(URL.createObjectURL(file));
+    } else {
+      // Use FileReader instead of createObjectURL — blob URLs for images can
+      // fail to decode/show on mobile browsers, leaving a blank preview
+      const reader = new FileReader();
+      reader.onload = (ev) => setPreviewUrl(ev.target.result);
+      reader.onerror = () => setPreviewUrl(URL.createObjectURL(file)); // fallback
+      reader.readAsDataURL(file);
+    }
   };
 
   const formatFileSize = (bytes) => {

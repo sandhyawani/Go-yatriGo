@@ -242,22 +242,6 @@ const Home = () => {
     };
   }, [memories]);
 
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !loadingMore && hasMore) {
-          loadMorePosts();
-        }
-      },
-      { rootMargin: "200px" },
-    );
-    observer.observe(loadMoreRef.current);
-    return () => {
-      observer.disconnect();
-    };
-  }, [loadMorePosts, loadingMore, hasMore]);
-
   const toggleAudio = (postId) => {
     if (AudioManager.isLocked()) return;
     const audio = audioRefs.current[postId];
@@ -462,6 +446,22 @@ const Home = () => {
       fetchMemories(nextPage, true);
     }
   }, [loadingMore, hasMore, page, fetchMemories]);
+
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+          loadMorePosts();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(loadMoreRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadMorePosts, loadingMore, hasMore]);
 
   const handleOpenComments = async (postId) => {
     if (activeCommentPost === postId) {
