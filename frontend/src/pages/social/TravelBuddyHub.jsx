@@ -98,6 +98,12 @@ const TravelBuddyHub = () => {
     [loading, loadingMore, hasMore],
   );
 
+  useEffect(() => {
+    return () => {
+      if (observer.current) observer.current.disconnect();
+    };
+  }, []);
+
   const sortOptionsConfig = [
     { id: "Starting Soon", label: "Starting Soon", icon: CalendarClock },
     { id: "Trending", label: "Trending", icon: Flame },

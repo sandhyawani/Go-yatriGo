@@ -238,11 +238,25 @@ const Home = () => {
     });
 
     return () => {
-      Object.values(currentPostRefs).forEach((el) => {
-        if (el) observer.unobserve(el);
-      });
+      observer.disconnect();
     };
   }, [memories]);
+
+  useEffect(() => {
+    if (!loadMoreRef.current) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !loadingMore && hasMore) {
+          loadMorePosts();
+        }
+      },
+      { rootMargin: "200px" },
+    );
+    observer.observe(loadMoreRef.current);
+    return () => {
+      observer.disconnect();
+    };
+  }, [loadMorePosts, loadingMore, hasMore]);
 
   const toggleAudio = (postId) => {
     if (AudioManager.isLocked()) return;
@@ -1790,19 +1804,7 @@ const Home = () => {
                 {hasMore && memories.length > 0 && (
                   <div
                     className="flex justify-center mt-6 pb-6"
-                    ref={(el) => {
-                      if (el) {
-                        const observer = new IntersectionObserver(
-                          (entries) => {
-                            if (entries[0].isIntersecting && !loadingMore) {
-                              loadMorePosts();
-                            }
-                          },
-                          { rootMargin: "200px" },
-                        );
-                        observer.observe(el);
-                      }
-                    }}
+                    ref={loadMoreRef}
                   >
                     {loadingMore && (
                       <Loader2 className="w-6 h-6 animate-spin text-[#6C4DF6]" />
