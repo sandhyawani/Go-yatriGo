@@ -1,44 +1,3 @@
-// import React, { Fragment, useContext, useState, useEffect } from "react";
-// import { Link, useNavigate, useLocation } from "react-router-dom";
-// import { Menu, Transition } from "@headlessui/react";
-// import { motion, AnimatePresence } from "framer-motion";
-// import {
-//   Menu as MenuIcon,
-//   X,
-//   ChevronDown,
-//   User,
-//   LogOut,
-//   Phone,
-//   Home as HomeIcon,
-//   Briefcase,
-//   Search,
-//   MessageSquare,
-//   ChevronRight,
-//   PlusSquare,
-//   Compass,
-//   Bell,
-//   Settings,
-//   Bookmark,
-//   CheckCheck,
-//   Heart,
-//   UserPlus,
-//   Sparkles,
-//   MessageSquare as MessageSquareIcon
-// } from "lucide-react";
-// import axios from "../../api/axios";
-// import moment from "moment";
-// import { getAvatarUrl } from "../../utils/avatar";
-// import { AuthContext } from "../../context/authContext";
-// import CreatePostModal from "../modals/CreatePostModal";
-// import ProfileMenu from "../settings/ProfileMenu";
-
-// const notifIcon = (type) => {
-//   if (type === "post_like") return <Heart className="w-3.5 h-3.5 text-[#FF5A7A] fill-[#FF5A7A]" />;
-//   if (type === "post_comment") return <MessageSquareIcon className="w-3.5 h-3.5 text-[#6C4DF6]" />;
-//   if (type === "follow" || type === "new_follower") return <UserPlus className="w-3.5 h-3.5 text-emerald-500" />;
-//   if (type === "story_reply") return <Sparkles className="w-3.5 h-3.5 text-amber-500" />;
-//   return <Bell className="w-3.5 h-3.5 text-slate-500" />;
-// };
 import React, { Fragment, useContext, useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
@@ -1008,6 +967,17 @@ const SocialSidebar = () => {
               }`}
             >
               <Compass className="w-5 h-5" />
+            </Link>
+
+            <Link
+              to="/social/journeys"
+              className={`p-2 rounded-xl transition-all flex flex-col items-center justify-center ${
+                location.pathname.startsWith("/social/journeys")
+                  ? "text-[#6C4DF6] bg-[#6C4DF6]/10"
+                  : "text-slate-400 hover:text-slate-600"
+              }`}
+            >
+              <Navigation className="w-5 h-5" />
             </Link>
 
             {/* FAB Create */}
