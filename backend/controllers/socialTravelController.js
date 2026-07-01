@@ -1843,6 +1843,33 @@ exports.deleteMemory = async (req, res) => {
     await Comment.deleteMany({ postId });
     await SavedPost.deleteMany({ postId });
 
+    // Cascade deletion of journey references
+    if (post.journeyId) {
+      const JourneyTimeline = require("../models/JourneyTimeline");
+      const JourneyGallery = require("../models/JourneyGallery");
+      
+      await JourneyTimeline.deleteMany({ journeyId: post.journeyId, referenceId: postId });
+      await JourneyGallery.deleteMany({ journeyId: post.journeyId, referenceId: postId });
+
+      let photoCount = 0;
+      let videoCount = 0;
+      if (post.mediaType === "video") {
+        videoCount = 1;
+      } else if (post.mediaType === "carousel") {
+        photoCount = post.mediaUrls ? post.mediaUrls.length : 0;
+      } else {
+        photoCount = post.image || post.mediaUrl ? 1 : 0;
+      }
+
+      await Journey.findByIdAndUpdate(post.journeyId, {
+        $inc: {
+          "stats.postsCount": -1,
+          "stats.photosCount": -photoCount,
+          "stats.videosCount": -videoCount,
+        }
+      });
+    }
+
     await Post.findByIdAndDelete(postId);
 
     res.status(200).json({
@@ -3044,6 +3071,31 @@ exports.deleteStory = async (req, res) => {
       return res.status(403).json({ success: false, message: "You can only delete your own stories" });
     }
     
+    // Cascade deletion of journey references
+    if (story.journeyId) {
+      const JourneyTimeline = require("../models/JourneyTimeline");
+      const JourneyGallery = require("../models/JourneyGallery");
+
+      await JourneyTimeline.deleteMany({ journeyId: story.journeyId, referenceId: storyId });
+      await JourneyGallery.deleteMany({ journeyId: story.journeyId, referenceId: storyId });
+
+      let photoCount = 0;
+      let videoCount = 0;
+      if (story.mediaType === "video") {
+        videoCount = 1;
+      } else {
+        photoCount = 1;
+      }
+
+      await Journey.findByIdAndUpdate(story.journeyId, {
+        $inc: {
+          "stats.storiesCount": -1,
+          "stats.photosCount": -photoCount,
+          "stats.videosCount": -videoCount,
+        }
+      });
+    }
+
     await story.deleteOne();
     res.status(200).json({ success: true, message: "Story deleted successfully" });
   } catch (error) {
