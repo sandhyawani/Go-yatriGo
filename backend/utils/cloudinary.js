@@ -16,7 +16,7 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "GoGoYatriGo_uploads",
-    allowedFormats: ["jpg", "jpeg", "png", "webp", "mp4", "mov", "avi"],
+    allowedFormats: ["jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "mp4", "mov", "avi"],
     resource_type: "auto",
   },
 });

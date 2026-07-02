@@ -255,13 +255,15 @@ const ChatRoom = () => {
       });
     };
 
-    const onMessagesRead = ({ roomId, readByUserId }) => {
+    const onMessagesRead = ({ roomId, userId, readByUserId }) => {
+      const targetUserId = userId || readByUserId;
+      if (!targetUserId) return;
       setMessages((prev) =>
         prev.map((m) => {
-          if (m.unreadBy?.includes(readByUserId)) {
+          if (m.unreadBy?.includes(targetUserId)) {
             return {
               ...m,
-              unreadBy: m.unreadBy.filter((id) => id !== readByUserId),
+              unreadBy: m.unreadBy.filter((id) => id !== targetUserId),
             };
           }
           return m;

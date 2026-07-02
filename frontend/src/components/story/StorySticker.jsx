@@ -87,25 +87,40 @@ const StorySticker = ({
 
   if (isEdit) {
     return (
-      <div className="absolute top-1/2 left-1/2 w-0 h-0 flex items-center justify-center pointer-events-none z-50">
-        <motion.div
-          drag
-          dragConstraints={previewRef}
-          dragElastic={0.2}
-          dragMomentum={false}
-          className="pointer-events-auto cursor-grab active:cursor-grabbing inline-flex flex-col items-center justify-center"
-          style={{ x: sticker.x, y: sticker.y, scale: sticker.scale }}
-          onDragEnd={(e, info) => {
-            onUpdate(sticker.id, { x: sticker.x + info.offset.x, y: sticker.y + info.offset.y });
-          }}
-          onWheel={(e) => {
-              const scaleChange = e.deltaY * -0.001;
-              onUpdate(sticker.id, { scale: Math.max(0.5, Math.min(sticker.scale + scaleChange, 3)) });
-          }}
-        >
-          {content}
-        </motion.div>
-      </div>
+      <motion.div
+        drag
+        dragConstraints={previewRef}
+        dragElastic={0.1}
+        dragMomentum={false}
+        className="absolute pointer-events-auto cursor-grab active:cursor-grabbing inline-flex flex-col items-center justify-center -translate-x-1/2 -translate-y-1/2 z-50"
+        style={{
+          left: `${typeof sticker.xPercent === 'number' && !isNaN(sticker.xPercent) ? sticker.xPercent : 50}%`,
+          top: `${typeof sticker.yPercent === 'number' && !isNaN(sticker.yPercent) ? sticker.yPercent : 50}%`,
+          x: 0,
+          y: 0,
+          scale: sticker.scale || 1,
+        }}
+        onDragEnd={(e, info) => {
+          if (previewRef && previewRef.current) {
+            const rect = previewRef.current.getBoundingClientRect();
+            const deltaXPercent = (info.offset.x / rect.width) * 100;
+            const deltaYPercent = (info.offset.y / rect.height) * 100;
+            const currentXPercent = typeof sticker.xPercent === 'number' && !isNaN(sticker.xPercent) ? sticker.xPercent : 50;
+            const currentYPercent = typeof sticker.yPercent === 'number' && !isNaN(sticker.yPercent) ? sticker.yPercent : 50;
+            
+            onUpdate(sticker.id, {
+              xPercent: Math.max(0, Math.min(parseFloat((currentXPercent + deltaXPercent).toFixed(2)), 100)),
+              yPercent: Math.max(0, Math.min(parseFloat((currentYPercent + deltaYPercent).toFixed(2)), 100)),
+            });
+          }
+        }}
+        onWheel={(e) => {
+          const scaleChange = e.deltaY * -0.001;
+          onUpdate(sticker.id, { scale: Math.max(0.5, Math.min(sticker.scale + scaleChange, 3)) });
+        }}
+      >
+        {content}
+      </motion.div>
     );
   }
 
@@ -116,11 +131,11 @@ const StorySticker = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ delay: 0.1, duration: 0.4 }}
-      className="absolute inline-flex flex-col items-center justify-center pointer-events-none"
+      className="absolute inline-flex flex-col items-center justify-center pointer-events-none -translate-x-1/2 -translate-y-1/2"
       style={{ 
         left: `${typeof sticker.xPercent === 'number' && !isNaN(sticker.xPercent) ? sticker.xPercent : (typeof sticker.x === 'number' && !isNaN(sticker.x) ? sticker.x : 50)}%`, 
         top: `${typeof sticker.yPercent === 'number' && !isNaN(sticker.yPercent) ? sticker.yPercent : (typeof sticker.y === 'number' && !isNaN(sticker.y) ? sticker.y : 50)}%`, 
-        transform: `translate(-50%, -50%) scale(${sticker.scale || 1})` 
+        scale: sticker.scale || 1
       }}
     >
       {content}

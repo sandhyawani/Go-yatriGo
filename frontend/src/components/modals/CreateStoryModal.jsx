@@ -135,8 +135,8 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
       {
         id: Date.now().toString() + Math.random(),
         type,
-        x: 0,
-        y: 0,
+        xPercent: 50,
+        yPercent: 50,
         scale: 1,
         ...data,
       },
@@ -674,28 +674,19 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           "song",
           JSON.stringify({
             ...songSticker.data,
-            stickerPosition: { x: songSticker.x, y: songSticker.y },
+            stickerPosition: { x: songSticker.xPercent || 50, y: songSticker.yPercent || 50 },
             stickerStyle: "minimal",
           }),
         );
       }
 
-      // Convert sticker raw pixel coordinates (offset from center) to percentages
-      let rect = { width: 430, height: 800 }; // default fallback
-      if (previewRef.current) {
-        rect = previewRef.current.getBoundingClientRect();
-      }
       const responsiveStickers = stickers.map((s) => {
-        const xPct = 50 + ((s.x || 0) / rect.width) * 100;
-        const yPct = 50 + ((s.y || 0) / rect.height) * 100;
         return {
           ...s,
-          xPercent: parseFloat(xPct.toFixed(2)),
-          yPercent: parseFloat(yPct.toFixed(2)),
+          xPercent: typeof s.xPercent === "number" ? s.xPercent : 50,
+          yPercent: typeof s.yPercent === "number" ? s.yPercent : 50,
         };
       });
-
-      // Pass full stickers array to backend to render exactly later
 
       formData.append("stickers", JSON.stringify(responsiveStickers));
 
