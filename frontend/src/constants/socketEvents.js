@@ -1,0 +1,26 @@
+export const SOCKET_EVENTS = {
+  CONNECT: "connect",
+  DISCONNECT: "disconnect",
+  RECEIVE_CHAT_MESSAGE: "receive_chat_message",
+  MESSAGE_SENT: "message_sent",
+  MESSAGE_DELIVERED: "message_delivered",
+  MESSAGE_DELIVERED_UPDATE: "message_delivered_update",
+  MESSAGES_SEEN: "messages_seen",
+  MESSAGES_READ: "messages_read",
+  IS_TYPING: "is_typing",
+  NOT_TYPING: "not_typing",
+  MESSAGE_UNSENT: "message:unsent",
+  STORY_REACTION_MESSAGE_UPDATED: "story_reaction_message_updated",
+  USER_PRESENCE: "user_presence",
+  INITIAL_ONLINE_USERS: "initial_online_users",
+  REQUEST_STATUS_UPDATED: "request_status_updated",
+
+  // Emitted events
+  EMIT_GO_ONLINE: "go_online",
+  EMIT_JOIN_CHAT_ROOM: "join_chat_room",
+  EMIT_LEAVE_CHAT_ROOM: "leave_chat_room",
+  EMIT_MARK_MESSAGES_READ: "mark_messages_read",
+  EMIT_MESSAGE_DELIVERED: "message_delivered",
+  EMIT_TYPING: "typing",
+  EMIT_STOP_TYPING: "stop_typing"
+};
