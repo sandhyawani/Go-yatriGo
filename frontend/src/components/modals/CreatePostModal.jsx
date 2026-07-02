@@ -790,9 +790,10 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                     <div className="mt-7 sm:hidden flex gap-3 w-full">
                       <button
                         onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-500/40 active:scale-95"
+                        className="flex-1 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
                       >
                         📷 Camera
+                      </button>
                       </button>
                       <button
                         onClick={() => fileInputRef.current?.click()}
