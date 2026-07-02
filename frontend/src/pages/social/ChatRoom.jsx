@@ -155,40 +155,43 @@ const ChatRoom = () => {
     };
 
     const onReceiveChatMessage = (message) => {
-      setMessages((prev) => {
-        // If this is a reaction message, replace any existing one for the same storyId+sender
-        const isReaction =
-          (message.text || "").startsWith("Reacted to your story:") ||
-          (message.content || "").startsWith("Reacted to your story:");
+      if (message.roomId === activeRoomRef.current?._id) {
+        setMessages((prev) => {
+          // If this is a reaction message, replace any existing one for the same storyId+sender
+          const isReaction =
+            (message.text || "").startsWith("Reacted to your story:") ||
+            (message.content || "").startsWith("Reacted to your story:");
 
-        if (isReaction && message.storyId) {
-          const storyRef =
-            typeof message.storyId === "object"
-              ? message.storyId._id
-              : message.storyId;
-          const existingIdx = prev.findIndex(
-            (m) =>
-              (m.sender === message.sender ||
-                m.sender?._id === message.sender) &&
-              ((typeof m.storyId === "object"
-                ? m.storyId?._id
-                : m.storyId)?.toString() === storyRef?.toString()) &&
-              ((m.text || "").startsWith("Reacted to your story:") ||
-                (m.content || "").startsWith("Reacted to your story:"))
-          );
-          if (existingIdx !== -1) {
-            // Replace the existing reaction message in-place
-            const updated = [...prev];
-            updated[existingIdx] = message;
-            return updated;
+          if (isReaction && message.storyId) {
+            const storyRef =
+              typeof message.storyId === "object"
+                ? message.storyId._id
+                : message.storyId;
+            const existingIdx = prev.findIndex(
+              (m) =>
+                (m.sender === message.sender ||
+                  m.sender?._id === message.sender) &&
+                ((typeof m.storyId === "object"
+                  ? m.storyId?._id
+                  : m.storyId)?.toString() === storyRef?.toString()) &&
+                ((m.text || "").startsWith("Reacted to your story:") ||
+                  (m.content || "").startsWith("Reacted to your story:"))
+            );
+            if (existingIdx !== -1) {
+              // Replace the existing reaction message in-place
+              const updated = [...prev];
+              updated[existingIdx] = message;
+              return updated;
+            }
           }
-        }
 
-        // Deduplicate by _id
-        if (prev.some((m) => m._id === message._id)) return prev;
-        return [...prev, message];
-      });
-      scrollToBottom();
+          // Deduplicate by _id
+          if (prev.some((m) => m._id === message._id)) return prev;
+          return [...prev, message];
+        });
+        scrollToBottom();
+      }
+
       setRooms((prev) =>
         prev.map((r) => {
           if (r._id === message.roomId) {
@@ -215,6 +218,7 @@ const ChatRoom = () => {
     };
 
     const onMessageDelivered = ({ roomId, messageId, userId }) => {
+      if (roomId !== activeRoomRef.current?._id) return;
       setMessages((prev) =>
         prev.map((m) => {
           if (m._id === messageId) {
@@ -229,6 +233,7 @@ const ChatRoom = () => {
 
     // Dedicated handler for reaction updates emitted by the backend
     const onStoryReactionMessageUpdated = (message) => {
+      if (message.roomId !== activeRoomRef.current?._id) return;
       setMessages((prev) => {
         const storyRef =
           typeof message.storyId === "object"
@@ -256,6 +261,7 @@ const ChatRoom = () => {
     };
 
     const onMessagesRead = ({ roomId, userId, readByUserId }) => {
+      if (roomId !== activeRoomRef.current?._id) return;
       const targetUserId = userId || readByUserId;
       if (!targetUserId) return;
       setMessages((prev) =>
@@ -284,6 +290,7 @@ const ChatRoom = () => {
     };
 
     const onMessageUnsent = ({ roomId, messageId }) => {
+      if (roomId !== activeRoomRef.current?._id) return;
       setMessages((prev) =>
         prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m)),
       );
