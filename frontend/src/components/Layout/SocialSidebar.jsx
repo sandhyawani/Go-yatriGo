@@ -958,7 +958,7 @@ const SocialSidebar = () => {
         if (hideBottomNav) return null;
 
         return (
-          <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-1 pb-safe">
+          <nav id="mobile-bottom-nav" className="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_25px_rgba(0,0,0,0.06)] z-[990] h-16 flex justify-around items-center px-1 pb-safe">
             <Link
               to="/"
               className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${

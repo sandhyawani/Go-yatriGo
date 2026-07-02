@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Compass,
@@ -23,6 +23,16 @@ const CreateJourneyModal = ({
   sourceId = null,
 }) => {
   const navigate = useNavigate();
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open-hide-nav");
+    } else {
+      document.body.classList.remove("modal-open-hide-nav");
+    }
+    return () => {
+      document.body.classList.remove("modal-open-hide-nav");
+    };
+  }, [isOpen]);
   const [step, setStep] = useState(1); // 1: Details, 2: Select Members, 3: Review
   const [formData, setFormData] = useState({
     title: "",

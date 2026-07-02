@@ -109,11 +109,14 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
+      document.body.classList.add("modal-open-hide-nav");
     } else {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open-hide-nav");
     }
     return () => {
       document.body.style.overflow = "";
+      document.body.classList.remove("modal-open-hide-nav");
     };
   }, [isOpen]);
 

@@ -322,3 +322,8 @@ div:where(.swal2-icon).swal2-info {
     margin-top: env(safe-area-inset-top);
   }
 }
+
+/* Hide mobile bottom navigation bar when focused modals/forms are open */
+body.modal-open-hide-nav #mobile-bottom-nav {
+  display: none !important;
+}
