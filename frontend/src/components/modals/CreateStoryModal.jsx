@@ -760,11 +760,11 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
             className="hidden"
             onChange={handleFileChange}
           />
-          {/* Camera input — direct camera capture */}
+          {/* Camera input — direct camera capture on mobile */}
           <input
             type="file"
             ref={cameraInputRef}
-            accept="image/*,video/*,.heic,.heif"
+            accept="image/*,video/*"
             capture="environment"
             className="hidden"
             onChange={handleFileChange}

@@ -35,8 +35,9 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex min-h-[100dvh] ${isAdminWorkspace ? "bg-[#080d1c] flex-col lg:flex-row" : "bg-[#f8f7ff] flex-col lg:flex-row"
-        }`}
+      className={`flex min-h-[100dvh] ${
+        isAdminWorkspace ? "bg-[#080d1c] flex-col lg:flex-row" : "bg-[#f8f7ff] flex-col lg:flex-row"
+      }`}
     >
       {isAdminWorkspace ? (
         <AdminSidebar isOpen={adminNavOpen} onClose={() => setAdminNavOpen(false)} />
@@ -44,12 +45,13 @@ const Layout = () => {
         hasNavigation && <SocialSidebar />
       )}
       <main
-        className={`flex-1 w-full min-w-0 relative z-10 overflow-x-hidden ${isAdminWorkspace
+        className={`flex-1 w-full min-w-0 relative z-10 overflow-x-hidden ${
+          isAdminWorkspace
             ? "lg:ml-[264px] lg:w-[calc(100%-264px)]"
             : hasNavigation
-              ? "lg:ml-[260px] lg:w-[calc(100%-260px)] px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
-              : "px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
-          }`}
+            ? "lg:ml-[260px] lg:w-[calc(100%-260px)] px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
+            : "px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
+        }`}
       >
         {isAdminWorkspace && <AdminNavbar onOpenMenu={() => setAdminNavOpen(true)} />}
         <RouteTour />

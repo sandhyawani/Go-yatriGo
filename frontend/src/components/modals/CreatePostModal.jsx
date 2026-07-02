@@ -69,6 +69,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
   const [isDragging, setIsDragging] = useState(false);
 
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
   const emojiPickerRef = useRef(null);
   const locationSearchTimeoutRef = useRef(null);
 
@@ -307,7 +308,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
       (file) =>
         new Promise((resolve) => {
           if (file.type.startsWith("video/")) {
-            // Videos work fine with blob URLs (they use <video> tag, not canvas)
+            // Videos: create blob URL, but also keep the file for re-reading if needed
+            // This helps on mobile where video element might not immediately decode blob URLs
             resolve({
               file,
               preview: URL.createObjectURL(file),
@@ -783,9 +785,26 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       inspire other travelers on Go YatriGo.
                     </p>
 
+                    {/* Button for desktop (Select Media) and mobile (Camera + Gallery) */}
+                    {/* Mobile: Camera + Gallery buttons */}
+                    <div className="mt-7 sm:hidden flex gap-3 w-full">
+                      <button
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="flex-1 rounded-2xl bg-blue-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-blue-500/25 transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-blue-500/40 active:scale-95"
+                      >
+                        📷 Camera
+                      </button>
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
+                      >
+                        🖼️ Gallery
+                      </button>
+                    </div>
+                    {/* Desktop: Select Media button */}
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="mt-7 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
+                      className="hidden sm:block mt-7 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
                     >
                       Select Media
                     </button>
@@ -801,6 +820,15 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       className="hidden"
                       accept="image/*,video/*,.heic,.heif"
                       multiple
+                      onChange={handleFileChange}
+                    />
+                    {/* Camera input — direct camera capture on mobile */}
+                    <input
+                      type="file"
+                      ref={cameraInputRef}
+                      className="hidden"
+                      accept="image/*,video/*"
+                      capture="environment"
                       onChange={handleFileChange}
                     />
                   </div>

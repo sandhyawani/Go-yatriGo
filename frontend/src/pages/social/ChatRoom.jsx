@@ -16,15 +16,10 @@ import {
   Paperclip,
   Phone,
   Video,
-  Check,
-  CheckCheck,
   Mic,
-  Reply,
-  SmilePlus,
   X,
   ChevronDown,
   Square,
-  Shield,
   Trash2,
 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
@@ -126,6 +121,7 @@ const ChatRoom = () => {
       window.removeEventListener("refresh_chats", handleRefresh);
       window.removeEventListener("message_sent", handleMessageSent);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, location.state]);
 
   useEffect(() => {
@@ -338,6 +334,7 @@ const ChatRoom = () => {
       socket.off("message:unsent", onMessageUnsent);
       socket.off("request_status_updated", onRequestStatusUpdated);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, user]);
 
   useEffect(() => {
@@ -361,7 +358,7 @@ const ChatRoom = () => {
         );
       }
     }
-  }, [messages, activeRoom, user, socketConnected]);
+  }, [messages, activeRoom, user, socketConnected, socket]);
 
   const fetchChannels = async () => {
     try {
@@ -1092,7 +1089,9 @@ const ChatRoom = () => {
   const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
 
   return (
-    <div className="h-[calc(100dvh-120px)] lg:h-[calc(100dvh-48px)] w-full max-w-7xl mx-auto flex bg-white overflow-hidden rounded-2xl border border-slate-200 shadow-sm">
+    <div className={`h-[calc(100dvh-120px)] lg:h-[calc(100dvh-48px)] w-full flex bg-white overflow-hidden ${
+      activeRoom ? "" : "lg:max-w-7xl lg:mx-auto lg:rounded-2xl lg:border lg:border-slate-200 lg:shadow-sm"
+    }`}>
       <style>{`.cs::-webkit-scrollbar{width:4px}.cs::-webkit-scrollbar-track{background:transparent}.cs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:8px}`}</style>
 
       {/* LEFT PANE */}
@@ -1976,15 +1975,7 @@ const ChatRoom = () => {
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-8 select-none">
-            <div className="w-16 h-16 bg-white rounded-2xl border border-slate-100 flex items-center justify-center mb-4 shadow-sm">
-              <MessageSquare className="w-7 h-7 text-[#6C4DF6]" />
-            </div>
-            <h3 className="text-base font-bold text-slate-800">
-              Your Messages
-            </h3>
-            <p className="text-[13px] text-slate-400 mt-1.5 max-w-[220px] leading-relaxed">
-              Select a conversation to start chatting with your travel squad.
-            </p>
+            {/* Empty state removed - now shows blank space until a conversation is selected */}
           </div>
         )}
       </main>

@@ -1364,10 +1364,40 @@ exports.getAllMemories = async (req, res) => {
     } else {
       const followingList =
         user && user.following ? user.following : [];
+      const blockedList =
+        user && user.blockedUsers ? user.blockedUsers : [];
 
-      query.userId = {
-        $in: [...followingList, authUserId],
+      const personalizedQuery = {
+        userId: { $in: [...followingList, authUserId] },
       };
+
+      // Check if the personalized (following-based) feed actually has any
+      // posts. New users, or users who aren't following anyone yet, would
+      // otherwise always see an empty "No posts yet" Home feed even though
+      // plenty of public posts exist in the app.
+      const personalizedCount = await Post.countDocuments(personalizedQuery);
+
+      if (personalizedCount > 0) {
+        query = personalizedQuery;
+      } else {
+        // Fallback: surface a public discovery feed (excluding blocked
+        // users and private accounts you don't follow) so Home never shows
+        // an empty state while public content exists.
+        const privateUserIds = await User.find({ privateAccount: true })
+          .distinct("_id");
+
+        query = {
+          $and: [
+            { userId: { $nin: blockedList } },
+            {
+              $or: [
+                { userId: { $in: [...followingList, authUserId] } },
+                { userId: { $nin: privateUserIds } },
+              ],
+            },
+          ],
+        };
+      }
     }
 
     const posts = await Post.find(query)

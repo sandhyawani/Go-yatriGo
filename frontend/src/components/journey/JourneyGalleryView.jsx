@@ -26,6 +26,7 @@ const JourneyGalleryView = ({ journeyId }) => {
   const [uploadSuccess, setUploadSuccess] = useState(false);
 
   const fileInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const fetchGallery = useCallback(() => {
     if (!journeyId) return;
@@ -61,10 +62,8 @@ const JourneyGalleryView = ({ journeyId }) => {
     }
 
     const isVideo =
-      file.type.startsWith("video/") ||
-      file.name.endsWith(".mp4") ||
-      file.name.endsWith(".mov") ||
-      file.name.endsWith(".avi");
+      file.type?.startsWith("video/") ||
+      file.name?.toLowerCase().match(/\.(mp4|mov|avi|mkv|webm|flv)$/i);
     const type = isVideo ? "video" : "image";
 
     setSelectedFile(file);
@@ -325,6 +324,15 @@ const JourneyGalleryView = ({ journeyId }) => {
                       onChange={(e) => handleFileSelect(e.target.files?.[0])}
                       className="hidden"
                     />
+                    {/* Camera input — direct camera capture on mobile */}
+                    <input
+                      ref={cameraInputRef}
+                      type="file"
+                      accept="image/*,video/*"
+                      capture="environment"
+                      onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                      className="hidden"
+                    />
                     <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-[#6C4DF6] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center mb-3 shadow-xs">
                       <Upload className="w-7 h-7" />
                     </div>
@@ -338,9 +346,27 @@ const JourneyGalleryView = ({ journeyId }) => {
                       </span>
                     </p>
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                      <span>JPG • PNG • WEBP • MP4</span>
+                      <span>JPG • PNG • HEIC • WEBP • MP4</span>
                       <span>•</span>
                       <span>Max 25 MB</span>
+                    </div>
+
+                    {/* Camera and Gallery buttons for mobile */}
+                    <div className="mt-4 flex gap-3 w-full sm:hidden">
+                      <button
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-[#6C4DF6] border-2 border-[#6C4DF6]/30 bg-[#6C4DF6]/5 hover:bg-[#6C4DF6]/10 transition-all flex items-center justify-center gap-2"
+                      >
+                        📷 Camera
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-md hover:-translate-y-0.5 transition-all"
+                      >
+                        🖼️ Gallery
+                      </button>
                     </div>
                   </div>
                 ) : (

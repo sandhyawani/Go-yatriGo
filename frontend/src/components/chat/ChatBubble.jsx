@@ -124,7 +124,7 @@ const ChatBubble = ({
               )}
 
               {/* Story Reply / Reaction Snippet Popup */}
-              {!hideStoryPreview && msg.storyId && typeof msg.storyId === 'object' && (
+              {!hideStoryPreview && msg.storyId && (
                 <div 
                   className={`mb-2.5 p-2 rounded-xl text-[12px] flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
                     isSelf 
@@ -133,22 +133,31 @@ const ChatBubble = ({
                   } transition-all`} 
                   onClick={(e) => { 
                     e.stopPropagation(); 
-                    if (onStoryClick) onStoryClick(msg.storyId._id); 
+                    const storyId = typeof msg.storyId === 'object' ? msg.storyId._id : msg.storyId;
+                    if (onStoryClick) onStoryClick(storyId); 
                   }}
                 >
+                  {/* Story thumbnail */}
                   <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
-                    {msg.storyId.mediaType === 'video' ? (
-                      <video src={msg.storyId.media} className="w-full h-full object-cover" muted playsInline />
+                    {typeof msg.storyId === 'object' && msg.storyId.media ? (
+                      msg.storyId.mediaType === 'video' ? (
+                        <video src={msg.storyId.media} className="w-full h-full object-cover" muted playsInline />
+                      ) : (
+                        <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
+                      )
                     ) : (
-                      <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
+                      <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-lg">
+                        📷
+                      </div>
                     )}
                   </div>
+                  {/* Story caption/info */}
                   <div className="flex-1 min-w-0 pr-1">
                     <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-100" : "text-[#6C4DF6]"}`}>
                       {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Replied to story"}
                     </div>
                     <div className={`truncate text-[12.5px] font-medium ${isSelf ? "text-white/95" : "text-slate-700"}`}>
-                      {msg.storyId.caption || "View story attachment"}
+                      {typeof msg.storyId === 'object' ? (msg.storyId.caption || "View story attachment") : "View story"}
                     </div>
                   </div>
                 </div>
@@ -222,9 +231,9 @@ const ChatBubble = ({
             )}
           </div>
           
-          {/* Hover Actions (Reactions/Reply) */}
+          {/* Hover Actions (Reactions/Reply) - visible on hover desktop, always visible on mobile */}
           {!msg.isUnsent && (
-            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${isSelf ? "-left-[72px]" : "-right-[72px]"}`}>
+            <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${isSelf ? "-left-[72px]" : "-right-[72px]"}`}>
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowEmojiPicker(!showEmojiPicker); }}
                 className="p-1.5 bg-white border border-slate-100 shadow-sm rounded-full text-slate-400 hover:text-[#6C4DF6] transition-colors"
