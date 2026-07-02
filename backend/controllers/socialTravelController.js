@@ -2323,9 +2323,16 @@ exports.reactToStory = async (req, res) => {
         await message.save();
       }
 
-      // Always populate story before emitting
-      await message.populate("storyId", "media mediaType caption");
-      chatMessageToReturn = message;
+      // Always populate story and sender before emitting
+      await message.populate([
+        { path: "sender", select: "-password" },
+        { path: "storyId", select: "media mediaType caption" }
+      ]);
+      const msgObj = message.toObject();
+      if (req.body.clientMsgId) {
+        msgObj.clientMsgId = req.body.clientMsgId;
+      }
+      chatMessageToReturn = msgObj;
 
       room.updatedAt = new Date();
       room.hiddenFor = [];
@@ -2333,7 +2340,6 @@ exports.reactToStory = async (req, res) => {
 
       if (io) {
         // Emit a dedicated event for reaction updates so the client can upsert
-        const msgObj = message.toObject();
         io.to(room._id.toString()).emit("story_reaction_message_updated", msgObj);
         io.to(room._id.toString()).emit("receive_chat_message", msgObj);
 
@@ -2342,6 +2348,14 @@ exports.reactToStory = async (req, res) => {
 
         io.to(story.userId.toString()).emit("story_reaction_message_updated", msgObj);
         io.to(story.userId.toString()).emit("receive_chat_message", msgObj);
+
+        // Emit message_sent acknowledgment to sender
+        io.to(userId.toString()).emit("message_sent", {
+          roomId: room._id.toString(),
+          messageId: msgObj._id.toString(),
+          clientMsgId: msgObj.clientMsgId,
+          message: msgObj
+        });
       }
     }
 
@@ -2507,10 +2521,11 @@ exports.replyToStory = async (req, res) => {
     });
 
     await message.save();
-    // Always populate story fields before emitting so the chat UI has the preview
-    if (message.storyId) {
-      await message.populate("storyId", "media mediaType caption");
-    }
+    // Always populate story and sender fields before emitting so the chat UI has the preview
+    await message.populate([
+      { path: "sender", select: "-password" },
+      { path: "storyId", select: "media mediaType caption" }
+    ]);
 
     room.updatedAt = new Date();
     room.hiddenFor = [];
@@ -2527,6 +2542,10 @@ exports.replyToStory = async (req, res) => {
 
     // Send updates in real time using Socket.IO
     const io = req.app.get("io");
+    const messageObj = message.toObject();
+    if (req.body.clientMsgId) {
+      messageObj.clientMsgId = req.body.clientMsgId;
+    }
 
     if (io) {
       io.to(storyOwnerId.toString()).emit(
@@ -2535,17 +2554,24 @@ exports.replyToStory = async (req, res) => {
       );
 
       // Emit the fully-populated message so the receiver gets the story preview
-      const messageObj = message.toObject();
       io.to(room._id.toString()).emit("receive_chat_message", messageObj);
       io.to(senderId.toString()).emit("receive_chat_message", messageObj);
       io.to(storyOwnerId.toString()).emit("receive_chat_message", messageObj);
+
+      // Emit message_sent acknowledgment to sender
+      io.to(senderId.toString()).emit("message_sent", {
+        roomId: room._id.toString(),
+        messageId: messageObj._id.toString(),
+        clientMsgId: messageObj.clientMsgId,
+        message: messageObj
+      });
     }
 
     res.status(200).json({
       success: true,
       message: "Story reply sent!",
       roomId: room._id,
-      chatMessage: message,
+      chatMessage: messageObj,
     });
   } catch (error) {
     res.status(500).json({

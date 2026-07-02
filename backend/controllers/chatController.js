@@ -176,20 +176,53 @@ exports.getRoomMessages = async (req, res) => {
 
     // Mark older unread messages as well.
     if (page === 1) {
-      await Message.updateMany(
+      const updateSeenResult = await Message.updateMany(
         { roomId, unreadBy: userId },
         { 
           $pull: { unreadBy: userId },
-          $addToSet: { seenBy: userId } 
+          $addToSet: { seenBy: userId, deliveredTo: userId } 
         }
       );
+
+      if (updateSeenResult.modifiedCount > 0) {
+        const io = req.app.get("io");
+        if (io) {
+          io.to(roomId.toString()).emit("messages_read", {
+            roomId: roomId.toString(),
+            userId: userId.toString()
+          });
+          io.to(roomId.toString()).emit("messages_seen", {
+            roomId: roomId.toString(),
+            userId: userId.toString()
+          });
+        }
+      }
     }
 
     // Mark messages as delivered to the current user
-    await Message.updateMany(
+    const updateDeliveredResult = await Message.updateMany(
       { roomId, sender: { $ne: userId }, deliveredTo: { $ne: userId } },
       { $addToSet: { deliveredTo: userId } }
     );
+
+    if (updateDeliveredResult.modifiedCount > 0) {
+      const io = req.app.get("io");
+      if (io) {
+        const undelivered = await Message.find({ roomId, sender: { $ne: userId }, deliveredTo: userId });
+        undelivered.forEach(m => {
+          io.to(roomId.toString()).emit("message_delivered_update", {
+            roomId: roomId.toString(),
+            messageId: m._id.toString(),
+            userId: userId.toString()
+          });
+          io.to(roomId.toString()).emit("message_delivered", {
+            roomId: roomId.toString(),
+            messageId: m._id.toString(),
+            userId: userId.toString()
+          });
+        });
+      }
+    }
 
     res.status(200).json({ success: true, messages, page, hasMore: messages.length === limit });
   } catch (error) {
@@ -298,6 +331,10 @@ exports.sendMessage = async (req, res) => {
       .populate("storyId", "media mediaType caption")
       .lean();
 
+    if (req.body.clientMsgId) {
+      populatedMessage.clientMsgId = req.body.clientMsgId;
+    }
+
     const io = req.app.get("io");
     if (io) {
       io.to(roomId.toString()).emit("receive_chat_message", populatedMessage);
@@ -307,6 +344,14 @@ exports.sendMessage = async (req, res) => {
           io.to(memberId.toString()).emit("receive_chat_message", populatedMessage);
         });
       }
+
+      // Emit message_sent acknowledgment to the sender
+      io.to(userId.toString()).emit("message_sent", {
+        roomId: roomId.toString(),
+        messageId: populatedMessage._id.toString(),
+        clientMsgId: populatedMessage.clientMsgId,
+        message: populatedMessage
+      });
     }
 
     res.status(201).json({ success: true, message: populatedMessage });

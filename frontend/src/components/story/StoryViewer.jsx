@@ -79,9 +79,7 @@ const StoryViewer = ({
           `Reply sent to ${activeStoryGroup.userName.split(" ")[0]}! 💬`,
         );
         setStoryReplyText("");
-        if (socket && res.data.chatMessage) {
-          socket.emit("send_chat_message", res.data.chatMessage);
-        }
+        // socket.emit("send_chat_message", res.data.chatMessage);
         window.dispatchEvent(new CustomEvent("refresh_chats"));
         if (res.data.chatMessage) {
           window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));
@@ -106,9 +104,7 @@ const StoryViewer = ({
       );
       if (res.data.success) {
         showToast.success(`${emoji} Sent!`);
-        if (socket && res.data.chatMessage) {
-          socket.emit("send_chat_message", res.data.chatMessage);
-        }
+        // socket.emit("send_chat_message", res.data.chatMessage);
         window.dispatchEvent(new CustomEvent("refresh_chats"));
         if (res.data.chatMessage) {
           window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));

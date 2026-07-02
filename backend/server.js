@@ -123,7 +123,7 @@ app.set("onlineUsers", onlineUsers);
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("go_online", (userId) => {
+  socket.on("go_online", async (userId) => {
     onlineUsers.set(userId, socket.id);
     socket.join(userId);
     console.log(`${userId} joined personal room`);
@@ -135,6 +135,46 @@ io.on("connection", (socket) => {
 
     // Send the list of current online user IDs to the user who just went online
     socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
+
+    // Find all rooms containing this user and mark messages from others as delivered
+    try {
+      const ChatRoom = require("./models/ChatRoom");
+      const Message = require("./models/Message");
+      
+      const rooms = await ChatRoom.find({ members: userId });
+      const roomIds = rooms.map(r => r._id);
+      
+      if (roomIds.length > 0) {
+        const undeliveredMessages = await Message.find({
+          roomId: { $in: roomIds },
+          sender: { $ne: userId },
+          deliveredTo: { $ne: userId }
+        });
+
+        if (undeliveredMessages.length > 0) {
+          const messageIds = undeliveredMessages.map(m => m._id);
+          await Message.updateMany(
+            { _id: { $in: messageIds } },
+            { $addToSet: { deliveredTo: userId } }
+          );
+
+          undeliveredMessages.forEach((m) => {
+            io.to(m.roomId.toString()).emit("message_delivered", {
+              roomId: m.roomId.toString(),
+              messageId: m._id.toString(),
+              userId: userId,
+            });
+            io.to(m.roomId.toString()).emit("message_delivered_update", {
+              roomId: m.roomId.toString(),
+              messageId: m._id.toString(),
+              userId: userId,
+            });
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Error marking undelivered messages on go_online:", err);
+    }
   });
 
   socket.on("join_room", (roomId) => {
@@ -157,8 +197,22 @@ io.on("connection", (socket) => {
     socket.to(data.roomId).emit("not_typing", data);
   });
 
-  socket.on("mark_messages_read", (data) => {
-    socket.to(data.roomId).emit("messages_read", data);
+  socket.on("mark_messages_read", async (data) => {
+    try {
+      const Message = require("./models/Message");
+      await Message.updateMany(
+        { roomId: data.roomId, unreadBy: data.userId },
+        { 
+          $pull: { unreadBy: data.userId },
+          $addToSet: { seenBy: data.userId, deliveredTo: data.userId }
+        }
+      );
+
+      socket.to(data.roomId).emit("messages_read", data);
+      socket.to(data.roomId).emit("messages_seen", data);
+    } catch (err) {
+      console.error("Error updating messages read status:", err);
+    }
   });
 
   socket.on("message_delivered", async (data) => {
@@ -170,6 +224,11 @@ io.on("connection", (socket) => {
         { new: true }
       );
       if (message) {
+        socket.to(data.roomId).emit("message_delivered", {
+          roomId: data.roomId,
+          messageId: data.messageId,
+          userId: data.userId,
+        });
         socket.to(data.roomId).emit("message_delivered_update", {
           roomId: data.roomId,
           messageId: data.messageId,

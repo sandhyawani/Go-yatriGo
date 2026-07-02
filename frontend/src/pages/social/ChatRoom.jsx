@@ -31,6 +31,43 @@ import StoryViewer from "../../components/story/StoryViewer";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 
+const getMediaTypeLabel = (mediaUrl) => {
+  if (!mediaUrl) return "";
+  const lower = mediaUrl.toLowerCase();
+  if (lower.match(/\.(mp4|webm|ogg|mov|avi|flv|mkv|3gp)$/) || lower.includes("video")) {
+    return "🎥 Video";
+  }
+  if (lower.match(/\.(mp3|wav|ogg|aac|flac|m4a|webm)$/) || lower.includes("voice") || lower.includes("audio")) {
+    return "🎙️ Voice message";
+  }
+  return "📷 Photo";
+};
+
+const getLatestMessagePreview = (msg, currentUserId) => {
+  if (!msg) return "Start chatting";
+  if (msg.isUnsent) return "🚫 This message was removed";
+
+  const text = msg.text || msg.content || "";
+  const hasMedia = !!msg.media;
+  const hasStory = !!msg.storyId;
+  const isSelf = (msg.sender?._id || msg.sender)?.toString() === currentUserId?.toString();
+  const prefix = isSelf ? "You: " : "";
+
+  if (hasStory) {
+    if (text.startsWith("Reacted")) {
+      return text;
+    }
+    return `💬 Story reply: ${text}`;
+  }
+
+  if (hasMedia) {
+    const mediaLabel = getMediaTypeLabel(msg.media);
+    return text ? `${mediaLabel}: ${text}` : mediaLabel;
+  }
+
+  return text ? `${prefix}${text}` : "Message";
+};
+
 const ChatRoom = () => {
   const { user, dispatch } = useContext(AuthContext);
   const currentUserId = user?._id || user?.id;
@@ -68,6 +105,7 @@ const ChatRoom = () => {
 
   const [replyToMsg, setReplyToMsg] = useState(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
+  const [unreadNewMessagesCount, setUnreadNewMessagesCount] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [audioBlob, setAudioBlob] = useState(null);
@@ -128,6 +166,11 @@ const ChatRoom = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, location.state]);
 
+  const showScrollBottomRef = useRef(showScrollBottom);
+  useEffect(() => {
+    showScrollBottomRef.current = showScrollBottom;
+  }, [showScrollBottom]);
+
   useEffect(() => {
     if (!socket) return;
     setSocketConnected(socket.connected);
@@ -155,9 +198,30 @@ const ChatRoom = () => {
     };
 
     const onReceiveChatMessage = (message) => {
+      const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+      const isSelf = msgSenderId?.toString() === currentUserId?.toString();
+
       if (message.roomId === activeRoomRef.current?._id) {
+        if (showScrollBottomRef.current && !isSelf) {
+          setUnreadNewMessagesCount((prev) => prev + 1);
+        }
+
         setMessages((prev) => {
-          // If this is a reaction message, replace any existing one for the same storyId+sender
+          // 1. Reconcile optimistic message
+          if (message.clientMsgId) {
+            const idx = prev.findIndex((m) => m._id === message.clientMsgId);
+            if (idx !== -1) {
+              const updated = [...prev];
+              updated[idx] = {
+                ...message,
+                isPending: false,
+                replyTo: message.replyTo || prev[idx].replyTo
+              };
+              return updated;
+            }
+          }
+
+          // 2. Reaction message mapping
           const isReaction =
             (message.text || "").startsWith("Reacted to your story:") ||
             (message.content || "").startsWith("Reacted to your story:");
@@ -167,39 +231,34 @@ const ChatRoom = () => {
               typeof message.storyId === "object"
                 ? message.storyId._id
                 : message.storyId;
-            const existingIdx = prev.findIndex(
-              (m) => {
-                const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
-                const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
-                return mSenderId?.toString() === msgSenderId?.toString() &&
-                  ((typeof m.storyId === "object"
-                    ? m.storyId?._id
-                    : m.storyId)?.toString() === storyRef?.toString()) &&
-                  ((m.text || "").startsWith("Reacted to your story:") ||
-                    (m.content || "").startsWith("Reacted to your story:"));
-              }
-            );
+            const existingIdx = prev.findIndex((m) => {
+              const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+              return mSenderId?.toString() === msgSenderId?.toString() &&
+                ((typeof m.storyId === "object"
+                  ? m.storyId?._id
+                  : m.storyId)?.toString() === storyRef?.toString()) &&
+                ((m.text || "").startsWith("Reacted to your story:") ||
+                  (m.content || "").startsWith("Reacted to your story:"));
+            });
             if (existingIdx !== -1) {
-              // Replace the existing reaction message in-place
               const updated = [...prev];
               updated[existingIdx] = message;
               return updated;
             }
           }
 
-          // Deduplicate by _id
-          if (prev.some((m) => m._id === message._id)) return prev;
+          // 3. Deduplicate by database _id
+          if (prev.some((m) => m._id === message._id)) {
+            return prev.map((m) => m._id === message._id ? { ...m, ...message } : m);
+          }
+
           return [...prev, message];
         });
-        scrollToBottom();
       }
-
-      const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
 
       setRooms((prev) => {
         const roomExists = prev.some((r) => r._id === message.roomId);
         if (!roomExists) {
-          // Automatically reload rooms to load the new room into sidebar
           setTimeout(() => fetchChannels(), 0);
           return prev;
         }
@@ -211,7 +270,7 @@ const ChatRoom = () => {
               latestMessage: message,
               updatedAt: new Date().toISOString(),
               unreadCount:
-                r._id !== activeRoomRef.current?._id && msgSenderId?.toString() !== currentUserId?.toString()
+                r._id !== activeRoomRef.current?._id && !isSelf
                   ? (r.unreadCount || 0) + 1
                   : r.unreadCount,
             };
@@ -220,13 +279,40 @@ const ChatRoom = () => {
         });
       });
 
-      if (socketConnected && socket && msgSenderId?.toString() !== currentUserId?.toString()) {
-        socket.emit("message_delivered", {
-          roomId: message.roomId,
-          messageId: message._id,
-          userId: currentUserId,
-        });
+      // Receipt acknowledgment
+      if (socketConnected && socket && !isSelf) {
+        if (message.roomId === activeRoomRef.current?._id) {
+          socket.emit("mark_messages_read", {
+            roomId: message.roomId,
+            userId: currentUserId,
+          });
+        } else {
+          socket.emit("message_delivered", {
+            roomId: message.roomId,
+            messageId: message._id,
+            userId: currentUserId,
+          });
+        }
       }
+    };
+
+    const onMessageSent = ({ roomId, messageId, clientMsgId, message }) => {
+      if (roomId !== activeRoomRef.current?._id) return;
+      setMessages((prev) => {
+        const idx = prev.findIndex((m) => m._id === clientMsgId || m._id === messageId);
+        if (idx !== -1) {
+          const updated = [...prev];
+          updated[idx] = {
+            ...updated[idx],
+            ...message,
+            _id: messageId,
+            isPending: false,
+            replyTo: message.replyTo || updated[idx].replyTo
+          };
+          return updated;
+        }
+        return [...prev, message];
+      });
     };
 
     const onMessageDelivered = ({ roomId, messageId, userId }) => {
@@ -234,16 +320,35 @@ const ChatRoom = () => {
       setMessages((prev) =>
         prev.map((m) => {
           if (m._id === messageId) {
-            const deliveredTo = [...(m.deliveredTo || [])];
+            const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
             if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
             return { ...m, deliveredTo };
           }
           return m;
-        }),
+        })
       );
     };
 
-    // Dedicated handler for reaction updates emitted by the backend
+    const onMessagesSeen = ({ roomId, userId }) => {
+      if (roomId !== activeRoomRef.current?._id) return;
+      setMessages((prev) =>
+        prev.map((m) => {
+          const unreadBy = m.unreadBy ? m.unreadBy.filter((id) => id !== userId) : [];
+          const seenBy = m.seenBy ? [...m.seenBy] : [];
+          if (!seenBy.includes(userId)) seenBy.push(userId);
+          const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
+          if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+          return { ...m, unreadBy, seenBy, deliveredTo };
+        })
+      );
+    };
+
+    const onMessagesRead = ({ roomId, userId, readByUserId }) => {
+      const targetUserId = userId || readByUserId;
+      if (!targetUserId) return;
+      onMessagesSeen({ roomId, userId: targetUserId });
+    };
+
     const onStoryReactionMessageUpdated = (message) => {
       if (message.roomId !== activeRoomRef.current?._id) return;
       setMessages((prev) => {
@@ -251,44 +356,24 @@ const ChatRoom = () => {
           typeof message.storyId === "object"
             ? message.storyId?._id
             : message.storyId;
-        const idx = prev.findIndex(
-          (m) => {
-            const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
-            const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
-            return m._id === message._id ||
-              (mSenderId?.toString() === msgSenderId?.toString() &&
-               (typeof m.storyId === "object"
-                 ? m.storyId?._id
-                 : m.storyId
-               )?.toString() === storyRef?.toString() &&
-               (m.text || "").startsWith("Reacted to your story:"));
-          }
-        );
+        const idx = prev.findIndex((m) => {
+          const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+          const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+          return m._id === message._id ||
+            (mSenderId?.toString() === msgSenderId?.toString() &&
+             (typeof m.storyId === "object"
+               ? m.storyId?._id
+               : m.storyId
+             )?.toString() === storyRef?.toString() &&
+             (m.text || "").startsWith("Reacted to your story:"));
+        });
         if (idx !== -1) {
           const updated = [...prev];
           updated[idx] = message;
           return updated;
         }
-        // If not found, append as new
         return [...prev, message];
       });
-    };
-
-    const onMessagesRead = ({ roomId, userId, readByUserId }) => {
-      if (roomId !== activeRoomRef.current?._id) return;
-      const targetUserId = userId || readByUserId;
-      if (!targetUserId) return;
-      setMessages((prev) =>
-        prev.map((m) => {
-          if (m.unreadBy?.includes(targetUserId)) {
-            return {
-              ...m,
-              unreadBy: m.unreadBy.filter((id) => id !== targetUserId),
-            };
-          }
-          return m;
-        }),
-      );
     };
 
     const onIsTyping = ({ roomId, userName }) => {
@@ -306,7 +391,7 @@ const ChatRoom = () => {
     const onMessageUnsent = ({ roomId, messageId }) => {
       if (roomId !== activeRoomRef.current?._id) return;
       setMessages((prev) =>
-        prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m)),
+        prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
       );
     };
 
@@ -318,11 +403,11 @@ const ChatRoom = () => {
     }) => {
       setRooms((prev) =>
         prev.map((r) =>
-          r._id === roomId ? { ...r, ...room, requestStatus } : r,
-        ),
+          r._id === roomId ? { ...r, ...room, requestStatus } : r
+        )
       );
       setActiveRoom((prev) =>
-        prev?._id === roomId ? { ...prev, ...room, requestStatus } : prev,
+        prev?._id === roomId ? { ...prev, ...room, requestStatus } : prev
       );
       if (
         updatedBy &&
@@ -339,9 +424,12 @@ const ChatRoom = () => {
     socket.on("user_presence", onUserPresence);
     socket.on("initial_online_users", onInitialOnlineUsers);
     socket.on("receive_chat_message", onReceiveChatMessage);
+    socket.on("message_sent", onMessageSent);
+    socket.on("message_delivered", onMessageDelivered);
     socket.on("message_delivered_update", onMessageDelivered);
-    socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
+    socket.on("messages_seen", onMessagesSeen);
     socket.on("messages_read", onMessagesRead);
+    socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
     socket.on("is_typing", onIsTyping);
     socket.on("not_typing", onNotTyping);
     socket.on("message:unsent", onMessageUnsent);
@@ -353,9 +441,12 @@ const ChatRoom = () => {
       socket.off("user_presence", onUserPresence);
       socket.off("initial_online_users", onInitialOnlineUsers);
       socket.off("receive_chat_message", onReceiveChatMessage);
+      socket.off("message_sent", onMessageSent);
+      socket.off("message_delivered", onMessageDelivered);
       socket.off("message_delivered_update", onMessageDelivered);
-      socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
+      socket.off("messages_seen", onMessagesSeen);
       socket.off("messages_read", onMessagesRead);
+      socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
       socket.off("is_typing", onIsTyping);
       socket.off("not_typing", onNotTyping);
       socket.off("message:unsent", onMessageUnsent);
@@ -383,6 +474,7 @@ const ChatRoom = () => {
             r._id === activeRoom._id ? { ...r, unreadCount: 0 } : r,
           ),
         );
+        setUnreadNewMessagesCount(0);
       }
     }
   }, [messages, activeRoom, user, socketConnected, socket, currentUserId]);
@@ -624,7 +716,7 @@ const ChatRoom = () => {
         setAudioBlob(null);
       }
 
-      const payload = { text: textToSend };
+      const payload = { text: textToSend, clientMsgId };
       if (mediaUrl) payload.media = mediaUrl;
       if (replyToMsg) {
         payload.replyTo = {
@@ -642,11 +734,15 @@ const ChatRoom = () => {
       );
       if (res.data.success) {
         setMessages((prev) =>
-          prev.map((m) => (m._id === clientMsgId ? res.data.message : m))
+          prev.map((m) =>
+            m._id === clientMsgId
+              ? {
+                  ...res.data.message,
+                  replyTo: res.data.message.replyTo || m.replyTo
+                }
+              : m
+          )
         );
-        if (socketConnected && socket) {
-          socket.emit("send_chat_message", res.data.message);
-        }
         setReplyToMsg(null);
       }
     } catch (err) {
@@ -1107,11 +1203,44 @@ const ChatRoom = () => {
     }
   };
 
-  const scrollToBottom = () =>
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    setUnreadNewMessagesCount(0);
+  };
+
+  const prevMessagesLength = useRef(0);
+  const prevActiveRoomId = useRef(null);
+
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    if (!activeRoom) {
+      prevMessagesLength.current = 0;
+      prevActiveRoomId.current = null;
+      return;
+    }
+
+    const currentLength = messages.length;
+    const currentRoomId = activeRoom._id;
+
+    if (currentRoomId !== prevActiveRoomId.current) {
+      // Room changed: instant scroll to bottom
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
+      }, 50);
+      setUnreadNewMessagesCount(0);
+    } else if (currentLength > prevMessagesLength.current) {
+      const lastMsg = messages[currentLength - 1];
+      const senderId = typeof lastMsg?.sender === "object" ? (lastMsg.sender?._id || lastMsg.sender?.id) : lastMsg?.sender;
+      const isSelf = senderId?.toString() === currentUserId?.toString();
+
+      // If user sent it, or already at the bottom, scroll to bottom smoothly
+      if (isSelf || !showScrollBottom) {
+        setTimeout(scrollToBottom, 50);
+      }
+    }
+
+    prevMessagesLength.current = currentLength;
+    prevActiveRoomId.current = currentRoomId;
+  }, [messages, activeRoom, currentUserId, showScrollBottom]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -1486,11 +1615,7 @@ const ChatRoom = () => {
                               {isTyping} typing...
                             </span>
                           ) : room.latestMessage ? (
-                            room.latestMessage.storyId
-                              ? room.latestMessage.text?.startsWith("Reacted")
-                                ? room.latestMessage.text
-                                : `💬 Story reply: ${room.latestMessage.text}`
-                              : room.latestMessage.text
+                            getLatestMessagePreview(room.latestMessage, currentUserId)
                           ) : (
                             "Start chatting"
                           )}
@@ -1986,9 +2111,12 @@ const ChatRoom = () => {
                 {showScrollBottom && (
                   <button
                     onClick={scrollToBottom}
-                    className="absolute -top-12 right-6 p-2 bg-[#7F77DD] text-white rounded-full shadow-lg hover:bg-[#6b62d6] transition-all z-20"
+                    className="absolute -top-12 right-6 bg-[#7F77DD] text-white shadow-lg hover:bg-[#6b62d6] transition-all z-20 flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-full"
                   >
-                    <ChevronDown className="w-5 h-5" />
+                    <ChevronDown className="w-4 h-4" />
+                    {unreadNewMessagesCount > 0 && (
+                      <span>New Messages ({unreadNewMessagesCount})</span>
+                    )}
                   </button>
                 )}
 
