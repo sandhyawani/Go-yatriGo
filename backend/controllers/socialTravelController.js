@@ -2340,6 +2340,7 @@ exports.reactToStory = async (req, res) => {
 
       if (io) {
         // Emit a dedicated event for reaction updates so the client can upsert
+        console.log("[SERVER] EMIT receive_chat_message", msgObj);
         io.to(room._id.toString()).emit("story_reaction_message_updated", msgObj);
         io.to(room._id.toString()).emit("receive_chat_message", msgObj);
 
@@ -2350,6 +2351,7 @@ exports.reactToStory = async (req, res) => {
         io.to(story.userId.toString()).emit("receive_chat_message", msgObj);
 
         // Emit message_sent acknowledgment to sender
+        console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: msgObj._id.toString(), clientMsgId: msgObj.clientMsgId });
         io.to(userId.toString()).emit("message_sent", {
           roomId: room._id.toString(),
           messageId: msgObj._id.toString(),
@@ -2548,17 +2550,20 @@ exports.replyToStory = async (req, res) => {
     }
 
     if (io) {
+      console.log("BACKEND EMIT new_notification for story reply to storyOwnerId:", storyOwnerId.toString());
       io.to(storyOwnerId.toString()).emit(
         "new_notification",
         notification
       );
 
       // Emit the fully-populated message so the receiver gets the story preview
+      console.log("[SERVER] EMIT receive_chat_message", messageObj);
       io.to(room._id.toString()).emit("receive_chat_message", messageObj);
       io.to(senderId.toString()).emit("receive_chat_message", messageObj);
       io.to(storyOwnerId.toString()).emit("receive_chat_message", messageObj);
 
       // Emit message_sent acknowledgment to sender
+      console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: messageObj._id.toString(), clientMsgId: messageObj.clientMsgId });
       io.to(senderId.toString()).emit("message_sent", {
         roomId: room._id.toString(),
         messageId: messageObj._id.toString(),

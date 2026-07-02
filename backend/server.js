@@ -121,19 +121,20 @@ app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+  console.log("[SERVER] Connected:", socket.id);
 
   socket.on("go_online", async (userId) => {
+    console.log("[SERVER] go_online:", userId);
     onlineUsers.set(userId, socket.id);
     socket.join(userId);
     console.log(`${userId} joined personal room`);
+    console.log("[SERVER] Current socket rooms:", Array.from(socket.rooms));
 
     socket.broadcast.emit("user_presence", {
       userId,
       status: "online",
     });
 
-    // Send the list of current online user IDs to the user who just went online
     socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
 
     // Find all rooms containing this user and mark messages from others as delivered
@@ -159,6 +160,7 @@ io.on("connection", (socket) => {
           );
 
           undeliveredMessages.forEach((m) => {
+            console.log("[SERVER] EMIT message_delivered", { roomId: m.roomId.toString(), messageId: m._id.toString(), userId });
             io.to(m.roomId.toString()).emit("message_delivered", {
               roomId: m.roomId.toString(),
               messageId: m._id.toString(),
@@ -178,14 +180,18 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_room", (roomId) => {
+    console.log("[SERVER] join_room:", roomId);
     socket.join(roomId);
   });
 
   socket.on("join_chat_room", (roomId) => {
+    console.log("[SERVER] join_chat_room:", roomId);
     socket.join(roomId);
+    console.log("[SERVER] Current socket rooms after join_chat_room:", Array.from(socket.rooms));
   });
 
   socket.on("send_chat_message", (data) => {
+    console.log("RECEIVED send_chat_message (legacy/broadcast fallback):", data);
     socket.to(data.roomId).emit("receive_chat_message", data);
   });
 
@@ -198,6 +204,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("mark_messages_read", async (data) => {
+    console.log("RECEIVED mark_messages_read:", data);
     try {
       const Message = require("./models/Message");
       await Message.updateMany(
@@ -208,6 +215,7 @@ io.on("connection", (socket) => {
         }
       );
 
+      console.log("[SERVER] EMIT messages_seen", data);
       socket.to(data.roomId).emit("messages_read", data);
       socket.to(data.roomId).emit("messages_seen", data);
     } catch (err) {
@@ -216,6 +224,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message_delivered", async (data) => {
+    console.log("RECEIVED message_delivered:", data);
     try {
       const Message = require("./models/Message");
       const message = await Message.findByIdAndUpdate(
@@ -224,6 +233,7 @@ io.on("connection", (socket) => {
         { new: true }
       );
       if (message) {
+        console.log("[SERVER] EMIT message_delivered", { roomId: data.roomId, messageId: data.messageId, userId: data.userId });
         socket.to(data.roomId).emit("message_delivered", {
           roomId: data.roomId,
           messageId: data.messageId,

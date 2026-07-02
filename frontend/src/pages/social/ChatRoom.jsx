@@ -31,6 +31,14 @@ import StoryViewer from "../../components/story/StoryViewer";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 
+const getRoomIdString = (roomField) => {
+  if (!roomField) return "";
+  if (typeof roomField === "object") {
+    return (roomField._id || roomField.id || roomField).toString();
+  }
+  return roomField.toString();
+};
+
 const getMediaTypeLabel = (mediaUrl) => {
   if (!mediaUrl) return "";
   const lower = mediaUrl.toLowerCase();
@@ -150,7 +158,10 @@ const ChatRoom = () => {
     fetchChannels();
     const handleRefresh = () => fetchChannels();
     const handleMessageSent = (e) => {
-      if (e.detail && e.detail.roomId === roomId) {
+      console.log("CUSTOM EVENT message_sent received:", e.detail);
+      const detailRoomId = getRoomIdString(e.detail?.roomId);
+      const activeId = getRoomIdString(activeRoomRef.current?._id);
+      if (detailRoomId && activeId && detailRoomId === activeId) {
         setMessages((prev) => {
           if (prev.some((m) => m._id === e.detail._id)) return prev;
           return [...prev, e.detail];
@@ -176,16 +187,30 @@ const ChatRoom = () => {
     setSocketConnected(socket.connected);
 
     const onConnect = () => {
+      console.log("[CLIENT] Socket connected:", socket.id);
       setSocketConnected(true);
-      if (user) socket.emit("go_online", currentUserId);
-      if (activeRoomRef.current) syncRoomMessages(activeRoomRef.current);
+      if (user) {
+        const userId = user._id || user.id;
+        console.log("[CLIENT] go_online:", userId);
+        socket.emit("go_online", userId);
+      }
+      const activeId = getRoomIdString(activeRoomRef.current?._id);
+      if (activeId) {
+        console.log("[CLIENT] join_chat_room:", activeId);
+        socket.emit("join_chat_room", activeId);
+        syncRoomMessages(activeRoomRef.current);
+      }
     };
 
-    const onDisconnect = () => setSocketConnected(false);
+    const onDisconnect = () => {
+      console.log("[CLIENT] Socket disconnected");
+      setSocketConnected(false);
+    };
 
     if (socket.connected) onConnect();
 
     const onUserPresence = ({ userId, status }) => {
+      console.log("[CLIENT] user_presence:", { userId, status });
       setOnlineUsers((prev) => {
         const s = new Set(prev);
         status === "online" ? s.add(userId) : s.delete(userId);
@@ -194,30 +219,38 @@ const ChatRoom = () => {
     };
 
     const onInitialOnlineUsers = (userIds) => {
+      console.log("[CLIENT] initial_online_users:", userIds);
       setOnlineUsers(new Set(userIds));
     };
 
     const onReceiveChatMessage = (message) => {
+      console.log("[CLIENT] receive_chat_message", message);
       const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
       const isSelf = msgSenderId?.toString() === currentUserId?.toString();
 
-      if (message.roomId === activeRoomRef.current?._id) {
+      const incomingRoomId = getRoomIdString(message.roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         if (showScrollBottomRef.current && !isSelf) {
           setUnreadNewMessagesCount((prev) => prev + 1);
         }
 
         setMessages((prev) => {
+          console.log("Before update", prev.length);
+          let updatedMessages = [...prev];
+
           // 1. Reconcile optimistic message
           if (message.clientMsgId) {
             const idx = prev.findIndex((m) => m._id === message.clientMsgId);
             if (idx !== -1) {
-              const updated = [...prev];
-              updated[idx] = {
+              updatedMessages[idx] = {
                 ...message,
                 isPending: false,
                 replyTo: message.replyTo || prev[idx].replyTo
               };
-              return updated;
+              console.log("After update", updatedMessages.length);
+              return updatedMessages;
             }
           }
 
@@ -227,66 +260,73 @@ const ChatRoom = () => {
             (message.content || "").startsWith("Reacted to your story:");
 
           if (isReaction && message.storyId) {
-            const storyRef =
-              typeof message.storyId === "object"
-                ? message.storyId._id
-                : message.storyId;
+            const storyRef = getRoomIdString(message.storyId);
             const existingIdx = prev.findIndex((m) => {
               const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+              const mStoryId = getRoomIdString(m.storyId);
               return mSenderId?.toString() === msgSenderId?.toString() &&
-                ((typeof m.storyId === "object"
-                  ? m.storyId?._id
-                  : m.storyId)?.toString() === storyRef?.toString()) &&
+                mStoryId === storyRef &&
                 ((m.text || "").startsWith("Reacted to your story:") ||
                   (m.content || "").startsWith("Reacted to your story:"));
             });
             if (existingIdx !== -1) {
-              const updated = [...prev];
-              updated[existingIdx] = message;
-              return updated;
+              updatedMessages[existingIdx] = message;
+              console.log("After update", updatedMessages.length);
+              return updatedMessages;
             }
           }
 
           // 3. Deduplicate by database _id
           if (prev.some((m) => m._id === message._id)) {
-            return prev.map((m) => m._id === message._id ? { ...m, ...message } : m);
+            updatedMessages = prev.map((m) => m._id === message._id ? { ...m, ...message } : m);
+          } else {
+            updatedMessages.push(message);
           }
 
-          return [...prev, message];
+          console.log("After update", updatedMessages.length);
+          return updatedMessages;
         });
       }
 
       setRooms((prev) => {
-        const roomExists = prev.some((r) => r._id === message.roomId);
+        console.log("Before update", prev.length);
+        const roomExists = prev.some((r) => getRoomIdString(r._id) === incomingRoomId);
         if (!roomExists) {
           setTimeout(() => fetchChannels(), 0);
           return prev;
         }
 
-        return prev.map((r) => {
-          if (r._id === message.roomId) {
+        const updatedRooms = prev.map((r) => {
+          if (getRoomIdString(r._id) === incomingRoomId) {
             return {
               ...r,
               latestMessage: message,
               updatedAt: new Date().toISOString(),
               unreadCount:
-                r._id !== activeRoomRef.current?._id && !isSelf
+                getRoomIdString(r._id) !== activeRoomId && !isSelf
                   ? (r.unreadCount || 0) + 1
                   : r.unreadCount,
             };
           }
           return r;
         });
+
+        // Reorder conversations list to push room with latest message to top
+        const sortedRooms = [...updatedRooms].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+        console.log("After update", sortedRooms.length);
+        return sortedRooms;
       });
 
       // Receipt acknowledgment
       if (socketConnected && socket && !isSelf) {
-        if (message.roomId === activeRoomRef.current?._id) {
+        if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+          console.log("[CLIENT] Emit mark_messages_read for room:", incomingRoomId);
           socket.emit("mark_messages_read", {
             roomId: message.roomId,
             userId: currentUserId,
           });
         } else {
+          console.log("[CLIENT] Emit message_delivered for message:", message._id);
           socket.emit("message_delivered", {
             roomId: message.roomId,
             messageId: message._id,
@@ -297,90 +337,121 @@ const ChatRoom = () => {
     };
 
     const onMessageSent = ({ roomId, messageId, clientMsgId, message }) => {
-      if (roomId !== activeRoomRef.current?._id) return;
-      setMessages((prev) => {
-        const idx = prev.findIndex((m) => m._id === clientMsgId || m._id === messageId);
-        if (idx !== -1) {
-          const updated = [...prev];
-          updated[idx] = {
-            ...updated[idx],
-            ...message,
-            _id: messageId,
-            isPending: false,
-            replyTo: message.replyTo || updated[idx].replyTo
-          };
+      console.log("[CLIENT] message_sent", { roomId, messageId, clientMsgId, message });
+      const incomingRoomId = getRoomIdString(roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) => {
+          console.log("Before update", prev.length);
+          const idx = prev.findIndex((m) => m._id === clientMsgId || m._id === messageId);
+          let updated;
+          if (idx !== -1) {
+            updated = [...prev];
+            updated[idx] = {
+              ...updated[idx],
+              ...message,
+              _id: messageId,
+              isPending: false,
+              replyTo: message.replyTo || updated[idx].replyTo
+            };
+          } else {
+            updated = [...prev, message];
+          }
+          console.log("After update", updated.length);
           return updated;
-        }
-        return [...prev, message];
-      });
+        });
+      }
     };
 
     const onMessageDelivered = ({ roomId, messageId, userId }) => {
-      if (roomId !== activeRoomRef.current?._id) return;
-      setMessages((prev) =>
-        prev.map((m) => {
-          if (m._id === messageId) {
-            const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
-            if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
-            return { ...m, deliveredTo };
-          }
-          return m;
-        })
-      );
+      console.log("[CLIENT] message_delivered", { roomId, messageId, userId });
+      const incomingRoomId = getRoomIdString(roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) => {
+          console.log("Before update", prev.length);
+          const updated = prev.map((m) => {
+            if (m._id === messageId) {
+              const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
+              if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+              return { ...m, deliveredTo };
+            }
+            return m;
+          });
+          console.log("After update", updated.length);
+          return updated;
+        });
+      }
     };
 
     const onMessagesSeen = ({ roomId, userId }) => {
-      if (roomId !== activeRoomRef.current?._id) return;
-      setMessages((prev) =>
-        prev.map((m) => {
-          const unreadBy = m.unreadBy ? m.unreadBy.filter((id) => id !== userId) : [];
-          const seenBy = m.seenBy ? [...m.seenBy] : [];
-          if (!seenBy.includes(userId)) seenBy.push(userId);
-          const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
-          if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
-          return { ...m, unreadBy, seenBy, deliveredTo };
-        })
-      );
+      console.log("[CLIENT] messages_seen", { roomId, userId });
+      const incomingRoomId = getRoomIdString(roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) => {
+          console.log("Before update", prev.length);
+          const updated = prev.map((m) => {
+            const unreadBy = m.unreadBy ? m.unreadBy.filter((id) => id !== userId) : [];
+            const seenBy = m.seenBy ? [...m.seenBy] : [];
+            if (!seenBy.includes(userId)) seenBy.push(userId);
+            const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
+            if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+            return { ...m, unreadBy, seenBy, deliveredTo };
+          });
+          console.log("After update", updated.length);
+          return updated;
+        });
+      }
     };
 
     const onMessagesRead = ({ roomId, userId, readByUserId }) => {
+      console.log("[CLIENT] messages_read", { roomId, userId, readByUserId });
       const targetUserId = userId || readByUserId;
       if (!targetUserId) return;
       onMessagesSeen({ roomId, userId: targetUserId });
     };
 
     const onStoryReactionMessageUpdated = (message) => {
-      if (message.roomId !== activeRoomRef.current?._id) return;
-      setMessages((prev) => {
-        const storyRef =
-          typeof message.storyId === "object"
-            ? message.storyId?._id
-            : message.storyId;
-        const idx = prev.findIndex((m) => {
-          const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
-          const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
-          return m._id === message._id ||
-            (mSenderId?.toString() === msgSenderId?.toString() &&
-             (typeof m.storyId === "object"
-               ? m.storyId?._id
-               : m.storyId
-             )?.toString() === storyRef?.toString() &&
-             (m.text || "").startsWith("Reacted to your story:"));
-        });
-        if (idx !== -1) {
-          const updated = [...prev];
-          updated[idx] = message;
+      console.log("[CLIENT] story_reaction_message_updated", message);
+      const incomingRoomId = getRoomIdString(message.roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) => {
+          console.log("Before update", prev.length);
+          const storyRef = getRoomIdString(message.storyId);
+          const idx = prev.findIndex((m) => {
+            const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+            const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+            const mStoryId = getRoomIdString(m.storyId);
+            return m._id === message._id ||
+              (mSenderId?.toString() === msgSenderId?.toString() &&
+               mStoryId === storyRef &&
+               (m.text || "").startsWith("Reacted to your story:"));
+          });
+          let updated = [...prev];
+          if (idx !== -1) {
+            updated[idx] = message;
+          } else {
+            updated.push(message);
+          }
+          console.log("After update", updated.length);
           return updated;
-        }
-        return [...prev, message];
-      });
+        });
+      }
     };
 
     const onIsTyping = ({ roomId, userName }) => {
+      console.log("[CLIENT] is_typing:", { roomId, userName });
       setTypingUsers((prev) => ({ ...prev, [roomId]: userName }));
     };
 
     const onNotTyping = ({ roomId }) => {
+      console.log("[CLIENT] not_typing:", roomId);
       setTypingUsers((prev) => {
         const s = { ...prev };
         delete s[roomId];
@@ -389,10 +460,18 @@ const ChatRoom = () => {
     };
 
     const onMessageUnsent = ({ roomId, messageId }) => {
-      if (roomId !== activeRoomRef.current?._id) return;
-      setMessages((prev) =>
-        prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
-      );
+      console.log("[CLIENT] message:unsent:", { roomId, messageId });
+      const incomingRoomId = getRoomIdString(roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) => {
+          console.log("Before update", prev.length);
+          const updated = prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m));
+          console.log("After update", updated.length);
+          return updated;
+        });
+      }
     };
 
     const onRequestStatusUpdated = ({
@@ -401,6 +480,7 @@ const ChatRoom = () => {
       room,
       updatedBy,
     }) => {
+      console.log("[CLIENT] request_status_updated:", { roomId, requestStatus, updatedBy });
       setRooms((prev) =>
         prev.map((r) =>
           r._id === roomId ? { ...r, ...room, requestStatus } : r

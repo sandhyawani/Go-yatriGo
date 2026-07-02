@@ -12,16 +12,18 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    if (user?._id) {
+    const userId = user?._id || user?.id;
+    if (userId) {
       // Connect only if we have a logged in user
       const newSocket = io(SOCKET_URL, {
         withCredentials: true,
         transports: ["websocket", "polling"],
-        query: { userId: user._id }
+        query: { userId: userId }
       });
       
       newSocket.on("connect", () => {
-        newSocket.emit("go_online", user._id);
+        console.log("Socket connected:", newSocket.id);
+        newSocket.emit("go_online", userId);
       });
       
       setSocket(newSocket);
@@ -31,7 +33,7 @@ export const SocketProvider = ({ children }) => {
         setSocket(null);
       };
     }
-  }, [user?._id]);
+  }, [user?._id, user?.id]);
 
   return (
     <SocketContext.Provider value={socket}>

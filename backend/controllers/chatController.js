@@ -187,6 +187,7 @@ exports.getRoomMessages = async (req, res) => {
       if (updateSeenResult.modifiedCount > 0) {
         const io = req.app.get("io");
         if (io) {
+          console.log("[SERVER] EMIT messages_seen", { roomId: roomId.toString(), userId: userId.toString() });
           io.to(roomId.toString()).emit("messages_read", {
             roomId: roomId.toString(),
             userId: userId.toString()
@@ -210,6 +211,7 @@ exports.getRoomMessages = async (req, res) => {
       if (io) {
         const undelivered = await Message.find({ roomId, sender: { $ne: userId }, deliveredTo: userId });
         undelivered.forEach(m => {
+          console.log("[SERVER] EMIT message_delivered", { roomId: roomId.toString(), messageId: m._id.toString(), userId: userId.toString() });
           io.to(roomId.toString()).emit("message_delivered_update", {
             roomId: roomId.toString(),
             messageId: m._id.toString(),
@@ -337,6 +339,7 @@ exports.sendMessage = async (req, res) => {
 
     const io = req.app.get("io");
     if (io) {
+      console.log("[SERVER] EMIT receive_chat_message", populatedMessage);
       io.to(roomId.toString()).emit("receive_chat_message", populatedMessage);
 
       if (room.members) {
@@ -346,6 +349,7 @@ exports.sendMessage = async (req, res) => {
       }
 
       // Emit message_sent acknowledgment to the sender
+      console.log("[SERVER] EMIT message_sent", { roomId: roomId.toString(), messageId: populatedMessage._id.toString(), clientMsgId: populatedMessage.clientMsgId });
       io.to(userId.toString()).emit("message_sent", {
         roomId: roomId.toString(),
         messageId: populatedMessage._id.toString(),
