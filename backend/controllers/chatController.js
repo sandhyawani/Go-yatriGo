@@ -293,7 +293,23 @@ exports.sendMessage = async (req, res) => {
     room.hiddenFor = [];
     await room.save();
 
-    res.status(201).json({ success: true, message });
+    const populatedMessage = await Message.findById(message._id)
+      .populate("sender", "-password")
+      .populate("storyId", "media mediaType caption")
+      .lean();
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(roomId.toString()).emit("receive_chat_message", populatedMessage);
+
+      if (room.members) {
+        room.members.forEach((memberId) => {
+          io.to(memberId.toString()).emit("receive_chat_message", populatedMessage);
+        });
+      }
+    }
+
+    res.status(201).json({ success: true, message: populatedMessage });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

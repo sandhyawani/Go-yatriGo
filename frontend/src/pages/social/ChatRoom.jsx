@@ -33,6 +33,7 @@ import { motion, AnimatePresence } from "framer-motion";
 
 const ChatRoom = () => {
   const { user, dispatch } = useContext(AuthContext);
+  const currentUserId = user?._id || user?.id;
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId } = useParams();
@@ -104,8 +105,7 @@ const ChatRoom = () => {
     if (!r || !r.requestedBy || !user) return false;
     const reqId =
       typeof r.requestedBy === "object" ? r.requestedBy._id : r.requestedBy;
-    const myId = user._id || user.id;
-    return reqId?.toString() === myId?.toString();
+    return reqId?.toString() === currentUserId?.toString();
   };
 
   useEffect(() => {
@@ -134,7 +134,7 @@ const ChatRoom = () => {
 
     const onConnect = () => {
       setSocketConnected(true);
-      if (user) socket.emit("go_online", user._id);
+      if (user) socket.emit("go_online", currentUserId);
       if (activeRoomRef.current) syncRoomMessages(activeRoomRef.current);
     };
 
@@ -168,14 +168,16 @@ const ChatRoom = () => {
                 ? message.storyId._id
                 : message.storyId;
             const existingIdx = prev.findIndex(
-              (m) =>
-                (m.sender === message.sender ||
-                  m.sender?._id === message.sender) &&
-                ((typeof m.storyId === "object"
-                  ? m.storyId?._id
-                  : m.storyId)?.toString() === storyRef?.toString()) &&
-                ((m.text || "").startsWith("Reacted to your story:") ||
-                  (m.content || "").startsWith("Reacted to your story:"))
+              (m) => {
+                const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+                const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+                return mSenderId?.toString() === msgSenderId?.toString() &&
+                  ((typeof m.storyId === "object"
+                    ? m.storyId?._id
+                    : m.storyId)?.toString() === storyRef?.toString()) &&
+                  ((m.text || "").startsWith("Reacted to your story:") ||
+                    (m.content || "").startsWith("Reacted to your story:"));
+              }
             );
             if (existingIdx !== -1) {
               // Replace the existing reaction message in-place
@@ -192,27 +194,37 @@ const ChatRoom = () => {
         scrollToBottom();
       }
 
-      setRooms((prev) =>
-        prev.map((r) => {
+      const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+
+      setRooms((prev) => {
+        const roomExists = prev.some((r) => r._id === message.roomId);
+        if (!roomExists) {
+          // Automatically reload rooms to load the new room into sidebar
+          setTimeout(() => fetchChannels(), 0);
+          return prev;
+        }
+
+        return prev.map((r) => {
           if (r._id === message.roomId) {
             return {
               ...r,
               latestMessage: message,
               updatedAt: new Date().toISOString(),
               unreadCount:
-                r._id !== activeRoomRef.current?._id && message.sender !== user?._id
+                r._id !== activeRoomRef.current?._id && msgSenderId?.toString() !== currentUserId?.toString()
                   ? (r.unreadCount || 0) + 1
                   : r.unreadCount,
             };
           }
           return r;
-        }),
-      );
-      if (socketConnected && socket && message.sender !== (user._id || user.id)) {
+        });
+      });
+
+      if (socketConnected && socket && msgSenderId?.toString() !== currentUserId?.toString()) {
         socket.emit("message_delivered", {
           roomId: message.roomId,
           messageId: message._id,
-          userId: user._id || user.id,
+          userId: currentUserId,
         });
       }
     };
@@ -240,15 +252,17 @@ const ChatRoom = () => {
             ? message.storyId?._id
             : message.storyId;
         const idx = prev.findIndex(
-          (m) =>
-            m._id === message._id ||
-            ((m.sender === message.sender ||
-              m.sender?._id === message.sender) &&
-              (typeof m.storyId === "object"
-                ? m.storyId?._id
-                : m.storyId
-              )?.toString() === storyRef?.toString() &&
-              (m.text || "").startsWith("Reacted to your story:"))
+          (m) => {
+            const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+            const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+            return m._id === message._id ||
+              (mSenderId?.toString() === msgSenderId?.toString() &&
+               (typeof m.storyId === "object"
+                 ? m.storyId?._id
+                 : m.storyId
+               )?.toString() === storyRef?.toString() &&
+               (m.text || "").startsWith("Reacted to your story:"));
+          }
         );
         if (idx !== -1) {
           const updated = [...prev];
@@ -313,7 +327,7 @@ const ChatRoom = () => {
       if (
         updatedBy &&
         user &&
-        updatedBy !== user._id &&
+        updatedBy?.toString() !== currentUserId?.toString() &&
         requestStatus === "accepted"
       ) {
         showToast.success("Your message request was accepted!");
@@ -352,16 +366,16 @@ const ChatRoom = () => {
 
   useEffect(() => {
     if (activeRoom && user && socketConnected && socket) {
-      const unread = messages.filter((m) => m.unreadBy?.includes(user._id));
+      const unread = messages.filter((m) => m.unreadBy?.includes(currentUserId));
       if (unread.length > 0) {
         socket.emit("mark_messages_read", {
           roomId: activeRoom._id,
-          userId: user._id,
+          userId: currentUserId,
         });
         setMessages((prev) =>
           prev.map((m) => ({
             ...m,
-            unreadBy: m.unreadBy?.filter((id) => id !== user._id),
+            unreadBy: m.unreadBy?.filter((id) => id !== currentUserId),
           })),
         );
         setRooms((prev) =>
@@ -371,7 +385,7 @@ const ChatRoom = () => {
         );
       }
     }
-  }, [messages, activeRoom, user, socketConnected, socket]);
+  }, [messages, activeRoom, user, socketConnected, socket, currentUserId]);
 
   const fetchChannels = async () => {
     try {
@@ -396,10 +410,10 @@ const ChatRoom = () => {
       if (res.data.success) {
         setRooms(res.data.rooms);
         if (socket && res.data.rooms) {
-          res.data.rooms.forEach((r) => socket.emit("join_room", r._id));
+          res.data.rooms.forEach((r) => socket.emit("join_chat_room", r._id));
         }
         if (targetUserId && roomRes?.data?.room) {
-          if (socket) socket.emit("join_room", roomRes.data.room._id);
+          if (socket) socket.emit("join_chat_room", roomRes.data.room._id);
           const matched = res.data.rooms.find(
             (r) => r._id === roomRes.data.room._id,
           );
@@ -461,7 +475,7 @@ const ChatRoom = () => {
       setActiveTab("groups");
     }
     try {
-      socket.emit("join_room", room._id);
+      socket.emit("join_chat_room", room._id);
       setLoadingMessages(true);
       const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
         withCredentials: true,
@@ -492,7 +506,7 @@ const ChatRoom = () => {
         const existingRoom = rooms.find((r) => r._id === newRoom._id);
         if (!existingRoom) {
           setRooms((prev) => [newRoom, ...prev]);
-          if (socket) socket.emit("join_room", newRoom._id);
+          if (socket) socket.emit("join_chat_room", newRoom._id);
         }
         setSearchQuery("");
         setGlobalUsers([]);
@@ -566,7 +580,7 @@ const ChatRoom = () => {
     const optimisticMsg = {
       _id: clientMsgId,
       roomId: activeRoom._id,
-      sender: user._id || user.id,
+      sender: currentUserId,
       senderName: user.name,
       senderPic: user.pic,
       text: textToSend,
@@ -575,8 +589,10 @@ const ChatRoom = () => {
       isAudio: !!audioBlob,
       isPending: true,
       createdAt: new Date().toISOString(),
-      unreadBy: activeRoom.members.filter(m => m !== (user._id || user.id)),
-      seenBy: [user._id || user.id],
+      unreadBy: activeRoom.members
+        .map(member => typeof member === "object" ? member._id : member)
+        .filter(id => id?.toString() !== currentUserId?.toString()),
+      seenBy: [currentUserId],
       replyTo: replyToMsg ? {
         _id: replyToMsg._id,
         senderName: replyToMsg.sender?.name || replyToMsg.senderName || "User",
@@ -708,7 +724,7 @@ const ChatRoom = () => {
           const existingReactions = m.reactions || [];
           return {
             ...m,
-            reactions: [...existingReactions, { emoji, userId: user?._id }],
+            reactions: [...existingReactions, { emoji, userId: currentUserId }],
           };
         }
         return m;
@@ -889,11 +905,14 @@ const ChatRoom = () => {
   const handleReportUser = async () => {
     try {
       setShowHeaderOptions(false);
-      const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
+      const otherUser = activeRoom.members?.find(
+        (member) =>
+          (member._id || member)?.toString() !== currentUserId?.toString()
+      );
       if (!otherUser) return;
       toast.loading("Reporting user...", { id: "report" });
       const res = await axios.post(
-        `/users/report/${otherUser._id}`,
+        `/users/report/${otherUser._id || otherUser}`,
         { reason: "Inappropriate behavior in chat" },
         { withCredentials: true },
       );
@@ -910,10 +929,14 @@ const ChatRoom = () => {
   const handleBlockUser = async () => {
     try {
       setShowHeaderOptions(false);
-      const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
+      const otherUser = activeRoom.members?.find(
+        (member) =>
+          (member._id || member)?.toString() !== currentUserId?.toString()
+      );
       if (!otherUser) return;
 
-      const isBlocked = user?.blockedUsers?.includes(otherUser._id);
+      const otherUserId = otherUser._id || otherUser;
+      const isBlocked = user?.blockedUsers?.includes(otherUserId);
 
       if (!isBlocked) {
         setShowBlockModal(true);
@@ -922,18 +945,18 @@ const ChatRoom = () => {
 
       toast.loading("Unblocking user...", { id: "block" });
       const res = await axios.post(
-        `/users/unblock/${otherUser._id}`,
+        `/users/unblock/${otherUserId}`,
         {},
         { withCredentials: true },
       );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
-        const freshSelf = await axios.get(`/users/${user._id}`, {
+        const freshSelf = await axios.get(`/users/${currentUserId}`, {
           withCredentials: true,
         });
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers },
         });
       }
     } catch (err) {
@@ -945,24 +968,28 @@ const ChatRoom = () => {
 
   const confirmBlockUser = async () => {
     try {
-      const otherUser = activeRoom.members?.find((m) => m._id !== user?._id);
+      const otherUser = activeRoom.members?.find(
+        (member) =>
+          (member._id || member)?.toString() !== currentUserId?.toString()
+      );
       if (!otherUser) return;
 
+      const otherUserId = otherUser._id || otherUser;
       setShowBlockModal(false);
       toast.loading("Blocking user...", { id: "block" });
       const res = await axios.post(
-        `/users/block/${otherUser._id}`,
+        `/users/block/${otherUserId}`,
         {},
         { withCredentials: true },
       );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
-        const freshSelf = await axios.get(`/users/${user._id}`, {
+        const freshSelf = await axios.get(`/users/${currentUserId}`, {
           withCredentials: true,
         });
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers },
         });
       }
     } catch (err) {
@@ -1362,13 +1389,14 @@ const ChatRoom = () => {
               {filteredRooms.map((room) => {
                 const isSelected = activeRoom?._id === room._id;
                 const otherMember = room.members?.find(
-                  (m) => m._id !== user?._id,
+                  (member) =>
+                    (member._id || member)?.toString() !== currentUserId?.toString()
                 );
                 const isOnline =
-                  otherMember && onlineUsers.has(otherMember._id);
+                  otherMember && onlineUsers.has(otherMember._id || otherMember);
                 const isTyping = typingUsers[room._id];
                 const isBlockedByMe =
-                  otherMember && user?.blockedUsers?.includes(otherMember._id);
+                  otherMember && user?.blockedUsers?.includes(otherMember._id || otherMember);
 
                 return (
                   <div
@@ -1642,9 +1670,13 @@ const ChatRoom = () => {
                     />
                   )}
                   {activeRoom.type === "direct" &&
-                    onlineUsers.has(
-                      activeRoom.members?.find((m) => m._id !== user?._id)?._id,
-                    ) && (
+                    (() => {
+                      const other = activeRoom.members?.find(
+                        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+                      );
+                      const otherId = other?._id || other;
+                      return otherId && onlineUsers.has(otherId);
+                    })() && (
                       <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
                     )}
                 </div>
@@ -1661,28 +1693,37 @@ const ChatRoom = () => {
                     className={`text-[11px] font-medium mt-0.5 ${
                       activeRoom.type === "group"
                         ? "text-slate-400"
-                        : onlineUsers.has(
-                              activeRoom.members?.find(
-                                (m) => m._id !== user?._id,
-                              )?._id,
-                            )
+                        : (() => {
+                            const other = activeRoom.members?.find(
+                              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+                            );
+                            const otherId = other?._id || other;
+                            return otherId && onlineUsers.has(otherId);
+                          })()
                           ? "text-emerald-500"
                           : "text-slate-400"
                     }`}
                   >
                     {activeRoom.type === "direct" &&
-                    user?.blockedUsers?.includes(
-                      activeRoom.members?.find((m) => m._id !== user?._id)?._id,
-                    ) ? (
+                    (() => {
+                      const other = activeRoom.members?.find(
+                        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+                      );
+                      const otherId = other?._id || other;
+                      return otherId && user?.blockedUsers?.includes(otherId);
+                    })() ? (
                       <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
                         🔒 Blocked
                       </span>
                     ) : activeRoom.type === "group" ? (
                       `${activeRoom.members?.length || 0} members`
-                    ) : onlineUsers.has(
-                        activeRoom.members?.find((m) => m._id !== user?._id)
-                          ?._id,
-                      ) ? (
+                    ) : (() => {
+                        const other = activeRoom.members?.find(
+                          (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+                        );
+                        const otherId = other?._id || other;
+                        return otherId && onlineUsers.has(otherId);
+                      })() ? (
                       "Online"
                     ) : (
                       "Offline"
@@ -1725,11 +1766,11 @@ const ChatRoom = () => {
                       {activeRoom.type === "direct" &&
                         (() => {
                           const otherUser = activeRoom.members?.find(
-                            (m) => m._id !== user?._id,
+                            (member) => (member._id || member)?.toString() !== currentUserId?.toString()
                           );
                           const isBlocked =
                             otherUser &&
-                            user?.blockedUsers?.includes(otherUser._id);
+                            user?.blockedUsers?.includes(otherUser._id || otherUser);
                           return (
                             <>
                               <button
@@ -1780,7 +1821,7 @@ const ChatRoom = () => {
                   </div>
                   {activeRoom.type === "direct" &&
                   activeRoom.requestStatus === "pending" &&
-                  activeRoom.requestedBy !== user?._id ? (
+                  activeRoom.requestedBy?.toString() !== currentUserId?.toString() ? (
                     <>
                       <h4 className="text-sm font-bold text-slate-600">
                         Message Request
@@ -1803,7 +1844,7 @@ const ChatRoom = () => {
               ) : (
                 messages.map((msg, index) => {
                   const isSelf =
-                    msg.sender === user?._id || msg.sender?._id === user?._id;
+                    (msg.sender?._id || msg.sender)?.toString() === currentUserId?.toString();
                   const showDate =
                     index === 0 ||
                     new Date(msg.createdAt).toDateString() !==
@@ -1811,7 +1852,8 @@ const ChatRoom = () => {
                   const showAvatar =
                     !isSelf &&
                     (index === 0 ||
-                      messages[index - 1].sender !== msg.sender ||
+                      (messages[index - 1].sender?._id || messages[index - 1].sender)?.toString() !==
+                        (msg.sender?._id || msg.sender)?.toString() ||
                       showDate);
 
                   // Instagram-style: hide duplicate story preview for consecutive
@@ -1887,8 +1929,7 @@ const ChatRoom = () => {
             {/* Input / Request Area */}
             {activeRoom.type === "direct" &&
             activeRoom.requestStatus === "pending" ? (
-              activeRoom.requestedBy === user?._id ||
-              activeRoom.requestedBy?.toString() === user?._id?.toString() ? (
+              activeRoom.requestedBy?.toString() === currentUserId?.toString() ? (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
                   <p className="text-xs font-medium text-slate-400">
                     Waiting for {activeRoom.name} to accept your request.
@@ -1918,10 +1959,10 @@ const ChatRoom = () => {
             ) : activeRoom.type === "direct" &&
               (() => {
                 const otherUser = activeRoom.members?.find(
-                  (m) => m._id !== user?._id,
+                  (member) => (member._id || member)?.toString() !== currentUserId?.toString()
                 );
                 const isBlockedByMe =
-                  otherUser && user?.blockedUsers?.includes(otherUser._id);
+                  otherUser && user?.blockedUsers?.includes(otherUser._id || otherUser);
                 return (
                   isBlockedByMe ||
                   activeRoom.requestStatus === "declined" ||
@@ -2145,7 +2186,7 @@ const ChatRoom = () => {
             >
               {(() => {
                 const otherUser = activeRoom.members?.find(
-                  (m) => m._id !== user?._id,
+                  (member) => (member._id || member)?.toString() !== currentUserId?.toString()
                 );
                 return (
                   <>
@@ -2210,7 +2251,7 @@ const ChatRoom = () => {
         activeStoryIndex={activeStoryIndex}
         setActiveStoryGroup={setActiveStoryGroup}
         setActiveStoryIndex={setActiveStoryIndex}
-        myUserId={user?._id}
+        myUserId={currentUserId}
         user={user}
         closeStoryViewer={() => setActiveStoryGroup(null)}
         nextStory={() => setActiveStoryGroup(null)}

@@ -40,6 +40,7 @@ const StoryViewer = ({
   prevStory,
   stories,
   onStoryViewed,
+  fetchFeedData,
 }) => {
   const [storyMediaLoaded, setStoryMediaLoaded] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);

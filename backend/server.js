@@ -125,6 +125,8 @@ io.on("connection", (socket) => {
 
   socket.on("go_online", (userId) => {
     onlineUsers.set(userId, socket.id);
+    socket.join(userId);
+    console.log(`${userId} joined personal room`);
 
     socket.broadcast.emit("user_presence", {
       userId,
@@ -136,6 +138,10 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_room", (roomId) => {
+    socket.join(roomId);
+  });
+
+  socket.on("join_chat_room", (roomId) => {
     socket.join(roomId);
   });
 

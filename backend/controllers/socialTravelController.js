@@ -2333,8 +2333,15 @@ exports.reactToStory = async (req, res) => {
 
       if (io) {
         // Emit a dedicated event for reaction updates so the client can upsert
-        io.to(room._id.toString()).emit("story_reaction_message_updated", message.toObject());
-        io.to(room._id.toString()).emit("receive_chat_message", message.toObject());
+        const msgObj = message.toObject();
+        io.to(room._id.toString()).emit("story_reaction_message_updated", msgObj);
+        io.to(room._id.toString()).emit("receive_chat_message", msgObj);
+
+        io.to(userId.toString()).emit("story_reaction_message_updated", msgObj);
+        io.to(userId.toString()).emit("receive_chat_message", msgObj);
+
+        io.to(story.userId.toString()).emit("story_reaction_message_updated", msgObj);
+        io.to(story.userId.toString()).emit("receive_chat_message", msgObj);
       }
     }
 
@@ -2528,10 +2535,10 @@ exports.replyToStory = async (req, res) => {
       );
 
       // Emit the fully-populated message so the receiver gets the story preview
-      io.to(room._id.toString()).emit(
-        "receive_chat_message",
-        message.toObject()
-      );
+      const messageObj = message.toObject();
+      io.to(room._id.toString()).emit("receive_chat_message", messageObj);
+      io.to(senderId.toString()).emit("receive_chat_message", messageObj);
+      io.to(storyOwnerId.toString()).emit("receive_chat_message", messageObj);
     }
 
     res.status(200).json({
