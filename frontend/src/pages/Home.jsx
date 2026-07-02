@@ -1157,10 +1157,11 @@ const Home = () => {
                     >
                       {myStoryGroup.stories[0]?.mediaType === "video" ? (
                         <video
-                          src={myStoryGroup.stories[0]?.media}
+                          src={`${myStoryGroup.stories[0]?.media}#t=0.1`}
                           className="w-full h-full object-cover"
                           muted
                           playsInline
+                          preload="metadata"
                         />
                       ) : (
                         <img
@@ -1248,10 +1249,11 @@ const Home = () => {
                           group.stories[0]?.image ? (
                             group.stories[0]?.mediaType === "video" ? (
                               <video
-                                src={group.stories[0]?.media}
+                                src={`${group.stories[0]?.media}#t=0.1`}
                                 className="w-full h-full object-cover"
                                 muted
                                 playsInline
+                                preload="metadata"
                               />
                             ) : (
                               <img
@@ -1526,10 +1528,12 @@ const Home = () => {
                       >
                         {post.mediaType === "video" ? (
                           <video
-                            src={post.mediaUrl || post.image}
+                            src={`${post.mediaUrl || post.image}#t=0.1`}
                             controls
                             controlsList="nodownload"
                             playsInline
+                            muted
+                            preload="metadata"
                             className="w-full h-[420px] max-h-[450px] object-cover object-center bg-black"
                           />
                         ) : (

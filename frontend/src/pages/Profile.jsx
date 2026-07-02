@@ -1219,14 +1219,15 @@ const Profile = () => {
                                 ""
                               ).match(/\.(mp4|webm|mov)$/i) ? (
                                 <video
-                                  src={
+                                  src={`${
                                     post.image ||
                                     post.mediaUrl ||
                                     post.mediaUrls?.[0]
-                                  }
+                                  }#t=0.1`}
                                   muted
                                   loop
                                   playsInline
+                                  preload="metadata"
                                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 />
                               ) : (
@@ -1342,10 +1343,11 @@ const Profile = () => {
                           <div className="aspect-[9/16] bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm">
                             {story.mediaType === "video" ? (
                               <video
-                                src={story.media}
+                                src={`${story.media}#t=0.1`}
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                 muted
                                 playsInline
+                                preload="metadata"
                               />
                             ) : (
                               <img
@@ -1478,14 +1480,15 @@ const Profile = () => {
                                 ""
                               ).match(/\.(mp4|webm|mov)$/i) ? (
                                 <video
-                                  src={
+                                  src={`${
                                     post.image ||
                                     post.mediaUrl ||
                                     post.mediaUrls?.[0]
-                                  }
+                                  }#t=0.1`}
                                   muted
                                   loop
                                   playsInline
+                                  preload="metadata"
                                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
                               ) : (
@@ -1657,14 +1660,15 @@ const Profile = () => {
                               ""
                             ).match(/\.(mp4|webm|mov)$/i) ? (
                               <video
-                                src={
+                                src={`${
                                   post.image ||
                                   post.mediaUrl ||
                                   post.mediaUrls?.[0]
-                                }
+                                }#t=0.1`}
                                 muted
                                 loop
                                 playsInline
+                                preload="metadata"
                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                               />
                             ) : (

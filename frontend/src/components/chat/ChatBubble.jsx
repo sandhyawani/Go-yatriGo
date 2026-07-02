@@ -8,6 +8,7 @@ const ChatBubble = ({
   showAvatar,
   senderPic,
   senderName,
+  currentUserName = "",
   activeRoomType,
   onDelete,
   onUnsend,
@@ -118,7 +119,9 @@ const ChatBubble = ({
               {/* Reply Snippet */}
               {msg.replyTo && (
                 <div className={`mb-2 pl-2 border-l-2 text-[12px] opacity-80 ${isSelf ? "border-white/50 text-white" : "border-slate-400 text-slate-600"}`}>
-                  <div className="font-semibold">{msg.replyTo.senderName}</div>
+                  <div className="font-semibold">
+                    {msg.replyTo.senderName === currentUserName || msg.replyTo.senderName === "You" ? "You" : msg.replyTo.senderName}
+                  </div>
                   <div className="truncate max-w-[180px]">{msg.replyTo.text || "Media"}</div>
                 </div>
               )}
@@ -141,7 +144,7 @@ const ChatBubble = ({
                   <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
                     {typeof msg.storyId === 'object' && msg.storyId.media ? (
                       msg.storyId.mediaType === 'video' ? (
-                        <video src={msg.storyId.media} className="w-full h-full object-cover" muted playsInline />
+                        <video src={`${msg.storyId.media}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
                       ) : (
                         <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
                       )

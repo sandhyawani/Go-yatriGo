@@ -853,7 +853,10 @@ exports.requestToJoinTrip = async (req, res) => {
 
       await ChatRoom.findOneAndUpdate(
         { travelGroupId: group._id },
-        { $push: { members: userId } }
+        { 
+          $addToSet: { members: userId },
+          $pull: { hiddenFor: userId }
+        }
       );
 
       const senderUser = await User.findById(userId);
@@ -1011,7 +1014,10 @@ exports.manageJoinRequest = async (req, res) => {
         // Add approved member to group chat
         await ChatRoom.findOneAndUpdate(
           { travelGroupId: group._id },
-          { $push: { members: requestObj.userId } }
+          { 
+            $addToSet: { members: requestObj.userId },
+            $pull: { hiddenFor: requestObj.userId }
+          }
         );
       }
     }

@@ -90,6 +90,24 @@ exports.getUserRooms = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
+    const activeGroups = await TravelGroup.find({
+      $or: [
+        { host: userId },
+        { "members.user": userId }
+      ]
+    });
+
+    if (activeGroups && activeGroups.length > 0) {
+      const activeGroupIds = activeGroups.map(g => g._id);
+      await ChatRoom.updateMany(
+        { travelGroupId: { $in: activeGroupIds } },
+        {
+          $addToSet: { members: userId },
+          $pull: { hiddenFor: userId }
+        }
+      );
+    }
+
     // Find rooms containing the user (and not hidden by them)
     const rooms = await ChatRoom.find({ members: userId, hiddenFor: { $ne: userId } })
       .populate("members", "name username pic img")
@@ -184,7 +202,7 @@ exports.sendMessage = async (req, res) => {
   try {
     const roomId = req.params.roomId;
     const userId = req.user._id || req.user.id;
-    const { text, content, media } = req.body;
+    const { text, content, media, replyTo } = req.body;
 
     if (!text && !content && !media) {
       return res.status(400).json({ success: false, message: "Message content or media required" });
@@ -264,7 +282,8 @@ exports.sendMessage = async (req, res) => {
       media: media || null,
       unreadBy: unreadMembers,
       deliveredTo: [userId],
-      seenBy: [userId]
+      seenBy: [userId],
+      replyTo: replyTo || undefined
     });
 
     await message.save();
@@ -450,17 +469,79 @@ exports.deleteChatForMe = async (req, res) => {
   try {
     const { roomId } = req.params;
     const userId = req.user._id || req.user.id;
-    
-    await require('../models/Message').updateMany(
+
+    const room = await ChatRoom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+
+    if (room.type === "group") {
+      if (room.travelGroupId) {
+        const group = await TravelGroup.findById(room.travelGroupId);
+        if (group) {
+          if (group.host.toString() === userId.toString()) {
+            return res.status(400).json({
+              success: false,
+              message: "Hosts cannot leave their own travel group. Please complete or cancel the trip first.",
+            });
+          }
+
+          group.members = group.members.filter(
+            (member) => member.user && member.user.toString() !== userId.toString()
+          );
+
+          if (group.status === "full" && group.members.length < group.maxMembers) {
+            group.status = "open";
+          }
+
+          if (!group.activityLogs) {
+            group.activityLogs = [];
+          }
+          group.activityLogs.push({
+            action: "Left the group via chat deletion",
+            user: userId,
+            performedBy: userId,
+          });
+
+          await group.save();
+
+          const JoinRequest = require("../models/JoinRequest");
+          await JoinRequest.deleteOne({
+            groupId: group._id,
+            userId,
+          });
+
+          const Notification = require("../models/Notification");
+          const leavingUser = await User.findById(userId);
+          if (Notification && leavingUser) {
+            await Notification.create({
+              sender: userId,
+              receiver: group.host,
+              type: "group_left",
+              group: group._id,
+              message: `${leavingUser.name} left your travel group "${group.title}" by deleting the chat.`,
+            });
+          }
+        }
+      }
+
+      await ChatRoom.findByIdAndUpdate(roomId, {
+        $pull: { members: userId },
+        $addToSet: { hiddenFor: userId }
+      });
+    } else {
+      await ChatRoom.findByIdAndUpdate(roomId, {
+        $addToSet: { hiddenFor: userId }
+      });
+    }
+
+    const Message = require('../models/Message');
+    await Message.updateMany(
       { roomId, deletedFor: { $ne: userId } },
       { $push: { deletedFor: userId } }
     );
-    
-    await ChatRoom.findByIdAndUpdate(roomId, {
-      $addToSet: { hiddenFor: userId }
-    });
-    
-    res.status(200).json({ success: true, message: "Chat deleted" });
+
+    res.status(200).json({ success: true, message: "Chat deleted and exited successfully" });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

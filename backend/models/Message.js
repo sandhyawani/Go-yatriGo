@@ -117,6 +117,23 @@ const messageSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+
+    // Reference to the message being replied to
+    replyTo: {
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Message",
+        default: null,
+      },
+      senderName: {
+        type: String,
+        default: "",
+      },
+      text: {
+        type: String,
+        default: "",
+      },
+    },
   },
   {
     timestamps: true, // Adds createdAt and updatedAt

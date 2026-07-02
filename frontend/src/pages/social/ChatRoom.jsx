@@ -21,6 +21,7 @@ import {
   ChevronDown,
   Square,
   Trash2,
+  Home,
 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -60,7 +61,10 @@ const ChatRoom = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
 
-  // New features state
+  const [isDeleteSelectionMode, setIsDeleteSelectionMode] = useState(false);
+  const [selectedRoomIds, setSelectedRoomIds] = useState(new Set());
+  const [showListMoreOptions, setShowListMoreOptions] = useState(false);
+
   const [replyToMsg, setReplyToMsg] = useState(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
@@ -398,7 +402,10 @@ const ChatRoom = () => {
               typeof r.travelGroupId === "object"
                 ? r.travelGroupId?._id
                 : r.travelGroupId;
-            return rGroupId === targetGroupId || r._id === targetGroupId;
+            const rGroupIdStr = rGroupId ? rGroupId.toString() : "";
+            const roomIdStr = r._id ? r._id.toString() : "";
+            const targetGroupIdStr = targetGroupId ? targetGroupId.toString() : "";
+            return rGroupIdStr === targetGroupIdStr || roomIdStr === targetGroupIdStr;
           });
           if (matched) selectRoom(matched);
         }
@@ -560,7 +567,12 @@ const ChatRoom = () => {
       isPending: true,
       createdAt: new Date().toISOString(),
       unreadBy: activeRoom.members.filter(m => m !== (user._id || user.id)),
-      seenBy: [user._id || user.id]
+      seenBy: [user._id || user.id],
+      replyTo: replyToMsg ? {
+        _id: replyToMsg._id,
+        senderName: replyToMsg.sender?.name || replyToMsg.senderName || "User",
+        text: replyToMsg.text
+      } : undefined
     };
 
     setMessages((prev) => [...prev, optimisticMsg]);
@@ -1009,6 +1021,56 @@ const ChatRoom = () => {
     }
   };
 
+  const handleToggleRoomSelection = (roomId) => {
+    setSelectedRoomIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(roomId)) {
+        next.delete(roomId);
+      } else {
+        next.add(roomId);
+      }
+      return next;
+    });
+  };
+
+  const handleDeleteSelectedChats = async () => {
+    if (selectedRoomIds.size === 0) return;
+
+    const result = await Swal.fire({
+      title: `Delete ${selectedRoomIds.size} chat${selectedRoomIds.size > 1 ? "s" : ""}?`,
+      text: "Messages will be cleared and selected conversations will be removed from your chat list.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#64748b",
+      confirmButtonText: "Yes, delete",
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      toast.loading("Deleting selected chats...", { id: "delete-selected-chats" });
+      const deletePromises = Array.from(selectedRoomIds).map((roomId) =>
+        axios.delete(`/chat/room/${roomId}/delete-chat`, { withCredentials: true })
+      );
+      
+      await Promise.all(deletePromises);
+
+      setRooms((prev) => prev.filter((r) => !selectedRoomIds.has(r._id)));
+      
+      if (activeRoom && selectedRoomIds.has(activeRoom._id)) {
+        setActiveRoom(null);
+        setMessages([]);
+      }
+
+      setIsDeleteSelectionMode(false);
+      setSelectedRoomIds(new Set());
+      showToast.success("Selected chats deleted", { id: "delete-selected-chats" });
+    } catch (err) {
+      showToast.error("Failed to delete some chats", { id: "delete-selected-chats" });
+    }
+  };
+
   const scrollToBottom = () =>
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   useEffect(() => {
@@ -1089,9 +1151,7 @@ const ChatRoom = () => {
   const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
 
   return (
-    <div className={`h-[calc(100dvh-120px)] lg:h-[calc(100dvh-48px)] w-full flex bg-white overflow-hidden ${
-      activeRoom ? "" : "lg:max-w-7xl lg:mx-auto lg:rounded-2xl lg:border lg:border-slate-200 lg:shadow-sm"
-    }`}>
+    <div className="h-[100dvh] w-full flex bg-white overflow-hidden">
       <style>{`.cs::-webkit-scrollbar{width:4px}.cs::-webkit-scrollbar-track{background:transparent}.cs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:8px}`}</style>
 
       {/* LEFT PANE */}
@@ -1102,25 +1162,95 @@ const ChatRoom = () => {
       >
         {/* Header */}
         <div className="px-4 pt-4 pb-3 border-b border-slate-100 space-y-3">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[15px] font-bold text-slate-900">Messages</h2>
-            <span
-              className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                socketConnected
-                  ? "bg-emerald-50 text-emerald-600"
-                  : "bg-amber-50 text-amber-600"
-              }`}
-            >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  socketConnected
-                    ? "bg-emerald-500"
-                    : "bg-amber-400 animate-pulse"
-                }`}
-              />
-              {socketConnected ? "Online" : "Connecting"}
-            </span>
-          </div>
+          {isDeleteSelectionMode ? (
+            <div className="flex items-center justify-between h-8">
+              <span className="text-[13px] font-bold text-slate-900">
+                {selectedRoomIds.size} Selected
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    setIsDeleteSelectionMode(false);
+                    setSelectedRoomIds(new Set());
+                  }}
+                  className="px-2.5 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteSelectedChats}
+                  disabled={selectedRoomIds.size === 0}
+                  className={`px-2.5 py-1 text-[11px] font-bold text-white rounded-lg transition-all flex items-center gap-1 ${
+                    selectedRoomIds.size === 0
+                      ? "bg-red-300 cursor-not-allowed"
+                      : "bg-red-500 hover:bg-red-600 active:scale-[0.98]"
+                  }`}
+                >
+                  <Trash2 className="w-3 h-3" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/"
+                  className="p-1.5 text-slate-500 hover:text-[#6C4DF6] rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
+                  title="Back to Home"
+                >
+                  <Home className="w-4 h-4" />
+                </Link>
+                <h2 className="text-[15px] font-bold text-slate-900">Messages</h2>
+              </div>
+              <div className="flex items-center gap-2 relative">
+                <span
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    socketConnected
+                      ? "bg-emerald-50 text-emerald-600"
+                      : "bg-amber-50 text-amber-600"
+                  }`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${
+                      socketConnected
+                        ? "bg-emerald-500"
+                        : "bg-amber-400 animate-pulse"
+                    }`}
+                  />
+                  {socketConnected ? "Online" : "Connecting"}
+                </span>
+                <button
+                  onClick={() => setShowListMoreOptions((prev) => !prev)}
+                  className="p-1 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
+                  title="Options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+                {showListMoreOptions && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-[999]"
+                      onClick={() => setShowListMoreOptions(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-1.5 z-[1000] bg-white shadow-xl rounded-xl border border-slate-100 w-36 overflow-hidden py-1">
+                      <button
+                        onClick={() => {
+                          setIsDeleteSelectionMode(true);
+                          setShowListMoreOptions(false);
+                          setSelectedRoomIds(new Set());
+                        }}
+                        className="w-full text-left px-4 py-2.5 text-[12px] font-semibold text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2"
+                      >
+                        <Trash2 className="w-3.5 h-3.5 text-slate-500" />
+                        Delete Chats
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
 
           <div className="relative">
             <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -1236,13 +1366,29 @@ const ChatRoom = () => {
                     key={room._id}
                     role="button"
                     tabIndex={0}
-                    onClick={() => selectRoom(room)}
+                    onClick={() => {
+                      if (isDeleteSelectionMode) {
+                        handleToggleRoomSelection(room._id);
+                      } else {
+                        selectRoom(room);
+                      }
+                    }}
                     className={`group relative w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-3 cursor-pointer ${
                       isSelected
                         ? "bg-[#EEEDFE] shadow-sm border border-purple-100/50"
                         : "hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
                     }`}
                   >
+                    {isDeleteSelectionMode && (
+                      <div className="flex items-center justify-center shrink-0" onClick={(e) => e.stopPropagation()}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRoomIds.has(room._id)}
+                          onChange={() => handleToggleRoomSelection(room._id)}
+                          className="w-4 h-4 text-[#6C4DF6] border-slate-300 rounded focus:ring-[#6C4DF6] cursor-pointer"
+                        />
+                      </div>
+                    )}
                     <div className="relative shrink-0">
                       {room.type === "group" ? (
                         <div className="w-10 h-10 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
@@ -1319,18 +1465,6 @@ const ChatRoom = () => {
                         )}
                       </div>
                     </div>
-
-                    <button
-                      onClick={(e) => handleDeleteChat(room, e)}
-                      title="Delete chat"
-                      className={`p-1.5 rounded-lg hover:bg-red-100 text-slate-400 hover:text-red-500 transition-all shrink-0 ${
-                        isSelected
-                          ? "opacity-100"
-                          : "opacity-0 group-hover:opacity-100"
-                      }`}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
                 );
               })}
@@ -1705,6 +1839,7 @@ const ChatRoom = () => {
                         showAvatar={showAvatar}
                         senderPic={getAvatar(msg.senderPic, msg.senderName)}
                         senderName={msg.senderName}
+                        currentUserName={user?.name}
                         activeRoomType={activeRoom.type}
                         onDelete={handleDeleteForMe}
                         onUnsend={handleUnsend}
@@ -1813,9 +1948,14 @@ const ChatRoom = () => {
                     <div className="flex-1 overflow-hidden">
                       <div className="text-[11px] font-bold text-[#7F77DD]">
                         Replying to{" "}
-                        {replyToMsg.sender?.name ||
-                          replyToMsg.senderName ||
-                          "User"}
+                        {replyToMsg.sender?.name === user?.name ||
+                        replyToMsg.senderName === user?.name ||
+                        replyToMsg.sender?.username === user?.username ||
+                        replyToMsg.senderName === "You"
+                          ? "You"
+                          : replyToMsg.sender?.name ||
+                            replyToMsg.senderName ||
+                            "User"}
                       </div>
                       <div className="text-[12px] text-slate-600 truncate">
                         {replyToMsg.text || "Media"}

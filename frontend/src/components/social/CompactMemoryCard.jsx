@@ -116,11 +116,12 @@ const CompactMemoryCard = ({ item }) => {
             {mediaList[currentMediaIndex].match(/\.(mp4|webm)$/i) ||
             item.mediaType === "video" ? (
               <video
-                src={mediaList[currentMediaIndex]}
+                src={`${mediaList[currentMediaIndex]}#t=0.1`}
                 className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${isNonTravel ? "rounded-xl" : ""}`}
                 muted
                 loop
                 playsInline
+                preload="metadata"
                 onMouseOver={(e) => e.target.play().catch(() => {})}
                 onMouseOut={(e) => e.target.pause()}
               />
