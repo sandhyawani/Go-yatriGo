@@ -125,15 +125,25 @@ io.on("connection", (socket) => {
 
   socket.on("go_online", async (userId) => {
     console.log("[SERVER] go_online:", userId);
-    onlineUsers.set(userId, socket.id);
+    socket.userId = userId;
+
+    let isFirstConnection = false;
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+      isFirstConnection = true;
+    }
+    onlineUsers.get(userId).add(socket.id);
+
     socket.join(userId);
     console.log(`${userId} joined personal room`);
     console.log("[SERVER] Current socket rooms:", Array.from(socket.rooms));
 
-    socket.broadcast.emit("user_presence", {
-      userId,
-      status: "online",
-    });
+    if (isFirstConnection) {
+      socket.broadcast.emit("user_presence", {
+        userId,
+        status: "online",
+      });
+    }
 
     socket.emit("initial_online_users", Array.from(onlineUsers.keys()));
 
@@ -207,13 +217,14 @@ io.on("connection", (socket) => {
     console.log("RECEIVED mark_messages_read:", data);
     try {
       const Message = require("./models/Message");
-      await Message.updateMany(
-        { roomId: data.roomId, unreadBy: data.userId },
-        { 
-          $pull: { unreadBy: data.userId },
-          $addToSet: { seenBy: data.userId, deliveredTo: data.userId }
-        }
-      );
+        await Message.updateMany(
+          { roomId: data.roomId, unreadBy: data.userId },
+          { 
+            $pull: { unreadBy: data.userId },
+            $addToSet: { seenBy: data.userId, deliveredTo: data.userId },
+            $set: { seenAt: new Date() }
+          }
+        );
 
       console.log("[SERVER] EMIT messages_seen", data);
       socket.to(data.roomId).emit("messages_read", data);
@@ -227,11 +238,16 @@ io.on("connection", (socket) => {
     console.log("RECEIVED message_delivered:", data);
     try {
       const Message = require("./models/Message");
-      const message = await Message.findByIdAndUpdate(
-        data.messageId,
-        { $addToSet: { deliveredTo: data.userId } },
-        { new: true }
-      );
+        const message = await Message.findById(data.messageId);
+        if (message) {
+          if (!message.deliveredTo.includes(data.userId)) {
+            message.deliveredTo.push(data.userId);
+          }
+          if (!message.deliveredAt) {
+            message.deliveredAt = new Date();
+          }
+          await message.save();
+        }
       if (message) {
         console.log("[SERVER] EMIT message_delivered", { roomId: data.roomId, messageId: data.messageId, userId: data.userId });
         socket.to(data.roomId).emit("message_delivered", {
@@ -251,16 +267,44 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    for (const [userId, socketId] of onlineUsers.entries()) {
-      if (socketId === socket.id) {
-        onlineUsers.delete(userId);
-
-        socket.broadcast.emit("user_presence", {
-          userId,
-          status: "offline",
-        });
-
-        break;
+    if (socket.userId) {
+      const socketIds = onlineUsers.get(socket.userId);
+      if (socketIds) {
+        socketIds.delete(socket.id);
+        if (socketIds.size === 0) {
+          const userId = socket.userId;
+          setTimeout(() => {
+            const currentSockets = onlineUsers.get(userId);
+            if (!currentSockets || currentSockets.size === 0) {
+              onlineUsers.delete(userId);
+              socket.broadcast.emit("user_presence", {
+                userId,
+                status: "offline",
+              });
+              console.log(`[SERVER] User ${userId} is offline (debounced)`);
+            }
+          }, 1500);
+        }
+      }
+    } else {
+      // Fallback scan if go_online was not called
+      for (const [userId, socketIds] of onlineUsers.entries()) {
+        if (socketIds instanceof Set && socketIds.has(socket.id)) {
+          socketIds.delete(socket.id);
+          if (socketIds.size === 0) {
+            setTimeout(() => {
+              const currentSockets = onlineUsers.get(userId);
+              if (!currentSockets || currentSockets.size === 0) {
+                onlineUsers.delete(userId);
+                socket.broadcast.emit("user_presence", {
+                  userId,
+                  status: "offline",
+                });
+              }
+            }, 1500);
+          }
+          break;
+        }
       }
     }
 

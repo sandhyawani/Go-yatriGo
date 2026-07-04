@@ -35,8 +35,8 @@ export const ChatHeader = ({
         </button>
         <div className="relative">
           {activeRoom.type === "group" ? (
-            <div className="w-9 h-9 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
-              <Users className="w-4.5 h-4.5 text-[#6C4DF6]" />
+            <div className="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center">
+              <Users className="w-4.5 h-4.5 text-brand-500" />
             </div>
           ) : (
             <img
@@ -93,13 +93,13 @@ export const ChatHeader = ({
         )}
         <button
           aria-label="Start voice call"
-          className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
+          className="p-2 text-slate-400 hover:text-brand-500 hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
         >
           <Phone className="w-4 h-4" />
         </button>
         <button
           aria-label="Start video call"
-          className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
+          className="p-2 text-slate-400 hover:text-brand-500 hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
         >
           <Video className="w-4 h-4" />
         </button>

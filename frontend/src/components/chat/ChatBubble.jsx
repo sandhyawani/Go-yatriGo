@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Check, CheckCheck, SmilePlus, Reply, X, Loader2 } from 'lucide-react';
+import { Check, CheckCheck, SmilePlus, Reply, X, Loader2, Play, Image } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 
 const ChatBubble = ({
@@ -116,76 +116,99 @@ const ChatBubble = ({
             </p>
           ) : (
             <>
-              {/* Reply Snippet */}
-              {msg.replyTo && (
-                <div className={`mb-2 pl-2 border-l-2 text-[12px] opacity-80 ${isSelf ? "border-white/50 text-white" : "border-slate-400 text-slate-600"}`}>
-                  <div className="font-semibold">
-                    {msg.replyTo.senderName === currentUserName || msg.replyTo.senderName === "You" ? "You" : msg.replyTo.senderName}
-                  </div>
-                  <div className="truncate max-w-[180px]">{msg.replyTo.text || "Media"}</div>
-                </div>
-              )}
-
-              {/* Story Reply / Reaction Snippet Popup */}
-              {!hideStoryPreview && msg.storyId && (
-                <div 
-                  className={`mb-2.5 p-2 rounded-xl text-[12px] flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
-                    isSelf 
-                      ? "bg-white/15 border-white/25 text-white hover:bg-white/25" 
-                      : "bg-[#6C4DF6]/10 border-[#6C4DF6]/20 text-slate-800 hover:bg-[#6C4DF6]/15"
-                  } transition-all`} 
-                  onClick={(e) => { 
-                    e.stopPropagation(); 
-                    const storyId = typeof msg.storyId === 'object' ? msg.storyId._id : msg.storyId;
-                    if (onStoryClick) onStoryClick(storyId); 
-                  }}
-                >
-                  {/* Story thumbnail */}
-                  <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
-                    {typeof msg.storyId === 'object' && msg.storyId.media ? (
-                      msg.storyId.mediaType === 'video' ? (
-                        <video src={`${msg.storyId.media}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
-                      ) : (
-                        <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
-                      )
-                    ) : (
-                      <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-lg">
-                        📷
-                      </div>
-                    )}
-                  </div>
-                  {/* Story caption/info */}
-                  <div className="flex-1 min-w-0 pr-1">
-                    <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-100" : "text-[#6C4DF6]"}`}>
-                      {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Replied to story"}
-                    </div>
-                    <div className={`truncate text-[12.5px] font-medium ${isSelf ? "text-white/95" : "text-slate-700"}`}>
-                      {typeof msg.storyId === 'object' ? (msg.storyId.caption || "View story attachment") : "View story"}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Media */}
-              {msg.media && (
-                <div className="mb-1 rounded-xl overflow-hidden">
-                  <img 
-                    src={msg.media} 
-                    alt="Media" 
-                    className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-95 transition-opacity" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setLightboxData({ isOpen: true, url: msg.media, type: 'image' });
+              {/* Story Reply / Reaction Snippet Integrated Card */}
+              {msg.storyId ? (
+                <div className="flex flex-col gap-2 min-w-[200px]">
+                  {/* Story Preview Header */}
+                  <div 
+                    className={`p-2 rounded-xl text-[12px] flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
+                      isSelf 
+                        ? "bg-white/10 border-white/20 text-white hover:bg-white/20" 
+                        : "bg-[#6C4DF6]/5 border-[#6C4DF6]/10 text-slate-800 hover:bg-[#6C4DF6]/10"
+                    } transition-all`} 
+                    onClick={(e) => { 
+                      e.stopPropagation(); 
+                      const storyId = typeof msg.storyId === 'object' ? msg.storyId._id : msg.storyId;
+                      if (onStoryClick) onStoryClick(storyId); 
                     }}
-                  />
+                  >
+                    {/* Story thumbnail with media icon overlay */}
+                    <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
+                      {typeof msg.storyId === 'object' && msg.storyId.media ? (
+                        msg.storyId.mediaType === 'video' ? (
+                          <>
+                            <video src={`${msg.storyId.media}#t=0.1`} className="w-full h-full object-cover" muted playsInline preload="metadata" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <Play className="w-4 h-4 text-white drop-shadow" fill="white" />
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <img src={msg.storyId.media} className="w-full h-full object-cover" alt="Story" />
+                            <div className="absolute top-1 right-1 bg-black/30 p-0.5 rounded">
+                              <Image className="w-2.5 h-2.5 text-white" />
+                            </div>
+                          </>
+                        )
+                      ) : (
+                        <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-lg">
+                          📷
+                        </div>
+                      )}
+                    </div>
+                    {/* Story caption/info */}
+                    <div className="flex-1 min-w-0 pr-1">
+                      <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-200" : "text-[#6C4DF6]"}`}>
+                        {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Story Reply"}
+                      </div>
+                      <div className={`truncate text-[12px] font-medium opacity-80 ${isSelf ? "text-white" : "text-slate-600"}`}>
+                        {typeof msg.storyId === 'object' ? (msg.storyId.caption || "View story attachment") : "View story"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Reply text / Reaction integrated */}
+                  {msg.text && (
+                    <div className="px-1 py-0.5 text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                      {msg.text}
+                    </div>
+                  )}
                 </div>
-              )}
-              
-              {/* Text */}
-              {msg.text && (
-                <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap">
-                  {msg.text}
-                </p>
+              ) : (
+                <>
+                  {/* Normal Message Text & Media (without storyId) */}
+                  {/* Reply Snippet */}
+                  {msg.replyTo && msg.replyTo._id && (msg.replyTo.text || msg.replyTo.media || msg.replyTo.senderName) && (
+                    <div className={`mb-2 pl-2 border-l-2 text-[12px] opacity-80 ${isSelf ? "border-white/50 text-white" : "border-slate-400 text-slate-600"}`}>
+                      <div className="font-semibold">
+                        {msg.replyTo.senderName === currentUserName || msg.replyTo.senderName === "You" ? "You" : msg.replyTo.senderName}
+                      </div>
+                      <div className="truncate max-w-[180px]">{msg.replyTo.text || "Media"}</div>
+                    </div>
+                  )}
+
+                  {/* Media */}
+                  {msg.media && (
+                    <div className="mb-1 rounded-xl overflow-hidden">
+                      <img 
+                        src={msg.media} 
+                        alt="Media" 
+                        className="max-w-[240px] max-h-[300px] object-cover cursor-pointer hover:opacity-95 transition-opacity" 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxData({ isOpen: true, url: msg.media, type: 'image' });
+                        }}
+                      />
+                    </div>
+                  )}
+
+                  {/* Text */}
+                  {msg.text && (
+                    <p className="text-[13.5px] leading-relaxed whitespace-pre-wrap">
+                      {msg.text}
+                    </p>
+                  )}
+                </>
               )}
             </>
           )}

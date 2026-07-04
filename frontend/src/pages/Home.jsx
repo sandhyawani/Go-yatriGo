@@ -43,7 +43,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
 import { SocketContext } from "../context/SocketContext";
 import Swal from "sweetalert2";
-import CreateStoryModal from "../components/story/CreateStoryModal";
+import CreateStoryModal from "../components/modals/CreateStoryModal";
 import StoryViewer from "../components/story/StoryViewer";
 import RightSidebar from "../components/home/RightSidebar";
 import LazyImage from "../components/common/LazyImage";

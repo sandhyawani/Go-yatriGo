@@ -26,27 +26,27 @@ export const SidebarHeader = ({
   const navItemClass = (isActive) =>
     `relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group w-full select-none text-[14px] ${
       isActive
-        ? "bg-[#6C4DF6]/10 text-[#6C4DF6] font-semibold shadow-sm"
-        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium hover:-translate-y-0.5"
+        ? "bg-brand-500/10 text-brand-500 font-semibold shadow-sm"
+        : "text-slate-600 hover:text-slate-800 hover:bg-slate-50 font-semibold hover:-translate-y-0.5"
     }`;
 
   const iconClass = (isActive) =>
     `w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${
-      isActive ? "text-[#6C4DF6]" : "text-slate-400 group-hover:text-[#6C4DF6]"
+      isActive ? "text-brand-500" : "text-slate-500 group-hover:text-brand-500"
     }`;
 
   return (
     <div className="flex flex-col gap-0.5">
       {/* Logo */}
       <Link to="/" className="flex items-center gap-2.5 px-3 py-2 mb-2 group">
-        <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-[#5b3ee0] to-[#9D88F9] flex items-center justify-center shadow-lg shadow-[#6C4DF6]/30 shrink-0 group-hover:-rotate-[8deg] group-hover:scale-105 transition-all duration-300 overflow-hidden">
+        <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center shadow-lg shadow-brand-500/30 shrink-0 group-hover:-rotate-[8deg] group-hover:scale-105 transition-all duration-300 overflow-hidden">
           <div className="absolute top-[-2px] right-[-2px] w-5 h-5 bg-white/30 rounded-full blur-[3px]"></div>
           <span className="relative z-10 text-white font-extrabold text-[15px] tracking-tighter flex items-center drop-shadow-sm">
             G<span className="text-[#FFD166] -ml-[1.5px] mt-[2px]">Y</span>
           </span>
         </div>
         <span className="text-[17px] font-semibold tracking-tight text-slate-900 truncate">
-          Go YatriGo<span className="text-[#6C4DF6]">.</span>
+          Go YatriGo<span className="text-brand-500">.</span>
         </span>
       </Link>
 
@@ -94,7 +94,7 @@ export const SidebarHeader = ({
           <Bell className={iconClass(showNotifPanel)} />
           <span className="flex-1 text-left">Notifications</span>
           {unreadCount > 0 && (
-            <span className="w-4.5 h-4.5 min-w-[18px] bg-[#FF5A7A] text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
+            <span className="w-4.5 h-4.5 min-w-[18px] bg-accent-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
@@ -103,7 +103,7 @@ export const SidebarHeader = ({
 
       {/* Create dropdown */}
       <Menu as="div" className="relative w-full">
-        <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(124,58,237,0.25)] hover:shadow-[0_15px_40px_rgba(124,58,237,0.35)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
+        <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(108,77,246,0.25)] hover:shadow-[0_15px_40px_rgba(108,77,246,0.35)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
           <PlusSquare className="w-4 h-4" />
           Create
         </Menu.Button>
@@ -145,7 +145,7 @@ export const SidebarHeader = ({
                       active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"
                     }`}
                   >
-                    <div className="w-9 h-9 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center text-[#6C4DF6] shrink-0">
+                    <div className="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 shrink-0">
                       <PlusSquare className="w-4.5 h-4.5" />
                     </div>
                     <div>

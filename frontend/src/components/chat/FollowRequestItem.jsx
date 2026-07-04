@@ -41,7 +41,7 @@ export const FollowRequestItem = ({
           <div className="flex gap-2 w-full">
             <button
               onClick={(e) => handleAcceptFollow(e, n.sender?._id)}
-              className="flex-1 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded hover:bg-[#5b3ee0] transition-colors"
+              className="flex-1 py-1 bg-brand-500 text-white text-[11px] font-bold rounded hover:bg-brand-600 transition-colors"
             >
               Accept
             </button>

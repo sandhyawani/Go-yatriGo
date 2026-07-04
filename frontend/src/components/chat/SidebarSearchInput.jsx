@@ -10,7 +10,7 @@ export const SidebarSearchInput = ({ searchQuery, setSearchQuery, handleClearSea
         placeholder="Search..."
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full bg-slate-50 text-[13px] pl-8 pr-8 py-2 rounded-lg outline-none border border-slate-200 focus:border-[#6C4DF6]/40 focus:ring-2 focus:ring-[#6C4DF6]/10 transition-all"
+        className="w-full bg-slate-50 text-[13px] pl-8 pr-8 py-2 rounded-lg outline-none border border-slate-200 focus:border-brand-500/40 focus:ring-2 focus:ring-brand-500/10 transition-all"
       />
       {searchQuery && (
         <button

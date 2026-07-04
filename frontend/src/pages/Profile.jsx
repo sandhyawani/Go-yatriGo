@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
 import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
+import { SocketContext } from "../context/SocketContext";
+import { SOCKET_EVENTS } from "../constants/socketEvents";
 import {
   User,
   Mail,
@@ -60,6 +62,7 @@ import JourneyStatistics from "../components/journey/JourneyStatistics";
 const Profile = () => {
   const { id } = useParams();
   const { user: currentUser, logout, dispatch } = useContext(AuthContext);
+  const socket = useContext(SocketContext);
   const navigate = useNavigate();
 
   const [profileUser, setProfileUser] = useState(null);
@@ -319,6 +322,77 @@ const Profile = () => {
       fetchTabData(activeTab, targetId, false);
     }
   }, [activeTab]);
+
+  const fetchProfileSilent = async () => {
+    const targetId = isOwnProfile ? currentUser?._id || currentUser?.id : id;
+    if (!targetId) return;
+    try {
+      const res = await axios.get(`/users/${targetId}`, {
+        withCredentials: true,
+      });
+      const userData = res.data.user || res.data;
+      if (isOwnProfile) userData.canViewContent = true;
+      setProfileUser(userData);
+
+      if (currentUser?._id) {
+        if (isOwnProfile) {
+          setCurrentUserData(userData);
+          dispatch({
+            type: "LOGIN_SUCCESS",
+            payload: {
+              ...currentUser,
+              followRequests: userData.followRequests,
+              followers: userData.followers,
+              following: userData.following,
+            },
+          });
+        } else {
+          try {
+            const selfRes = await axios.get(`/users/${currentUser._id}`, {
+              withCredentials: true,
+            });
+            const selfData = selfRes.data.user || selfRes.data;
+            setCurrentUserData(selfData);
+            dispatch({
+              type: "LOGIN_SUCCESS",
+              payload: {
+                ...currentUser,
+                followRequests: selfData.followRequests,
+                followers: selfData.followers,
+                following: selfData.following,
+              },
+            });
+          } catch (selfErr) {
+            console.warn("Failed to load own relations", selfErr);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn("fetchProfileSilent error:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (socket) {
+      const handleSocketUpdate = () => {
+        fetchProfileSilent();
+      };
+
+      socket.on(SOCKET_EVENTS.FOLLOWERS_UPDATED, handleSocketUpdate);
+      socket.on(SOCKET_EVENTS.FOLLOWING_UPDATED, handleSocketUpdate);
+      socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_RECEIVED, handleSocketUpdate);
+      socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSocketUpdate);
+      socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSocketUpdate);
+
+      return () => {
+        socket.off(SOCKET_EVENTS.FOLLOWERS_UPDATED, handleSocketUpdate);
+        socket.off(SOCKET_EVENTS.FOLLOWING_UPDATED, handleSocketUpdate);
+        socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_RECEIVED, handleSocketUpdate);
+        socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSocketUpdate);
+        socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSocketUpdate);
+      };
+    }
+  }, [socket, id, currentUser]);
 
   const fetchTabData = async (tab, targetId, force = false) => {
     if (!force && fetchedTabs[tab]) return; // Cache hit
@@ -764,7 +838,7 @@ const Profile = () => {
   return (
     <div className="w-full min-h-[100dvh] overflow-x-hidden pb-20 lg:pb-12 font-sans antialiased relative bg-[#FAFAFA] pt-2 sm:pt-4">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
-        {/* INSTAGRAM-STYLE HEADER PROFILE HUB */}
+        {/* HEADER PROFILE HUB */}
         <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-white/50">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-8 sm:gap-10">
             {/* Avatar Frame with gradient story ring */}
@@ -939,7 +1013,7 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Row 2: Stats (Instagram style inline with more space) */}
+              {/* Row 2: Stats (Stats inline with more space) */}
               <div className="flex items-center justify-center md:justify-start gap-10 select-none text-slate-900">
                 <div
                   className="cursor-pointer flex flex-col items-center md:items-start hover:opacity-80 transition-opacity"

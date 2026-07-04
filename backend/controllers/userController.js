@@ -5,6 +5,15 @@ const Follow = require("../models/Follow");
 const Block = require("../models/Block");
 const Report = require("../models/Report");
 
+const SOCKET_EVENTS = {
+  NEW_NOTIFICATION: "new_notification",
+  FOLLOWERS_UPDATED: "followers_updated",
+  FOLLOWING_UPDATED: "following_updated",
+  FOLLOW_REQUEST_RECEIVED: "follow_request_received",
+  FOLLOW_REQUEST_ACCEPTED: "follow_request_accepted",
+  FOLLOW_REQUEST_REJECTED: "follow_request_rejected",
+};
+
 // Update user profile
 const updateUser = async (req, res) => {
   try {
@@ -237,7 +246,7 @@ const followUser = async (req, res) => {
       targetUser.followRequests.push(currentUserId);
       await targetUser.save();
 
-      await Notification.create({
+      const notification = await Notification.create({
         sender: currentUserId,
         receiver: targetUserId,
         type: "follow_request",
@@ -245,6 +254,18 @@ const followUser = async (req, res) => {
           currentUser.username || currentUser.name
         } requested to follow you`,
       });
+
+      const io = req.app.get("io");
+      if (io) {
+        const populatedNotification = await Notification.findById(notification._id)
+          .populate("sender", "name username avatar profilePicture pic img")
+          .lean();
+        io.to(targetUserId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
+        io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_RECEIVED, {
+          senderId: currentUserId.toString(),
+          followRequests: targetUser.followRequests,
+        });
+      }
 
       return res.status(200).json({
         success: true,
@@ -279,7 +300,7 @@ const followUser = async (req, res) => {
       );
     }
 
-    await Notification.create({
+    const notification = await Notification.create({
       sender: currentUserId,
       receiver: targetUserId,
       type: "follow",
@@ -287,6 +308,22 @@ const followUser = async (req, res) => {
         currentUser.username || currentUser.name
       } started following you`,
     });
+
+    const io = req.app.get("io");
+    if (io) {
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate("sender", "name username avatar profilePicture pic img")
+        .lean();
+      io.to(targetUserId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
+      io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
+        targetId: targetUserId.toString(),
+        followersCount: targetUser.followers.length,
+      });
+      io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
+        targetId: currentUserId.toString(),
+        followingCount: currentUser.following.length,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -337,6 +374,13 @@ const unfollowUser = async (req, res) => {
         type: "follow_request",
       });
 
+      const io = req.app.get("io");
+      if (io) {
+        io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, {
+          userId: currentUserId.toString(),
+        });
+      }
+
       return res.status(200).json({
         success: true,
         status: "none",
@@ -372,6 +416,18 @@ const unfollowUser = async (req, res) => {
       receiver: targetUserId,
       type: "follow",
     });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
+        targetId: targetUserId.toString(),
+        followersCount: targetUser.followers.length,
+      });
+      io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
+        targetId: currentUserId.toString(),
+        followingCount: currentUser.following.length,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -789,7 +845,7 @@ const acceptFollowRequest = async (req, res) => {
     }
 
     // Notify requester
-    await Notification.create({
+    const notification = await Notification.create({
       sender: currentUserId,
       receiver: requesterId,
       type: "follow_accept",
@@ -804,6 +860,26 @@ const acceptFollowRequest = async (req, res) => {
       receiver: currentUserId,
       type: "follow_request",
     });
+
+    const io = req.app.get("io");
+    if (io) {
+      const populatedNotification = await Notification.findById(notification._id)
+        .populate("sender", "name username avatar profilePicture pic img")
+        .lean();
+      
+      io.to(requesterId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
+      io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, {
+        userId: currentUserId.toString(),
+      });
+      io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
+        targetId: currentUserId.toString(),
+        followersCount: currentUser.followers.length,
+      });
+      io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
+        targetId: requesterId.toString(),
+        followingCount: requesterUser.following.length,
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -847,6 +923,13 @@ const rejectFollowRequest = async (req, res) => {
       receiver: currentUserId,
       type: "follow_request",
     });
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, {
+        userId: currentUserId.toString(),
+      });
+    }
 
     res.status(200).json({
       success: true,

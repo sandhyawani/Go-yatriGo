@@ -82,6 +82,18 @@ const messageSchema = new mongoose.Schema(
       },
     ],
 
+    // Timestamp when the message was first delivered to any recipient
+    deliveredAt: {
+      type: Date,
+      default: null,
+    },
+
+    // Timestamp when the message was first read/seen by any recipient
+    seenAt: {
+      type: Date,
+      default: null,
+    },
+
     // Emoji reactions
     reactions: [
       {

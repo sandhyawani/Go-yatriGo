@@ -5,20 +5,16 @@ import App from "./App";
 
 import { AuthContextProvider } from "./context/authContext";
 import { SocketProvider } from "./context/SocketContext";
-import { ChatProvider } from "./context/chat/ChatProvider";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <>
     <AuthContextProvider>
       <SocketProvider>
-        <ChatProvider>
-          <App />
-        </ChatProvider>
+        <App />
       </SocketProvider>
     </AuthContextProvider>
   </>
 );
-
 
 

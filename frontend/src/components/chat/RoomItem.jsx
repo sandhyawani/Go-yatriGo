@@ -44,14 +44,14 @@ export const RoomItem = ({
             type="checkbox"
             checked={selectedRoomIds.has(room._id)}
             onChange={() => handleToggleRoomSelection(room._id)}
-            className="w-4 h-4 text-[#6C4DF6] border-slate-300 rounded focus:ring-[#6C4DF6] cursor-pointer"
+            className="w-4 h-4 text-brand-500 border-slate-300 rounded focus:ring-brand-500 cursor-pointer"
           />
         </div>
       )}
       <div className="relative shrink-0">
         {room.type === "group" ? (
-          <div className="w-10 h-10 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
-            <Users className="w-5 h-5 text-[#6C4DF6]" />
+          <div className="w-10 h-10 rounded-xl bg-brand-500/10 flex items-center justify-center">
+            <Users className="w-5 h-5 text-brand-500" />
           </div>
         ) : (
           <img
@@ -93,7 +93,7 @@ export const RoomItem = ({
           {room.latestMessage && (
             <span
               className={`text-[10px] whitespace-nowrap ml-2 ${
-                room.unreadCount > 0 ? "font-bold text-[#6C4DF6]" : "text-slate-400"
+                room.unreadCount > 0 ? "font-bold text-brand-500" : "text-slate-400"
               }`}
             >
               {formatTime(room.latestMessage.createdAt)}
@@ -107,7 +107,7 @@ export const RoomItem = ({
             }`}
           >
             {isTyping ? (
-              <span className="text-[#6C4DF6] italic">{isTyping} typing...</span>
+              <span className="text-brand-500 italic">{isTyping} typing...</span>
             ) : room.latestMessage ? (
               getLatestMessagePreview(room.latestMessage, currentUserId)
             ) : (
@@ -115,7 +115,7 @@ export const RoomItem = ({
             )}
           </p>
           {room.unreadCount > 0 && !isSelected && (
-            <span className="bg-[#6C4DF6] text-white min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold shrink-0">
+            <span className="bg-brand-500 text-white min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold shrink-0">
               {room.unreadCount}
             </span>
           )}

@@ -16,12 +16,15 @@ const storage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "GoGoYatriGo_uploads",
-    allowedFormats: ["jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "mp4", "mov", "avi"],
+    allowedFormats: ["jpg", "jpeg", "png", "webp", "heic", "heif", "gif", "mp4", "mov", "avi", "pdf"],
     resource_type: "auto",
   },
 });
 
-// Create multer upload instance
-const uploadCloud = multer({ storage });
+// Create multer upload instance with a 10MB file size limit
+const uploadCloud = multer({ 
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit
+});
 
 module.exports = { cloudinary, uploadCloud };

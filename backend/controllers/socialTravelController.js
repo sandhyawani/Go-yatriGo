@@ -2304,6 +2304,7 @@ exports.reactToStory = async (req, res) => {
         // Update the existing reaction message
         message.text = `Reacted to your story: ${emoji}`;
         message.content = `Reacted to your story: ${emoji}`;
+        message.createdAt = new Date(); // Reset createdAt to move it to the bottom
         message.updatedAt = new Date();
         await message.save();
       } else {
@@ -2340,10 +2341,6 @@ exports.reactToStory = async (req, res) => {
 
       if (io) {
         // Emit a dedicated event for reaction updates so the client can upsert
-        console.log("[SERVER] EMIT receive_chat_message", msgObj);
-        io.to(room._id.toString()).emit("story_reaction_message_updated", msgObj);
-        io.to(room._id.toString()).emit("receive_chat_message", msgObj);
-
         io.to(userId.toString()).emit("story_reaction_message_updated", msgObj);
         io.to(userId.toString()).emit("receive_chat_message", msgObj);
 
@@ -2370,6 +2367,7 @@ exports.reactToStory = async (req, res) => {
       chatMessage: chatMessageToReturn,
     });
   } catch (error) {
+    console.error("[DEBUG] Error inside reactToStory:", error);
     res.status(500).json({
       success: false,
       message: error.message,
@@ -2558,7 +2556,6 @@ exports.replyToStory = async (req, res) => {
 
       // Emit the fully-populated message so the receiver gets the story preview
       console.log("[SERVER] EMIT receive_chat_message", messageObj);
-      io.to(room._id.toString()).emit("receive_chat_message", messageObj);
       io.to(senderId.toString()).emit("receive_chat_message", messageObj);
       io.to(storyOwnerId.toString()).emit("receive_chat_message", messageObj);
 

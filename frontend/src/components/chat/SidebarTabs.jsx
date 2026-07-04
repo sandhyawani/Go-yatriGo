@@ -15,7 +15,7 @@ export const SidebarTabs = ({ activeTab, setActiveTab, requestChats, followReque
         >
           {tab}
           {tab === "requests" && requestChats.length + followRequests.length > 0 && (
-            <span className="ml-1 bg-[#FF5A7A] text-white px-1 py-0.5 rounded-full text-[9px]">
+            <span className="ml-1 bg-accent-500 text-white px-1 py-0.5 rounded-full text-[9px]">
               {requestChats.length + followRequests.length}
             </span>
           )}

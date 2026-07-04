@@ -92,7 +92,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               </div>
             ) : (
               <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 text-[#6C4DF6] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-indigo-50 text-brand-500 flex items-center justify-center">
                   <Image className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-700">Choose a travel photo</span>
@@ -108,7 +108,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Give this memory a title..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6]"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-500"
             />
             <div className="relative">
               <input
@@ -116,7 +116,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Where was this? (e.g. Paris, France)"
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6]"
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-500"
               />
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             </div>
@@ -124,7 +124,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Tell us about your experience..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6] resize-none"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-brand-500 resize-none"
               rows={3}
             />
           </div>
@@ -140,7 +140,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
           <button
             onClick={handleCreatePost}
             disabled={isSubmitting}
-            className="px-4 py-2 bg-[#6C4DF6] text-white text-xs font-bold rounded-xl hover:bg-[#5b3ee0] active:scale-[0.98] transition-all disabled:opacity-50"
+            className="px-4 py-2 bg-brand-500 text-white text-xs font-bold rounded-xl hover:bg-brand-600 active:scale-[0.98] transition-all disabled:opacity-50"
           >
             Publish Memory
           </button>

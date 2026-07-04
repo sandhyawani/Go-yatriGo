@@ -77,7 +77,7 @@ export const NotificationPanel = ({
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div>
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Bell className="w-4 h-4 text-[#FF5A7A]" /> Notifications
+                <Bell className="w-4 h-4 text-accent-500" /> Notifications
               </h3>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
                 {unreadCount} Unread alerts
@@ -87,7 +87,7 @@ export const NotificationPanel = ({
               {unreadCount > 0 && (
                 <button
                   onClick={markAllRead}
-                  className="px-2.5 py-1 text-[10px] font-bold text-[#6C4DF6] hover:bg-[#6C4DF6]/5 rounded-lg transition-colors"
+                  className="px-2.5 py-1 text-[10px] font-bold text-brand-500 hover:bg-brand-500/5 rounded-lg transition-colors"
                 >
                   Mark all read
                 </button>

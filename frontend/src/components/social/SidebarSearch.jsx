@@ -41,7 +41,7 @@ export const SidebarSearch = ({
           <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div>
               <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <Search className="w-4 h-4 text-[#6C4DF6]" /> Search
+                <Search className="w-4 h-4 text-brand-500" /> Search
               </h3>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
                 Travelers · Trips · Memories
@@ -63,7 +63,7 @@ export const SidebarSearch = ({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search people, trips, destinations..."
-                className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:border-[#6C4DF6]/50 focus:bg-white focus:shadow-[0_2px_8px_rgba(108,77,246,0.08)] transition-all"
+                className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-[0_2px_8px_rgba(108,77,246,0.08)] transition-all"
                 autoFocus
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
@@ -85,7 +85,7 @@ export const SidebarSearch = ({
                 key={tab}
                 onClick={() => setSearchTab(tab)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize whitespace-nowrap ${
-                  searchTab === tab ? "bg-[#6C4DF6] text-white shadow-sm shadow-[#6C4DF6]/20" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
+                  searchTab === tab ? "bg-brand-500 text-white shadow-sm shadow-brand-500/20" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                 }`}
               >
                 {tab}
@@ -129,14 +129,14 @@ export const SidebarSearch = ({
                           setIsSearchOpen(false);
                           navigate(`/profile/${traveler._id}`);
                         }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-[#6C4DF6]/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-brand-500/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
                       >
                         <Avatar user={traveler} className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm shrink-0" />
                         <div className="min-w-0 flex-1">
                           <h4 className="text-[13px] font-bold text-slate-800 truncate">{traveler.name}</h4>
                           <span className="text-[10px] text-slate-400 capitalize">{traveler.type || "Traveler"}</span>
                         </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6C4DF6] transition-colors" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 transition-colors" />
                       </div>
                     ))}
                   </div>
@@ -152,19 +152,19 @@ export const SidebarSearch = ({
                           setIsSearchOpen(false);
                           navigate(`/social/buddy/${trip._id}`);
                         }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-[#6C4DF6]/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-brand-500/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
                       >
-                        <div className="w-9 h-9 rounded-lg bg-[#6C4DF6]/10 flex items-center justify-center text-[#6C4DF6] font-bold text-sm shrink-0">
+                        <div className="w-9 h-9 rounded-lg bg-brand-500/10 flex items-center justify-center text-brand-500 font-bold text-sm shrink-0">
                           {trip.destination ? trip.destination.substring(0, 2).toUpperCase() : "TR"}
                         </div>
                         <div className="min-w-0 flex-1">
                           <h4 className="text-[13px] font-bold text-slate-800 truncate">{trip.title}</h4>
                           <div className="flex items-center gap-1.5 mt-0.5">
-                            <span className="text-[8px] bg-[#6C4DF6]/10 text-[#6C4DF6] font-bold px-1.5 py-0.5 rounded">{trip.category}</span>
+                            <span className="text-[8px] bg-brand-500/10 text-brand-500 font-bold px-1.5 py-0.5 rounded">{trip.category}</span>
                             <span className="text-[10px] text-slate-400 truncate">→ {trip.destination}</span>
                           </div>
                         </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6C4DF6] transition-colors" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 transition-colors" />
                       </div>
                     ))}
                   </div>
@@ -180,14 +180,14 @@ export const SidebarSearch = ({
                           setIsSearchOpen(false);
                           navigate(`/`);
                         }}
-                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-[#6C4DF6]/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
+                        className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 hover:bg-white border border-transparent hover:border-brand-500/15 hover:shadow-md hover:scale-[1.01] transition-all cursor-pointer group"
                       >
                         <img src={memory.image} alt={memory.title} className="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" />
                         <div className="min-w-0 flex-1">
                           <h4 className="text-[13px] font-bold text-slate-800 truncate">{memory.title}</h4>
                           <p className="text-[10px] text-slate-400 truncate">by {memory.userId?.name || "Traveler"}</p>
                         </div>
-                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-[#6C4DF6] transition-colors" />
+                        <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 transition-colors" />
                       </div>
                     ))}
                   </div>

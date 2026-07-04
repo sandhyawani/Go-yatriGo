@@ -81,7 +81,7 @@ export const ChatSidebar = ({
             <div className="flex items-center gap-2">
               <Link
                 to="/"
-                className="p-1.5 text-slate-500 hover:text-[#6C4DF6] rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
+                className="p-1.5 text-slate-500 hover:text-brand-500 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
                 title="Back to Home"
               >
                 <Home className="w-4 h-4" />

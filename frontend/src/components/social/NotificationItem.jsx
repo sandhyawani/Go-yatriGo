@@ -22,7 +22,7 @@ export const NotificationItem = ({
         return <MessageCircle className="w-3.5 h-3.5 text-indigo-500 fill-indigo-50" />;
       case "follow":
       case "follow_request":
-        return <UserPlus className="w-3.5 h-3.5 text-[#6C4DF6]" />;
+        return <UserPlus className="w-3.5 h-3.5 text-brand-500" />;
       default:
         return <Compass className="w-3.5 h-3.5 text-amber-500" />;
     }
@@ -52,7 +52,7 @@ export const NotificationItem = ({
       }`}
     >
       {!n.isRead && (
-        <div className="absolute right-3.5 top-3.5 w-1.5 h-1.5 bg-[#6C4DF6] rounded-full" />
+        <div className="absolute right-3.5 top-3.5 w-1.5 h-1.5 bg-brand-500 rounded-full" />
       )}
 
       <div className="relative shrink-0">
@@ -80,7 +80,7 @@ export const NotificationItem = ({
               <>
                 <button
                   onClick={(e) => handleAcceptRequest(e, n.sender?._id)}
-                  className="px-3.5 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded-lg hover:bg-[#5b3ee0] active:scale-[0.98] transition-all"
+                  className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all"
                 >
                   Accept
                 </button>
@@ -97,7 +97,7 @@ export const NotificationItem = ({
               <>
                 <button
                   onClick={(e) => handleAcceptMessage(e, n.relatedId, n._id)}
-                  className="px-3.5 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded-lg hover:bg-[#5b3ee0] active:scale-[0.98] transition-all"
+                  className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all"
                 >
                   Accept Chat
                 </button>
@@ -114,7 +114,7 @@ export const NotificationItem = ({
               <>
                 <button
                   onClick={(e) => handleAcceptJoin(e, n.relatedId, n.requestId, n._id)}
-                  className="px-3.5 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded-lg hover:bg-[#5b3ee0] active:scale-[0.98] transition-all"
+                  className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all"
                 >
                   Approve Squad
                 </button>

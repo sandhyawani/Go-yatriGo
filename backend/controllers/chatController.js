@@ -17,8 +17,17 @@ const emitRequestStatusUpdate = (req, room, userId) => {
     io.to(room._id.toString()).emit("request_status_updated", payload);
     if (onlineUsers && room.members) {
       room.members.forEach(m => {
-        const socketId = onlineUsers.get(m.toString());
-        if (socketId) io.to(socketId).emit("request_status_updated", payload);
+        const socketIds = onlineUsers.get(m.toString());
+        if (socketIds) {
+          if (socketIds instanceof Set) {
+            socketIds.forEach(socketId => {
+              io.to(socketId).emit("request_status_updated", payload);
+            });
+          } else {
+            // Fallback for legacy single string socket ID
+            io.to(socketIds).emit("request_status_updated", payload);
+          }
+        }
       });
     }
   }
@@ -117,7 +126,7 @@ exports.getUserRooms = async (req, res) => {
     const roomsWithDetails = await Promise.all(rooms.map(async (room) => {
       const latestMessage = await Message.findOne({ roomId: room._id })
         .populate("storyId", "media mediaType caption")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1, _id: -1 });
 
       const unreadCount = await Message.countDocuments({
         roomId: room._id,
@@ -167,7 +176,7 @@ exports.getRoomMessages = async (req, res) => {
 
     const messages = await Message.find({ roomId, deletedFor: { $ne: userId } })
       .populate("storyId", "media mediaType caption")
-      .sort({ createdAt: -1 })
+      .sort({ createdAt: -1, _id: -1 })
       .skip(skip)
       .limit(limit);
 
@@ -180,7 +189,8 @@ exports.getRoomMessages = async (req, res) => {
         { roomId, unreadBy: userId },
         { 
           $pull: { unreadBy: userId },
-          $addToSet: { seenBy: userId, deliveredTo: userId } 
+          $addToSet: { seenBy: userId, deliveredTo: userId },
+          $set: { seenAt: new Date() }
         }
       );
 
@@ -203,7 +213,10 @@ exports.getRoomMessages = async (req, res) => {
     // Mark messages as delivered to the current user
     const updateDeliveredResult = await Message.updateMany(
       { roomId, sender: { $ne: userId }, deliveredTo: { $ne: userId } },
-      { $addToSet: { deliveredTo: userId } }
+      { 
+        $addToSet: { deliveredTo: userId },
+        $set: { deliveredAt: new Date() }
+      }
     );
 
     if (updateDeliveredResult.modifiedCount > 0) {
@@ -340,8 +353,6 @@ exports.sendMessage = async (req, res) => {
     const io = req.app.get("io");
     if (io) {
       console.log("[SERVER] EMIT receive_chat_message", populatedMessage);
-      io.to(roomId.toString()).emit("receive_chat_message", populatedMessage);
-
       if (room.members) {
         room.members.forEach((memberId) => {
           io.to(memberId.toString()).emit("receive_chat_message", populatedMessage);

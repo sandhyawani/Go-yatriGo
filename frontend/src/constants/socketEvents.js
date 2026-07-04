@@ -14,6 +14,11 @@ export const SOCKET_EVENTS = {
   USER_PRESENCE: "user_presence",
   INITIAL_ONLINE_USERS: "initial_online_users",
   REQUEST_STATUS_UPDATED: "request_status_updated",
+  NEW_NOTIFICATION: "new_notification",
+  FOLLOWERS_UPDATED: "followers_updated",
+  FOLLOWING_UPDATED: "following_updated",
+  FOLLOW_REQUEST_RECEIVED: "follow_request_received",
+  FOLLOW_REQUEST_ACCEPTED: "follow_request_accepted",
 
   // Emitted events
   EMIT_GO_ONLINE: "go_online",
