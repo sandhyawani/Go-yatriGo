@@ -2547,6 +2547,13 @@ exports.replyToStory = async (req, res) => {
       messageObj.clientMsgId = req.body.clientMsgId;
     }
 
+    // Serialize ObjectId fields to plain strings so client never receives raw ObjectId objects
+    const storySocketPayload = {
+      ...messageObj,
+      _id: messageObj._id.toString(),
+      roomId: messageObj.roomId.toString(),
+    };
+
     if (io) {
       console.log("BACKEND EMIT new_notification for story reply to storyOwnerId:", storyOwnerId.toString());
       io.to(storyOwnerId.toString()).emit(
@@ -2555,17 +2562,17 @@ exports.replyToStory = async (req, res) => {
       );
 
       // Emit the fully-populated message so the receiver gets the story preview
-      console.log("[SERVER] EMIT receive_chat_message", messageObj);
-      io.to(senderId.toString()).emit("receive_chat_message", messageObj);
-      io.to(storyOwnerId.toString()).emit("receive_chat_message", messageObj);
+      console.log("[SERVER] EMIT receive_chat_message", storySocketPayload);
+      io.to(senderId.toString()).emit("receive_chat_message", storySocketPayload);
+      io.to(storyOwnerId.toString()).emit("receive_chat_message", storySocketPayload);
 
       // Emit message_sent acknowledgment to sender
-      console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: messageObj._id.toString(), clientMsgId: messageObj.clientMsgId });
+      console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: storySocketPayload._id, clientMsgId: storySocketPayload.clientMsgId });
       io.to(senderId.toString()).emit("message_sent", {
         roomId: room._id.toString(),
-        messageId: messageObj._id.toString(),
-        clientMsgId: messageObj.clientMsgId,
-        message: messageObj
+        messageId: storySocketPayload._id,
+        clientMsgId: storySocketPayload.clientMsgId,
+        message: storySocketPayload
       });
     }
 

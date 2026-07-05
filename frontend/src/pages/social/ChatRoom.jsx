@@ -186,24 +186,39 @@ const ChatRoom = () => {
     if (!socket) return;
     setSocketConnected(socket.connected);
 
+    // Capture userId at effect registration time using the stable primitive ID
+    const userId = currentUserId;
+
     const onConnect = () => {
-      console.log("[CLIENT] Socket connected:", socket.id);
+      // CLIENT — socket lifecycle: connect or reconnect
+      console.log("[CLIENT] socket connected", {
+        socketId: socket.id,
+        userId,
+        isReconnect: socket.recovered ?? false,
+        time: Date.now(),
+      });
       setSocketConnected(true);
-      if (user) {
-        const userId = user._id || user.id;
-        console.log("[CLIENT] go_online:", userId);
+      if (userId) {
+        // CLIENT STEP 0 — registering personal room on server
+        console.log("[CLIENT] go_online emitted", { userId, socketId: socket.id, time: Date.now() });
         socket.emit("go_online", userId);
       }
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (activeId) {
-        console.log("[CLIENT] join_chat_room:", activeId);
+        console.log("[CLIENT] join_chat_room emitted", { roomId: activeId, time: Date.now() });
         socket.emit("join_chat_room", activeId);
         syncRoomMessages(activeRoomRef.current);
       }
     };
 
-    const onDisconnect = () => {
-      console.log("[CLIENT] Socket disconnected");
+    const onDisconnect = (reason) => {
+      // CLIENT — socket lifecycle: disconnect with reason
+      console.log("[CLIENT] socket disconnected", {
+        socketId: socket.id,
+        userId,
+        reason,
+        time: Date.now(),
+      });
       setSocketConnected(false);
     };
 
@@ -222,20 +237,48 @@ const ChatRoom = () => {
       console.log("[CLIENT] initial_online_users:", userIds);
       setOnlineUsers(new Set(userIds));
     };
+
+    // LIFECYCLE LOG: If you see UNREGISTER immediately followed by REGISTER
+    // with no receive_chat_message between them — correlate timestamps with
+    // [SERVER] emitting to member to confirm whether the event arrived mid-gap.
+    console.log("[CLIENT] STEP 0 — REGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
+
+
     const onReceiveChatMessage = (message) => {
-      console.log("[CLIENT] receive_chat_message", message);
+      // STEP 1 — event arrived
+      console.log("[CLIENT] receive_chat_message", {
+        id: message._id,
+        roomId: message.roomId,
+        time: Date.now(),
+      });
+
       const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
       const isSelf = msgSenderId?.toString() === currentUserId?.toString();
 
+      // Normalize both sides to strings to prevent ObjectId vs string type mismatch
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+      // Normalize the incoming message _id to a string
+      const incomingMsgId = message._id?.toString?.() ?? message._id;
+
+      // STEP 2 — room guard result
+      console.log("[CLIENT] room guard", {
+        incomingRoomId,
+        activeRoomId,
+        matched: incomingRoomId === activeRoomId,
+      });
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         if (showScrollBottomRef.current && !isSelf) {
           setUnreadNewMessagesCount((prev) => prev + 1);
         }
 
+        // STEP 3 — about to call setMessages
+        console.log("[CLIENT] updating messages");
+
         setMessages((prev) => {
+          // STEP 4 — inside the updater, React has committed to running this
+          console.log("[CLIENT] setMessages updater — previous count", prev.length);
           let updatedMessages = [...prev];
 
           // 1. Reconcile optimistic message
@@ -244,9 +287,11 @@ const ChatRoom = () => {
             if (idx !== -1) {
               updatedMessages[idx] = {
                 ...message,
+                _id: incomingMsgId,
                 isPending: false,
                 replyTo: message.replyTo || prev[idx].replyTo
               };
+              console.log("[CLIENT] setMessages path: optimistic reconcile →", updatedMessages.length);
               return updatedMessages;
             }
           }
@@ -268,19 +313,32 @@ const ChatRoom = () => {
             });
             if (existingIdx !== -1) {
               updatedMessages.splice(existingIdx, 1);
-              updatedMessages.push(message);
+              updatedMessages.push({ ...message, _id: incomingMsgId });
+              console.log("[CLIENT] setMessages path: reaction replace →", updatedMessages.length);
               return updatedMessages;
             }
           }
 
-          // 3. Deduplicate by database _id
-          if (prev.some((m) => m._id === message._id)) {
-            updatedMessages = prev.map((m) => m._id === message._id ? { ...m, ...message } : m);
+          // 3. Deduplicate by database _id — normalize to string on both sides
+          const isDuplicate = prev.some((m) => m._id?.toString?.() === incomingMsgId);
+          if (isDuplicate) {
+            updatedMessages = prev.map((m) =>
+              m._id?.toString?.() === incomingMsgId ? { ...m, ...message, _id: incomingMsgId } : m
+            );
+            console.log("[CLIENT] setMessages path: dedup update-in-place →", updatedMessages.length);
           } else {
-            updatedMessages.push(message);
+            updatedMessages.push({ ...message, _id: incomingMsgId });
+            console.log("[CLIENT] setMessages path: new message appended →", updatedMessages.length);
           }
 
           return updatedMessages;
+        });
+      } else {
+        // STEP 2 failure — guard rejected
+        console.warn("[CLIENT] room guard REJECTED — message not added to state", {
+          incomingRoomId,
+          activeRoomId,
+          messageId: incomingMsgId,
         });
       }
 
@@ -336,25 +394,30 @@ const ChatRoom = () => {
       console.log("[CLIENT] message_sent", { roomId, messageId, clientMsgId, message });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+      // Normalize messageId to string
+      const normalizedMsgId = messageId?.toString?.() ?? messageId;
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         setMessages((prev) => {
-          console.log("Before update", prev.length);
-          const idx = prev.findIndex((m) => m._id === clientMsgId || m._id === messageId);
+          // Match either the optimistic clientMsgId or the real DB id (normalize both)
+          const idx = prev.findIndex(
+            (m) => m._id === clientMsgId || m._id?.toString?.() === normalizedMsgId
+          );
           let updated;
           if (idx !== -1) {
             updated = [...prev];
             updated[idx] = {
               ...updated[idx],
               ...message,
-              _id: messageId,
+              _id: normalizedMsgId,
               isPending: false,
               replyTo: message.replyTo || updated[idx].replyTo
             };
           } else {
-            updated = [...prev, message];
+            // Not found — only add if not already present (avoid duplicate from receive_chat_message)
+            const alreadyPresent = prev.some((m) => m._id?.toString?.() === normalizedMsgId);
+            updated = alreadyPresent ? prev : [...prev, { ...message, _id: normalizedMsgId }];
           }
-          console.log("After update", updated.length);
           return updated;
         });
       }
@@ -485,7 +548,7 @@ const ChatRoom = () => {
       );
       if (
         updatedBy &&
-        user &&
+        userId &&
         updatedBy?.toString() !== currentUserId?.toString() &&
         requestStatus === "accepted"
       ) {
@@ -510,6 +573,7 @@ const ChatRoom = () => {
     socket.on("request_status_updated", onRequestStatusUpdated);
 
     return () => {
+      console.log("[CLIENT] STEP 0 — UNREGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("user_presence", onUserPresence);
@@ -527,7 +591,7 @@ const ChatRoom = () => {
       socket.off("request_status_updated", onRequestStatusUpdated);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [socket, user]);
+  }, [socket, currentUserId]);
 
   useEffect(() => {
     if (activeRoom && user && socketConnected && socket) {

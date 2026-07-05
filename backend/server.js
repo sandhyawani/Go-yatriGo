@@ -124,21 +124,27 @@ io.on("connection", (socket) => {
   console.log("[SERVER] Connected:", socket.id);
 
   socket.on("go_online", async (userId) => {
-    console.log("[SERVER] go_online:", userId);
+    const isReconnect = onlineUsers.has(userId);
     socket.userId = userId;
 
-    let isFirstConnection = false;
     if (!onlineUsers.has(userId)) {
       onlineUsers.set(userId, new Set());
-      isFirstConnection = true;
     }
     onlineUsers.get(userId).add(socket.id);
 
     socket.join(userId);
-    console.log(`${userId} joined personal room`);
-    console.log("[SERVER] Current socket rooms:", Array.from(socket.rooms));
 
-    if (isFirstConnection) {
+    // SERVER STEP 0 — personal room registration
+    console.log("[SERVER] go_online received", {
+      userId,
+      socketId: socket.id,
+      personalRoom: userId,
+      totalSocketsForUser: onlineUsers.get(userId).size,
+      isReconnect,
+      time: Date.now(),
+    });
+
+    if (!isReconnect) {
       socket.broadcast.emit("user_presence", {
         userId,
         status: "online",
@@ -195,9 +201,14 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_chat_room", (roomId) => {
-    console.log("[SERVER] join_chat_room:", roomId);
     socket.join(roomId);
-    console.log("[SERVER] Current socket rooms after join_chat_room:", Array.from(socket.rooms));
+    const roomSockets = io.sockets.adapter.rooms.get(roomId);
+    console.log("[SERVER] join_chat_room", {
+      roomId,
+      socketId: socket.id,
+      socketsInRoom: roomSockets ? roomSockets.size : 0,
+      time: Date.now(),
+    });
   });
 
   socket.on("send_chat_message", (data) => {
@@ -266,7 +277,20 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnect", (reason) => {
+    const remainingSockets = socket.userId
+      ? (onlineUsers.get(socket.userId)?.size ?? 0) - 1
+      : 0;
+
+    // SERVER — socket lifecycle
+    console.log("[SERVER] socket disconnected", {
+      socketId: socket.id,
+      userId: socket.userId || "unknown",
+      reason,
+      remainingSocketsForUser: Math.max(remainingSockets, 0),
+      time: Date.now(),
+    });
+
     if (socket.userId) {
       const socketIds = onlineUsers.get(socket.userId);
       if (socketIds) {
@@ -281,7 +305,7 @@ io.on("connection", (socket) => {
                 userId,
                 status: "offline",
               });
-              console.log(`[SERVER] User ${userId} is offline (debounced)`);
+              console.log("[SERVER] user fully offline", { userId, time: Date.now() });
             }
           }, 1500);
         }
@@ -307,8 +331,6 @@ io.on("connection", (socket) => {
         }
       }
     }
-
-    console.log("User disconnected:", socket.id);
   });
 });
 

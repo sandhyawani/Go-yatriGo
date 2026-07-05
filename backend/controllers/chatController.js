@@ -352,22 +352,59 @@ exports.sendMessage = async (req, res) => {
 
     const io = req.app.get("io");
     if (io) {
-      console.log("[SERVER] EMIT receive_chat_message", populatedMessage);
-      if (room.members) {
-        room.members.forEach((memberId) => {
-          io.to(memberId.toString()).emit("receive_chat_message", populatedMessage);
-        });
-      }
+      const onlineUsers = req.app.get("onlineUsers");
 
-      // Emit message_sent acknowledgment to the sender
-      console.log("[SERVER] EMIT message_sent", { roomId: roomId.toString(), messageId: populatedMessage._id.toString(), clientMsgId: populatedMessage.clientMsgId });
+      // Serialize ObjectId fields to plain strings so the client never receives raw ObjectId objects
+      const socketPayload = {
+        ...populatedMessage,
+        _id: populatedMessage._id.toString(),
+        roomId: populatedMessage.roomId.toString(),
+      };
+
+      const emitTimestamp = Date.now();
+      const memberIds = (room.members || []).map((m) => m.toString());
+
+      // SERVER STEP 1 — about to emit to each member
+      console.log("[SERVER] EMIT receive_chat_message", {
+        messageId: socketPayload._id,
+        roomId: socketPayload.roomId,
+        senderId: userId.toString(),
+        members: memberIds,
+        time: emitTimestamp,
+      });
+
+      memberIds.forEach((memberId) => {
+        const onlineUserSockets = onlineUsers ? (onlineUsers.get(memberId) || new Set()) : new Set();
+        // Count actual sockets in the personal room at emit time
+        const roomSockets = io.sockets.adapter.rooms.get(memberId);
+        const socketCount = roomSockets ? roomSockets.size : 0;
+        // SERVER STEP 2 — per-member emit with socket routing info
+        console.log("[SERVER] emitting to member", {
+          memberId,
+          socketRoom: memberId,
+          socketCount,
+          isOnline: onlineUserSockets.size > 0,
+          registeredSocketIds: [...onlineUserSockets],
+          time: Date.now(),
+        });
+        io.to(memberId).emit("receive_chat_message", socketPayload);
+      });
+
+      // Emit message_sent acknowledgment to the sender only
+      console.log("[SERVER] EMIT message_sent", {
+        messageId: socketPayload._id,
+        roomId: roomId.toString(),
+        clientMsgId: socketPayload.clientMsgId,
+        time: Date.now(),
+      });
       io.to(userId.toString()).emit("message_sent", {
         roomId: roomId.toString(),
-        messageId: populatedMessage._id.toString(),
-        clientMsgId: populatedMessage.clientMsgId,
-        message: populatedMessage
+        messageId: socketPayload._id,
+        clientMsgId: socketPayload.clientMsgId,
+        message: socketPayload
       });
     }
+
 
     res.status(201).json({ success: true, message: populatedMessage });
   } catch (error) {
