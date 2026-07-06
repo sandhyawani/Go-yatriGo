@@ -239,7 +239,7 @@ const ChatBubble = ({
 
   {isSelf && !msg.isUnsent && (
     <span
-      className={`text-[10px] px-2 py-0.5 rounded-full font-medium ${
+      className={`text-[6px] px-2 py-0.5 rounded-full font-medium ${
         (msg.seenBy?.length || 0) > 0
           ? "bg-blue-100 text-blue-700"
           : (msg.deliveredTo?.length || 0) > 0
