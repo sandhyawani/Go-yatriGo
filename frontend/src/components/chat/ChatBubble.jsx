@@ -234,27 +234,28 @@ const ChatBubble = ({
           )}
 
           {/* Time & Read Receipts */}
-         <div className="flex items-center gap-2 justify-end mt-1">
-  <span>{formatTime(msg.createdAt)}</span>
-
-  {isSelf && !msg.isUnsent && (
-    <span
-      className={`text-[6px] px-2 py-0.5 rounded-full font-medium ${
-        (msg.seenBy?.length || 0) > 0
-          ? "bg-blue-100 text-blue-700"
-          : (msg.deliveredTo?.length || 0) > 0
-          ? "bg-green-100 text-green-700"
-          : "bg-amber-100 text-amber-700"
-      }`}
-    >
-      {(msg.seenBy?.length || 0) > 0
-        ? "👀 Viewed"
-        : (msg.deliveredTo?.length || 0) > 0
-        ? "📍 Reached"
-        : "🧭 Sent"}
-    </span>
-  )}
-</div>
+          <div
+            className={`text-[10px] flex items-center justify-end gap-1 mt-1 ${
+              msg.isUnsent ? "text-slate-300" : isSelf ? "text-white/80" : "text-slate-500"
+            }`}
+          >
+            <span>{formatTime(msg.createdAt)}</span>
+            {isSelf && !msg.isUnsent && (
+              msg.isPending ? (
+                <Loader2 className="w-3 h-3 animate-spin text-white/50" />
+              ) : !msg.unreadBy || msg.unreadBy.length === 0 ? (
+                <CheckCheck className="w-3.5 h-3.5 text-[#f83842] drop-shadow-sm" /> /* blue double tick = seen */
+              ) : msg.deliveredTo && msg.deliveredTo.filter(id => {
+                const uid = typeof id === "object" ? id._id : id;
+                const senderId = typeof msg.sender === "object" ? msg.sender._id : msg.sender;
+                return uid?.toString() !== senderId?.toString();
+              }).length > 0 ? (
+                <CheckCheck className="w-3.5 h-3.5 text-white/60 drop-shadow-sm" /> /* grey/white double tick = delivered */
+              ) : (
+                <Check className="w-3.5 h-3.5 text-white/40" /> /* single tick = sent */
+              )
+            )}
+          </div>
           
           {/* Hover Actions (Reactions/Reply) - visible on hover desktop, always visible on mobile */}
           {!msg.isUnsent && (
