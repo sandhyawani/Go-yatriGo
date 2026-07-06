@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "../../api/axios";
 import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
+import { SOCKET_EVENTS } from "../../constants/socketEvents";
 import {
   MessageSquare,
   Send,
@@ -190,30 +191,25 @@ const ChatRoom = () => {
     const userId = currentUserId;
 
     const onConnect = () => {
-      // CLIENT — socket lifecycle: connect or reconnect
-      console.log("[CLIENT] socket connected", {
+      // [SOCKET RECEIVED] ChatRoom — connect or reconnect
+      // NOTE: go_online is NOT emitted here — SocketContext already does it.
+      console.log("[SOCKET RECEIVED] ChatRoom — connect", {
         socketId: socket.id,
         userId,
         isReconnect: socket.recovered ?? false,
         time: Date.now(),
       });
       setSocketConnected(true);
-      if (userId) {
-        // CLIENT STEP 0 — registering personal room on server
-        console.log("[CLIENT] go_online emitted", { userId, socketId: socket.id, time: Date.now() });
-        socket.emit("go_online", userId);
-      }
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (activeId) {
-        console.log("[CLIENT] join_chat_room emitted", { roomId: activeId, time: Date.now() });
-        socket.emit("join_chat_room", activeId);
+        console.log("[SOCKET RECEIVED] ChatRoom — rejoining room on reconnect:", activeId);
+        socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
         syncRoomMessages(activeRoomRef.current);
       }
     };
 
     const onDisconnect = (reason) => {
-      // CLIENT — socket lifecycle: disconnect with reason
-      console.log("[CLIENT] socket disconnected", {
+      console.log("[SOCKET RECEIVED] ChatRoom — disconnect", {
         socketId: socket.id,
         userId,
         reason,
@@ -225,7 +221,7 @@ const ChatRoom = () => {
     if (socket.connected) onConnect();
 
     const onUserPresence = ({ userId, status }) => {
-      console.log("[CLIENT] user_presence:", { userId, status });
+      console.log("[SOCKET RECEIVED] ChatRoom — user_presence:", { userId, status });
       setOnlineUsers((prev) => {
         const s = new Set(prev);
         status === "online" ? s.add(userId) : s.delete(userId);
@@ -234,19 +230,14 @@ const ChatRoom = () => {
     };
 
     const onInitialOnlineUsers = (userIds) => {
-      console.log("[CLIENT] initial_online_users:", userIds);
+      console.log("[SOCKET RECEIVED] ChatRoom — initial_online_users, count:", userIds.length);
       setOnlineUsers(new Set(userIds));
     };
 
-    // LIFECYCLE LOG: If you see UNREGISTER immediately followed by REGISTER
-    // with no receive_chat_message between them — correlate timestamps with
-    // [SERVER] emitting to member to confirm whether the event arrived mid-gap.
-    console.log("[CLIENT] STEP 0 — REGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
-
+    console.log("[SOCKET REGISTER] ChatRoom — REGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
 
     const onReceiveChatMessage = (message) => {
-      // STEP 1 — event arrived
-      console.log("[CLIENT] receive_chat_message", {
+      console.log("[SOCKET RECEIVED] ChatRoom — receive_chat_message", {
         id: message._id,
         roomId: message.roomId,
         time: Date.now(),
@@ -261,8 +252,7 @@ const ChatRoom = () => {
       // Normalize the incoming message _id to a string
       const incomingMsgId = message._id?.toString?.() ?? message._id;
 
-      // STEP 2 — room guard result
-      console.log("[CLIENT] room guard", {
+      console.log("[SOCKET RECEIVED] ChatRoom — room guard", {
         incomingRoomId,
         activeRoomId,
         matched: incomingRoomId === activeRoomId,
@@ -273,12 +263,10 @@ const ChatRoom = () => {
           setUnreadNewMessagesCount((prev) => prev + 1);
         }
 
-        // STEP 3 — about to call setMessages
-        console.log("[CLIENT] updating messages");
+        console.log("[SOCKET RECEIVED] ChatRoom — updating messages");
 
         setMessages((prev) => {
-          // STEP 4 — inside the updater, React has committed to running this
-          console.log("[CLIENT] setMessages updater — previous count", prev.length);
+          console.log("[SOCKET RECEIVED] ChatRoom — setMessages updater — previous count", prev.length);
           let updatedMessages = [...prev];
 
           // 1. Reconcile optimistic message
@@ -291,7 +279,6 @@ const ChatRoom = () => {
                 isPending: false,
                 replyTo: message.replyTo || prev[idx].replyTo
               };
-              console.log("[CLIENT] setMessages path: optimistic reconcile →", updatedMessages.length);
               return updatedMessages;
             }
           }
@@ -314,7 +301,6 @@ const ChatRoom = () => {
             if (existingIdx !== -1) {
               updatedMessages.splice(existingIdx, 1);
               updatedMessages.push({ ...message, _id: incomingMsgId });
-              console.log("[CLIENT] setMessages path: reaction replace →", updatedMessages.length);
               return updatedMessages;
             }
           }
@@ -325,17 +311,14 @@ const ChatRoom = () => {
             updatedMessages = prev.map((m) =>
               m._id?.toString?.() === incomingMsgId ? { ...m, ...message, _id: incomingMsgId } : m
             );
-            console.log("[CLIENT] setMessages path: dedup update-in-place →", updatedMessages.length);
           } else {
             updatedMessages.push({ ...message, _id: incomingMsgId });
-            console.log("[CLIENT] setMessages path: new message appended →", updatedMessages.length);
           }
 
           return updatedMessages;
         });
       } else {
-        // STEP 2 failure — guard rejected
-        console.warn("[CLIENT] room guard REJECTED — message not added to state", {
+        console.warn("[SOCKET RECEIVED] ChatRoom — room guard REJECTED", {
           incomingRoomId,
           activeRoomId,
           messageId: incomingMsgId,
@@ -343,7 +326,6 @@ const ChatRoom = () => {
       }
 
       setRooms((prev) => {
-        console.log("Before update", prev.length);
         const roomExists = prev.some((r) => getRoomIdString(r._id) === incomingRoomId);
         if (!roomExists) {
           setTimeout(() => fetchChannels(), 0);
@@ -366,22 +348,21 @@ const ChatRoom = () => {
         });
 
         // Reorder conversations list to push room with latest message to top
-        const sortedRooms = [...updatedRooms].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
-        console.log("After update", sortedRooms.length);
-        return sortedRooms;
+        return [...updatedRooms].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       });
 
-      // Receipt acknowledgment
+      // Receipt acknowledgment — emitted once here; the standalone mark_messages_read
+      // useEffect that was firing on every message render has been removed.
       if (socket && socket.connected && !isSelf) {
         if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-          console.log("[CLIENT] Emit mark_messages_read for room:", incomingRoomId);
-          socket.emit("mark_messages_read", {
+          console.log("[SOCKET RECEIVED] ChatRoom — emitting mark_messages_read for room:", incomingRoomId);
+          socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
             roomId: message.roomId,
             userId: currentUserId,
           });
         } else {
-          console.log("[CLIENT] Emit message_delivered for message:", message._id);
-          socket.emit("message_delivered", {
+          console.log("[SOCKET RECEIVED] ChatRoom — emitting message_delivered for:", message._id);
+          socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
             roomId: message.roomId,
             messageId: message._id,
             userId: currentUserId,
@@ -391,15 +372,13 @@ const ChatRoom = () => {
     };
 
     const onMessageSent = ({ roomId, messageId, clientMsgId, message }) => {
-      console.log("[CLIENT] message_sent", { roomId, messageId, clientMsgId, message });
+      console.log("[SOCKET RECEIVED] ChatRoom — message_sent", { roomId, messageId, clientMsgId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
-      // Normalize messageId to string
       const normalizedMsgId = messageId?.toString?.() ?? messageId;
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         setMessages((prev) => {
-          // Match either the optimistic clientMsgId or the real DB id (normalize both)
           const idx = prev.findIndex(
             (m) => m._id === clientMsgId || m._id?.toString?.() === normalizedMsgId
           );
@@ -414,7 +393,6 @@ const ChatRoom = () => {
               replyTo: message.replyTo || updated[idx].replyTo
             };
           } else {
-            // Not found — only add if not already present (avoid duplicate from receive_chat_message)
             const alreadyPresent = prev.some((m) => m._id?.toString?.() === normalizedMsgId);
             updated = alreadyPresent ? prev : [...prev, { ...message, _id: normalizedMsgId }];
           }
@@ -424,57 +402,48 @@ const ChatRoom = () => {
     };
 
     const onMessageDelivered = ({ roomId, messageId, userId }) => {
-      console.log("[CLIENT] message_delivered", { roomId, messageId, userId });
+      console.log("[SOCKET RECEIVED] ChatRoom — message_delivered", { roomId, messageId, userId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-        setMessages((prev) => {
-          console.log("Before update", prev.length);
-          const updated = prev.map((m) => {
-            if (m._id === messageId) {
-              const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
-              if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
-              return { ...m, deliveredTo };
-            }
-            return m;
-          });
-          console.log("After update", updated.length);
-          return updated;
-        });
+        setMessages((prev) => prev.map((m) => {
+          if (m._id === messageId) {
+            const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
+            if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+            return { ...m, deliveredTo };
+          }
+          return m;
+        }));
       }
     };
 
     const onMessagesSeen = ({ roomId, userId }) => {
-      console.log("[CLIENT] messages_seen", { roomId, userId });
+      console.log("[SOCKET RECEIVED] ChatRoom — messages_seen", { roomId, userId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-        setMessages((prev) => {
-          console.log("Before update", prev.length);
-          const updated = prev.map((m) => {
-            const unreadBy = m.unreadBy ? m.unreadBy.filter((id) => id !== userId) : [];
-            const seenBy = m.seenBy ? [...m.seenBy] : [];
-            if (!seenBy.includes(userId)) seenBy.push(userId);
-            const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
-            if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
-            return { ...m, unreadBy, seenBy, deliveredTo };
-          });
-          console.log("After update", updated.length);
-          return updated;
-        });
+        setMessages((prev) => prev.map((m) => {
+          const unreadBy = m.unreadBy ? m.unreadBy.filter((id) => id !== userId) : [];
+          const seenBy = m.seenBy ? [...m.seenBy] : [];
+          if (!seenBy.includes(userId)) seenBy.push(userId);
+          const deliveredTo = m.deliveredTo ? [...m.deliveredTo] : [];
+          if (!deliveredTo.includes(userId)) deliveredTo.push(userId);
+          return { ...m, unreadBy, seenBy, deliveredTo };
+        }));
       }
     };
 
     const onMessagesRead = ({ roomId, userId, readByUserId }) => {
-      console.log("[CLIENT] messages_read", { roomId, userId, readByUserId });
+      console.log("[SOCKET RECEIVED] ChatRoom — messages_read", { roomId, userId, readByUserId });
       const targetUserId = userId || readByUserId;
       if (!targetUserId) return;
       onMessagesSeen({ roomId, userId: targetUserId });
     };
+
     const onStoryReactionMessageUpdated = (message) => {
-      console.log("[CLIENT] story_reaction_message_updated", message);
+      console.log("[SOCKET RECEIVED] ChatRoom — story_reaction_message_updated", message);
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
@@ -490,25 +459,23 @@ const ChatRoom = () => {
                mStoryId === storyRef &&
                (m.text || "").startsWith("Reacted to your story:"));
           });
-          let updated = [...prev];
+          const updated = [...prev];
           if (idx !== -1) {
             updated.splice(idx, 1);
-            updated.push(message);
-          } else {
-            updated.push(message);
           }
+          updated.push(message);
           return updated;
         });
       }
     };
 
     const onIsTyping = ({ roomId, userName }) => {
-      console.log("[CLIENT] is_typing:", { roomId, userName });
+      console.log("[SOCKET RECEIVED] ChatRoom — is_typing:", { roomId, userName });
       setTypingUsers((prev) => ({ ...prev, [roomId]: userName }));
     };
 
     const onNotTyping = ({ roomId }) => {
-      console.log("[CLIENT] not_typing:", roomId);
+      console.log("[SOCKET RECEIVED] ChatRoom — not_typing:", roomId);
       setTypingUsers((prev) => {
         const s = { ...prev };
         delete s[roomId];
@@ -517,17 +484,14 @@ const ChatRoom = () => {
     };
 
     const onMessageUnsent = ({ roomId, messageId }) => {
-      console.log("[CLIENT] message:unsent:", { roomId, messageId });
+      console.log("[SOCKET RECEIVED] ChatRoom — message:unsent:", { roomId, messageId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-        setMessages((prev) => {
-          console.log("Before update", prev.length);
-          const updated = prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m));
-          console.log("After update", updated.length);
-          return updated;
-        });
+        setMessages((prev) =>
+          prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
+        );
       }
     };
 
@@ -537,7 +501,7 @@ const ChatRoom = () => {
       room,
       updatedBy,
     }) => {
-      console.log("[CLIENT] request_status_updated:", { roomId, requestStatus, updatedBy });
+      console.log("[SOCKET RECEIVED] ChatRoom — request_status_updated:", { roomId, requestStatus, updatedBy });
       setRooms((prev) =>
         prev.map((r) =>
           r._id === roomId ? { ...r, ...room, requestStatus } : r
@@ -556,66 +520,51 @@ const ChatRoom = () => {
       }
     };
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
-    socket.on("user_presence", onUserPresence);
-    socket.on("initial_online_users", onInitialOnlineUsers);
-    socket.on("receive_chat_message", onReceiveChatMessage);
-    socket.on("message_sent", onMessageSent);
-    socket.on("message_delivered", onMessageDelivered);
-    socket.on("message_delivered_update", onMessageDelivered);
-    socket.on("messages_seen", onMessagesSeen);
-    socket.on("messages_read", onMessagesRead);
-    socket.on("story_reaction_message_updated", onStoryReactionMessageUpdated);
-    socket.on("is_typing", onIsTyping);
-    socket.on("not_typing", onNotTyping);
-    socket.on("message:unsent", onMessageUnsent);
-    socket.on("request_status_updated", onRequestStatusUpdated);
+    // --- Register all listeners with SOCKET_EVENTS constants ---
+    console.log("[SOCKET REGISTER] ChatRoom — registering all chat listeners", { socketId: socket.id, time: Date.now() });
+    socket.on(SOCKET_EVENTS.CONNECT, onConnect);
+    socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect);
+    socket.on(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
+    socket.on(SOCKET_EVENTS.INITIAL_ONLINE_USERS, onInitialOnlineUsers);
+    socket.on(SOCKET_EVENTS.RECEIVE_CHAT_MESSAGE, onReceiveChatMessage);
+    socket.on(SOCKET_EVENTS.MESSAGE_SENT, onMessageSent);
+    socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED, onMessageDelivered);
+    socket.on(SOCKET_EVENTS.MESSAGE_DELIVERED_UPDATE, onMessageDelivered);
+    socket.on(SOCKET_EVENTS.MESSAGES_SEEN, onMessagesSeen);
+    socket.on(SOCKET_EVENTS.MESSAGES_READ, onMessagesRead);
+    socket.on(SOCKET_EVENTS.STORY_REACTION_MESSAGE_UPDATED, onStoryReactionMessageUpdated);
+    socket.on(SOCKET_EVENTS.IS_TYPING, onIsTyping);
+    socket.on(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
+    socket.on(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
+    socket.on(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
 
     return () => {
-      console.log("[CLIENT] STEP 0 — UNREGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.off("user_presence", onUserPresence);
-      socket.off("initial_online_users", onInitialOnlineUsers);
-      socket.off("receive_chat_message", onReceiveChatMessage);
-      socket.off("message_sent", onMessageSent);
-      socket.off("message_delivered", onMessageDelivered);
-      socket.off("message_delivered_update", onMessageDelivered);
-      socket.off("messages_seen", onMessagesSeen);
-      socket.off("messages_read", onMessagesRead);
-      socket.off("story_reaction_message_updated", onStoryReactionMessageUpdated);
-      socket.off("is_typing", onIsTyping);
-      socket.off("not_typing", onNotTyping);
-      socket.off("message:unsent", onMessageUnsent);
-      socket.off("request_status_updated", onRequestStatusUpdated);
+      console.log("[SOCKET CLEANUP] ChatRoom — removing all chat listeners", { socketId: socket.id, time: Date.now() });
+      socket.off(SOCKET_EVENTS.CONNECT, onConnect);
+      socket.off(SOCKET_EVENTS.DISCONNECT, onDisconnect);
+      socket.off(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
+      socket.off(SOCKET_EVENTS.INITIAL_ONLINE_USERS, onInitialOnlineUsers);
+      socket.off(SOCKET_EVENTS.RECEIVE_CHAT_MESSAGE, onReceiveChatMessage);
+      socket.off(SOCKET_EVENTS.MESSAGE_SENT, onMessageSent);
+      socket.off(SOCKET_EVENTS.MESSAGE_DELIVERED, onMessageDelivered);
+      socket.off(SOCKET_EVENTS.MESSAGE_DELIVERED_UPDATE, onMessageDelivered);
+      socket.off(SOCKET_EVENTS.MESSAGES_SEEN, onMessagesSeen);
+      socket.off(SOCKET_EVENTS.MESSAGES_READ, onMessagesRead);
+      socket.off(SOCKET_EVENTS.STORY_REACTION_MESSAGE_UPDATED, onStoryReactionMessageUpdated);
+      socket.off(SOCKET_EVENTS.IS_TYPING, onIsTyping);
+      socket.off(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
+      socket.off(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
+      socket.off(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, currentUserId]);
 
-  useEffect(() => {
-    if (activeRoom && user && socketConnected && socket) {
-      const unread = messages.filter((m) => m.unreadBy?.includes(currentUserId));
-      if (unread.length > 0) {
-        socket.emit("mark_messages_read", {
-          roomId: activeRoom._id,
-          userId: currentUserId,
-        });
-        setMessages((prev) =>
-          prev.map((m) => ({
-            ...m,
-            unreadBy: m.unreadBy?.filter((id) => id !== currentUserId),
-          })),
-        );
-        setRooms((prev) =>
-          prev.map((r) =>
-            r._id === activeRoom._id ? { ...r, unreadCount: 0 } : r,
-          ),
-        );
-        setUnreadNewMessagesCount(0);
-      }
-    }
-  }, [messages, activeRoom, user, socketConnected, socket, currentUserId]);
+  // REMOVED: The standalone mark_messages_read useEffect that previously fired
+  // on every messages/activeRoom change was removed because:
+  // 1. It caused duplicate mark_messages_read emits (also emitted inside onReceiveChatMessage)
+  // 2. It re-ran on every new message, producing redundant server calls
+  // Marking as read is now handled solely inside onReceiveChatMessage above.
+  // The unreadBy state is updated locally to keep the UI in sync without extra emits.
 
   const fetchChannels = async () => {
     try {
@@ -639,11 +588,12 @@ const ChatRoom = () => {
       });
       if (res.data.success) {
         setRooms(res.data.rooms);
-        if (socket && res.data.rooms) {
-          res.data.rooms.forEach((r) => socket.emit("join_chat_room", r._id));
-        }
+        // Phase 4 fix: Only join the active/target room, NOT every room.
+        // Joining every room on load creates N redundant server-side socket room memberships.
+        // The server already handles routing messages to the correct user via their personal room.
+        // We join the active room explicitly in selectRoom() and on reconnect in onConnect().
         if (targetUserId && roomRes?.data?.room) {
-          if (socket) socket.emit("join_chat_room", roomRes.data.room._id);
+          if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, roomRes.data.room._id);
           const matched = res.data.rooms.find(
             (r) => r._id === roomRes.data.room._id,
           );
@@ -705,7 +655,7 @@ const ChatRoom = () => {
       setActiveTab("groups");
     }
     try {
-      socket.emit("join_chat_room", room._id);
+      socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, room._id);
       setLoadingMessages(true);
       const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
         withCredentials: true,
@@ -736,7 +686,7 @@ const ChatRoom = () => {
         const existingRoom = rooms.find((r) => r._id === newRoom._id);
         if (!existingRoom) {
           setRooms((prev) => [newRoom, ...prev]);
-          if (socket) socket.emit("join_chat_room", newRoom._id);
+          if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoom._id);
         }
         setSearchQuery("");
         setGlobalUsers([]);
@@ -779,10 +729,10 @@ const ChatRoom = () => {
       textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 120)}px`;
     }
     if (socketConnected && activeRoom) {
-      socket.emit("typing", { roomId: activeRoom._id, userName: user?.name });
+      socket.emit(SOCKET_EVENTS.EMIT_TYPING, { roomId: activeRoom._id, userName: user?.name });
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
-        socket.emit("stop_typing", { roomId: activeRoom._id });
+        socket.emit(SOCKET_EVENTS.EMIT_STOP_TYPING, { roomId: activeRoom._id });
       }, 2000);
     }
   };
@@ -804,7 +754,7 @@ const ChatRoom = () => {
     if (textareaRef.current) textareaRef.current.style.height = "auto";
     setIsSending(true);
 
-    if (socketConnected) socket.emit("stop_typing", { roomId: activeRoom._id });
+    if (socketConnected) socket.emit(SOCKET_EVENTS.EMIT_STOP_TYPING, { roomId: activeRoom._id });
 
     const clientMsgId = `opt-${Date.now()}`;
     const optimisticMsg = {

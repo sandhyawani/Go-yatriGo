@@ -1,5 +1,6 @@
 import { useReducer, useEffect, useContext } from "react";
 import { SocketContext } from "../../context/SocketContext";
+import { SOCKET_EVENTS } from "../../constants/socketEvents";
 import { notificationService } from "../../services/notificationService";
 import { socialReducer, initialSocialState } from "../../reducers/socialReducer";
 
@@ -32,10 +33,15 @@ export const useNotifications = (user) => {
   useEffect(() => {
     if (!socket) return;
     const handleNewNotification = (newNotif) => {
+      console.log("[SOCKET RECEIVED] useNotifications — new_notification", newNotif);
       dispatch({ type: "ADD_NOTIFICATION", payload: newNotif });
     };
-    socket.on("receiveNotification", handleNewNotification);
-    return () => socket.off("receiveNotification", handleNewNotification);
+    console.log("[SOCKET REGISTER] useNotifications — new_notification");
+    socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    return () => {
+      console.log("[SOCKET CLEANUP] useNotifications — new_notification");
+      socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    };
   }, [socket]);
 
   const markAllRead = async () => {

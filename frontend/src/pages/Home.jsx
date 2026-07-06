@@ -42,6 +42,7 @@ import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
 import { SocketContext } from "../context/SocketContext";
+import { SOCKET_EVENTS } from "../constants/socketEvents";
 import Swal from "sweetalert2";
 import CreateStoryModal from "../components/modals/CreateStoryModal";
 import StoryViewer from "../components/story/StoryViewer";
@@ -267,21 +268,14 @@ const Home = () => {
   );
 
   // Socket setup
+  // NOTE: go_online is emitted by SocketContext on connect — do NOT re-emit here.
+  // This effect owns: story_viewer_update, story_reaction_update, new_notification,
+  // user_presence, initial_online_users (for story thumbnail online dots).
   useEffect(() => {
     if (!socket) return;
 
-    const onConnect = () => {
-      if (myUserId) socket.emit("go_online", myUserId);
-    };
-
-    // If socket is already connected when component mounts
-    if (socket.connected) {
-      onConnect();
-    }
-
-    socket.on("connect", onConnect);
-
     const updateStoryViewers = (data) => {
+      console.log("[SOCKET RECEIVED] Home — story_viewer_update", data);
       const patchStory = (st) => {
         if (st._id !== data.storyId) return st;
         const viewers = [...(st.viewers || [])];
@@ -304,6 +298,7 @@ const Home = () => {
     };
 
     const updateStoryReactions = (data) => {
+      console.log("[SOCKET RECEIVED] Home — story_reaction_update", data);
       const patchStory = (st) => {
         if (st._id !== data.storyId) return st;
         const reactions = [...(st.storyReactions || [])];
@@ -326,16 +321,20 @@ const Home = () => {
     };
 
     const handleNewNotification = (notif) => {
+      console.log("[SOCKET RECEIVED] Home — new_notification", notif);
       showToast.success(notif.message, {
         icon: notif.type === "story_react" ? "✨" : "💬",
       });
     };
 
+    // Kept here because Home.jsx uses onlineUsersMap to show green dots on story thumbnails.
     const handleUserPresence = ({ userId, status }) => {
+      console.log("[SOCKET RECEIVED] Home — user_presence", { userId, status });
       setOnlineUsersMap((prev) => ({ ...prev, [userId]: status === "online" }));
     };
 
     const handleInitialOnlineUsers = (userIds) => {
+      console.log("[SOCKET RECEIVED] Home — initial_online_users, count:", userIds.length);
       setOnlineUsersMap((prev) => {
         const next = { ...prev };
         userIds.forEach((id) => {
@@ -345,21 +344,22 @@ const Home = () => {
       });
     };
 
-    socket.on("story_viewer_update", updateStoryViewers);
-    socket.on("story_reaction_update", updateStoryReactions);
-    socket.on("new_notification", handleNewNotification);
-    socket.on("user_presence", handleUserPresence);
-    socket.on("initial_online_users", handleInitialOnlineUsers);
+    console.log("[SOCKET REGISTER] Home — registering story/notification/presence listeners");
+    socket.on(SOCKET_EVENTS.STORY_VIEWER_UPDATE, updateStoryViewers);
+    socket.on(SOCKET_EVENTS.STORY_REACTION_UPDATE, updateStoryReactions);
+    socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    socket.on(SOCKET_EVENTS.USER_PRESENCE, handleUserPresence);
+    socket.on(SOCKET_EVENTS.INITIAL_ONLINE_USERS, handleInitialOnlineUsers);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("story_viewer_update", updateStoryViewers);
-      socket.off("story_reaction_update", updateStoryReactions);
-      socket.off("new_notification", handleNewNotification);
-      socket.off("user_presence", handleUserPresence);
-      socket.off("initial_online_users", handleInitialOnlineUsers);
+      console.log("[SOCKET CLEANUP] Home — removing story/notification/presence listeners");
+      socket.off(SOCKET_EVENTS.STORY_VIEWER_UPDATE, updateStoryViewers);
+      socket.off(SOCKET_EVENTS.STORY_REACTION_UPDATE, updateStoryReactions);
+      socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+      socket.off(SOCKET_EVENTS.USER_PRESENCE, handleUserPresence);
+      socket.off(SOCKET_EVENTS.INITIAL_ONLINE_USERS, handleInitialOnlineUsers);
     };
-  }, [socket, myUserId]);
+  }, [socket]);
 
   // Data fetching
   const fetchMemories = useCallback(async (pageNum = 1, append = false) => {
