@@ -63,7 +63,7 @@ const fonts = [
 const textColors = [
   "#ffffff",
   "#000000",
-  "#6C4DF6",
+  "#7c3aed",
   "#F43F5E",
   "#F59E0B",
   "#10B981",
@@ -529,7 +529,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
 
-        // For orientations 5-8 the image is rotated 90/270° so width/height swap
+        
         const swapped = orientation >= 5 && orientation <= 8;
         canvas.width = swapped ? pixelCrop.height : pixelCrop.width;
         canvas.height = swapped ? pixelCrop.width : pixelCrop.height;
@@ -565,7 +565,6 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
       image.src = imageSrc;
     });
   };
-
 
   const handleApplyCrop = async () => {
     try {
@@ -811,7 +810,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                 {/* Camera button — opens native camera directly on mobile */}
                 <button
                   onClick={() => cameraInputRef.current?.click()}
-                  className="flex-1 py-3.5 rounded-xl font-bold text-[#6C4DF6] border-2 border-[#6C4DF6]/30 bg-[#6C4DF6]/5 hover:bg-[#6C4DF6]/10 transition-all flex items-center justify-center gap-2"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-2"
                 >
                   📷 Camera
                 </button>
@@ -1417,7 +1416,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                           value={musicSearchQuery}
                           onChange={(e) => setMusicSearchQuery(e.target.value)}
                           placeholder="Search new movie songs, hits..."
-                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 px-11 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-[#6C4DF6]/30 font-semibold text-sm"
+                          className="w-full bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 px-11 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-primary-600/30 font-semibold text-sm"
                         />
                       </div>
                       {!musicSearchQuery.trim() && (
@@ -1427,7 +1426,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                               key={lang.value}
                               type="button"
                               onClick={() => setSelectedMusicLang(lang.value)}
-                              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${selectedMusicLang === lang.value ? "bg-[#6C4DF6] text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                              className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${selectedMusicLang === lang.value ? "bg-primary-600 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                             >
                               {lang.label}
                             </button>
@@ -1439,7 +1438,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                     <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
                       {isSearchingMusic ? (
                         <div className="py-12 flex justify-center">
-                          <Loader2 className="w-8 h-8 text-[#6C4DF6] animate-spin" />
+                          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
                         </div>
                       ) : (
                         <>
@@ -1515,7 +1514,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                       onClick={(e) =>
                                         handlePreviewToggle(track, e)
                                       }
-                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-[#6C4DF6] shadow-sm"
+                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-white text-primary-600 shadow-sm"
                                     >
                                       <Pause className="w-3.5 h-3.5" />
                                     </button>
@@ -1524,7 +1523,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                       onClick={(e) =>
                                         handlePreviewToggle(track, e)
                                       }
-                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-[#6C4DF6] transition-all hover:bg-[#6C4DF6] hover:text-white"
+                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-primary-600 transition-all hover:bg-primary-600 hover:text-white"
                                     >
                                       <Play className="w-3.5 h-3.5 translate-x-[1px]" />
                                     </button>
@@ -1636,7 +1635,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                   </p>
                                 </div>
                                 <div
-                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${visibility === opt.id ? "border-[#6C4DF6] bg-[#6C4DF6]" : "border-slate-300"}`}
+                                  className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${visibility === opt.id ? "border-primary-600 bg-primary-600" : "border-slate-300"}`}
                                 >
                                   {visibility === opt.id && (
                                     <Check className="w-3 h-3 text-white" />
@@ -1666,14 +1665,14 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                   setUserSearchQuery(e.target.value)
                                 }
                                 placeholder="Search users..."
-                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#6C4DF6]/30"
+                                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-600/30"
                               />
                             </div>
                           </div>
                           <div className="p-2 overflow-y-auto flex-1 min-h-[200px]">
                             {isSearchingUsers ? (
                               <div className="py-8 flex justify-center">
-                                <Loader2 className="w-6 h-6 text-[#6C4DF6] animate-spin" />
+                                <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
                               </div>
                             ) : userSearchResults.length > 0 ? (
                               userSearchResults.map((u) => (
@@ -1703,7 +1702,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                     </p>
                                   </div>
                                   <div
-                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${allowedUsers.includes(u._id) ? "border-[#6C4DF6] bg-[#6C4DF6]" : "border-slate-300"}`}
+                                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${allowedUsers.includes(u._id) ? "border-primary-600 bg-primary-600" : "border-slate-300"}`}
                                   >
                                     {allowedUsers.includes(u._id) && (
                                       <Check className="w-3 h-3 text-white" />

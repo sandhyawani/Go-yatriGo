@@ -10,7 +10,7 @@ export const CreateStoryModal = ({ isOpen, onClose, onStoryCreated, onSuccess })
   const [imagePreview, setImagePreview] = useState(null);
   const [caption, setCaption] = useState("");
   const [textContent, setTextContent] = useState("");
-  const [textBgColor, setTextBgColor] = useState("#6C4DF6");
+  const [textBgColor, setTextBgColor] = useState("#7c3aed");
   const [textColor, setTextColor] = useState("#FFFFFF");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -157,7 +157,7 @@ export const CreateStoryModal = ({ isOpen, onClose, onStoryCreated, onSuccess })
 
               {/* Color selectors */}
               <div className="flex items-center gap-2 overflow-x-auto py-1">
-                {["#6C4DF6", "#10B981", "#3B82F6", "#EF4444", "#F59E0B", "#EC4899", "#111827"].map((color) => (
+                {["#7c3aed", "#10B981", "#3B82F6", "#EF4444", "#F59E0B", "#EC4899", "#111827"].map((color) => (
                   <button
                     key={color}
                     onClick={() => setTextBgColor(color)}

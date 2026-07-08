@@ -217,7 +217,7 @@ const StoryViewer = ({
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isStoryMuted;
-      // If unmuted and it was previously blocked from playing (paused), try playing again
+      
       if (
         !isStoryMuted &&
         !isStoryPaused &&
@@ -720,7 +720,7 @@ const StoryViewer = ({
                       inputValue: currentStory?.caption || "",
                       inputPlaceholder: "Enter your caption...",
                       showCancelButton: true,
-                      confirmButtonColor: "#6C4DF6",
+                      confirmButtonColor: "#7c3aed",
                       cancelButtonColor: "#ef4444",
                       confirmButtonText: "Save",
                       background: document.documentElement.classList.contains(
@@ -737,7 +737,7 @@ const StoryViewer = ({
                         title:
                           "text-xl font-black text-slate-800 dark:text-white",
                         input:
-                          "rounded-xl border-slate-200 dark:border-slate-600 focus:border-[#6C4DF6] focus:ring-[#6C4DF6]",
+                          "rounded-xl border-slate-200 dark:border-slate-600 focus:border-primary-600 focus:ring-primary-600",
                         confirmButton: "rounded-xl font-bold px-6 py-2.5",
                         cancelButton: "rounded-xl font-bold px-6 py-2.5",
                       },
@@ -872,7 +872,7 @@ const StoryViewer = ({
                                 onError={(e) => handleAvatarError(e, v.userId?.name)}
                               />
                               <div>
-                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-[#6C4DF6] transition-colors">
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-primary-600 transition-colors">
                                   {v.userId?.name}
                                 </p>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
