@@ -6,22 +6,20 @@ const bcrypt = require("bcryptjs");
 // Get user settings
 exports.getSettings = async (req, res) => {
   try {
-    let settings = await UserSettings.findOne({
-      userId: req.user.id,
-    });
+    const userId = req.user.id || req.user._id;
+
+    let settings = await UserSettings.findOne({ userId });
 
     if (!settings) {
-      settings = await UserSettings.create({
-        userId: req.user.id,
-      });
+      settings = await UserSettings.create({ userId });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: settings,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
@@ -32,6 +30,7 @@ exports.getSettings = async (req, res) => {
 exports.updateSettings = async (req, res) => {
   try {
     const updates = req.body;
+    const userId = req.user.id || req.user._id;
 
     // Sync account privacy with User model
     if (updates.accountPrivacy !== undefined) {
@@ -41,14 +40,10 @@ exports.updateSettings = async (req, res) => {
 
       updates.accountPrivacy = isPrivate ? "private" : "public";
 
-      const userId = req.user.id || req.user._id;
-
       await User.findByIdAndUpdate(userId, {
         privateAccount: isPrivate,
       });
     }
-
-    const userId = req.user.id || req.user._id;
 
     let settings = await UserSettings.findOne({ userId });
 
@@ -68,14 +63,13 @@ exports.updateSettings = async (req, res) => {
       );
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: settings,
     });
   } catch (err) {
     console.error("Settings Update Error:", err);
-
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: err.message || "Server error",
     });
@@ -85,14 +79,15 @@ exports.updateSettings = async (req, res) => {
 // Update two-factor authentication setting
 exports.update2FA = async (req, res) => {
   try {
+    const userId = req.user.id || req.user._id;
     const { twoFactorEnabled } = req.body;
 
-    await User.findByIdAndUpdate(req.user.id, {
+    await User.findByIdAndUpdate(userId, {
       twoFactorEnabled,
     });
 
     const settings = await UserSettings.findOneAndUpdate(
-      { userId: req.user.id },
+      { userId },
       { twoFactorEnabled },
       {
         new: true,
@@ -100,12 +95,12 @@ exports.update2FA = async (req, res) => {
       }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: settings,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
@@ -115,8 +110,10 @@ exports.update2FA = async (req, res) => {
 // Get login activity from all sessions
 exports.getLoginActivity = async (req, res) => {
   try {
+    const userId = req.user.id || req.user._id;
+
     const sessions = await Session.find({
-      user: req.user.id,
+      user: userId,
     }).sort({ lastActive: -1 });
 
     const activeSessions = sessions.map((session) => ({
@@ -130,12 +127,12 @@ exports.getLoginActivity = async (req, res) => {
       isCurrent: req.token === session.token,
     }));
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: activeSessions,
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
@@ -145,6 +142,8 @@ exports.getLoginActivity = async (req, res) => {
 // Logout from all devices except current one
 exports.logoutOtherDevices = async (req, res) => {
   try {
+    const userId = req.user.id || req.user._id;
+
     if (!req.token) {
       return res.status(400).json({
         success: false,
@@ -153,16 +152,16 @@ exports.logoutOtherDevices = async (req, res) => {
     }
 
     await Session.deleteMany({
-      user: req.user.id,
+      user: userId,
       token: { $ne: req.token },
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Logged out of other devices",
     });
   } catch (err) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
@@ -173,6 +172,7 @@ exports.logoutOtherDevices = async (req, res) => {
 exports.deleteAccount = async (req, res) => {
   try {
     const { password } = req.body;
+    const userId = req.user.id || req.user._id;
 
     if (!password) {
       return res.status(400).json({
@@ -181,7 +181,7 @@ exports.deleteAccount = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user.id).select("+password");
+    const user = await User.findById(userId).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -190,10 +190,7 @@ exports.deleteAccount = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -205,13 +202,10 @@ exports.deleteAccount = async (req, res) => {
     // Mark account as deleted
     user.isDeleted = true;
     user.deletedAt = Date.now();
-
     await user.save();
 
     // Remove all user sessions
-    await Session.deleteMany({
-      user: req.user.id,
-    });
+    await Session.deleteMany({ user: userId });
 
     res.clearCookie("access_token", {
       httpOnly: true,
@@ -219,14 +213,13 @@ exports.deleteAccount = async (req, res) => {
       sameSite: "strict",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Account deleted successfully",
     });
   } catch (err) {
-    console.error(err);
-
-    res.status(500).json({
+    console.error("Account Delete Error:", err);
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });
@@ -237,6 +230,7 @@ exports.deleteAccount = async (req, res) => {
 exports.deactivateAccount = async (req, res) => {
   try {
     const { password } = req.body;
+    const userId = req.user.id || req.user._id;
 
     if (!password) {
       return res.status(400).json({
@@ -245,7 +239,7 @@ exports.deactivateAccount = async (req, res) => {
       });
     }
 
-    const user = await User.findById(req.user.id).select("+password");
+    const user = await User.findById(userId).select("+password");
 
     if (!user) {
       return res.status(404).json({
@@ -266,13 +260,10 @@ exports.deactivateAccount = async (req, res) => {
     // Mark account as deactivated
     user.isDeactivated = true;
     user.privateAccount = true;
-
     await user.save();
 
     // Remove all user sessions
-    await Session.deleteMany({
-      user: req.user.id,
-    });
+    await Session.deleteMany({ user: userId });
 
     res.clearCookie("access_token", {
       httpOnly: true,
@@ -280,13 +271,13 @@ exports.deactivateAccount = async (req, res) => {
       sameSite: "strict",
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "Account deactivated successfully",
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
+    console.error("Account Deactivate Error:", err);
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });

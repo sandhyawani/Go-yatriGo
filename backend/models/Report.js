@@ -61,10 +61,7 @@ const reportSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 // Reports submitted by a user
 reportSchema.index({ reporter: 1 });
 

@@ -60,10 +60,7 @@ const securityPreferenceSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 // Fast lookup of a user's security preferences
 securityPreferenceSchema.index({ user: 1 });
 

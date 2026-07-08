@@ -5,6 +5,7 @@ const TravelGroup = require("../models/TravelGroup");
 const Report = require("../models/Report");
 const Notification = require("../models/Notification");
 const Session = require("../models/Session");
+
 const PLATFORM_TIME_ZONE = "Asia/Kolkata";
 const ACTIVE_WINDOW_MS = 30 * 60 * 1000;
 const PENDING_REPORT_STATUSES = ["pending", "Pending"];
@@ -171,7 +172,6 @@ const getStats = async (req, res) => {
       })),
       priorityReports,
       recentReports,
-      // Keep simple top-level values available for existing dashboard clients.
       totalUsers,
       activeUsers,
       reports: reportsPending,
@@ -201,7 +201,7 @@ const getAllReports = async (req, res) => {
 const resolveReport = async (req, res) => {
   try {
     const reportId = req.params.id;
-    const { status, adminNote } = req.body; // status: "resolved", "dismissed"
+    const { status, adminNote } = req.body;
 
     const report = await Report.findById(reportId);
     if (!report) {
@@ -276,7 +276,7 @@ const getPendingVerifications = async (req, res) => {
   try {
     const pendingUsers = await User.find({ verificationStatus: "pending" })
       .select("-password")
-      .sort({ createdAt: -1 });
+      .sort({ updatedAt: -1 }); // Sorted by recent updates to reflect user changes faster
     res.status(200).json(pendingUsers);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
@@ -294,11 +294,13 @@ const approveVerification = async (req, res) => {
     user.verificationNote = "";
     await user.save();
     
-    // Create notification
+    // Create verification notification safely using optional fallback sender keys
+    const adminSenderId = req.user?._id || req.user?.id || user._id;
+
     await Notification.create({
-      sender: req.user._id || req.user.id,
+      sender: adminSenderId,
       receiver: user._id,
-      type: "admin_warning", // reuse for now, or use system notification
+      type: "admin_warning", 
       message: "Congratulations! Your Government ID has been approved and you are now a Verified Traveler."
     });
 
@@ -320,9 +322,10 @@ const rejectVerification = async (req, res) => {
     user.verificationNote = reason || "Your ID could not be verified.";
     await user.save();
     
-    // Create notification
+    const adminSenderId = req.user?._id || req.user?.id || user._id;
+
     await Notification.create({
-      sender: req.user._id || req.user.id,
+      sender: adminSenderId,
       receiver: user._id,
       type: "admin_warning", 
       message: `Your Government ID verification was rejected. Reason: ${user.verificationNote}. You can upload a new ID in your profile settings.`
@@ -345,9 +348,10 @@ const warnUser = async (req, res) => {
     const user = await User.findById(targetUserId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Create warning notification
+    const adminSenderId = req.user?._id || req.user?.id || user._id;
+
     await Notification.create({
-      sender: req.user._id || req.user.id,
+      sender: adminSenderId,
       receiver: targetUserId,
       type: "admin_warning",
       message: message

@@ -6,13 +6,13 @@ exports.uploadImage = async (req, res) => {
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        message: "No image provided",
+        message: "No document or image file provided",
       });
     }
 
     res.status(200).json({
       success: true,
-      message: "Image uploaded successfully",
+      message: "File uploaded successfully",
       url: req.file.path,
       public_id: req.file.filename,
     });
@@ -24,62 +24,57 @@ exports.uploadImage = async (req, res) => {
   }
 };
 
-// Upload Base64 image
+// Upload Base64 Document (Handles both Images and PDFs reliably)
 exports.uploadBase64Image = async (req, res) => {
   try {
-    const {
-      data,
-      folder = "Go YatriGo_uploads",
-    } = req.body;
+    const { data, folder = "Go YatriGo_uploads" } = req.body;
 
     if (!data) {
       return res.status(400).json({
         success: false,
-        message: "No image data provided",
+        message: "No data string provided",
       });
     }
 
-    // Return Base64 image if Cloudinary is not configured
+    // Strict configuration check: Prevent database corruption by blocking volatile fallbacks
     if (
       !process.env.CLOUDINARY_CLOUD_NAME ||
       !process.env.CLOUDINARY_API_KEY ||
       !process.env.CLOUDINARY_API_SECRET
     ) {
-      return res.status(200).json({
-        success: true,
-        message: "Image uploaded using fallback mode",
-        url: data,
-        fallback: true,
+      return res.status(500).json({
+        success: false,
+        message: "Cloudinary credentials are not configured on the server. Upload blocked to prevent data loss.",
       });
     }
 
-    const result = await cloudinary.uploader.upload(data, {
+    // Automatically detect resource type (allows PDFs to be uploaded as 'raw' or 'auto' instead of forcing 'image')
+    const isPdf = data.startsWith("data:application/pdf");
+    
+    const uploadOptions = {
       folder,
-      resource_type: "image",
-      quality: "auto:good",
-      fetch_format: "auto",
-    });
+      resource_type: isPdf ? "raw" : "auto", 
+    };
+
+    // Only apply optimizations if it's an image asset
+    if (!isPdf) {
+      uploadOptions.quality = "auto:good";
+      uploadOptions.fetch_format = "auto";
+    }
+
+    const result = await cloudinary.uploader.upload(data, uploadOptions);
 
     res.status(200).json({
       success: true,
-      message: "Image uploaded successfully",
+      message: "Document uploaded to Cloudinary successfully",
       url: result.secure_url,
       public_id: result.public_id,
     });
   } catch (error) {
-    // Return Base64 image if Cloudinary upload fails
-    if (req.body?.data) {
-      return res.status(200).json({
-        success: true,
-        message: "Image uploaded using fallback mode",
-        url: req.body.data,
-        fallback: true,
-      });
-    }
-
+    console.error("Cloudinary Upload Failure:", error);
     res.status(500).json({
       success: false,
-      message: error.message,
+      message: `Cloudinary upload failed: ${error.message}`,
     });
   }
 };

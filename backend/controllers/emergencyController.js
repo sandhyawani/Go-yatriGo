@@ -18,7 +18,12 @@ const getContacts = asyncHandler(async (req, res) => {
 const addContact = asyncHandler(async (req, res) => {
   const { name, relation, phone, email, isPrimary } = req.body;
 
-  // Keep only one primary contact
+  if (!name || !phone) {
+    res.status(400);
+    throw new Error("Name and phone number are required.");
+  }
+
+  // Handle primary isolation cleanly using a bulk write or sequential block before document instantiation
   if (isPrimary) {
     await EmergencyContact.updateMany(
       { user: req.user._id },
@@ -28,10 +33,10 @@ const addContact = asyncHandler(async (req, res) => {
 
   const contact = new EmergencyContact({
     user: req.user._id,
-    name,
-    relation,
-    phone,
-    email,
+    name: name.trim(),
+    relation: relation ? relation.trim() : undefined,
+    phone: phone.trim(),
+    email: email ? email.trim().toLowerCase() : undefined,
     isPrimary: isPrimary || false,
   });
 
@@ -49,32 +54,29 @@ const updateContact = asyncHandler(async (req, res) => {
 
   const contact = await EmergencyContact.findById(req.params.id);
 
-  // Check if contact exists
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found");
   }
 
-  // Ensure user owns this contact
   if (contact.user.toString() !== req.user._id.toString()) {
     res.status(401);
     throw new Error("Not authorized");
   }
 
-  // Keep only one primary contact
-  if (isPrimary) {
+  // Atomic correction swap: Only run reset operations if flag state shifts to true explicitly
+  if (isPrimary && !contact.isPrimary) {
     await EmergencyContact.updateMany(
-      { user: req.user._id },
+      { user: req.user._id, _id: { $ne: contact._id } },
       { $set: { isPrimary: false } }
     );
   }
 
-  contact.name = name || contact.name;
-  contact.relation = relation || contact.relation;
-  contact.phone = phone || contact.phone;
-  contact.email = email || contact.email;
-  contact.isPrimary =
-    isPrimary !== undefined ? isPrimary : contact.isPrimary;
+  contact.name = name !== undefined ? name.trim() : contact.name;
+  contact.relation = relation !== undefined ? relation.trim() : contact.relation;
+  contact.phone = phone !== undefined ? phone.trim() : contact.phone;
+  contact.email = email !== undefined ? email.trim().toLowerCase() : contact.email;
+  contact.isPrimary = isPrimary !== undefined ? isPrimary : contact.isPrimary;
 
   await contact.save();
 
@@ -88,19 +90,27 @@ const updateContact = asyncHandler(async (req, res) => {
 const deleteContact = asyncHandler(async (req, res) => {
   const contact = await EmergencyContact.findById(req.params.id);
 
-  // Check if contact exists
   if (!contact) {
     res.status(404);
     throw new Error("Contact not found");
   }
 
-  // Ensure user owns this contact
   if (contact.user.toString() !== req.user._id.toString()) {
     res.status(401);
     throw new Error("Not authorized");
   }
 
+  const wasPrimary = contact.isPrimary;
   await contact.deleteOne();
+
+  // Automatic Fallback Strategy: If primary contact is deleted, promote the next newest contact
+  if (wasPrimary) {
+    const nextContact = await EmergencyContact.findOne({ user: req.user._id }).sort({ createdAt: -1 });
+    if (nextContact) {
+      nextContact.isPrimary = true;
+      await nextContact.save();
+    }
+  }
 
   res.status(200).json({
     success: true,
@@ -112,29 +122,27 @@ const deleteContact = asyncHandler(async (req, res) => {
 const toggleSOS = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
-  // Check if user exists
   if (!user) {
     res.status(404);
     throw new Error("User not found");
   }
 
-  // Toggle current SOS status
   user.sosActive = !user.sosActive;
-
   await user.save();
 
-  // Get primary contacts when SOS is activated
+  let primaryContacts = [];
   if (user.sosActive) {
-    const primaryContacts = await EmergencyContact.find({
-      user: req.user._id,
-      isPrimary: true,
-    });
-
+    
+    primaryContacts = await EmergencyContact.find({ user: req.user._id }).sort({ isPrimary: -1 });
+    
+    
+    // e.g., await SMSNotificationEngine.dispatchSOS(primaryContacts, user);
   }
 
   res.status(200).json({
     success: true,
     sosActive: user.sosActive,
+    alertedContacts: user.sosActive ? primaryContacts : []
   });
 });
 

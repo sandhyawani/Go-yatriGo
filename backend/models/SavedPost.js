@@ -24,10 +24,7 @@ const savedPostSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 // Prevent duplicate saves by the same user
 savedPostSchema.index(
   { userId: 1, postId: 1 },

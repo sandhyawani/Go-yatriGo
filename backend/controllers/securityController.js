@@ -10,7 +10,7 @@ const getSessions = asyncHandler(async (req, res) => {
     status: "active",
   }).sort({ lastActive: -1 });
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     sessions,
   });
@@ -33,7 +33,7 @@ const revokeSession = asyncHandler(async (req, res) => {
   session.status = "revoked";
   await session.save();
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Session revoked successfully",
   });
@@ -46,7 +46,7 @@ const revokeAllOtherSessions = asyncHandler(async (req, res) => {
     req.headers.authorization.split(" ")[1];
 
   if (!currentToken) {
-    currentToken = req.cookies.access_token;
+    currentToken = req.cookies?.access_token;
   }
 
   await Session.updateMany(
@@ -59,7 +59,7 @@ const revokeAllOtherSessions = asyncHandler(async (req, res) => {
     }
   );
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "All other sessions revoked",
   });
@@ -77,9 +77,7 @@ const toggle2FA = asyncHandler(async (req, res) => {
   user.twoFactorEnabled = !user.twoFactorEnabled;
   await user.save();
 
-
-
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     twoFactorEnabled: user.twoFactorEnabled,
   });
@@ -97,7 +95,7 @@ const getPreferences = asyncHandler(async (req, res) => {
     });
   }
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     preferences: prefs,
   });
@@ -126,22 +124,16 @@ const updatePreferences = asyncHandler(async (req, res) => {
   } = req.body;
 
   if (profileVisibility) prefs.profileVisibility = profileVisibility;
-  if (onlineVisibility !== undefined)
-    prefs.onlineVisibility = onlineVisibility;
-  if (allowFollowRequests !== undefined)
-    prefs.allowFollowRequests = allowFollowRequests;
-  if (allowTripInvites !== undefined)
-    prefs.allowTripInvites = allowTripInvites;
-  if (allowMessageRequests !== undefined)
-    prefs.allowMessageRequests = allowMessageRequests;
-  if (locationSharing !== undefined)
-    prefs.locationSharing = locationSharing;
-  if (emergencySharing !== undefined)
-    prefs.emergencySharing = emergencySharing;
+  if (onlineVisibility !== undefined) prefs.onlineVisibility = onlineVisibility;
+  if (allowFollowRequests !== undefined) prefs.allowFollowRequests = allowFollowRequests;
+  if (allowTripInvites !== undefined) prefs.allowTripInvites = allowTripInvites;
+  if (allowMessageRequests !== undefined) prefs.allowMessageRequests = allowMessageRequests;
+  if (locationSharing !== undefined) prefs.locationSharing = locationSharing;
+  if (emergencySharing !== undefined) prefs.emergencySharing = emergencySharing;
 
   await prefs.save();
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     preferences: prefs,
   });
@@ -164,7 +156,7 @@ const deleteAccount = asyncHandler(async (req, res) => {
 
   await user.deleteOne();
 
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Account deleted successfully",
   });

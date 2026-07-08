@@ -100,9 +100,7 @@ const supportTicketSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Generate tracking ID
-// ----------------------
 supportTicketSchema.pre("save", function (next) {
   if (!this.trackingId) {
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -112,10 +110,7 @@ supportTicketSchema.pre("save", function (next) {
   next();
 });
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 supportTicketSchema.index({ user: 1, createdAt: -1 });
 supportTicketSchema.index({ status: 1 });
 supportTicketSchema.index({ priority: 1 });

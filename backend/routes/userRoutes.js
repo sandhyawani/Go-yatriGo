@@ -1,10 +1,11 @@
 const express = require("express");
+const router = express.Router();
+
 const {
   updateUser,
   deleteUser,
   getUser,
   getAllUsers,
-  allUsers,
   followUser,
   unfollowUser,
   acceptFollowRequest,
@@ -23,74 +24,55 @@ const {
   getPrivacySettings,
   updatePrivacySettings
 } = require("../controllers/userController");
-const {
-  registerUser,
-  loginUser: authUser,
-} = require("../controllers/authController");
-const {
-  verifyToken,
-  verifyUser,
-  verifyAdmin,
-  protect,
-  optionalVerifyToken,
-} = require("../middleware/verifyToken");
 
-const router = express.Router();
+const { registerUser, loginUser: authUser } = require("../controllers/authController");
+const { verifyToken, verifyUser, verifyAdmin, protect, optionalVerifyToken } = require("../middleware/verifyToken");
 
 router.get("/profile-stats", verifyToken, getProfileStats);
 router.get("/privacy-settings", verifyToken, getPrivacySettings);
 router.patch("/privacy-settings", verifyToken, updatePrivacySettings);
-
 router.get("/explore/suggestions", verifyToken, getTravelerSuggestions);
+router.get("/suggestions", verifyToken, getTravelerSuggestions);
+router.get("/search", verifyToken, searchUsers);
+router.get("/blocked", verifyToken, getBlockedUsers);
+
 router.put("/follow/:id", verifyToken, followUser);
 router.put("/unfollow/:id", verifyToken, unfollowUser);
 
-// New Instagram-style endpoints
 router.post("/:id/follow", verifyToken, followUser);
 router.post("/:id/unfollow", verifyToken, unfollowUser);
 router.post("/:id/follow-request/accept", verifyToken, acceptFollowRequest);
 router.post("/:id/follow-request/reject", verifyToken, rejectFollowRequest);
 router.get("/:id/followers", verifyToken, getFollowers);
 router.get("/:id/following", verifyToken, getFollowing);
-router.get("/suggestions", verifyToken, getTravelerSuggestions);
-router.get("/search", verifyToken, searchUsers);
-router.get("/blocked", verifyToken, getBlockedUsers);
+
 router.post("/rate/:id", verifyToken, rateUser);
 router.post("/block/:id", verifyToken, blockUser);
 router.post("/unblock/:id", verifyToken, unblockUser);
 router.post("/report/:id", verifyToken, reportUser);
 router.post("/report-item", verifyToken, reportItem);
 
-router.get("/checkauthentication", verifyToken, (req, res, next) => {
+router.get("/checkauthentication", verifyToken, (req, res) => {
   res.status(200).json({ message: "Authenticated" });
 });
 
-router.get("/checkuser/:id", verifyUser, (req, res, next) => {
-  res
-    .status(200)
-    .json({ message: "Hello user,You are logged in you can do this" });
+router.get("/checkuser/:id", verifyUser, (req, res) => {
+  res.status(200).json({ message: "Hello user,You are logged in you can do this" });
 });
 
-router.get("/checkadmin/:id", verifyAdmin, (req, res, next) => {
-  res
-    .status(200)
-    .json({ message: "Hello admin,You are logged in you can do this" });
+router.get("/checkadmin/:id", verifyAdmin, (req, res) => {
+  res.status(200).json({ message: "Hello admin,You are logged in you can do this" });
 });
 
-//update
 router.put("/:id", verifyUser, updateUser);
-//delete
 router.delete("/:id", verifyUser, deleteUser);
-//get (publicly accessible so profiles can be viewed without login)
 router.get("/:id", optionalVerifyToken, getUser);
-//get all
-router.get("/", verifyAdmin, getAllUsers);
 
-router.route("/").post(registerUser);
+router.route("/")
+  .post(registerUser)
+  .get(protect, getAllUsers); // Fixed to use getAllUsers instead of allUsers
 
-//search api
-router.route("/").get(protect, allUsers);
-
-router.route("/login").post(authUser);
+router.get("/admin/all", verifyAdmin, getAllUsers);
+router.post("/login", authUser);
 
 module.exports = router;

@@ -23,20 +23,16 @@ export const SocketProvider = ({ children }) => {
       });
 
       const onConnect = () => {
-        console.log("[SOCKET REGISTER] SocketContext — connect fired, socketId:", newSocket.id);
-        console.log("[SOCKET REGISTER] SocketContext — emitting go_online for userId:", userId);
-        newSocket.emit(SOCKET_EVENTS.EMIT_GO_ONLINE, userId);
+                        newSocket.emit(SOCKET_EVENTS.EMIT_GO_ONLINE, userId);
       };
 
       // Register exactly ONE connect handler here — all other files must NOT emit go_online
-      console.log("[SOCKET REGISTER] SocketContext — registering connect listener");
-      newSocket.on(SOCKET_EVENTS.CONNECT, onConnect);
+            newSocket.on(SOCKET_EVENTS.CONNECT, onConnect);
 
       setSocket(newSocket);
 
       return () => {
-        console.log("[SOCKET CLEANUP] SocketContext — removing connect listener, disconnecting");
-        newSocket.off(SOCKET_EVENTS.CONNECT, onConnect);
+                newSocket.off(SOCKET_EVENTS.CONNECT, onConnect);
         newSocket.disconnect();
         setSocket(null);
       };

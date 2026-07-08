@@ -3,7 +3,6 @@ const router = express.Router();
 const settingsController = require('../controllers/settingsController');
 const { verifyToken, protect } = require('../middleware/verifyToken');
 
-
 router.use(verifyToken);
 
 router.get('/', settingsController.getSettings);

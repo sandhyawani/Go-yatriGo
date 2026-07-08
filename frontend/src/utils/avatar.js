@@ -35,7 +35,6 @@ export const getAvatarUrl = (...args) => {
   }
 
   const displayName = foundName || "Explorer";
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=6C4DF6&color=fff&bold=true`;
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=7c3aed&color=fff&bold=true`;
 };
-
 

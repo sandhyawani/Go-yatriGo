@@ -22,6 +22,7 @@ const chatRoomSchema = new mongoose.Schema(
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
+        required: true,
       },
     ],
 
@@ -59,6 +60,14 @@ const chatRoomSchema = new mongoose.Schema(
       default: null,
     },
 
+    // Tracks when each member last read messages in this room (for unread counts)
+    lastReadBy: [
+      {
+        user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+        seenAt: { type: Date, default: Date.now }
+      }
+    ],
+
     // Users who have muted this chat
     mutedBy: [
       {
@@ -88,10 +97,20 @@ const chatRoomSchema = new mongoose.Schema(
   }
 );
 
-// Improve query performance
-chatRoomSchema.index({ members: 1 });
-chatRoomSchema.index({ travelGroupId: 1 });
-chatRoomSchema.index({ journeyId: 1 });
-chatRoomSchema.index({ type: 1 });
+// High-performance index for loading active chat list sorted by newest message activity
+chatRoomSchema.index({ members: 1, updatedAt: -1 });
+
+// Optimize lookups for specific trip integrations
+chatRoomSchema.index({ travelGroupId: 1 }, { sparse: true });
+chatRoomSchema.index({ journeyId: 1 }, { sparse: true });
+
+// Enforce unique 1-to-1 rooms between identical participants
+chatRoomSchema.index(
+  { members: 1 },
+  { 
+    unique: true, 
+    partialFilterExpression: { type: "direct" } 
+  }
+);
 
 module.exports = mongoose.model("ChatRoom", chatRoomSchema);

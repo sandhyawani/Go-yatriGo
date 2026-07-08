@@ -193,10 +193,7 @@ const storySchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 storySchema.index({ userId: 1, createdAt: -1 });
 storySchema.index({ visibility: 1 });
 storySchema.index({ expiresAt: 1 });

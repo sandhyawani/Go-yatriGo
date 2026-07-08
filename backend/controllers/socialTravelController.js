@@ -1805,7 +1805,7 @@ exports.getSavedPosts = async (req, res) => {
       createdAt: -1,
     });
 
-    // Return only post IDs if requested
+    
     if (idsOnly === "true") {
       const saved = await savedQuery.select("postId").lean();
 
@@ -2348,7 +2348,7 @@ exports.reactToStory = async (req, res) => {
         io.to(story.userId.toString()).emit("receive_chat_message", msgObj);
 
         // Emit message_sent acknowledgment to sender
-        console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: msgObj._id.toString(), clientMsgId: msgObj.clientMsgId });
+        
         io.to(userId.toString()).emit("message_sent", {
           roomId: room._id.toString(),
           messageId: msgObj._id.toString(),
@@ -2555,19 +2555,19 @@ exports.replyToStory = async (req, res) => {
     };
 
     if (io) {
-      console.log("BACKEND EMIT new_notification for story reply to storyOwnerId:", storyOwnerId.toString());
+      
       io.to(storyOwnerId.toString()).emit(
         "new_notification",
         notification
       );
 
       // Emit the fully-populated message so the receiver gets the story preview
-      console.log("[SERVER] EMIT receive_chat_message", storySocketPayload);
+      
       io.to(senderId.toString()).emit("receive_chat_message", storySocketPayload);
       io.to(storyOwnerId.toString()).emit("receive_chat_message", storySocketPayload);
 
       // Emit message_sent acknowledgment to sender
-      console.log("[SERVER] EMIT message_sent", { roomId: room._id.toString(), messageId: storySocketPayload._id, clientMsgId: storySocketPayload.clientMsgId });
+      
       io.to(senderId.toString()).emit("message_sent", {
         roomId: room._id.toString(),
         messageId: storySocketPayload._id,
@@ -2740,7 +2740,6 @@ exports.globalSocialSearch = async (req, res) => {
     });
   }
 };
-
 
 // --- 6. SETTINGS & ACCOUNT ---
 
@@ -2989,7 +2988,6 @@ exports.cancelTravelBuddyTrip = async (req, res) => {
   }
 };
 
-
 // Get Active Stories (Followed first, "My Story" prioritized)
 exports.getActiveStories = async (req, res) => {
   try {
@@ -3181,11 +3179,7 @@ exports.deleteStory = async (req, res) => {
   }
 };
 
-
-// ==========================
 // HOST MEMBER MANAGEMENT
-// ==========================
-
 // Helper for checking group and roles
 const checkGroupAndRoles = async (groupId, reqUserId, targetMemberId) => {
   const TravelGroup = require('../models/TravelGroup');

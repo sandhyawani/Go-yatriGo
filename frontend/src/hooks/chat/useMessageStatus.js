@@ -13,8 +13,7 @@ export const useMessageStatus = (user, socketConnected, setUnreadNewMessagesCoun
     if (activeRoom && user && socketConnected && socket) {
       const unread = messages.filter((m) => m.unreadBy?.includes(currentUserId));
       if (unread.length > 0) {
-        console.log("[STATUS HOOK] Emitting mark_messages_read for room:", activeRoom._id);
-        socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
+                socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
           roomId: activeRoom._id,
           userId: currentUserId,
         });

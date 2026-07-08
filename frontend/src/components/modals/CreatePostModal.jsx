@@ -1629,12 +1629,12 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       )}
 
                       {selectedMusic && (
-                        <div className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-2xl bg-indigo-50 border border-indigo-100 p-1.5 pr-4 text-[11px] font-bold text-[#6C4DF6] shadow-sm">
+                        <div className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-2xl bg-indigo-50 border border-indigo-100 p-1.5 pr-4 text-[11px] font-bold text-primary-600 shadow-sm">
                           {selectedMusic.preview ? (
                             <button
                               type="button"
                               onClick={toggleMusicPreview}
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-indigo-100 text-[#6C4DF6] shadow-sm transition-all hover:bg-indigo-100 hover:scale-105 active:scale-95"
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-indigo-100 text-primary-600 shadow-sm transition-all hover:bg-indigo-100 hover:scale-105 active:scale-95"
                             >
                               {isPlayingMusic ? (
                                 <Pause className="h-3 w-3 fill-current" />
@@ -1643,12 +1643,12 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               )}
                             </button>
                           ) : (
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-[#6C4DF6]">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-primary-600">
                               <Music2 className="h-3 w-3" />
                             </div>
                           )}
                           <div className="flex flex-col overflow-hidden leading-tight">
-                            <span className="truncate text-[#6C4DF6] font-extrabold flex items-center gap-1.5">
+                            <span className="truncate text-primary-600 font-extrabold flex items-center gap-1.5">
                               Playing ✨
                               {isPlayingMusic && (
                                 <span className="flex h-2 items-end gap-[1px]">
@@ -1658,7 +1658,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                       repeat: Infinity,
                                       duration: 0.8,
                                     }}
-                                    className="w-[2px] bg-[#6C4DF6] rounded-full"
+                                    className="w-[2px] bg-primary-600 rounded-full"
                                   />
                                   <motion.span
                                     animate={{ height: [4, 8, 4] }}
@@ -1666,7 +1666,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                       repeat: Infinity,
                                       duration: 1.2,
                                     }}
-                                    className="w-[2px] bg-[#6C4DF6] rounded-full"
+                                    className="w-[2px] bg-primary-600 rounded-full"
                                   />
                                   <motion.span
                                     animate={{ height: [3, 7, 3] }}
@@ -1674,7 +1674,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                       repeat: Infinity,
                                       duration: 1.0,
                                     }}
-                                    className="w-[2px] bg-[#6C4DF6] rounded-full"
+                                    className="w-[2px] bg-primary-600 rounded-full"
                                   />
                                 </span>
                               )}

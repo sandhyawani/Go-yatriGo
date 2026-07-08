@@ -32,13 +32,11 @@ export const useChatSocket = (user, syncRoomMessages) => {
     const newRoomId = getRoomIdString(activeRoom?._id);
 
     if (prevRoomId && prevRoomId !== newRoomId) {
-      console.log("[SOCKET] leave_chat_room:", prevRoomId);
-      socket.emit(SOCKET_EVENTS.EMIT_LEAVE_CHAT_ROOM, prevRoomId);
+            socket.emit(SOCKET_EVENTS.EMIT_LEAVE_CHAT_ROOM, prevRoomId);
     }
 
     if (newRoomId) {
-      console.log("[SOCKET] join_chat_room:", newRoomId);
-      socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoomId);
+            socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoomId);
     }
 
     prevActiveRoomRef.current = activeRoom;
@@ -51,14 +49,13 @@ export const useChatSocket = (user, syncRoomMessages) => {
     setSocketConnected(socket.connected);
 
     const onConnect = () => {
-      console.log("[SOCKET] connected:", socket.id);
+      
       setSocketConnected(true);
 
       // Rejoin active room on reconnect
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (activeId) {
-        console.log("[SOCKET] rejoining room on connect:", activeId);
-        socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
+                socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
         if (syncRoomMessages) {
           syncRoomMessages(activeRoomRef.current);
         }
@@ -66,8 +63,7 @@ export const useChatSocket = (user, syncRoomMessages) => {
     };
 
     const onDisconnect = () => {
-      console.log("[SOCKET] disconnected");
-      setSocketConnected(false);
+            setSocketConnected(false);
     };
 
     const onUserPresence = (data) => {
@@ -94,14 +90,12 @@ export const useChatSocket = (user, syncRoomMessages) => {
 
       if (!isSelf) {
         if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-          console.log("[SOCKET] Emit mark_messages_read for room:", incomingRoomId);
-          socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
+                    socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
             roomId: message.roomId,
             userId: currentUserId,
           });
         } else {
-          console.log("[SOCKET] Emit message_delivered for message:", message._id);
-          socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
+                    socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
             roomId: message.roomId,
             messageId: message._id,
             userId: currentUserId,

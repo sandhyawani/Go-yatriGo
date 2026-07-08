@@ -75,7 +75,7 @@ const StorySticker = ({
                 e.stopPropagation();
                 onPlayToggle && onPlayToggle();
               }}
-              className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full text-white bg-[#6C4DF6] shadow-md transition-transform active:scale-95 ml-1"
+              className="shrink-0 flex items-center justify-center w-7 h-7 rounded-full text-white bg-primary-600 shadow-md transition-transform active:scale-95 ml-1"
             >
               {isPlaying ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current ml-[1px]" />}
             </button>

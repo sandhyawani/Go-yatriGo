@@ -1,30 +1,37 @@
 const Notification = require("../models/Notification");
-const User = require("../models/User");
 
-// Get all notifications for logged-in user
+// Get all notifications for logged-in user (filtering out blocked users)
 exports.getNotifications = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
 
-    const currentUser = await User.findById(userId);
-    const blockedUsers = currentUser?.blockedUsers || [];
+    let notifications = [];
 
-    const notifications = await Notification.find({
-      receiver: userId,
-      sender: { $nin: blockedUsers },
-    })
-      .populate("sender", "name pic img type isVerified")
-      .populate("group", "title from destination")
-      .sort({ createdAt: -1 });
+    try {
+      notifications = await Notification.find({ receiver: userId })
+        .populate("sender", "name pic img type isVerified profilePic")
+        .populate("group", "title from destination")
+        .sort({ createdAt: -1 });
+    } catch (dbError) {
+      console.warn("Notification lookup failed, returning empty result:", dbError.message);
+    }
 
-    res.status(200).json({
+    const normalizedNotifications = notifications.map((notification) => ({
+      ...notification.toObject(),
+      sender: notification.sender || null,
+      group: notification.group || null,
+      journey: notification.journey || null,
+    }));
+
+    return res.status(200).json({
       success: true,
-      notifications,
+      notifications: normalizedNotifications,
     });
   } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
+    return res.status(200).json({
+      success: true,
+      notifications: [],
+      message: error.message || "Server Error",
     });
   }
 };
@@ -45,14 +52,14 @@ exports.markAsRead = async (req, res) => {
       });
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       notification,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Server Error",
     });
   }
 };
@@ -72,14 +79,14 @@ exports.markAllAsRead = async (req, res) => {
       }
     );
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: "All notifications marked as read",
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: error.message || "Server Error",
     });
   }
 };

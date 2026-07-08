@@ -33,14 +33,11 @@ export const useNotifications = (user) => {
   useEffect(() => {
     if (!socket) return;
     const handleNewNotification = (newNotif) => {
-      console.log("[SOCKET RECEIVED] useNotifications — new_notification", newNotif);
-      dispatch({ type: "ADD_NOTIFICATION", payload: newNotif });
+            dispatch({ type: "ADD_NOTIFICATION", payload: newNotif });
     };
-    console.log("[SOCKET REGISTER] useNotifications — new_notification");
-    socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+        socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
     return () => {
-      console.log("[SOCKET CLEANUP] useNotifications — new_notification");
-      socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+            socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
     };
   }, [socket]);
 

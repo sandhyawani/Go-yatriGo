@@ -18,61 +18,19 @@ const { verifyAdmin } = require("../middleware/verifyToken");
 
 const router = express.Router();
 
-// ======================================================
-// Dashboard
-// ======================================================
-
-// Get admin dashboard statistics
 router.get("/stats", verifyAdmin, getStats);
 
-// ======================================================
-// Reports Management
-// ======================================================
-
-// Get all reported content
 router.get("/reports", verifyAdmin, getAllReports);
+router.put("/reports/:id/resolve", verifyAdmin, resolveReport);
+router.delete("/posts/:postId", verifyAdmin, deleteReportedPost);
+router.delete("/groups/:groupId", verifyAdmin, deleteReportedGroup);
 
-// Resolve a report
-router.put("/report/:id/resolve", verifyAdmin, resolveReport);
+router.put("/users/:id/suspend", verifyAdmin, suspendUser);
+router.put("/users/:id/unsuspend", verifyAdmin, unsuspendUser);
+router.post("/users/:id/warn", verifyAdmin, warnUser);
 
-// Delete a reported post
-router.delete("/post/:postId", verifyAdmin, deleteReportedPost);
-
-// Delete a reported travel group
-router.delete("/group/:groupId", verifyAdmin, deleteReportedGroup);
-
-// ======================================================
-// User Management
-// ======================================================
-
-// Suspend a user account
-router.put("/user/:id/suspend", verifyAdmin, suspendUser);
-
-// Remove user suspension
-router.put("/user/:id/unsuspend", verifyAdmin, unsuspendUser);
-
-// Send a warning to a user
-router.post("/user/:id/warn", verifyAdmin, warnUser);
-
-// ======================================================
-// Verification Management
-// ======================================================
-
-// Get all pending verification requests
 router.get("/verifications", verifyAdmin, getPendingVerifications);
-
-// Approve user verification
-router.put(
-  "/user/:id/verify/approve",
-  verifyAdmin,
-  approveVerification
-);
-
-// Reject user verification
-router.put(
-  "/user/:id/verify/reject",
-  verifyAdmin,
-  rejectVerification
-);
+router.put("/users/:id/verify/approve", verifyAdmin, approveVerification);
+router.put("/users/:id/verify/reject", verifyAdmin, rejectVerification);
 
 module.exports = router;

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from "react";
+﻿import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "../../api/axios";
 import Swal from "sweetalert2";
@@ -188,6 +188,8 @@ const VerificationRequests = () => {
     setRotation(0);
   };
 
+  const isPdf = selectedUser?.govId?.toLowerCase().endsWith(".pdf");
+
   return (
     <div className="min-h-screen pt-4 pb-20 bg-slate-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -232,7 +234,7 @@ const VerificationRequests = () => {
               onClick={fetchRequests}
               className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-bold shadow-lg shadow-purple-600/20"
             >
-              <RefreshCw className="w-4 h-4 text-slate-900" /> Check Again
+              <RefreshCw className="w-4 h-4 text-white" /> Check Again
             </button>
           </div>
         ) : (
@@ -383,53 +385,55 @@ const VerificationRequests = () => {
                 <div className="flex-1 flex flex-col lg:flex-row min-h-0 bg-slate-50">
                   {/* Document Viewer */}
                   <div className="flex-1 relative flex flex-col min-h-0 border-r border-slate-200 overflow-hidden">
-                    {/* Toolbar */}
-                    <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-lg">
-                      <button
-                        onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
-                        className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                      >
-                        <ZoomIn className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
-                        className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                      >
-                        <ZoomOut className="w-4 h-4" />
-                      </button>
-                      <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                      <button
-                        onClick={() => setRotation((r) => r - 90)}
-                        className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                      >
-                        <RotateCcw className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => setRotation((r) => r + 90)}
-                        className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                      >
-                        <RotateCw className="w-4 h-4" />
-                      </button>
-                      <div className="w-px h-4 bg-slate-200 mx-1"></div>
-                      <button
-                        onClick={() => {
-                          setZoom(1);
-                          setRotation(0);
-                        }}
-                        className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-bold tracking-wider px-3 transition"
-                      >
-                        RESET
-                      </button>
-                    </div>
+                    {/* Toolbar - Hidden if PDF since iframe handles native tools */}
+                    {!isPdf && (
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-lg">
+                        <button
+                          onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                        >
+                          <ZoomIn className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                        >
+                          <ZoomOut className="w-4 h-4" />
+                        </button>
+                        <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                        <button
+                          onClick={() => setRotation((r) => r - 90)}
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                        >
+                          <RotateCcw className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setRotation((r) => r + 90)}
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                        >
+                          <RotateCw className="w-4 h-4" />
+                        </button>
+                        <div className="w-px h-4 bg-slate-200 mx-1"></div>
+                        <button
+                          onClick={() => {
+                            setZoom(1);
+                            setRotation(0);
+                          }}
+                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-bold tracking-wider px-3 transition"
+                        >
+                          RESET
+                        </button>
+                      </div>
+                    )}
 
-                    {/* Image Area */}
+                    {/* Image/PDF Area */}
                     <div className="flex-1 overflow-hidden flex items-center justify-center p-8 relative">
                       {!imageLoaded && (
                         <div className="absolute inset-0 flex items-center justify-center">
                           <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
                         </div>
                       )}
-                      {selectedUser.govId.toLowerCase().endsWith(".pdf") ? (
+                      {isPdf ? (
                         <iframe
                           src={selectedUser.govId}
                           className="w-full h-full max-h-[75vh] rounded-xl border border-slate-200 bg-white shadow-xl"
@@ -460,7 +464,7 @@ const VerificationRequests = () => {
                   </div>
 
                   {/* Side Panel */}
-                  <div className="w-full lg:w-96 bg-white flex flex-col shrink-0 overflow-y-auto hidden lg:flex">
+                  <div className="hidden lg:flex w-full lg:w-96 bg-white flex-col shrink-0 overflow-y-auto">
                     <div className="p-6 space-y-6 flex-1">
                       <h3 className="text-slate-500 font-bold text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
                         User Details
@@ -567,7 +571,7 @@ const VerificationRequests = () => {
                         <button
                           disabled={actionLoading}
                           onClick={() => handleApprove(selectedUser._id)}
-                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 hover:bg-cyan-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-600/20 disabled:opacity-50"
+                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-600/20 disabled:opacity-50"
                         >
                           {actionLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />

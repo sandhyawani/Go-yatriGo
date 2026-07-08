@@ -160,10 +160,7 @@ const postSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 // User profile feed
 postSchema.index({ userId: 1, createdAt: -1 });
 

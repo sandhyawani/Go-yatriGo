@@ -9,7 +9,7 @@ const {
   toggleSOS,
 } = require("../controllers/emergencyController");
 
-router.use(protect); // All emergency routes are private
+router.use(protect);
 
 router.route("/contacts")
   .get(getContacts)

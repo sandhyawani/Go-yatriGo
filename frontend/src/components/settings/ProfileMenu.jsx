@@ -23,7 +23,7 @@ const ProfileMenu = () => {
         <>
           <Menu.Button className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-slate-100 transition-colors w-full text-left outline-none group select-none">
             <img
-              className="h-7 w-7 rounded-full border border-slate-200 object-cover shrink-0"
+              className="h-9 w-9 rounded-full border border-slate-200 object-cover shrink-0"
               src={getAvatarUrl(user.pic, user.img, user.name)}
               alt={user.name}
             />

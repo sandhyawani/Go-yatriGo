@@ -12,7 +12,7 @@ const travelMoodQueries = {
   "Ocean Vibes": "summer beach tropical waves",
   "Night Explorer": "synthwave night drive midnight",
   "Campfire Sessions": "campfire acoustic guitar chill",
-  Wanderlust: "travel adventure cinematic wanderlust",
+  "Wanderlust": "travel adventure cinematic wanderlust",
 };
 
 // Language based search queries for new movie hit songs
@@ -30,33 +30,16 @@ const languageMoodQueries = {
   "Global Mix": "top hits",
 };
 
-// Return emoji based on selected language
 const getFlagForLanguage = (language) => {
   if (!language) return "🎬";
 
-  if (
-    language.includes("Hindi") ||
-    language.includes("Marathi") ||
-    language.includes("Punjabi") ||
-    language.includes("Tamil") ||
-    language.includes("Telugu") ||
-    language.includes("Malayalam") ||
-    language.includes("Kannada")
-  ) {
+  const indianLanguages = ["Hindi", "Marathi", "Punjabi", "Tamil", "Telugu", "Malayalam", "Kannada"];
+  if (indianLanguages.some((lang) => language.includes(lang))) {
     return "🇮🇳";
   }
-
-  if (language.includes("English")) {
-    return "🎧";
-  }
-
-  if (language.includes("K-Pop")) {
-    return "🌸";
-  }
-
-  if (language.includes("Spanish")) {
-    return "💃";
-  }
+  if (language.includes("English")) return "🎧";
+  if (language.includes("K-Pop")) return "🌸";
+  if (language.includes("Spanish")) return "💃";
 
   return "🎬";
 };
@@ -65,10 +48,9 @@ const getFlagForLanguage = (language) => {
 const fetchItunesTracks = async (queryTerm, limit = 20) => {
   const cacheKey = `${queryTerm}_${limit}`;
 
-  // Return cached data if available
+  
   if (musicCache.has(cacheKey)) {
     const cached = musicCache.get(cacheKey);
-
     if (Date.now() - cached.timestamp < CACHE_TTL) {
       return cached.data;
     }
@@ -86,8 +68,7 @@ const fetchItunesTracks = async (queryTerm, limit = 20) => {
         id: track.trackId || Math.random().toString(),
         title: track.trackName || "Unknown Title",
         artist: track.artistName || "Unknown Artist",
-        albumImage:
-          track.artworkUrl100?.replace("100x100", "300x300") || null,
+        albumImage: track.artworkUrl100?.replace("100x100", "300x300") || null,
         previewUrl: track.previewUrl || null,
         spotifyUrl: track.trackViewUrl || null,
         durationMs: track.trackTimeMillis || 30000,
@@ -97,22 +78,18 @@ const fetchItunesTracks = async (queryTerm, limit = 20) => {
   };
 
   try {
-    // Query Indian catalog first (for Bollywood / Hindi songs like Namo Namo)
+    // Query Indian catalog first (for Bollywood / Hindi songs)
     let response = await axios.get(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(
-        queryTerm
-      )}&entity=song&limit=${limit}&country=IN`,
+      `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=IN`,
       { timeout: 6000, headers: browserHeaders }
     );
 
     let tracks = parseTracks(response.data?.results);
 
-    // If not found in IN store, fallback to default US store
+    
     if (tracks.length < 5) {
       response = await axios.get(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(
-          queryTerm
-        )}&entity=song&limit=${limit}&country=US`,
+        `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=US`,
         { timeout: 6000, headers: browserHeaders }
       );
       const usTracks = parseTracks(response.data?.results);
@@ -159,12 +136,12 @@ exports.searchMusic = async (req, res) => {
       flag: "🌍",
     }));
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       tracks,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Music service unavailable",
       error: error.message,
@@ -270,14 +247,14 @@ exports.getTrendingMusic = async (req, res) => {
       }));
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       tracks: allTracks.slice(0, 50),
     });
   } catch (error) {
     console.error("Music Trending API Error:", error.message);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Music service unavailable",
       error: error.message,

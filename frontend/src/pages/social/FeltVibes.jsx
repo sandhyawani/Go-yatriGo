@@ -141,8 +141,8 @@ const FeltVibes = () => {
           return item.postType === "story";
         case "Groups":
           return item.postType === "group";
-        // case "Documents": return item.postType === "document"; // Placeholder for future categories
-        // case "Profile Updates": return item.postType === "profile_update"; // Placeholder for future categories
+        // case "Documents": return item.postType === "document"; 
+        // case "Profile Updates": return item.postType === "profile_update"; 
         default:
           return true;
       }
@@ -192,8 +192,8 @@ const FeltVibes = () => {
       ).length,
       stories: feltVibes.filter((i) => i.postType === "story").length,
       groups: feltVibes.filter((i) => i.postType === "group").length,
-      // documents: feltVibes.filter(i => i.postType === "document").length, // Placeholder
-      // profileUpdates: feltVibes.filter(i => i.postType === "profile_update").length, // Placeholder
+      // documents: feltVibes.filter(i => i.postType === "document").length, 
+      // profileUpdates: feltVibes.filter(i => i.postType === "profile_update").length, 
     };
   }, [feltVibes]);
 
@@ -266,8 +266,8 @@ const FeltVibes = () => {
                 case "Groups":
                   count = stats.groups;
                   break;
-                // case "Documents": count = stats.documents; break; // Placeholder
-                // case "Profile Updates": count = stats.profileUpdates; break; // Placeholder
+                // case "Documents": count = stats.documents; break; 
+                // case "Profile Updates": count = stats.profileUpdates; break; 
                 default:
                   break;
               }

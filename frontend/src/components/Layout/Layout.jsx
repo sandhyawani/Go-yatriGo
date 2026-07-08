@@ -35,28 +35,36 @@ const Layout = () => {
 
   return (
     <div
-      className={`flex min-h-[100dvh] ${
-        isAdminWorkspace ? "bg-[#080d1c] flex-col lg:flex-row" : "bg-[#f8f7ff] flex-col lg:flex-row"
+      className={`flex min-h-[100dvh] flex-col lg:flex-row isolate ${
+        isAdminWorkspace ? "bg-brand-dark w-full" : "bg-background max-w-[1440px] mx-auto w-full lg:h-screen lg:overflow-hidden"
       }`}
     >
+      {/* Sidebar Section */}
       {isAdminWorkspace ? (
         <AdminSidebar isOpen={adminNavOpen} onClose={() => setAdminNavOpen(false)} />
       ) : (
         hasNavigation && !isChatPage && <SocialSidebar />
       )}
+
+      {/* Main Content Area */}
       <main
-        className={`flex-1 w-full min-w-0 relative z-10 overflow-x-hidden ${
+        className={`flex-1 w-full min-w-0 relative z-navbar ${
+          isChatPage ? "" : "overflow-x-hidden"
+        } ${
           isAdminWorkspace
             ? "lg:ml-[264px] lg:w-[calc(100%-264px)]"
             : isChatPage
-            ? "lg:ml-0 lg:w-full p-0"
-            : hasNavigation
-            ? "lg:ml-[260px] lg:w-[calc(100%-260px)] px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
-            : "px-4 lg:px-10 pt-2 pb-24 lg:pb-6"
+            ? "p-0 lg:h-screen lg:overflow-hidden"
+            : "px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6 lg:h-screen lg:overflow-y-auto"
         }`}
       >
         {isAdminWorkspace && <AdminNavbar onOpenMenu={() => setAdminNavOpen(true)} />}
-        <RouteTour />
+        
+        {/* Route views container wrapping the actual screen views */}
+        <div className="w-full">
+          <RouteTour />
+        </div>
+
         {hasNavigation && !isAdminWorkspace && !isChatPage && !isBuddyDetailPage && <Footer />}
       </main>
     </div>

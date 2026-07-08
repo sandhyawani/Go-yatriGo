@@ -236,7 +236,6 @@ export const hotelColumns = [
   },
 ];
 
-
 export const restaurantColumns = [
   {
     field: "Image",

@@ -17,8 +17,7 @@ const registerUser = async (req, res, next) => {
       });
     }
 
-    const existingUser = await User.findOne({ email });
-
+    const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return res.status(409).json({
         message: "Email already registered",
@@ -26,16 +25,12 @@ const registerUser = async (req, res, next) => {
     }
 
     let finalUsername = username?.trim().toLowerCase();
-
     if (!finalUsername && name) {
-      const randomNumber = Math.floor(Math.random() * 10000);
+      const randomNumber = Math.floor(1000 + Math.random() * 9000);
       finalUsername = `${name.replace(/\s+/g, "").toLowerCase()}${randomNumber}`;
     }
 
-    const usernameExists = await User.findOne({
-      username: finalUsername,
-    });
-
+    const usernameExists = await User.findOne({ username: finalUsername });
     if (usernameExists) {
       return res.status(409).json({
         message: "Username already taken",
@@ -44,16 +39,19 @@ const registerUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Only allow safe fields to prevent body-injection privilege escalation
     const user = new User({
-      ...req.body,
+      name,
+      email: email.toLowerCase().trim(),
       username: finalUsername,
       password: hashedPassword,
-      pic:
-        img ||
-        "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg",
+      pic: img || "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg",
       followers: [],
       following: [],
       policiesAcceptedAt: new Date(),
+      isAdmin: false,             // Explicitly locked
+      isVerified: false,          // Explicitly locked
+      verificationStatus: "unverified"  // Explicitly locked
     });
 
     await user.save();
@@ -71,8 +69,7 @@ const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res.status(401).json({
         message: "Invalid email or password",
@@ -86,7 +83,6 @@ const loginUser = async (req, res, next) => {
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
       return res.status(401).json({
         message: "Invalid email or password",
@@ -99,14 +95,9 @@ const loginUser = async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      {
-        id: user._id,
-        isAdmin: user.isAdmin,
-      },
+      { id: user._id, isAdmin: user.isAdmin },
       getJwtSecret(),
-      {
-        expiresIn: "30d",
-      },
+      { expiresIn: "30d" }
     );
 
     await Session.create({
@@ -116,13 +107,16 @@ const loginUser = async (req, res, next) => {
       ipAddress: req.ip,
     });
 
-    const { password: userPassword, ...userData } = user._doc;
+    // Clean serialization fix to secure document structure
+    const userData = user.toObject();
+    delete userData.password;
 
     res
       .cookie("access_token", token, {
         httpOnly: true,
         maxAge: 30 * 24 * 60 * 60 * 1000,
         sameSite: "lax",
+        secure: process.env.NODE_ENV === "production"
       })
       .status(200)
       .json({
@@ -137,17 +131,20 @@ const loginUser = async (req, res, next) => {
 
 // Logout User
 const logoutUser = async (req, res) => {
-  const token = req.cookies.access_token;
+  try {
+    const token = req.cookies.access_token || req.headers.authorization?.split(" ")[1];
 
-  if (token) {
-    await Session.deleteOne({ token });
+    if (token) {
+      await Session.deleteOne({ token });
+    }
+
+    res.clearCookie("access_token");
+    res.status(200).json({
+      message: "Logged out successfully",
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-
-  res.clearCookie("access_token");
-
-  res.status(200).json({
-    message: "Logged out successfully",
-  });
 };
 
 // Request password reset OTP
@@ -155,8 +152,7 @@ const resetpasswordrequest = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res.status(404).json({
         message: "There is no user with that email",
@@ -172,7 +168,7 @@ const resetpasswordrequest = async (req, res) => {
 
     await User.updateOne(
       { _id: user._id },
-      { $set: { resetPasswordToken, resetPasswordExpire } },
+      { $set: { resetPasswordToken, resetPasswordExpire } }
     );
 
     const resetUrl = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password`;
@@ -194,10 +190,9 @@ const resetpasswordrequest = async (req, res) => {
       });
     } catch (error) {
       console.error(error);
-
       await User.updateOne(
         { _id: user._id },
-        { $unset: { resetPasswordToken: 1, resetPasswordExpire: 1 } },
+        { $unset: { resetPasswordToken: 1, resetPasswordExpire: 1 } }
       );
 
       return res.status(500).json({
@@ -206,7 +201,6 @@ const resetpasswordrequest = async (req, res) => {
     }
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -250,7 +244,6 @@ const resetpassword = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       message: "Internal server error",
     });
@@ -261,9 +254,9 @@ const resetpassword = async (req, res) => {
 const checkEmailExists = async (req, res, next) => {
   try {
     const { email } = req.query;
+    if (!email) return res.status(400).json({ message: "Email parameter is required" });
 
-    const user = await User.findOne({ email });
-
+    const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (user) {
       return res.status(409).json({
         message: "Email already exists",
@@ -282,9 +275,9 @@ const checkEmailExists = async (req, res, next) => {
 const changePassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
+    const userId = req.user?.id || req.user?._id;
 
-    const user = await User.findById(req.user.id);
-
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
         message: "User not found",
@@ -292,7 +285,6 @@ const changePassword = async (req, res, next) => {
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
-
     if (!isMatch) {
       return res.status(401).json({
         message: "Incorrect old password",
@@ -300,7 +292,6 @@ const changePassword = async (req, res, next) => {
     }
 
     user.password = await bcrypt.hash(newPassword, 10);
-
     await user.save();
 
     res.status(200).json({

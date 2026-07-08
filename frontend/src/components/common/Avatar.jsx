@@ -45,7 +45,7 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
 
   if (showFallback) {
     return (
-      <div className={`flex items-center justify-center bg-gradient-to-br ${getGradient(finalName)} text-white font-black select-none shrink-0 uppercase shadow-xs ${className}`}>
+      <div className={`flex items-center justify-center bg-brand-600 text-white font-semibold select-none shrink-0 uppercase shadow-xs ${className}`}>
         {getInitials(finalName)}
       </div>
     );

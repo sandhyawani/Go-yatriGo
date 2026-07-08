@@ -26,7 +26,6 @@ const ALLOWED_FILE_TYPES = [
 const ALLOWED_EXTENSIONS = ["jpg","jpeg","png","gif","webp","heic","heif","avif","bmp"];
 const isAllowedImage = (file) => {
   if (file.type && ALLOWED_FILE_TYPES.includes(file.type)) return true;
-  // Fallback for iOS HEIC files that report an empty MIME type
   const ext = file.name?.split(".").pop()?.toLowerCase();
   return ALLOWED_EXTENSIONS.includes(ext);
 };
@@ -94,17 +93,17 @@ function FormField({
     <div className={className}>
       <label
         htmlFor={id}
-        className="mb-2 flex items-center gap-2 text-sm font-medium text-slate-700"
+        className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"
       >
-        <span className="text-slate-500">{icon}</span>
+        <span className="text-slate-400 flex items-center justify-center">{icon}</span>
         {label}
       </label>
       {children}
       <div className="mt-1 min-h-[20px]">
         {error ? (
-          <p className="text-xs font-medium text-red-500">{error}</p>
+          <p className="text-xs font-semibold text-red-500">{error}</p>
         ) : helperText ? (
-          <p className="text-xs text-slate-500">{helperText}</p>
+          <p className="text-xs font-medium text-slate-400">{helperText}</p>
         ) : null}
       </div>
     </div>
@@ -113,9 +112,9 @@ function FormField({
 
 function StatChip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
-      <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-900">{value}</p>
+    <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
+      <p className="mt-1 text-base font-bold text-slate-900">{value}</p>
     </div>
   );
 }
@@ -149,11 +148,11 @@ const AddUser = () => {
 
   const inputClass = (hasError) =>
     [
-      "w-full rounded-xl border bg-white px-4 py-3 text-sm text-slate-800 outline-none transition",
-      "placeholder:text-slate-400",
+      "w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition",
+      "placeholder:text-slate-400 placeholder:font-normal",
       hasError
-        ? "border-red-300 ring-2 ring-red-100 focus:border-red-400"
-        : "border-slate-200 focus:border-violet-400 focus:ring-4 focus:ring-violet-100",
+        ? "border-red-200 bg-white ring-4 ring-red-50 focus:border-red-400"
+        : "border-slate-100 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100",
     ].join(" ");
 
   const updateField = (key, value) => {
@@ -162,7 +161,7 @@ const AddUser = () => {
   };
 
   const showErrorAlert = (message) => {
-    showToast.error("Unable to continue");
+    showToast.error(message || "Unable to continue");
   };
 
   const uploadImage = async (imageFile) => {
@@ -207,6 +206,13 @@ const AddUser = () => {
       confirmButtonText: "Create User",
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      buttonsStyling: false,
+      customClass: {
+        popup: "rounded-3xl border border-slate-100 shadow-xl bg-white",
+        title: "text-xl font-bold text-slate-800",
+        confirmButton: "bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
+        cancelButton: "bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
+      }
     });
 
     if (!confirmation.isConfirmed) return;
@@ -244,34 +250,34 @@ const AddUser = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-6 md:px-8 lg:px-10">
+    <div className="min-h-screen bg-slate-50/50 px-6 py-10">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+        <div className="mb-10 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-violet-600">
+            <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
               User Management
             </p>
-            <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
               Add New User
             </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600">
+            <p className="mt-2 max-w-2xl text-sm font-medium text-slate-500">
               Create a new traveler account with optional profile photo upload.
               Required fields are clearly marked and validated before submit.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 md:w-[320px]">
+          <div className="grid grid-cols-2 gap-3 sm:w-72">
             <StatChip label="User Type" value="Traveler" />
             <StatChip label="Photo Upload" value="Optional" />
           </div>
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <aside className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
-            <div className="h-28 bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600" />
+          <aside className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
+            <div className="h-28 bg-gradient-to-r from-brand-600 to-brand-500" />
 
             <div className="-mt-14 px-6 pb-6">
-              <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-100 shadow-lg">
+              <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-50 shadow-md">
                 {previewUrl ? (
                   <img
                     src={previewUrl}
@@ -279,31 +285,31 @@ const AddUser = () => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-bold text-slate-400">U</span>
+                  <span className="text-3xl font-bold text-slate-300">U</span>
                 )}
               </div>
 
               <div className="mt-4 text-center">
-                <h2 className="text-xl font-semibold text-slate-900">
+                <h2 className="text-xl font-bold text-slate-900 truncate">
                   {form.name.trim() || "New User"}
                 </h2>
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-xs font-semibold text-slate-400 truncate">
                   {form.email.trim() || "email@example.com"}
                 </p>
               </div>
 
-              <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-800">
+              <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
                   Profile picture
                 </p>
-                <p className="mt-1 text-xs leading-5 text-slate-500">
+                <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-500">
                   Upload a square image for the best result. Supported formats:
                   JPEG, PNG, WebP, GIF. Maximum size: {MAX_FILE_SIZE_MB} MB.
                 </p>
 
                 <label
                   htmlFor="file"
-                  className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-violet-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-violet-700"
+                  className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 shadow-sm"
                 >
                   <DriveFolderUploadOutlinedIcon fontSize="small" />
                   Choose Image
@@ -320,27 +326,27 @@ const AddUser = () => {
 
                 <div className="mt-3 min-h-[20px]">
                   {errors.file ? (
-                    <p className="text-xs font-medium text-red-500">{errors.file}</p>
+                    <p className="text-xs font-semibold text-red-500">{errors.file}</p>
                   ) : form.file ? (
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs font-semibold text-slate-500 truncate">
                       {form.file.name} · {(form.file.size / 1024 / 1024).toFixed(2)} MB
                     </p>
                   ) : (
-                    <p className="text-xs text-slate-500">No file selected.</p>
+                    <p className="text-xs font-medium text-slate-400">No file selected.</p>
                   )}
                 </div>
               </div>
             </div>
           </aside>
 
-          <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-8">
+          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm md:p-8">
             <form onSubmit={handleSubmit} noValidate>
               <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
-                  <h2 className="text-xl font-semibold text-slate-900">
+                  <h2 className="text-xl font-bold text-slate-900">
                     Account Details
                   </h2>
-                  <p className="mt-1 text-sm text-slate-500">
+                  <p className="mt-1 text-xs font-semibold text-slate-400">
                     Fill out the required fields to create the account.
                   </p>
                 </div>
@@ -475,7 +481,7 @@ const AddUser = () => {
                   type="button"
                   onClick={() => navigate("/users")}
                   disabled={isLoading}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   Cancel
                 </button>
@@ -483,7 +489,7 @@ const AddUser = () => {
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="inline-flex min-w-[170px] items-center justify-center rounded-xl bg-violet-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  className="inline-flex min-w-[170px] items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60 shadow-sm shadow-brand-500/10"
                 >
                   {isLoading ? (
                     <span className="inline-flex items-center gap-2">

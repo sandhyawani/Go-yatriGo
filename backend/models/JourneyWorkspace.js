@@ -50,7 +50,7 @@ const journeyWorkspaceSchema = new mongoose.Schema(
       default: "",
       trim: true,
     },
-    // For Checklist & Packing List items
+    
     items: [
       {
         text: { type: String, trim: true },

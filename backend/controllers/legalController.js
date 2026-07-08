@@ -14,17 +14,14 @@ exports.getLegalContent = async (req, res) => {
           title: "Privacy Policy",
           content: "Privacy Policy\n\nAt Go YatriGo, we take your privacy seriously..."
         },
-
-        terms: {
+        "terms": {
           title: "Terms & Conditions",
           content: "Terms & Conditions\n\nWelcome to Go YatriGo..."
         },
-
         "community-guidelines": {
           title: "Community Guidelines",
           content: "Community Guidelines\n\nThese are the default community guidelines."
         },
-
         "safety-guidelines": {
           title: "Safety Guidelines",
           content: "Safety Guidelines\n\nThese are the default safety guidelines."
@@ -45,12 +42,12 @@ exports.getLegalContent = async (req, res) => {
       }
     }
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: content,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: "Server error",
     });

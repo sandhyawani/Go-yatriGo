@@ -222,10 +222,7 @@ const travelGroupSchema = new mongoose.Schema(
   }
 );
 
-// ----------------------
 // Virtual Properties
-// ----------------------
-
 // Returns current lifecycle of the trip
 travelGroupSchema.virtual("lifecycleStatus").get(function () {
   if (this.status === "cancelled") return "cancelled";
@@ -239,10 +236,7 @@ travelGroupSchema.virtual("lifecycleStatus").get(function () {
   return "active";
 });
 
-// ----------------------
 // Database Indexes
-// ----------------------
-
 travelGroupSchema.index({ host: 1 });
 
 travelGroupSchema.index({ destination: 1 });

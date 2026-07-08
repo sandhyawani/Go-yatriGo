@@ -1,118 +1,104 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const router = express.Router();
 const Story = require("../models/Story");
-const User = require("../models/User");
-const { userMiddleware } = require("../middleware/authMiddleware");
-const { checkSuspended } = require("../middleware/verifyToken");
+const { protect } = require("../middleware/verifyToken");
 
-// GET /api/stories/feed
-// Returns active stories from current user and followed users within the last 24 hours, grouped by user.
-router.get("/feed", userMiddleware, async (req, res) => {
+router.get("/feed", protect, async (req, res) => {
   try {
-    const currentUser = await User.findById(req.user);
-    if (!currentUser) return res.status(404).json({ success: false, message: "User not found" });
-
-    const userIdsToFetch = [...(currentUser.following || []), currentUser._id];
+    const currentUserId = req.user._id;
+    const userIdsToFetch = [...(req.user.following || []), currentUserId];
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    const flatStories = await Story.find({
-      userId: { $in: userIdsToFetch },
-      createdAt: { $gte: oneDayAgo }
-    })
-      .sort({ createdAt: 1 }) // sort ascending so oldest story is first in the group array, or descending depending on UI.
-      .populate("userId", "name username pic avatar isVerified");
+    const stories = await Story.aggregate([
+      {
+        $match: {
+          userId: { $in: userIdsToFetch },
+          createdAt: { $gte: oneDayAgo },
+        },
+      },
+      { $sort: { createdAt: 1 } },
+      {
+        $group: {
+          _id: "$userId",
+          stories: { $push: "$$ROOT" },
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "_id",
+          foreignField: "_id",
+          as: "author",
+        },
+      },
+      { $unwind: "$author" },
+      {
+        $project: {
+          _id: 0,
+          userId: "$_id",
+          userName: "$author.name",
+          userPic: { $ifNull: ["$author.pic", "$author.avatar"] },
+          isVerified: { $ifNull: ["$author.isVerified", false] },
+          stories: 1,
+        },
+      },
+    ]);
 
-    // Group stories by user
-    const groupedMap = new Map();
-
-    for (const story of flatStories) {
-      if (!story.userId) continue;
-      const uId = story.userId._id.toString();
-      if (!groupedMap.has(uId)) {
-        groupedMap.set(uId, {
-          userId: uId,
-          userName: story.userId.name,
-          userPic: story.userId.pic || story.userId.avatar,
-          isVerified: story.userId.isVerified || false,
-          stories: []
-        });
-      }
-      groupedMap.get(uId).stories.push(story);
-    }
-
-    const stories = Array.from(groupedMap.values());
-    
-    // Move current user's story group to the front
-    const myGroupIndex = stories.findIndex(g => g.userId === currentUser._id.toString());
+    const myGroupIndex = stories.findIndex((g) => g.userId.toString() === currentUserId.toString());
     if (myGroupIndex > 0) {
-      const myGroup = stories.splice(myGroupIndex, 1)[0];
+      const [myGroup] = stories.splice(myGroupIndex, 1);
       stories.unshift(myGroup);
     }
 
     res.status(200).json({ success: true, stories });
   } catch (error) {
-    console.error("Story feed error:", error);
     res.status(500).json({ success: false, message: "Server error fetching stories" });
   }
 });
 
-// POST /api/stories/:id/view
-router.post("/:id/view", userMiddleware, async (req, res) => {
+router.post("/:id/view", protect, async (req, res) => {
   try {
+    const userId = req.user._id;
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
-    const userId = req.user._id;
-
-    // Update views array (ObjectIds)
-    if (!story.views.includes(userId)) {
-      story.views.push(userId);
-    }
-
-    // Update viewedBy array (ObjectIds)
-    if (story.viewedBy && !story.viewedBy.includes(userId)) {
-      story.viewedBy.push(userId);
-    }
-
-    // Update viewers array (detailed objects)
-    const hasViewer = story.viewers.some(v => v.userId && v.userId.toString() === userId.toString());
+    const hasViewer = story.viewers.some((v) => v.userId && v.userId.toString() === userId.toString());
     if (!hasViewer) {
       story.viewers.push({ userId, viewedAt: new Date() });
+      if (story.views && !story.views.includes(userId)) story.views.push(userId);
+      await story.save();
     }
 
-    await story.save();
     res.status(200).json({ success: true, story });
   } catch (error) {
-    console.error("View story error:", error);
     res.status(500).json({ success: false, message: "Server error updating views" });
   }
 });
 
-// POST /api/stories/:id/like
-router.post("/:id/like", userMiddleware, checkSuspended, async (req, res) => {
+router.post("/:id/like", protect, async (req, res) => {
   try {
+    const userId = req.user._id;
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
-    const userId = req.user._id;
     if (!story.reactions) story.reactions = [];
+    const likeIndex = story.reactions.findIndex((id) => id.toString() === userId.toString());
 
-    const likeIndex = story.reactions.findIndex(id => id.toString() === userId.toString());
     if (likeIndex === -1) {
       story.reactions.push(userId);
     } else {
       story.reactions.splice(likeIndex, 1);
     }
+
     await story.save();
     res.status(200).json({ success: true, story });
   } catch (error) {
-    console.error("Like story error:", error);
     res.status(500).json({ success: false, message: "Server error updating likes" });
   }
 });
 
-// POST /api/stories/:id/comment
-router.post("/:id/comment", userMiddleware, checkSuspended, async (req, res) => {
+router.post("/:id/comment", protect, async (req, res) => {
   try {
     const { text } = req.body;
     if (!text) return res.status(400).json({ success: false, message: "Text is required" });
@@ -120,21 +106,17 @@ router.post("/:id/comment", userMiddleware, checkSuspended, async (req, res) => 
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
-    const currentUser = await User.findById(req.user);
-    if (!currentUser) return res.status(404).json({ success: false, message: "User not found" });
-
     story.comments.push({
-      userId: currentUser._id,
-      userName: currentUser.name,
-      userPic: currentUser.pic || currentUser.avatar,
+      userId: req.user._id,
+      userName: req.user.name,
+      userPic: req.user.pic || req.user.avatar,
       text: text,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     await story.save();
     res.status(200).json({ success: true, story });
   } catch (error) {
-    console.error("Comment story error:", error);
     res.status(500).json({ success: false, message: "Server error adding comment" });
   }
 });

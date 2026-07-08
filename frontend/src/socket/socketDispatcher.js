@@ -1,8 +1,7 @@
 import { SOCKET_EVENTS } from "../constants/socketEvents";
 
 export const handleSocketEvent = (dispatch, eventType, payload, currentUserId) => {
-  console.log(`[SOCKET DISPATCHER] received: ${eventType}`, payload);
-
+  
   switch (eventType) {
     case SOCKET_EVENTS.RECEIVE_CHAT_MESSAGE:
       dispatch({

@@ -1,9 +1,14 @@
 import { toast } from 'sonner';
 
+const parseArgs = (descOrOpts, opts) => {
+  const description = typeof descOrOpts === 'string' ? descOrOpts : undefined;
+  const options = typeof descOrOpts === 'object' && descOrOpts !== null ? descOrOpts : opts;
+  return { description, options };
+};
+
 export const showToast = {
   success: (title, descOrOpts = '', opts = {}) => {
-    const description = typeof descOrOpts === 'string' ? descOrOpts : undefined;
-    const options = typeof descOrOpts === 'object' && descOrOpts !== null ? descOrOpts : opts;
+    const { description, options } = parseArgs(descOrOpts, opts);
     toast.success(title, {
       ...(description && { description }),
       duration: 3000,
@@ -15,8 +20,7 @@ export const showToast = {
     });
   },
   error: (title, descOrOpts = '', opts = {}) => {
-    const description = typeof descOrOpts === 'string' ? descOrOpts : undefined;
-    const options = typeof descOrOpts === 'object' && descOrOpts !== null ? descOrOpts : opts;
+    const { description, options } = parseArgs(descOrOpts, opts);
     toast.error(title, {
       ...(description && { description }),
       duration: 3000,
@@ -30,8 +34,7 @@ export const showToast = {
   },
 
   info: (title, descOrOpts = '', opts = {}) => {
-    const description = typeof descOrOpts === 'string' ? descOrOpts : undefined;
-    const options = typeof descOrOpts === 'object' && descOrOpts !== null ? descOrOpts : opts;
+    const { description, options } = parseArgs(descOrOpts, opts);
     toast.info(title, {
       ...(description && { description }),
       duration: 4000,
@@ -44,8 +47,7 @@ export const showToast = {
   },
 
   warning: (title, descOrOpts = '', opts = {}) => {
-    const description = typeof descOrOpts === 'string' ? descOrOpts : undefined;
-    const options = typeof descOrOpts === 'object' && descOrOpts !== null ? descOrOpts : opts;
+    const { description, options } = parseArgs(descOrOpts, opts);
     toast.warning(title, {
       ...(description && { description }),
       duration: 4000,

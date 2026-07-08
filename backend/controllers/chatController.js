@@ -24,7 +24,6 @@ const emitRequestStatusUpdate = (req, room, userId) => {
               io.to(socketId).emit("request_status_updated", payload);
             });
           } else {
-            // Fallback for legacy single string socket ID
             io.to(socketIds).emit("request_status_updated", payload);
           }
         }
@@ -39,12 +38,10 @@ exports.getOrCreateDirectRoom = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const targetUserId = req.params.targetUserId;
     
- // Prevent users from chatting with themselves
     if (userId.toString() === targetUserId.toString()) {
       return res.status(400).json({ success: false, message: "You cannot chat with yourself" });
     }
 
-    // Check if room already exists between these 2 users
     let room = await ChatRoom.findOne({
       type: "direct",
       members: { $all: [userId, targetUserId] }
@@ -94,16 +91,14 @@ exports.getOrCreateDirectRoom = async (req, res) => {
   }
 };
 
-// Get All Chat Rooms for User
+// Get All Chat Rooms for User (Optimized using Bulk aggregation stages)
 exports.getUserRooms = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
+    const userObjectId = new (require("mongoose").Types.ObjectId)(userId);
 
     const activeGroups = await TravelGroup.find({
-      $or: [
-        { host: userId },
-        { "members.user": userId }
-      ]
+      $or: [{ host: userId }, { "members.user": userId }]
     });
 
     if (activeGroups && activeGroups.length > 0) {
@@ -117,40 +112,81 @@ exports.getUserRooms = async (req, res) => {
       );
     }
 
-    // Find rooms containing the user (and not hidden by them)
-    const rooms = await ChatRoom.find({ members: userId, hiddenFor: { $ne: userId } })
-      .populate("members", "name username pic img")
-      .populate("travelGroupId", "title destination coverImage status")
-      .sort({ updatedAt: -1 });
+    // High performance bulk computation of latest message context and counters
+    const roomsWithDetails = await ChatRoom.aggregate([
+      { $match: { members: userObjectId, hiddenFor: { $ne: userObjectId } } },
+      { $sort: { updatedAt: -1 } },
+      // Populate Members
+      {
+        $lookup: {
+          from: "users",
+          localField: "members",
+          foreignField: "_id",
+          as: "members"
+        }
+      },
+      // Populate Travel Groups
+      {
+        $lookup: {
+          from: "travelgroups",
+          localField: "travelGroupId",
+          foreignField: "_id",
+          as: "travelGroupId"
+        }
+      },
+      {
+        $unwind: { path: "$travelGroupId", preserveNullAndEmptyArrays: true }
+      },
+      // Fetch newest single message referencing room execution bounds
+      {
+        $lookup: {
+          from: "messages",
+          let: { roomId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$roomId", "$$roomId"] } } },
+            { $sort: { createdAt: -1, _id: -1 } },
+            { $limit: 1 }
+          ],
+          as: "latestMessage"
+        }
+      },
+      {
+        $unwind: { path: "$latestMessage", preserveNullAndEmptyArrays: true }
+      },
+      // Calculate dynamic accurate unread totals on the fly safely
+      {
+        $lookup: {
+          from: "messages",
+          let: { roomId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $and: [{ $eq: ["$roomId", "$$roomId"] }, { $in: [userObjectId, "$unreadBy"] }] } } },
+            { $count: "count" }
+          ],
+          as: "unreadData"
+        }
+      },
+      {
+        $addFields: {
+          unreadCount: { $ifNull: [{ $arrayElemAt: ["$unreadData.count", 0] }, 0] }
+        }
+      },
+      { $project: { unreadData: 0 } }
+    ]);
 
-    const roomsWithDetails = await Promise.all(rooms.map(async (room) => {
-      const latestMessage = await Message.findOne({ roomId: room._id })
-        .populate("storyId", "media mediaType caption")
-        .sort({ createdAt: -1, _id: -1 });
-
-      const unreadCount = await Message.countDocuments({
-        roomId: room._id,
-        unreadBy: userId
-      });
-
-      const roomObj = room.toObject();
-      roomObj.latestMessage = latestMessage;
-      roomObj.unreadCount = unreadCount;
-
-      // Adjust room name for direct chats
+    // Format final fields correctly without mutating schema records directly
+    const sanitizedRooms = roomsWithDetails.map(room => {
       if (room.type === "direct") {
         const otherMember = room.members.find(m => m._id.toString() !== userId.toString());
-        roomObj.name = otherMember ? otherMember.name : "Traveler";
-        roomObj.pic = otherMember ? otherMember.pic || otherMember.img : "";
+        room.name = otherMember ? otherMember.name : "Traveler";
+        room.pic = otherMember ? otherMember.pic || otherMember.img : "";
       } else if (room.travelGroupId) {
-        roomObj.name = room.travelGroupId.title;
-        roomObj.pic = room.travelGroupId.coverImage || "";
+        room.name = room.travelGroupId.title;
+        room.pic = room.travelGroupId.coverImage || "";
       }
+      return room;
+    });
 
-      return roomObj;
-    }));
-
-    res.status(200).json({ success: true, rooms: roomsWithDetails });
+    res.status(200).json({ success: true, rooms: sanitizedRooms });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
@@ -180,10 +216,8 @@ exports.getRoomMessages = async (req, res) => {
       .skip(skip)
       .limit(limit);
 
-    // We sort by -1 for pagination, but UI needs them in chronological order
     messages.reverse();
 
-    // Mark older unread messages as well.
     if (page === 1) {
       const updateSeenResult = await Message.updateMany(
         { roomId, unreadBy: userId },
@@ -197,20 +231,12 @@ exports.getRoomMessages = async (req, res) => {
       if (updateSeenResult.modifiedCount > 0) {
         const io = req.app.get("io");
         if (io) {
-          console.log("[SERVER] EMIT messages_seen", { roomId: roomId.toString(), userId: userId.toString() });
-          io.to(roomId.toString()).emit("messages_read", {
-            roomId: roomId.toString(),
-            userId: userId.toString()
-          });
-          io.to(roomId.toString()).emit("messages_seen", {
-            roomId: roomId.toString(),
-            userId: userId.toString()
-          });
+          io.to(roomId.toString()).emit("messages_read", { roomId: roomId.toString(), userId: userId.toString() });
+          io.to(roomId.toString()).emit("messages_seen", { roomId: roomId.toString(), userId: userId.toString() });
         }
       }
     }
 
-    // Mark messages as delivered to the current user
     const updateDeliveredResult = await Message.updateMany(
       { roomId, sender: { $ne: userId }, deliveredTo: { $ne: userId } },
       { 
@@ -222,19 +248,9 @@ exports.getRoomMessages = async (req, res) => {
     if (updateDeliveredResult.modifiedCount > 0) {
       const io = req.app.get("io");
       if (io) {
-        const undelivered = await Message.find({ roomId, sender: { $ne: userId }, deliveredTo: userId });
-        undelivered.forEach(m => {
-          console.log("[SERVER] EMIT message_delivered", { roomId: roomId.toString(), messageId: m._id.toString(), userId: userId.toString() });
-          io.to(roomId.toString()).emit("message_delivered_update", {
-            roomId: roomId.toString(),
-            messageId: m._id.toString(),
-            userId: userId.toString()
-          });
-          io.to(roomId.toString()).emit("message_delivered", {
-            roomId: roomId.toString(),
-            messageId: m._id.toString(),
-            userId: userId.toString()
-          });
+        io.to(roomId.toString()).emit("message_delivered_update", {
+          roomId: roomId.toString(),
+          userId: userId.toString()
         });
       }
     }
@@ -245,7 +261,7 @@ exports.getRoomMessages = async (req, res) => {
   }
 };
 
-// Send Message (HTTP API fallback / manual send)
+// Send Message
 exports.sendMessage = async (req, res) => {
   try {
     const roomId = req.params.roomId;
@@ -265,19 +281,13 @@ exports.sendMessage = async (req, res) => {
       return res.status(403).json({ success: false, message: "You are not a member of this chat room" });
     }
 
-    // Message Request Rules
     if (room.type === "direct") {
-      if (room.requestStatus === "blocked") {
-        return res.status(403).json({ success: false, message: "Cannot send messages to this user." });
-      }
-      if (room.requestStatus === "declined") {
-        return res.status(403).json({ success: false, message: "Message request was declined." });
-      }
+      if (room.requestStatus === "blocked") return res.status(403).json({ success: false, message: "Cannot send messages to this user." });
+      if (room.requestStatus === "declined") return res.status(403).json({ success: false, message: "Message request was declined." });
       if (room.requestStatus === "pending") {
         if (room.requestedBy.toString() !== userId.toString()) {
           return res.status(403).json({ success: false, message: "You must accept the request first." });
         }
-        // Sender can only send the first message, unless we allow multiple while pending.
         const previousMessages = await Message.countDocuments({ roomId });
         if (previousMessages >= 1) { 
            return res.status(403).json({ success: false, message: "Waiting for user to accept your request." });
@@ -288,7 +298,6 @@ exports.sendMessage = async (req, res) => {
     const senderUser = await User.findById(userId);
     const unreadMembers = room.members.filter(m => m.toString() !== userId.toString());
 
-    // Validate block status for direct chats
     if (room.type === "direct") {
       const targetUserId = room.members.find(m => m.toString() !== userId.toString());
       if (targetUserId) {
@@ -304,21 +313,12 @@ exports.sendMessage = async (req, res) => {
       }
     }
 
-    // Send notification if it's the very first message and it's a pending request
-    if (room.type === "direct" && room.requestStatus === "pending") {
-      const previousMessagesCount = await Message.countDocuments({ roomId });
-      if (previousMessagesCount === 0) {
-        const targetUserId = room.members.find(m => m.toString() !== userId.toString());
-        const Notification = require("../models/Notification");
-        await Notification.create({
-          sender: userId,
-          receiver: targetUserId,
-          type: "message_request",
-          room: roomId,
-          message: `${senderUser.name} sent you a message request.`
-        });
-      }
-    }
+    // Capture members who had hidden the chat before resetting the array below
+    const previouslyHiddenFor = [...(room.hiddenFor || [])];
+
+    room.updatedAt = new Date();
+    room.hiddenFor = [];
+    await room.save();
 
     const message = new Message({
       roomId,
@@ -333,13 +333,7 @@ exports.sendMessage = async (req, res) => {
       seenBy: [userId],
       replyTo: replyTo || undefined
     });
-
     await message.save();
-
-    // Update room updatedAt and unhide for all members
-    room.updatedAt = new Date();
-    room.hiddenFor = [];
-    await room.save();
 
     const populatedMessage = await Message.findById(message._id)
       .populate("sender", "-password")
@@ -352,51 +346,21 @@ exports.sendMessage = async (req, res) => {
 
     const io = req.app.get("io");
     if (io) {
-      const onlineUsers = req.app.get("onlineUsers");
-
-      // Serialize ObjectId fields to plain strings so the client never receives raw ObjectId objects
       const socketPayload = {
         ...populatedMessage,
         _id: populatedMessage._id.toString(),
         roomId: populatedMessage.roomId.toString(),
       };
 
-      const emitTimestamp = Date.now();
-      const memberIds = (room.members || []).map((m) => m.toString());
-
-      // SERVER STEP 1 — about to emit to each member
-      console.log("[SERVER] EMIT receive_chat_message", {
-        messageId: socketPayload._id,
-        roomId: socketPayload.roomId,
-        senderId: userId.toString(),
-        members: memberIds,
-        time: emitTimestamp,
+      // Unhide chat stream dynamically across active subscriber views
+      previouslyHiddenFor.forEach(hiddenUserId => {
+        io.to(hiddenUserId.toString()).emit("chat_unhidden", { roomId: roomId.toString() });
       });
 
-      memberIds.forEach((memberId) => {
-        const onlineUserSockets = onlineUsers ? (onlineUsers.get(memberId) || new Set()) : new Set();
-        // Count actual sockets in the personal room at emit time
-        const roomSockets = io.sockets.adapter.rooms.get(memberId);
-        const socketCount = roomSockets ? roomSockets.size : 0;
-        // SERVER STEP 2 — per-member emit with socket routing info
-        console.log("[SERVER] emitting to member", {
-          memberId,
-          socketRoom: memberId,
-          socketCount,
-          isOnline: onlineUserSockets.size > 0,
-          registeredSocketIds: [...onlineUserSockets],
-          time: Date.now(),
-        });
-        io.to(memberId).emit("receive_chat_message", socketPayload);
+      (room.members || []).forEach(memberId => {
+        io.to(memberId.toString()).emit("receive_chat_message", socketPayload);
       });
 
-      // Emit message_sent acknowledgment to the sender only
-      console.log("[SERVER] EMIT message_sent", {
-        messageId: socketPayload._id,
-        roomId: roomId.toString(),
-        clientMsgId: socketPayload.clientMsgId,
-        time: Date.now(),
-      });
       io.to(userId.toString()).emit("message_sent", {
         roomId: roomId.toString(),
         messageId: socketPayload._id,
@@ -404,7 +368,6 @@ exports.sendMessage = async (req, res) => {
         message: socketPayload
       });
     }
-
 
     res.status(201).json({ success: true, message: populatedMessage });
   } catch (error) {
@@ -425,7 +388,6 @@ exports.acceptMessageRequest = async (req, res) => {
     room.acceptedAt = new Date();
     await room.save();
 
-    // Remove from message requests
     const currentUser = await User.findById(userId);
     if (currentUser) {
       currentUser.messageRequests = currentUser.messageRequests.filter(id => id.toString() !== room.requestedBy.toString());
@@ -451,7 +413,6 @@ exports.declineMessageRequest = async (req, res) => {
     room.requestStatus = "declined";
     await room.save();
 
-    // Remove from message requests
     const currentUser = await User.findById(userId);
     if (currentUser) {
       currentUser.messageRequests = currentUser.messageRequests.filter(id => id.toString() !== room.requestedBy.toString());
@@ -486,7 +447,7 @@ exports.markMessagesSeen = async (req, res) => {
   try {
     const roomId = req.params.roomId;
     const userId = req.user._id || req.user.id;
-    const { messageIds } = req.body; // Optional array to mark specific, else marks all unread in room
+    const { messageIds } = req.body;
 
     const query = { roomId, seenBy: { $ne: userId } };
     if (messageIds && messageIds.length > 0) {
@@ -567,7 +528,7 @@ exports.clearChatForMe = async (req, res) => {
     const { roomId } = req.params;
     const userId = req.user._id || req.user.id;
     
-    await require('../models/Message').updateMany(
+    await Message.updateMany(
       { roomId, deletedFor: { $ne: userId } },
       { $push: { deletedFor: userId } }
     );
@@ -588,53 +549,46 @@ exports.deleteChatForMe = async (req, res) => {
       return res.status(404).json({ success: false, message: "Chat room not found" });
     }
 
-    if (room.type === "group") {
-      if (room.travelGroupId) {
-        const group = await TravelGroup.findById(room.travelGroupId);
-        if (group) {
-          if (group.host.toString() === userId.toString()) {
-            return res.status(400).json({
-              success: false,
-              message: "Hosts cannot leave their own travel group. Please complete or cancel the trip first.",
-            });
-          }
-
-          group.members = group.members.filter(
-            (member) => member.user && member.user.toString() !== userId.toString()
-          );
-
-          if (group.status === "full" && group.members.length < group.maxMembers) {
-            group.status = "open";
-          }
-
-          if (!group.activityLogs) {
-            group.activityLogs = [];
-          }
-          group.activityLogs.push({
-            action: "Left the group via chat deletion",
-            user: userId,
-            performedBy: userId,
+    if (room.type === "group" && room.travelGroupId) {
+      const group = await TravelGroup.findById(room.travelGroupId);
+      if (group) {
+        if (group.host.toString() === userId.toString()) {
+          return res.status(400).json({
+            success: false,
+            message: "Hosts cannot leave their own travel group. Please complete or cancel the trip first.",
           });
+        }
 
-          await group.save();
+        group.members = group.members.filter(
+          (member) => member.user && member.user.toString() !== userId.toString()
+        );
 
-          const JoinRequest = require("../models/JoinRequest");
-          await JoinRequest.deleteOne({
-            groupId: group._id,
-            userId,
+        if (group.status === "full" && group.members.length < group.maxMembers) {
+          group.status = "open";
+        }
+
+        if (!group.activityLogs) group.activityLogs = [];
+        group.activityLogs.push({
+          action: "Left the group via chat deletion",
+          user: userId,
+          performedBy: userId,
+        });
+
+        await group.save();
+
+        const JoinRequest = require("../models/JoinRequest");
+        await JoinRequest.deleteOne({ groupId: group._id, userId });
+
+        const Notification = require("../models/Notification");
+        const leavingUser = await User.findById(userId);
+        if (Notification && leavingUser) {
+          await Notification.create({
+            sender: userId,
+            receiver: group.host,
+            type: "group_left",
+            group: group._id,
+            message: `${leavingUser.name} left your travel group "${group.title}" by deleting the chat.`,
           });
-
-          const Notification = require("../models/Notification");
-          const leavingUser = await User.findById(userId);
-          if (Notification && leavingUser) {
-            await Notification.create({
-              sender: userId,
-              receiver: group.host,
-              type: "group_left",
-              group: group._id,
-              message: `${leavingUser.name} left your travel group "${group.title}" by deleting the chat.`,
-            });
-          }
         }
       }
 
@@ -648,7 +602,6 @@ exports.deleteChatForMe = async (req, res) => {
       });
     }
 
-    const Message = require('../models/Message');
     await Message.updateMany(
       { roomId, deletedFor: { $ne: userId } },
       { $push: { deletedFor: userId } }

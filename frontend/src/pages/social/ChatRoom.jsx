@@ -29,6 +29,9 @@ import { getAvatarUrl } from "../../utils/avatar";
 import EmojiPicker from "emoji-picker-react";
 import ChatBubble from "../../components/chat/ChatBubble";
 import StoryViewer from "../../components/story/StoryViewer";
+import ChatSidebar from "../../components/chat/ChatSidebar";
+import ChatHeader from "../../components/chat/ChatHeader";
+import ChatMessages from "../../components/chat/ChatMessages";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1413,451 +1416,37 @@ const ChatRoom = () => {
     <div className="h-[100dvh] w-full flex bg-white overflow-hidden">
       <style>{`.cs::-webkit-scrollbar{width:4px}.cs::-webkit-scrollbar-track{background:transparent}.cs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:8px}`}</style>
 
-      {/* LEFT PANE */}
-      <aside
-        className={`w-full lg:w-[300px] border-r border-slate-100 bg-white flex flex-col shrink-0 h-full ${
-          activeRoom ? "hidden lg:flex" : "flex"
-        }`}
-      >
-        {/* Header */}
-        <div className="px-4 pt-4 pb-3 border-b border-slate-100 space-y-3">
-          {isDeleteSelectionMode ? (
-            <div className="flex items-center justify-between h-8">
-              <span className="text-[13px] font-bold text-slate-900">
-                {selectedRoomIds.size} Selected
-              </span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => {
-                    setIsDeleteSelectionMode(false);
-                    setSelectedRoomIds(new Set());
-                  }}
-                  className="px-2.5 py-1 text-[11px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-lg transition-all"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleDeleteSelectedChats}
-                  disabled={selectedRoomIds.size === 0}
-                  className={`px-2.5 py-1 text-[11px] font-bold text-white rounded-lg transition-all flex items-center gap-1 ${
-                    selectedRoomIds.size === 0
-                      ? "bg-red-300 cursor-not-allowed"
-                      : "bg-red-500 hover:bg-red-600 active:scale-[0.98]"
-                  }`}
-                >
-                  <Trash2 className="w-3 h-3" />
-                  Delete
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/"
-                  className="p-1.5 text-slate-500 hover:text-[#6C4DF6] rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
-                  title="Back to Home"
-                >
-                  <Home className="w-4 h-4" />
-                </Link>
-                <h2 className="text-[15px] font-bold text-slate-900">Messages</h2>
-              </div>
-              <div className="flex items-center gap-2 relative">
-                <span
-                  className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    socketConnected
-                      ? "bg-emerald-50 text-emerald-600"
-                      : "bg-amber-50 text-amber-600"
-                  }`}
-                >
-                  <span
-                    className={`w-1.5 h-1.5 rounded-full ${
-                      socketConnected
-                        ? "bg-emerald-500"
-                        : "bg-amber-400 animate-pulse"
-                    }`}
-                  />
-                  {socketConnected ? "Online" : "Connecting"}
-                </span>
-                <button
-                  onClick={() => setShowListMoreOptions((prev) => !prev)}
-                  className="p-1 text-slate-500 hover:text-slate-900 rounded-lg hover:bg-slate-100 transition-colors flex items-center justify-center"
-                  title="Options"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-                {showListMoreOptions && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[999]"
-                      onClick={() => setShowListMoreOptions(false)}
-                    />
-                    <div className="absolute right-0 top-full mt-1.5 z-[1000] bg-white shadow-xl rounded-xl border border-slate-100 w-36 overflow-hidden py-1">
-                      <button
-                        onClick={() => {
-                          setIsDeleteSelectionMode(true);
-                          setShowListMoreOptions(false);
-                          setSelectedRoomIds(new Set());
-                        }}
-                        className="w-full text-left px-4 py-2.5 text-[12px] font-semibold text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2"
-                      >
-                        <Trash2 className="w-3.5 h-3.5 text-slate-500" />
-                        Delete Chats
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="relative">
-            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 text-[13px] pl-8 pr-8 py-2 rounded-lg outline-none border border-slate-200 focus:border-[#6C4DF6]/40 focus:ring-2 focus:ring-[#6C4DF6]/10 transition-all"
-            />
-            {searchQuery && (
-              <button
-                onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-
-          <div className="flex bg-slate-100 p-0.5 rounded-lg border-b border-transparent">
-            {["chats", "requests", "groups"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`flex-1 py-1.5 text-[11px] font-semibold capitalize rounded-md transition-all ${
-                  activeTab === tab
-                    ? "bg-white shadow-sm text-[#534AB7] border-b-2 border-[#534AB7]"
-                    : "text-slate-500 hover:text-slate-700"
-                }`}
-              >
-                {tab}
-                {tab === "requests" &&
-                  requestChats.length + followRequests.length > 0 && (
-                    <span className="ml-1 bg-[#FF5A7A] text-white px-1 py-0.5 rounded-full text-[9px]">
-                      {requestChats.length + followRequests.length}
-                    </span>
-                  )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Room List */}
-        <div
-          role="listbox"
-          className="flex-1 overflow-y-auto cs p-1.5 space-y-0.5"
-        >
-          {loading ? (
-            Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="p-3 rounded-xl animate-pulse flex gap-3">
-                <div className="w-10 h-10 bg-slate-100 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2 py-1">
-                  <div className="h-2.5 bg-slate-100 rounded w-1/2" />
-                  <div className="h-2.5 bg-slate-100 rounded w-3/4" />
-                </div>
-              </div>
-            ))
-          ) : filteredRooms.length === 0 &&
-            (activeTab !== "requests" ||
-              followRequests.filter(
-                (n) =>
-                  !searchQuery ||
-                  n.sender?.name
-                    ?.toLowerCase()
-                    .includes(searchQuery.toLowerCase()),
-              ).length === 0) &&
-            (!searchQuery ||
-              (globalUsers.filter(
-                (u) =>
-                  !filteredRooms.some(
-                    (r) =>
-                      r.type === "direct" &&
-                      r.members?.some((m) => m._id === u._id),
-                  ),
-              ).length === 0 &&
-                !isSearchingGlobal)) ? (
-            <div className="text-center py-10 px-4 select-none">
-              <MessageSquare className="w-8 h-8 text-slate-200 mx-auto mb-2" />
-              <p className="text-xs font-medium text-slate-400">
-                {searchQuery ? (
-                  "No users or conversations found"
-                ) : (
-                  <>
-                    {activeTab === "chats" && "No conversations yet"}
-                    {activeTab === "requests" && "No pending requests"}
-                    {activeTab === "groups" && "No group chats yet"}
-                  </>
-                )}
-              </p>
-            </div>
-          ) : (
-            <>
-              {searchQuery &&
-                (filteredRooms.length > 0 || globalUsers.length > 0) && (
-                  <div className="px-3 pt-2 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    Existing Chats
-                  </div>
-                )}
-              {filteredRooms.map((room) => {
-                const isSelected = activeRoom?._id === room._id;
-                const otherMember = room.members?.find(
-                  (member) =>
-                    (member._id || member)?.toString() !== currentUserId?.toString()
-                );
-                const isOnline =
-                  otherMember && onlineUsers.has(otherMember._id || otherMember);
-                const isTyping = typingUsers[room._id];
-                const isBlockedByMe =
-                  otherMember && user?.blockedUsers?.includes(otherMember._id || otherMember);
-
-                return (
-                  <div
-                    key={room._id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      if (isDeleteSelectionMode) {
-                        handleToggleRoomSelection(room._id);
-                      } else {
-                        selectRoom(room);
-                      }
-                    }}
-                    className={`group relative w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex items-center gap-3 cursor-pointer ${
-                      isSelected
-                        ? "bg-[#EEEDFE] shadow-sm border border-purple-100/50"
-                        : "hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
-                    }`}
-                  >
-                    {isDeleteSelectionMode && (
-                      <div className="flex items-center justify-center shrink-0" onClick={(e) => e.stopPropagation()}>
-                        <input
-                          type="checkbox"
-                          checked={selectedRoomIds.has(room._id)}
-                          onChange={() => handleToggleRoomSelection(room._id)}
-                          className="w-4 h-4 text-[#6C4DF6] border-slate-300 rounded focus:ring-[#6C4DF6] cursor-pointer"
-                        />
-                      </div>
-                    )}
-                    <div className="relative shrink-0">
-                      {room.type === "group" ? (
-                        <div className="w-10 h-10 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
-                          <Users className="w-5 h-5 text-[#6C4DF6]" />
-                        </div>
-                      ) : (
-                        <img
-                          src={getAvatar(room, room.name)}
-                          alt={room.name}
-                          className={`w-10 h-10 rounded-full object-cover ${isBlockedByMe ? "opacity-50 grayscale" : ""}`}
-                        />
-                      )}
-                      {isOnline && room.type === "direct" && !isBlockedByMe && (
-                        <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                      )}
-                    </div>
-
-                    <div className="flex-1 min-w-0 flex flex-col justify-center">
-                      <div className="flex justify-between items-center mb-0.5">
-                        <div className="flex items-center gap-1.5 truncate">
-                          <span
-                            className={`text-[13px] truncate ${
-                              room.unreadCount > 0
-                                ? "font-bold text-slate-900"
-                                : "font-medium text-slate-700"
-                            }`}
-                          >
-                            {room.name}
-                          </span>
-                          {isBlockedByMe && (
-                            <span className="bg-slate-100 text-slate-500 text-[10px] rounded-full px-2 py-0.5 shrink-0">
-                              🔒 Blocked
-                            </span>
-                          )}
-                        </div>
-                        {room.latestMessage && (
-                          <span
-                            className={`text-[10px] whitespace-nowrap ml-2 ${
-                              room.unreadCount > 0
-                                ? "font-bold text-[#6C4DF6]"
-                                : "text-slate-400"
-                            }`}
-                          >
-                            {formatTime(room.latestMessage.createdAt)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <p
-                          className={`text-[12px] truncate pr-2 ${
-                            room.unreadCount > 0
-                              ? "font-medium text-[#2C2C2A]"
-                              : "font-normal text-[#888780]"
-                          }`}
-                        >
-                          {isTyping ? (
-                            <span className="text-[#6C4DF6] italic">
-                              {isTyping} typing...
-                            </span>
-                          ) : room.latestMessage ? (
-                            getLatestMessagePreview(room.latestMessage, currentUserId)
-                          ) : (
-                            "Start chatting"
-                          )}
-                        </p>
-                        {room.unreadCount > 0 && !isSelected && (
-                          <span className="bg-[#6C4DF6] text-white min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold shrink-0">
-                            {room.unreadCount}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              {activeTab === "requests" &&
-                followRequests
-                  .filter(
-                    (n) =>
-                      !searchQuery ||
-                      n.sender?.name
-                        ?.toLowerCase()
-                        .includes(searchQuery.toLowerCase()),
-                  )
-                  .map((n) => (
-                    <div
-                      key={n._id}
-                      className={`w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 border border-transparent`}
-                    >
-                      <div
-                        className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => navigate(`/profile/${n.sender?._id}`)}
-                      >
-                        <img
-                          src={getAvatar(n.sender, n.sender?.name)}
-                          alt={n.sender?.name}
-                          className="w-10 h-10 rounded-full object-cover"
-                        />
-                      </div>
-
-                      <div className="flex-1 min-w-0 flex flex-col justify-center">
-                        <div className="flex justify-between items-center mb-0.5">
-                          <div
-                            className="flex items-center gap-1.5 truncate cursor-pointer hover:opacity-80"
-                            onClick={() =>
-                              navigate(`/profile/${n.sender?._id}`)
-                            }
-                          >
-                            <span className="text-[13px] truncate font-medium text-slate-700 hover:underline">
-                              {n.sender?.name}
-                            </span>
-                            <span className="bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider">
-                              Follow
-                            </span>
-                          </div>
-                          <span className="text-[10px] whitespace-nowrap ml-2 text-slate-400">
-                            {formatTime(n.createdAt)}
-                          </span>
-                        </div>
-                        <div className="flex justify-between items-center mt-1">
-                          <div className="flex gap-2 w-full">
-                            <button
-                              onClick={(e) =>
-                                handleAcceptFollow(e, n.sender?._id)
-                              }
-                              className="flex-1 py-1 bg-[#6C4DF6] text-white text-[11px] font-bold rounded hover:bg-[#5b3ee0] transition-colors"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              onClick={(e) =>
-                                handleRejectFollow(e, n.sender?._id)
-                              }
-                              className="flex-1 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded hover:bg-slate-200 transition-colors"
-                            >
-                              Decline
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-              {searchQuery && (
-                <>
-                  <div className="px-3 pt-4 pb-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                    People
-                  </div>
-                  {isSearchingGlobal ? (
-                    <div className="p-3 text-center text-xs text-slate-400 animate-pulse">
-                      Searching...
-                    </div>
-                  ) : globalUsers.filter(
-                      (u) =>
-                        !filteredRooms.some(
-                          (r) =>
-                            r.type === "direct" &&
-                            r.members?.some((m) => m._id === u._id),
-                        ),
-                    ).length === 0 ? (
-                    <div className="p-3 text-center text-xs text-slate-400">
-                      No new people found
-                    </div>
-                  ) : (
-                    globalUsers
-                      .filter(
-                        (u) =>
-                          !filteredRooms.some(
-                            (r) =>
-                              r.type === "direct" &&
-                              r.members?.some((m) => m._id === u._id),
-                          ),
-                      )
-                      .map((u) => (
-                        <button
-                          key={u._id}
-                          onClick={() => handleSelectGlobalUser(u)}
-                          className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
-                        >
-                          <div className="relative shrink-0">
-                            <img
-                              src={getAvatar(u, u.name)}
-                              alt={u.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                            {onlineUsers.has(u._id) && (
-                              <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0 flex flex-col justify-center">
-                            <div className="flex justify-between items-center mb-0.5">
-                              <span className="text-[13px] truncate font-medium text-slate-700">
-                                {u.name}
-                              </span>
-                            </div>
-                            <p className="text-[12px] truncate pr-2 font-normal text-[#888780]">
-                              {u.role || u.type || "Traveler"}
-                            </p>
-                          </div>
-                        </button>
-                      ))
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </div>
-      </aside>
+            <ChatSidebar
+        isDeleteSelectionMode={isDeleteSelectionMode}
+        selectedRoomIds={selectedRoomIds}
+        setIsDeleteSelectionMode={setIsDeleteSelectionMode}
+        setSelectedRoomIds={setSelectedRoomIds}
+        handleDeleteSelectedChats={handleDeleteSelectedChats}
+        socketConnected={socketConnected}
+        showListMoreOptions={showListMoreOptions}
+        setShowListMoreOptions={setShowListMoreOptions}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        requestChats={requestChats}
+        followRequests={followRequests}
+        loading={loading}
+        filteredRooms={filteredRooms}
+        activeRoom={activeRoom}
+        handleSelectRoom={selectRoom}
+        handleToggleRoomSelection={handleToggleRoomSelection}
+        currentUserId={currentUserId}
+        onlineUsers={onlineUsers}
+        getAvatar={getAvatar}
+        getLatestMessagePreview={getLatestMessagePreview}
+        formatTime={formatTime}
+        isSearchingGlobal={isSearchingGlobal}
+        globalUsers={globalUsers}
+        handleSelectGlobalUser={handleSelectGlobalUser}
+        handleAcceptFollowRequest={handleAcceptFollow}
+        handleDeclineFollowRequest={handleRejectFollow}
+      />
 
       {/* RIGHT PANE */}
       <main
@@ -1867,284 +1456,44 @@ const ChatRoom = () => {
       >
         {activeRoom ? (
           <>
-            {/* Chat Header */}
-            <div className="h-16 px-5 bg-white/90 backdrop-blur-md border-b border-slate-100 flex justify-between items-center shrink-0 z-50 sticky top-0 shadow-[0_2px_10px_-5px_rgba(0,0,0,0.02)]">
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => setActiveRoom(null)}
-                  className="p-1.5 -ml-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors lg:hidden"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
-                <div className="relative">
-                  {activeRoom.type === "group" ? (
-                    <div className="w-9 h-9 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
-                      <Users className="w-4.5 h-4.5 text-[#6C4DF6]" />
-                    </div>
-                  ) : (
-                    <img
-                      src={getAvatar(activeRoom, activeRoom.name)}
-                      alt=""
-                      className="w-9 h-9 rounded-full object-cover"
-                    />
-                  )}
-                  {activeRoom.type === "direct" &&
-                    (() => {
-                      const other = activeRoom.members?.find(
-                        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                      );
-                      const otherId = other?._id || other;
-                      return otherId && onlineUsers.has(otherId);
-                    })() && (
-                      <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />
-                    )}
-                </div>
-                <div>
-                  <h3 className="text-[14px] font-bold text-slate-900 flex items-center gap-1.5">
-                    {activeRoom.name}
-                    {activeRoom.type === "group" && (
-                      <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider">
-                        Group
-                      </span>
-                    )}
-                  </h3>
-                  <div
-                    className={`text-[11px] font-medium mt-0.5 ${
-                      activeRoom.type === "group"
-                        ? "text-slate-400"
-                        : (() => {
-                            const other = activeRoom.members?.find(
-                              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                            );
-                            const otherId = other?._id || other;
-                            return otherId && onlineUsers.has(otherId);
-                          })()
-                          ? "text-emerald-500"
-                          : "text-slate-400"
-                    }`}
-                  >
-                    {activeRoom.type === "direct" &&
-                    (() => {
-                      const other = activeRoom.members?.find(
-                        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                      );
-                      const otherId = other?._id || other;
-                      return otherId && user?.blockedUsers?.includes(otherId);
-                    })() ? (
-                      <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
-                        🔒 Blocked
-                      </span>
-                    ) : activeRoom.type === "group" ? (
-                      `${activeRoom.members?.length || 0} members`
-                    ) : (() => {
-                        const other = activeRoom.members?.find(
-                          (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                        );
-                        const otherId = other?._id || other;
-                        return otherId && onlineUsers.has(otherId);
-                      })() ? (
-                      "Online"
-                    ) : (
-                      "Offline"
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1">
-                {activeRoom.travelGroupId && (
-                  <Link
-                    to={`/social/buddy/${activeRoom.travelGroupId._id || activeRoom.travelGroupId}`}
-                    className="hidden sm:flex items-center gap-1 px-2.5 py-1.5 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-lg text-[12px] font-semibold transition-all"
-                  >
-                    <Compass className="w-3.5 h-3.5" /> Trip
-                  </Link>
-                )}
-                <button
-                  aria-label="Start voice call"
-                  className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
-                >
-                  <Phone className="w-4 h-4" />
-                </button>
-                <button
-                  aria-label="Start video call"
-                  className="p-2 text-slate-400 hover:text-[#6C4DF6] hover:bg-slate-50 rounded-lg transition-all hidden sm:flex"
-                >
-                  <Video className="w-4 h-4" />
-                </button>
-                <div ref={headerOptionsRef}>
-                  <button
-                    onClick={() => setShowHeaderOptions(!showHeaderOptions)}
-                    aria-label="More options"
-                    className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all"
-                  >
-                    <MoreVertical className="w-4 h-4" />
-                  </button>
-                  {showHeaderOptions && (
-                    <div className="absolute right-4 top-14 z-[9999] w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-[0_20px_60px_rgba(15,23,42,0.15)] border border-slate-100 overflow-hidden py-1 flex flex-col">
-                      {activeRoom.type === "direct" &&
-                        (() => {
-                          const otherUser = activeRoom.members?.find(
-                            (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                          );
-                          const isBlocked =
-                            otherUser &&
-                            user?.blockedUsers?.includes(otherUser._id || otherUser);
-                          return (
-                            <>
-                              <button
-                                onClick={handleReportUser}
-                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
-                              >
-                                Report User
-                              </button>
-                              <button
-                                onClick={handleBlockUser}
-                                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
-                              >
-                                {isBlocked ? "Unblock User" : "Block User"}
-                              </button>
-                              <div className="border-t border-slate-100"></div>
-                            </>
-                          );
-                        })()}
-                      <button
-                        onClick={handleClearChat}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
-                      >
-                        Clear Chat
-                      </button>
-                      <button
-                        onClick={(e) => handleDeleteChat(activeRoom, e)}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-red-50 transition-colors flex items-center gap-2"
-                      >
-                        <Trash2 className="w-4 h-4" /> Delete Chat
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {/* Messages */}
-            <div
-              className="flex-1 overflow-y-auto cs px-5 sm:px-8 py-6 space-y-3 bg-gradient-to-b from-white to-purple-50/30 relative"
-              aria-live="polite"
-              ref={chatContainerRef}
-              onScroll={handleScroll}
-            >
-              {messages.length === 0 ? (
-                <div className="h-full flex flex-col items-center justify-center text-center p-8 select-none">
-                  <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center mb-4 shadow-sm border border-purple-100/50">
-                    <MessageSquare className="w-8 h-8 text-purple-400" />
-                  </div>
-                  {activeRoom.type === "direct" &&
-                  activeRoom.requestStatus === "pending" &&
-                  activeRoom.requestedBy?.toString() !== currentUserId?.toString() ? (
-                    <>
-                      <h4 className="text-sm font-bold text-slate-600">
-                        Message Request
-                      </h4>
-                      <p className="text-xs text-slate-400 mt-1">
-                        Accept the request below to reply.
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <h4 className="text-base font-bold text-slate-700">
-                        Start your travel conversation ✈️
-                      </h4>
-                      <p className="text-[13px] text-slate-400 mt-1.5 max-w-[250px] leading-relaxed">
-                        Say hello and start planning your next great adventure!
-                      </p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                messages.map((msg, index) => {
-                  const isSelf =
-                    (msg.sender?._id || msg.sender)?.toString() === currentUserId?.toString();
-                  const showDate =
-                    index === 0 ||
-                    new Date(msg.createdAt).toDateString() !==
-                      new Date(messages[index - 1].createdAt).toDateString();
-                  const showAvatar =
-                    !isSelf &&
-                    (index === 0 ||
-                      (messages[index - 1].sender?._id || messages[index - 1].sender)?.toString() !==
-                        (msg.sender?._id || msg.sender)?.toString() ||
-                      showDate);
-
-                  // Hide duplicate story preview for consecutive
-                  // messages referencing the same story (show it only on the first one)
-                  const currentStoryRef = msg.storyId
-                    ? typeof msg.storyId === "object"
-                      ? msg.storyId._id
-                      : msg.storyId
-                    : null;
-                  const prevMsg = index > 0 ? messages[index - 1] : null;
-                  const prevStoryRef = prevMsg?.storyId
-                    ? typeof prevMsg.storyId === "object"
-                      ? prevMsg.storyId._id
-                      : prevMsg.storyId
-                    : null;
-                  const hideStoryPreview =
-                    !!currentStoryRef &&
-                    !!prevStoryRef &&
-                    currentStoryRef?.toString() === prevStoryRef?.toString() &&
-                    !showDate;
-
-                  return (
-                    <div key={msg._id || index}>
-                      {showDate && (
-                        <div className="flex items-center justify-center my-3">
-                          <span className="bg-[#F1EFE8] text-[#5F5E5A] px-3 py-1 rounded-full text-[12px] font-medium">
-                            {formatDateLabel(msg.createdAt)}
-                          </span>
-                        </div>
-                      )}
-                      <ChatBubble
-                        msg={msg}
-                        isSelf={isSelf}
-                        showAvatar={showAvatar}
-                        senderPic={getAvatar(msg.senderPic, msg.senderName)}
-                        senderName={msg.senderName}
-                        currentUserName={user?.name}
-                        activeRoomType={activeRoom.type}
-                        onDelete={handleDeleteForMe}
-                        onUnsend={handleUnsend}
-                        onReply={setReplyToMsg}
-                        onReaction={handleReaction}
-                        onStoryClick={handleOpenStory}
-                        formatTime={formatTime}
-                        activeMessageOptions={activeMessageOptions}
-                        setActiveMessageOptions={setActiveMessageOptions}
-                        hideStoryPreview={hideStoryPreview}
-                      />
-                    </div>
-                  );
-                })
-              )}
-
-              {typingUsers[activeRoom._id] && (
-                <div className="flex items-end gap-2 justify-start">
-                  {activeRoom.type === "group" && (
-                    <div className="w-7 shrink-0" />
-                  )}
-                  <div className="bg-white border border-slate-100 rounded-2xl rounded-bl-sm px-3.5 py-2.5 shadow-sm flex items-center gap-1">
-                    {[0, 150, 300].map((delay) => (
-                      <div
-                        key={delay}
-                        className="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce"
-                        style={{ animationDelay: `${delay}ms` }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
+                        <ChatHeader
+              activeRoom={activeRoom}
+              setActiveRoom={setActiveRoom}
+              currentUserId={currentUserId}
+              onlineUsers={onlineUsers}
+              user={user}
+              getAvatar={getAvatar}
+              showHeaderOptions={showHeaderOptions}
+              setShowHeaderOptions={setShowHeaderOptions}
+              headerOptionsRef={headerOptionsRef}
+              handleReportUser={handleReportUser}
+              handleBlockUser={handleBlockUser}
+              handleClearChat={handleClearChat}
+              handleDeleteChat={handleDeleteChat}
+            />
+            
+                        {/* Messages */}
+            <ChatMessages
+              messages={messages}
+              currentUserId={currentUserId}
+              user={user}
+              activeRoom={activeRoom}
+              chatContainerRef={chatContainerRef}
+              handleScroll={handleScroll}
+              formatDateLabel={formatDateLabel}
+              formatTime={formatTime}
+              getAvatar={getAvatar}
+              handleDeleteForMe={handleDeleteForMe}
+              handleUnsend={handleUnsend}
+              setReplyToMsg={setReplyToMsg}
+              handleReaction={handleReaction}
+              handleOpenStory={handleOpenStory}
+              activeMessageOptions={activeMessageOptions}
+              setActiveMessageOptions={setActiveMessageOptions}
+              typingUsers={typingUsers}
+              messagesEndRef={messagesEndRef}
+            />
+            
             {/* Input / Request Area */}
             {activeRoom.type === "direct" &&
             activeRoom.requestStatus === "pending" ? (

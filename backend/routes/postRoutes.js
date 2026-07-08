@@ -2,9 +2,18 @@ const express = require("express");
 const router = express.Router();
 const Post = require("../models/Post");
 const User = require("../models/User");
+
+// Destructured imports - verify these match your exports in the middleware files!
 const { userMiddleware } = require("../middleware/authMiddleware");
 const { checkSuspended } = require("../middleware/verifyToken");
 
+// --- Safety Debugging Check ---
+if (!userMiddleware || !checkSuspended) {
+  console.error("❌ MIDDLEWARE IMPORT ERROR:");
+  console.error("userMiddleware status:", userMiddleware ? "Loaded ✅" : "UNDEFINED ❌");
+  console.error("checkSuspended status:", checkSuspended ? "Loaded ✅" : "UNDEFINED ❌");
+  console.error("Please ensure you are using 'module.exports = { ... }' in your middleware files.");
+}
 // GET /api/posts/feed
 // Returns posts created by users whom the current user is following, sorted by most recent.
 router.get("/feed", userMiddleware, async (req, res) => {
@@ -98,7 +107,13 @@ router.post("/comment/:id", userMiddleware, checkSuspended, async (req, res) => 
     post.comments.push(comment._id);
     await post.save();
 
-    res.status(200).json({ success: true, comment: { ...comment.toObject(), userId: { name: currentUser.name, pic: currentUser.pic || currentUser.avatar } } });
+    res.status(200).json({ 
+      success: true, 
+      comment: { 
+        ...comment.toObject(), 
+        userId: { name: currentUser.name, pic: currentUser.pic || currentUser.avatar } 
+      } 
+    });
   } catch (error) {
     console.error("Comment post error:", error);
     res.status(500).json({ success: false, message: "Server error" });

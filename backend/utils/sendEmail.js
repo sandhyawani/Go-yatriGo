@@ -1,7 +1,7 @@
 const nodemailer = require("nodemailer");
 
 const sendEmail = async (options) => {
-  // If email credentials are not set, just log to console (useful for development)
+  
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn(
       "⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables.",

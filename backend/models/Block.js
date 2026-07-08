@@ -28,4 +28,15 @@ blockSchema.index(
   { unique: true }
 );
 
+// Optimize reverse queries (checking if current user is blocked by someone)
+blockSchema.index({ blocked: 1 });
+
+// Prevent users from blocking themselves
+blockSchema.pre("save", function (next) {
+  if (this.blocker.toString() === this.blocked.toString()) {
+    return next(new Error("You cannot block yourself."));
+  }
+  next();
+});
+
 module.exports = mongoose.model("Block", blockSchema);

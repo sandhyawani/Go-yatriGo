@@ -8,7 +8,6 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Post",
       required: true,
-      index: true,
     },
 
     // User who wrote the comment
@@ -16,20 +15,6 @@ const commentSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
-    },
-
-    // Username at the time of commenting
-    userName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    // User profile picture
-    userPic: {
-      type: String,
-      default: "",
     },
 
     // Comment content
@@ -45,7 +30,10 @@ const commentSchema = new mongoose.Schema(
   }
 );
 
-// Improve query performance
+// High-performance index for loading a post's comment feed chronologically
 commentSchema.index({ postId: 1, createdAt: -1 });
+
+// Index for lookup chains tracking historical comments written by a specific user
+commentSchema.index({ userId: 1 });
 
 module.exports = mongoose.model("Comment", commentSchema);

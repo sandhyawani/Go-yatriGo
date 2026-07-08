@@ -3,7 +3,6 @@ import React from "react";
 import Layout from "./components/Layout/Layout";
 import "./App.css";
 
-
 import ErrorBoundary from "./components/ErrorBoundary";
 import ScrollToTop from "./components/ScrollToTop";
 import AppToast from "./components/ui/AppToast";

@@ -30,10 +30,7 @@ const createTicket = asyncHandler(async (req, res) => {
 
   await ticket.save();
 
-  // Mock email notification
-  console.info(
-    `[MOCK EMAIL] New support ticket created: ${ticket.trackingId} by User ${req.user._id}`
-  );
+  
 
   res.status(201).json({
     success: true,
@@ -86,10 +83,7 @@ const submitContactForm = asyncHandler(async (req, res) => {
 
   await ticket.save();
 
-  // Mock confirmation email
-  console.info(
-    `[MOCK EMAIL] Contact form received from ${req.user.email}. Tracking ID: ${ticket.trackingId}`
-  );
+  
 
   res.status(200).json({
     success: true,
@@ -122,10 +116,21 @@ const replyTicket = asyncHandler(async (req, res) => {
     });
   }
 
+  // Guard clause for closed tickets
+  if (ticket.status === "Closed") {
+    return res.status(400).json({
+      success: false,
+      message: "Cannot reply to a closed ticket. Please open a new one.",
+    });
+  }
+
   ticket.replies.push({
     sender: req.user._id,
     message,
   });
+  
+  // Reset status back to open if it was marked pending or resolved
+  ticket.status = "Open";
 
   await ticket.save();
 
