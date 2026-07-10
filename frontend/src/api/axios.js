@@ -1,9 +1,28 @@
 import axios from 'axios';
 
-const isProduction = process.env.NODE_ENV === 'production';
-const baseURL =
+const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
+let baseURL =
   process.env.REACT_APP_API_URL ||
-  (isProduction ? '/api' : 'http://localhost:5000/api');
+  (isProduction ? 'https://go-yatrigo.onrender.com/api' : 'http://localhost:5000/api');
+
+// Auto-correct any configuration errors or typos in the environment variables
+if (baseURL) {
+  // 1. Correct the two-hyphen typo if present
+  baseURL = baseURL.replace('go-yatri-go.onrender.com', 'go-yatrigo.onrender.com');
+  
+  // 2. Override localhost in production
+  if (isProduction && baseURL.includes('localhost')) {
+    baseURL = 'https://go-yatrigo.onrender.com/api';
+  }
+  
+  // 3. Ensure trailing slashes are removed
+  baseURL = baseURL.replace(/\/+$/, '');
+  
+  // 4. Ensure it ends with /api (only if it doesn't already)
+  if (!baseURL.endsWith('/api')) {
+    baseURL = `${baseURL}/api`;
+  }
+}
 
 const axiosInstance = axios.create({
   baseURL,
