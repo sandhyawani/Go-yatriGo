@@ -101,6 +101,7 @@ app.get("/", (req, res) => {
 
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
+app.use("/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
 app.use("/api/posts", require("./routes/postRoutes"));
 app.use("/api/stories", require("./routes/storyRoutes"));
