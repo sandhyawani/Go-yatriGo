@@ -1123,24 +1123,7 @@ const Home = () => {
               handleAvatarError={handleAvatarError}
             />
 
-            {user && !isBannerDismissed && ((user.postsCount || 0) === 0 || memories.filter(m => m.user?._id === myUserId || m.user === myUserId).length === 0) && (
-              <div className="bg-gradient-to-r from-brand-600 to-indigo-600 rounded-3xl p-6 text-white shadow-md relative overflow-hidden mb-6 select-none">
-                <div className="absolute top-0 right-0 w-[300px] h-[300px] bg-white/10 rounded-full blur-[80px] translate-x-1/3 -translate-y-1/3 pointer-events-none" />
-                <button
-                  onClick={handleDismissBanner}
-                  className="absolute top-4 right-4 p-1.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
-                  aria-label="Dismiss banner"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-                <h2 className="text-xl sm:text-2xl font-black mb-1.5 flex items-center gap-2">
-                  ✈️ Welcome to Go YatriGo, {user?.name || "Explorer"}!
-                </h2>
-                <p className="text-xs sm:text-sm text-white/80 font-medium max-w-lg leading-relaxed">
-                  Discover new destinations, connect with nearby travelers, and share your travel memories with the community.
-                </p>
-              </div>
-            )}
+
 
             {/* Feed posts */}
             {loadingMemories ? (
