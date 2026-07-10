@@ -566,3 +566,4 @@ const FeedCard = React.forwardRef(
 FeedCard.displayName = "FeedCard";
 
 export default FeedCard;
+

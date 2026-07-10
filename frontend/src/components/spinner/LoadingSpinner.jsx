@@ -12,3 +12,4 @@ const LoadingSpinner = ({ className = "h-12 w-12 border-gray-900", containerClas
 };
 
 export default LoadingSpinner;
+

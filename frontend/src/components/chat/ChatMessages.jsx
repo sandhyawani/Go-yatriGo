@@ -24,15 +24,15 @@ export const ChatMessages = ({
 }) => {
   return (
     <div
-      className="flex-1 overflow-y-auto cs px-5 sm:px-8 py-6 space-y-3 bg-gradient-to-b from-white to-purple-50/30 relative"
+      className="flex-1 overflow-y-auto cs px-5 sm:px-8 py-6 space-y-3 bg-gradient-to-b from-white to-brand-50/30 relative"
       aria-live="polite"
       ref={chatContainerRef}
       onScroll={handleScroll}
     >
       {messages.length === 0 ? (
         <div className="h-full flex flex-col items-center justify-center text-center p-8 select-none">
-          <div className="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center mb-4 shadow-sm border border-purple-100/50">
-            <MessageSquare className="w-8 h-8 text-purple-400" />
+          <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-4 shadow-sm border border-brand-100/50">
+            <MessageSquare className="w-8 h-8 text-brand-400" />
           </div>
           {activeRoom.type === "direct" &&
           activeRoom.requestStatus === "pending" &&
@@ -144,3 +144,4 @@ export const ChatMessages = ({
 };
 
 export default ChatMessages;
+

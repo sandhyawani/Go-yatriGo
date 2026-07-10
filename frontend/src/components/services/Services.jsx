@@ -33,7 +33,7 @@ const categories = [
     icon: <Calendar className="w-6 h-6" />,
     path: "/activities",
     description: "Explore unique local experiences, workshops, and seasonal festivals.",
-    color: "bg-purple-50 text-purple-600",
+    color: "bg-brand-50 text-brand-600",
     action: "See Events"
   },
 ];
@@ -116,3 +116,4 @@ const Services = () => {
 };
 
 export default Services;
+

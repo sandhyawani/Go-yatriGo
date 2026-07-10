@@ -9,7 +9,7 @@ export const GlobalUserItem = ({
   return (
     <button
       onClick={() => handleSelectGlobalUser(u)}
-      className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
+      className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-brand-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
     >
       <div className="relative shrink-0">
         <img
@@ -35,3 +35,4 @@ export const GlobalUserItem = ({
   );
 };
 export default GlobalUserItem;
+

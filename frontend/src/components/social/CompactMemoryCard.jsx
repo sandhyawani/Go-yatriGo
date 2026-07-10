@@ -42,7 +42,7 @@ const CompactMemoryCard = ({ item }) => {
         return {
           icon: <Clapperboard className="w-3 h-3" />,
           label: "Story",
-          bg: "bg-white/95 text-purple-600",
+          bg: "bg-white/95 text-brand-600",
         };
       case "group":
         return {
@@ -74,7 +74,7 @@ const CompactMemoryCard = ({ item }) => {
         return {
           icon: <Video className="w-3 h-3" />,
           label: "Video",
-          bg: "bg-white/95 text-indigo-600",
+          bg: "bg-white/95 text-brand-600",
         };
       default:
         return {
@@ -211,7 +211,7 @@ const CompactMemoryCard = ({ item }) => {
             )}
             {item.location && (
               <div className="flex items-center gap-1.5 text-white/90 text-xs font-bold mb-2 line-clamp-1">
-                <MapPin className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                <MapPin className="w-3.5 h-3.5 text-brand-400 shrink-0" />
                 {item.location}
               </div>
             )}
@@ -242,3 +242,4 @@ const CompactMemoryCard = ({ item }) => {
 };
 
 export default CompactMemoryCard;
+

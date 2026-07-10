@@ -25,3 +25,4 @@ export const SidebarTabs = ({ activeTab, setActiveTab, requestChats, followReque
   );
 };
 export default SidebarTabs;
+

@@ -182,7 +182,7 @@ const MemberSelector = ({
               onClick={() => handleTabChange(t.id)}
               className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
                 isActive
-                  ? "bg-white dark:bg-slate-900 text-[#6C4DF6] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700"
+                  ? "bg-white dark:bg-slate-900 text-[#8B5CF6] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700"
                   : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
               }`}
             >
@@ -207,7 +207,7 @@ const MemberSelector = ({
           }
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full bg-white dark:bg-slate-900 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-hidden focus:border-[#6C4DF6] shadow-xs"
+          className="w-full bg-white dark:bg-slate-900 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-hidden focus:border-[#8B5CF6] shadow-xs"
         />
       </div>
 
@@ -215,7 +215,7 @@ const MemberSelector = ({
       <div className="max-h-72 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
         {loading ? (
           <div className="p-8 text-center space-y-2">
-            <div className="w-6 h-6 border-2 border-[#6C4DF6] border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="w-6 h-6 border-2 border-[#8B5CF6] border-t-transparent rounded-full animate-spin mx-auto" />
             <p className="text-xs text-slate-500">
               Scanning traveler network...
             </p>
@@ -246,8 +246,8 @@ const MemberSelector = ({
                   onClick={() => toggleUser(u._id)}
                   className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group select-none ${
                     isSelected
-                      ? "bg-[#6C4DF6]/10 border-[#6C4DF6] dark:bg-[#6C4DF6]/20"
-                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#6C4DF6]/40 shadow-xs"
+                      ? "bg-[#8B5CF6]/10 border-[#8B5CF6] dark:bg-[#8B5CF6]/20"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#8B5CF6]/40 shadow-xs"
                   }`}
                 >
                   <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-2">
@@ -279,7 +279,7 @@ const MemberSelector = ({
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
                         {activeTab === "Previous Companions" ? (
                           <>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-purple-50 dark:bg-purple-950/60 text-[#6C4DF6] dark:text-purple-300 text-[10px] font-extrabold border border-purple-100 dark:border-purple-800/60">
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/60 text-[#8B5CF6] dark:text-brand-300 text-[10px] font-extrabold border border-brand-100 dark:border-brand-800/60">
                               🏕 {u.tripsCount || 1}{" "}
                               {u.tripsCount === 1 ? "Trip" : "Trips"} Together
                             </span>
@@ -312,8 +312,8 @@ const MemberSelector = ({
                     }}
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
                       isSelected
-                        ? "bg-[#6C4DF6] text-white shadow-md shadow-[#6C4DF6]/30"
-                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#6C4DF6]/10 hover:text-[#6C4DF6]"
+                        ? "bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#8B5CF6]/10 hover:text-[#8B5CF6]"
                     }`}
                   >
                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -341,9 +341,9 @@ const MemberSelector = ({
       </div>
 
       {/* Selected Counter Summary Footer */}
-      <div className="sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-purple-200 dark:border-purple-800/60 shadow-lg flex items-center justify-between z-10">
+      <div className="sticky bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-brand-200 dark:border-brand-800/60 shadow-lg flex items-center justify-between z-10">
         <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-[#6C4DF6] animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#8B5CF6] animate-pulse" />
           <span className="text-xs font-black text-slate-800 dark:text-slate-100">
             Selected Members ({selectedIds.length})
           </span>
@@ -363,3 +363,4 @@ const MemberSelector = ({
 };
 
 export default MemberSelector;
+

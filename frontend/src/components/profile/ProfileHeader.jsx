@@ -4,6 +4,7 @@ import {
   Phone,
   Globe,
   Calendar,
+  MapPin,
   Clock,
   Edit,
   UserPlus,
@@ -41,18 +42,33 @@ export const ProfileHeader = ({
   userMemories,
   userTrips,
   openRelationsModal,
-  setActiveTab
+  setActiveTab,
+  userStories = [],
+  handleOpenStory
 }) => {
   const createdatnew = profileUser?.createdAt
     ? moment(profileUser.createdAt).format("MMMM YYYY")
     : "December 2023";
+
+  const hasStories = userStories && userStories.length > 0;
 
   return (
     <div className="bg-white/90 backdrop-blur-xl p-6 sm:p-8 rounded-3xl shadow-[0_10px_40px_rgba(0,0,0,0.06)] border border-white/50">
       <div className="flex flex-col md:flex-row items-center md:items-start gap-8 sm:gap-10">
         {/* Avatar Frame with gradient story ring */}
         <div className="relative shrink-0 select-none group">
-          <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 bg-gradient-to-tr from-pink-500 via-purple-500 to-indigo-500 shadow-lg group-hover:scale-105 transition-transform duration-300">
+          <div
+            onClick={() => {
+              if (hasStories && handleOpenStory) {
+                handleOpenStory(0);
+              }
+            }}
+            className={`w-28 h-28 sm:w-32 sm:h-32 rounded-full p-1 transition-all duration-300 ${
+              hasStories
+                ? "bg-gradient-to-tr from-brand-400 via-brand-500 to-brand-600 shadow-lg group-hover:scale-105 cursor-pointer active:scale-95"
+                : "bg-slate-200/80 shadow-sm"
+            }`}
+          >
             <div className="w-full h-full rounded-full bg-white p-1">
               <img
                 src={getAvatarUrl(
@@ -64,7 +80,7 @@ export const ProfileHeader = ({
                 alt={profileUser.name}
                 onError={(e) => {
                   e.target.onerror = null;
-                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name || "Explorer")}&background=6C4DF6&color=fff&bold=true`;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profileUser.name || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
                 }}
               />
             </div>
@@ -105,8 +121,8 @@ export const ProfileHeader = ({
             {!isOwnProfile ? (
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start items-center w-full">
                 {hasPendingRequestForMe && (
-                  <div className="flex gap-2 w-full sm:w-auto bg-purple-50/50 p-1.5 rounded-xl border border-purple-100 mb-2 sm:mb-0">
-                    <span className="text-[11px] font-bold text-purple-600 self-center px-2 hidden sm:inline-block">
+                  <div className="flex gap-2 w-full sm:w-auto bg-brand-50/50 p-1.5 rounded-xl border border-brand-100 mb-2 sm:mb-0">
+                    <span className="text-[11px] font-bold text-brand-600 self-center px-2 hidden sm:inline-block">
                       Pending Request:
                     </span>
                     <button
@@ -262,7 +278,7 @@ export const ProfileHeader = ({
             <div className="font-semibold text-lg text-slate-900 flex flex-wrap items-center justify-center md:justify-start gap-2">
               <span>{profileUser.name}</span>
               {profileUser.verificationStatus === "verified" && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-purple-500/10 text-purple-600 border-purple-500/20">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border bg-brand-500/10 text-brand-600 border-brand-500/20">
                   <ShieldCheck className="w-3.5 h-3.5" /> Verified Traveler
                 </span>
               )}
@@ -306,10 +322,27 @@ export const ProfileHeader = ({
                   {profileUser.mobile}
                 </span>
               )}
-              <span className="flex items-center gap-1.5">
-                <Globe className="w-4 h-4 text-slate-400" />{" "}
-                {profileUser.country || "India"}
-              </span>
+              {isOwnProfile && (!profileUser.city || !profileUser.state) ? (
+                <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-1 select-none">
+                  <span className="flex items-center gap-1.5 text-brand-600 bg-brand-50 border border-brand-100 rounded-xl px-3 py-1 text-xs font-bold shadow-sm">
+                    <MapPin className="w-3.5 h-3.5 text-brand-500 animate-bounce" />{" "}
+                    Add your city to discover nearby travelers
+                  </span>
+                  <button
+                    onClick={() => navigate("/updateProfile", { state: profileUser })}
+                    className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 font-bold text-[10px] uppercase tracking-wider transition-colors shadow-sm self-start"
+                  >
+                    Complete Profile
+                  </button>
+                </div>
+              ) : (
+                <span className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4 text-slate-400" />{" "}
+                  {profileUser.city && profileUser.state
+                    ? `${profileUser.city}, ${profileUser.state}`
+                    : "Location not added"}
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-slate-400" /> Since{" "}
                 {createdatnew}
@@ -326,11 +359,11 @@ export const ProfileHeader = ({
               </span>
             </div>
             <div
-              className="cursor-pointer flex items-center gap-1.5 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100"
+              className="cursor-pointer flex items-center gap-1.5 bg-brand-50 px-3 py-1.5 rounded-lg border border-brand-100"
               onClick={() => setActiveTab("trips")}
             >
-              <Compass className="w-4 h-4 text-indigo-500" />
-              <span className="text-xs font-black text-indigo-700">
+              <Compass className="w-4 h-4 text-brand-500" />
+              <span className="text-xs font-black text-brand-700">
                 {userTrips?.length || 0} Hosted Squads
               </span>
             </div>
@@ -358,3 +391,4 @@ export const ProfileHeader = ({
 };
 
 export default ProfileHeader;
+

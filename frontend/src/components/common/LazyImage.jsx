@@ -53,3 +53,4 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
 };
 
 export default LazyImage;
+

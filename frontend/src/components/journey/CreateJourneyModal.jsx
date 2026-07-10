@@ -264,7 +264,7 @@ const CreateJourneyModal = ({
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 px-4 py-4 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-[#6C4DF6] rounded-xl shadow-md shadow-[#6C4DF6]/20">
+            <div className="p-2 bg-[#8B5CF6] rounded-xl shadow-md shadow-[#8B5CF6]/20">
               <Compass className="w-5 h-5 text-white animate-spin-slow" />
             </div>
             <div>
@@ -289,36 +289,36 @@ const CreateJourneyModal = ({
         {/* Step Progress Indicators */}
         <div className="flex items-center px-6 py-3 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 select-none">
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 1 ? "text-[#6C4DF6]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 1 ? "text-[#8B5CF6]" : "text-slate-400"}`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? "bg-[#6C4DF6] text-white" : "bg-slate-200 text-slate-600"}`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 1 ? "bg-[#8B5CF6] text-white" : "bg-slate-200 text-slate-600"}`}
             >
               1
             </span>
             <span>Details</span>
           </div>
           <div
-            className={`flex-1 h-0.5 mx-3 rounded-full ${step >= 2 ? "bg-[#6C4DF6]" : "bg-slate-200 dark:bg-slate-800"}`}
+            className={`flex-1 h-0.5 mx-3 rounded-full ${step >= 2 ? "bg-[#8B5CF6]" : "bg-slate-200 dark:bg-slate-800"}`}
           />
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 2 ? "text-[#6C4DF6]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 2 ? "text-[#8B5CF6]" : "text-slate-400"}`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? "bg-[#6C4DF6] text-white" : "bg-slate-200 text-slate-600"}`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 2 ? "bg-[#8B5CF6] text-white" : "bg-slate-200 text-slate-600"}`}
             >
               2
             </span>
             <span>Squad</span>
           </div>
           <div
-            className={`flex-1 h-0.5 mx-3 rounded-full ${step >= 3 ? "bg-[#6C4DF6]" : "bg-slate-200 dark:bg-slate-800"}`}
+            className={`flex-1 h-0.5 mx-3 rounded-full ${step >= 3 ? "bg-[#8B5CF6]" : "bg-slate-200 dark:bg-slate-800"}`}
           />
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 3 ? "text-[#6C4DF6]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 3 ? "text-[#8B5CF6]" : "text-slate-400"}`}
           >
             <span
-              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? "bg-[#6C4DF6] text-white" : "bg-slate-200 text-slate-600"}`}
+              className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] ${step >= 3 ? "bg-[#8B5CF6] text-white" : "bg-slate-200 text-slate-600"}`}
             >
               3
             </span>
@@ -346,7 +346,7 @@ const CreateJourneyModal = ({
                     value={formData.title}
                     onChange={(e) => handleChange("title", e.target.value)}
                     placeholder="e.g. Summer EuroTrip 2026..."
-                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#8B5CF6] transition-colors"
                   />
                 </div>
 
@@ -359,7 +359,7 @@ const CreateJourneyModal = ({
                     onChange={(e) =>
                       handleChange("journeyType", e.target.value)
                     }
-                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer"
+                    className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#8B5CF6] transition-colors cursor-pointer"
                   >
                     <option value="Shared Journey">👥 Shared Journey</option>
                     <option value="Solo Journey">👤 Solo Journey</option>
@@ -382,7 +382,7 @@ const CreateJourneyModal = ({
                         handleChange("destination", e.target.value)
                       }
                       placeholder="Where are you heading?"
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#8B5CF6] transition-colors"
                     />
                   </div>
                 </div>
@@ -398,7 +398,7 @@ const CreateJourneyModal = ({
                       onChange={(e) =>
                         handleChange("destinationType", e.target.value)
                       }
-                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#6C4DF6] transition-colors cursor-pointer appearance-none"
+                      className="w-full pl-10 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm font-semibold outline-none focus:border-[#8B5CF6] transition-colors cursor-pointer appearance-none"
                     >
                       <option value="🏔️ Mountain / Station">🏔️ Mountain / Station</option>
                       <option value="🏖️ Beach / Coastal">🏖️ Beach / Coastal</option>
@@ -424,7 +424,7 @@ const CreateJourneyModal = ({
                     min={todayStr}
                     value={formData.startDate}
                     onChange={(e) => handleChange("startDate", e.target.value)}
-                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#8B5CF6]"
                   />
                 </div>
                 <div>
@@ -437,16 +437,16 @@ const CreateJourneyModal = ({
                     min={formData.startDate || todayStr}
                     value={formData.endDate}
                     onChange={(e) => handleChange("endDate", e.target.value)}
-                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
+                    className="w-full px-3 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#8B5CF6]"
                   />
                 </div>
               </div>
 
               {getDurationDays() && (
-                <div className="bg-purple-50 dark:bg-purple-950/30 p-3 rounded-2xl border border-purple-200 dark:border-purple-800/50 flex items-center gap-2 text-purple-800 dark:text-purple-300 animate-fade-in">
-                  <Calendar className="w-4 h-4 text-[#6C4DF6] shrink-0" />
+                <div className="bg-brand-50 dark:bg-brand-900/30 p-3 rounded-2xl border border-brand-200 dark:border-brand-800/50 flex items-center gap-2 text-brand-800 dark:text-brand-300 animate-fade-in">
+                  <Calendar className="w-4 h-4 text-[#8B5CF6] shrink-0" />
                   <div>
-                    <span className="text-[10px] font-extrabold uppercase block text-purple-500">
+                    <span className="text-[10px] font-extrabold uppercase block text-brand-500">
                       Estimated Duration
                     </span>
                     <span className="text-xs font-black">
@@ -458,7 +458,7 @@ const CreateJourneyModal = ({
 
               <div>
                 <label className="block text-xs font-black text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                  <ImageIcon className="w-4 h-4 text-[#6C4DF6]" /> Choose Trip
+                  <ImageIcon className="w-4 h-4 text-[#8B5CF6]" /> Choose Trip
                   Style Cover
                 </label>
 
@@ -471,7 +471,7 @@ const CreateJourneyModal = ({
                       onClick={() => setCoverCategory(cat)}
                       className={`px-2.5 py-1 rounded-xl text-[11px] font-extrabold whitespace-nowrap transition-all ${
                         coverCategory === cat
-                          ? "bg-[#6C4DF6] text-white shadow-sm shadow-[#6C4DF6]/20 scale-105"
+                          ? "bg-[#8B5CF6] text-white shadow-sm shadow-[#8B5CF6]/20 scale-105"
                           : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700"
                       }`}
                     >
@@ -491,7 +491,7 @@ const CreateJourneyModal = ({
                         onClick={() => handleChange("coverImage", p.url)}
                         className={`relative h-16 rounded-2xl overflow-hidden border-2 transition-all group ${
                           isSelected
-                            ? "border-[#6C4DF6] ring-2 ring-[#6C4DF6]/30 shadow-md scale-[0.98]"
+                            ? "border-[#8B5CF6] ring-2 ring-[#8B5CF6]/30 shadow-md scale-[0.98]"
                             : "border-transparent opacity-85 hover:opacity-100 hover:scale-[1.02]"
                         }`}
                       >
@@ -506,7 +506,7 @@ const CreateJourneyModal = ({
                           </span>
                         </div>
                         {isSelected && (
-                          <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#6C4DF6] text-white flex items-center justify-center shadow-sm">
+                          <div className="absolute top-1.5 right-1.5 w-5 h-5 rounded-full bg-[#8B5CF6] text-white flex items-center justify-center shadow-sm">
                             <CheckCircle2 className="w-3.5 h-3.5 stroke-[3]" />
                           </div>
                         )}
@@ -525,7 +525,7 @@ const CreateJourneyModal = ({
                   value={formData.description}
                   onChange={(e) => handleChange("description", e.target.value)}
                   placeholder="What is this getaway all about? Add fun goals or squad vibes..."
-                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#6C4DF6]"
+                  className="w-full px-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm outline-none focus:border-[#8B5CF6]"
                 />
               </div>
             </form>
@@ -534,8 +534,8 @@ const CreateJourneyModal = ({
           {/* Members */}
           {step === 2 && (
             <div>
-              <div className="mb-4 bg-purple-50 dark:bg-purple-950/40 p-4 rounded-2xl border border-purple-200 dark:border-purple-800/60 flex items-start gap-3">
-                <Users className="w-5 h-5 text-[#6C4DF6] shrink-0 mt-0.5" />
+              <div className="mb-4 bg-brand-50 dark:bg-brand-900/40 p-4 rounded-2xl border border-brand-200 dark:border-brand-800/60 flex items-start gap-3">
+                <Users className="w-5 h-5 text-[#8B5CF6] shrink-0 mt-0.5" />
                 <div className="text-xs">
                   <strong className="text-slate-800 dark:text-slate-200 font-bold block">
                     Invite Your Squad
@@ -567,7 +567,7 @@ const CreateJourneyModal = ({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-5 text-white">
                     <div className="flex items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-extrabold bg-[#6C4DF6] px-2.5 py-1 rounded-lg self-start uppercase tracking-wider shadow-sm">
+                      <span className="text-[10px] font-extrabold bg-[#8B5CF6] px-2.5 py-1 rounded-lg self-start uppercase tracking-wider shadow-sm">
                         {formData.journeyType}
                       </span>
                       {formData.destinationType && (
@@ -607,7 +607,7 @@ const CreateJourneyModal = ({
                     <span className="text-[10px] font-bold text-slate-400 uppercase block">
                       Invited Squad
                     </span>
-                    <span className="font-extrabold text-[#6C4DF6] mt-0.5 block">
+                    <span className="font-extrabold text-[#8B5CF6] mt-0.5 block">
                       {formData.journeyType === "Solo Journey"
                         ? "Solo (0 Invited)"
                         : `${invitedUserIds.length} Buddies`}
@@ -634,7 +634,7 @@ const CreateJourneyModal = ({
                     ⏳ Upcoming
                   </span>
                   <span className="text-slate-400">➔</span>
-                  <span className="px-2.5 py-1 bg-purple-500/10 text-purple-600 dark:text-purple-400 rounded-lg border border-purple-500/20">
+                  <span className="px-2.5 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-lg border border-brand-500/20">
                     📋 Planning
                   </span>
                   <span className="text-slate-400">➔</span>
@@ -642,7 +642,7 @@ const CreateJourneyModal = ({
                     🚀 Ongoing
                   </span>
                   <span className="text-slate-400">➔</span>
-                  <span className="px-2.5 py-1 bg-violet-500/10 text-violet-600 dark:text-violet-400 rounded-lg border border-violet-500/20">
+                  <span className="px-2.5 py-1 bg-brand-500/10 text-brand-600 dark:text-brand-400 rounded-lg border border-brand-500/20">
                     ✅ Completed
                   </span>
                   <span className="text-slate-400">➔</span>
@@ -653,46 +653,46 @@ const CreateJourneyModal = ({
               </div>
 
               {/* Information Panel Box */}
-              <div className="bg-purple-50/70 dark:bg-purple-950/40 p-5 rounded-3xl border border-purple-200/80 dark:border-purple-800/60 space-y-3">
-                <h4 className="text-xs font-black text-purple-900 dark:text-purple-200 uppercase tracking-wider flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-[#6C4DF6]" /> Creating this
+              <div className="bg-brand-50/70 dark:bg-brand-900/40 p-5 rounded-3xl border border-brand-200/80 dark:border-brand-800/60 space-y-3">
+                <h4 className="text-xs font-black text-brand-900 dark:text-brand-200 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-[#8B5CF6]" /> Creating this
                   Headquarters will:
                 </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-purple-900 dark:text-purple-200 font-medium">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-brand-900 dark:text-brand-200 font-medium">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Journey Headquarters created
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Dedicated Squad Chat created
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Invitations delivered
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Collaborative Workspace enabled
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Timeline activated
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Media Gallery ready
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Safety Check-ins enabled
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     SOS activated
                   </div>
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-[#6C4DF6] shrink-0" />{" "}
+                    <CheckCircle2 className="w-4 h-4 text-[#8B5CF6] shrink-0" />{" "}
                     Scrapbook prepared
                   </div>
                 </div>
@@ -732,7 +732,7 @@ const CreateJourneyModal = ({
             <button
               form="step1Form"
               type="submit"
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-lg shadow-[#8B5CF6]/30 transition-all active:scale-95"
             >
               {formData.journeyType === "Solo Journey"
                 ? "Next: Review"
@@ -745,7 +745,7 @@ const CreateJourneyModal = ({
             <button
               type="button"
               onClick={handleNextStep2}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95"
+              className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-6 py-3 rounded-2xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-lg shadow-[#8B5CF6]/30 transition-all active:scale-95"
             >
               Next: Review <ArrowRight className="w-4 h-4" />
             </button>
@@ -756,7 +756,7 @@ const CreateJourneyModal = ({
               type="button"
               onClick={handleSubmit}
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-black shadow-xl shadow-[#6C4DF6]/40 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
+              className="flex-1 flex items-center justify-center gap-2 px-8 py-3 rounded-2xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-black shadow-xl shadow-[#8B5CF6]/40 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
               {loading ? "Launching..." : "🚀 Launch Journey"}
             </button>
@@ -768,3 +768,4 @@ const CreateJourneyModal = ({
 };
 
 export default CreateJourneyModal;
+

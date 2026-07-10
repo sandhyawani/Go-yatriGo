@@ -782,11 +782,11 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
             >
               {/* Tap-to-select area */}
               <div
-                className="flex-1 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:bg-purple-50/50 hover:border-purple-300 transition-all cursor-pointer group min-h-[220px] active:bg-purple-50"
+                className="flex-1 border-2 border-dashed border-brand-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:bg-brand-50/50 hover:border-brand-300 transition-all cursor-pointer group min-h-[220px] active:bg-brand-50"
                 onClick={() => fileInputRef.current?.click()}
               >
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-200">
-                  <ImagePlus className="w-8 h-8 text-purple-600" />
+                <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-200">
+                  <ImagePlus className="w-8 h-8 text-brand-600" />
                 </div>
                 <h3 className="text-xl font-bold text-slate-800 mb-2">
                   Share Your Journey
@@ -816,7 +816,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-md hover:-translate-y-0.5 transition-all"
+                  className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all"
                 >
                   Gallery
                 </button>
@@ -983,7 +983,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                       <button
                         onClick={handlePublish}
                         disabled={isSubmitting}
-                        className="bg-gradient-to-r from-violet-600 to-purple-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 shrink-0"
+                        className="bg-gradient-to-r from-brand-600 to-brand-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 shrink-0"
                       >
                         {isSubmitting ? (
                           <Loader2 className="w-5 h-5 animate-spin" />
@@ -1187,7 +1187,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                             setEditingStickerId(null);
                             setActiveOverlay(null);
                           }}
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-50 text-violet-600 transition-all hover:bg-violet-100"
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100"
                         >
                           <ArrowLeft className="h-4 w-4" />
                         </button>
@@ -1214,7 +1214,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
 
                     <div className="relative mb-3 shrink-0">
-                      <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+                      <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
                       <input
                         autoFocus
                         type="text"
@@ -1226,7 +1226,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                             handleSaveLocation(locationQuery.trim());
                           }
                         }}
-                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-500/10 shadow-2xs"
+                        className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs"
                       />
                       {locationQuery && (
                         <button
@@ -1241,7 +1241,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
 
                     <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                       {isSearchingLocation ? (
-                        <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-violet-600">
+                        <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
                           <Loader2 className="h-6 w-6 animate-spin" />
                           <span className="text-xs font-bold text-slate-500">
                             Searching destinations...
@@ -1262,12 +1262,12 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                     onClick={() =>
                                       handleSaveLocation(dest.value)
                                     }
-                                    className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-violet-200 hover:bg-violet-50/60 hover:shadow-2xs active:scale-[0.99]"
+                                    className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/60 hover:shadow-2xs active:scale-[0.99]"
                                   >
                                     <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-2xs group-hover:scale-110 transition-transform">
                                       {dest.label.split(" ")[0]}
                                     </div>
-                                    <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-violet-950">
+                                    <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-brand-900">
                                       {dest.label.split(" ").slice(1).join(" ")}
                                     </span>
                                   </button>
@@ -1299,13 +1299,13 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                       onClick={() =>
                                         handleSaveLocation(placeName)
                                       }
-                                      className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-violet-200 hover:bg-violet-50/70 hover:shadow-2xs active:scale-[0.99]"
+                                      className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
                                     >
-                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-transform group-hover:scale-105 group-hover:bg-violet-600 group-hover:text-white">
+                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
                                         <MapPin className="h-4 w-4" />
                                       </div>
                                       <span className="min-w-0 flex-1">
-                                        <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-violet-950">
+                                        <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
                                           {placeName}
                                         </span>
                                         <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
@@ -1327,16 +1327,16 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                   onClick={() =>
                                     handleSaveLocation(locationQuery.trim())
                                   }
-                                  className="group flex w-full items-center gap-3 rounded-2xl border border-violet-200 bg-violet-50 p-3 text-left transition-all hover:bg-violet-100 shadow-2xs active:scale-[0.99]"
+                                  className="group flex w-full items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-3 text-left transition-all hover:bg-brand-100 shadow-2xs active:scale-[0.99]"
                                 >
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-violet-600 text-white shadow-2xs">
+                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-2xs">
                                     <MapPin className="h-5 w-5" />
                                   </div>
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-bold text-violet-950">
+                                    <p className="truncate text-xs font-bold text-brand-900">
                                       Use "{locationQuery}"
                                     </p>
-                                    <p className="text-[11px] font-semibold text-violet-600">
+                                    <p className="text-[11px] font-semibold text-brand-600">
                                       Tap to add custom location sticker
                                     </p>
                                   </div>
@@ -1482,7 +1482,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                             .map((track) => (
                               <div
                                 key={track.id}
-                                className={`group flex items-center justify-between p-2 h-[62px] rounded-2xl transition-all cursor-pointer ${selectedSong?.songTitle === track.title ? "bg-indigo-50 border border-indigo-100" : "bg-white hover:bg-slate-50 border border-transparent"}`}
+                                className={`group flex items-center justify-between p-2 h-[62px] rounded-2xl transition-all cursor-pointer ${selectedSong?.songTitle === track.title ? "bg-brand-50 border border-brand-100" : "bg-white hover:bg-slate-50 border border-transparent"}`}
                                 onClick={() => handleSelectAndClose(track)}
                               >
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -1523,7 +1523,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                                       onClick={(e) =>
                                         handlePreviewToggle(track, e)
                                       }
-                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-50 text-primary-600 transition-all hover:bg-primary-600 hover:text-white"
+                                      className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-primary-600 transition-all hover:bg-primary-600 hover:text-white"
                                     >
                                       <Play className="w-3.5 h-3.5 translate-x-[1px]" />
                                     </button>
@@ -1746,3 +1746,4 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
 };
 
 export default CreateStoryModal;
+

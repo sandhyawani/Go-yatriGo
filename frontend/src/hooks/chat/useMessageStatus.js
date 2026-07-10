@@ -31,3 +31,4 @@ export const useMessageStatus = (user, socketConnected, setUnreadNewMessagesCoun
   }, [messages, activeRoom, user, socketConnected, socket, currentUserId, dispatch, setUnreadNewMessagesCount]);
 };
 export default useMessageStatus;
+

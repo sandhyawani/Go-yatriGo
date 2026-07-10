@@ -85,3 +85,4 @@ export const formatDateLabel = (d) => {
 };
 
 export const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
+

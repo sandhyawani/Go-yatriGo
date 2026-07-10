@@ -30,7 +30,7 @@ const JourneyStatusBadge = ({ status, size = "md" }) => {
         };
       case "Completed":
         return {
-          bg: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800/50",
+          bg: "bg-brand-50 text-brand-700 border-brand-200 dark:bg-brand-900/40 dark:text-brand-300 dark:border-brand-800/50",
           icon: (
             <CheckCircle2
               className={size === "sm" ? "w-3 h-3 mr-1" : "w-3.5 h-3.5 mr-1.5"}
@@ -72,3 +72,4 @@ const JourneyStatusBadge = ({ status, size = "md" }) => {
 };
 
 export default JourneyStatusBadge;
+

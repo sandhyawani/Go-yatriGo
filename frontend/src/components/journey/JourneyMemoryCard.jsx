@@ -75,7 +75,7 @@ const JourneyMemoryCard = ({ journey, memory, currentUserId, onUpdated }) => {
     <div className="space-y-8 animate-fade-in pb-12">
       {/* AI Summary Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500 p-1 shadow-2xl">
-        <div className="bg-[#5b3ee0]/95 rounded-[22px] p-6 sm:p-8 text-white relative z-10 backdrop-blur-xl">
+        <div className="bg-[#7c3aed]/95 rounded-[22px] p-6 sm:p-8 text-white relative z-10 backdrop-blur-xl">
           <div className="flex items-center gap-2 text-amber-400 text-xs font-black uppercase tracking-widest mb-3">
             <Sparkles className="w-4 h-4 animate-spin-slow" /> AI Journey
             Retrospective
@@ -119,7 +119,7 @@ const JourneyMemoryCard = ({ journey, memory, currentUserId, onUpdated }) => {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm space-y-6">
             <h3 className="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-[#6C4DF6]" /> Journey Milestones
+              <Clock className="w-5 h-5 text-[#8B5CF6]" /> Journey Milestones
               Archive
             </h3>
 
@@ -139,7 +139,7 @@ const JourneyMemoryCard = ({ journey, memory, currentUserId, onUpdated }) => {
                   className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-950/60 text-[#6C4DF6] dark:text-purple-300 flex items-center justify-center font-bold text-xs">
+                    <div className="w-8 h-8 rounded-full bg-brand-100 dark:bg-brand-900/60 text-[#8B5CF6] dark:text-brand-300 flex items-center justify-center font-bold text-xs">
                       ✓
                     </div>
                     <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
@@ -228,11 +228,11 @@ const JourneyMemoryCard = ({ journey, memory, currentUserId, onUpdated }) => {
                   value={commentText}
                   onChange={(e) => setCommentText(e.target.value)}
                   placeholder="Leave a memory note..."
-                  className="flex-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-xs outline-none focus:ring-2 focus:ring-[#6C4DF6]"
+                  className="flex-1 px-3.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800 border-none text-xs outline-none focus:ring-2 focus:ring-[#8B5CF6]"
                 />
                 <button
                   type="submit"
-                  className="p-2 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white transition-colors"
+                  className="p-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white transition-colors"
                 >
                   <Send className="w-4 h-4" />
                 </button>
@@ -246,3 +246,4 @@ const JourneyMemoryCard = ({ journey, memory, currentUserId, onUpdated }) => {
 };
 
 export default JourneyMemoryCard;
+

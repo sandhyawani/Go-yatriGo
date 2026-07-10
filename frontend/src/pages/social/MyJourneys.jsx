@@ -106,7 +106,7 @@ const MyJourneys = () => {
     <div className="min-h-screen bg-[#F7F6FB] dark:bg-slate-950 pb-24 lg:pb-8">
 
       {/* ── Mobile Hero Header ── */}
-      <div className="lg:hidden relative overflow-hidden bg-gradient-to-br from-[#6C4DF6] via-[#7c5df8] to-[#9D88F9] px-5 pt-5 pb-8">
+      <div className="lg:hidden relative overflow-hidden bg-gradient-to-br from-[#8B5CF6] via-[#7c5df8] to-[#9D88F9] px-5 pt-5 pb-8">
         {/* decorative blobs */}
         <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
         <div className="absolute bottom-0 left-4 w-20 h-20 bg-white/5 rounded-full blur-xl" />
@@ -137,30 +137,30 @@ const MyJourneys = () => {
         {/* Big launch button */}
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white text-[#6C4DF6] font-extrabold text-sm shadow-lg shadow-[#6C4DF6]/20 active:scale-[0.98] transition-transform"
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white text-[#8B5CF6] font-extrabold text-sm shadow-lg shadow-[#8B5CF6]/20 active:scale-[0.98] transition-transform"
         >
           <span className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-[#6C4DF6]/10 flex items-center justify-center">
+            <div className="w-7 h-7 rounded-xl bg-[#8B5CF6]/10 flex items-center justify-center">
               <Plus className="w-4 h-4 stroke-[3]" />
             </div>
             Launch New Journey
           </span>
-          <ChevronRight className="w-4 h-4 text-[#6C4DF6]/60" />
+          <ChevronRight className="w-4 h-4 text-[#8B5CF6]/60" />
         </button>
       </div>
 
       {/* ── Desktop Header ── */}
       <div className="hidden lg:flex max-w-7xl mx-auto px-6 pt-6 items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-purple-50 dark:bg-purple-950/60 text-[#6C4DF6] flex items-center justify-center border border-purple-100 dark:border-purple-800/60 shadow-xs">
-            <Map className="w-6 h-6 text-[#6C4DF6] stroke-[2]" />
+          <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/60 text-[#8B5CF6] flex items-center justify-center border border-brand-100 dark:border-brand-800/60 shadow-xs">
+            <Map className="w-6 h-6 text-[#8B5CF6] stroke-[2]" />
           </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
                 Collaborative Journeys
               </h1>
-              <span className="bg-[#6C4DF6]/10 text-[#6C4DF6] text-[10px] font-black px-2.5 py-0.5 rounded-full border border-[#6C4DF6]/20">
+              <span className="bg-[#8B5CF6]/10 text-[#8B5CF6] text-[10px] font-black px-2.5 py-0.5 rounded-full border border-[#8B5CF6]/20">
                 {journeys.length} Headquarters
               </span>
             </div>
@@ -174,11 +174,11 @@ const MyJourneys = () => {
             to="/profile"
             className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-all"
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#6C4DF6]" /> My Profile
+            <Sparkles className="w-3.5 h-3.5 text-[#8B5CF6]" /> My Profile
           </Link>
           <button
             onClick={() => setIsCreateModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#6C4DF6] hover:bg-[#5838e8] text-white font-extrabold text-xs rounded-xl shadow-md shadow-[#6C4DF6]/20 transition-all active:scale-95 shrink-0"
+            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white font-extrabold text-xs rounded-xl shadow-md shadow-[#8B5CF6]/20 transition-all active:scale-95 shrink-0"
           >
             <Plus className="w-4 h-4 stroke-[3]" /> Launch Journey
           </button>
@@ -199,7 +199,7 @@ const MyJourneys = () => {
                   onClick={() => setActiveTab(tab.id)}
                   className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all whitespace-nowrap select-none shrink-0 ${
                     isActive
-                      ? "bg-[#6C4DF6] text-white shadow-sm"
+                      ? "bg-[#8B5CF6] text-white shadow-sm"
                       : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                   }`}
                 >
@@ -229,8 +229,8 @@ const MyJourneys = () => {
         {/* ── Content ── */}
         {loading ? (
           <div className="py-16 text-center">
-            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-[#6C4DF6]/10 flex items-center justify-center">
-              <Compass className="w-6 h-6 text-[#6C4DF6] animate-spin" />
+            <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-[#8B5CF6]/10 flex items-center justify-center">
+              <Compass className="w-6 h-6 text-[#8B5CF6] animate-spin" />
             </div>
             <p className="text-xs font-bold text-slate-500">
               Loading squad workspaces...
@@ -264,7 +264,7 @@ const MyJourneys = () => {
           )
         ) : journeys.length === 0 ? (
           <div className="py-14 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/70 dark:border-slate-800 p-6 max-w-sm mx-auto space-y-3 shadow-xs">
-            <div className="w-14 h-14 bg-[#6C4DF6]/10 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-[#6C4DF6]/20">
+            <div className="w-14 h-14 bg-[#8B5CF6]/10 rounded-2xl flex items-center justify-center mx-auto text-2xl border border-[#8B5CF6]/20">
               🧭
             </div>
             <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
@@ -275,7 +275,7 @@ const MyJourneys = () => {
             </p>
             <button
               onClick={() => setIsCreateModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#6C4DF6] text-white font-extrabold text-xs rounded-xl shadow-sm hover:opacity-95 active:scale-95 transition-all"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#8B5CF6] text-white font-extrabold text-xs rounded-xl shadow-sm hover:opacity-95 active:scale-95 transition-all"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3]" /> Launch Journey
             </button>
@@ -297,7 +297,7 @@ const MyJourneys = () => {
       {!loading && journeys.length > 0 && activeTab !== "Invites" && (
         <button
           onClick={() => setIsCreateModalOpen(true)}
-          className="lg:hidden fixed bottom-20 right-4 z-30 flex items-center gap-2 px-4 py-3 bg-[#6C4DF6] text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-[#6C4DF6]/30 active:scale-95 transition-transform"
+          className="lg:hidden fixed bottom-20 right-4 z-30 flex items-center gap-2 px-4 py-3 bg-[#8B5CF6] text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-[#8B5CF6]/30 active:scale-95 transition-transform"
         >
           <Plus className="w-4 h-4 stroke-[3]" />
           <span>New Journey</span>
@@ -326,3 +326,4 @@ const MyJourneys = () => {
 };
 
 export default MyJourneys;
+

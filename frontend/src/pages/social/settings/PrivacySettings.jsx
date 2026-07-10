@@ -35,7 +35,7 @@ const PrivacySettings = () => {
   if (loading) {
     return (
       <div className="p-8 text-center text-slate-500 flex justify-center items-center h-48">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#6C4DF6]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#8B5CF6]"></div>
       </div>
     );
   }
@@ -55,11 +55,11 @@ const PrivacySettings = () => {
           to="/settings"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold shadow-sm transition-all"
         >
-          <ArrowLeft className="w-4 h-4 text-purple-600" />
+          <ArrowLeft className="w-4 h-4 text-brand-600" />
           <span>Back to Settings</span>
         </Link>
         <div className="mb-8 flex items-center gap-4">
-          <div className="rounded-2xl border border-[#6C4DF6]/20 bg-gradient-to-br from-[#6C4DF6]/10 to-fuchsia-500/10 p-3 text-[#6C4DF6]">
+          <div className="rounded-2xl border border-[#8B5CF6]/20 bg-gradient-to-br from-[#8B5CF6]/10 to-fuchsia-500/10 p-3 text-[#8B5CF6]">
             <Shield className="h-6 w-6" />
           </div>
           <div>
@@ -104,3 +104,4 @@ const PrivacySettings = () => {
 };
 
 export default PrivacySettings;
+

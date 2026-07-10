@@ -78,7 +78,7 @@ const ForgotPassword = () => {
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
 
       {/* ambient glows */}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-violet-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
       <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
@@ -90,7 +90,7 @@ const ForgotPassword = () => {
             transition={{ duration: 1.2, ease: "easeOut" }}
             className="relative group w-full max-w-2xl"
           >
-            <div className="absolute -inset-4 bg-violet-500/20 blur-3xl rounded-[3rem] group-hover:bg-violet-500/30 transition-all duration-700" />
+            <div className="absolute -inset-4 bg-brand-500/20 blur-3xl rounded-[3rem] group-hover:bg-brand-500/30 transition-all duration-700" />
             <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 overflow-hidden shadow-2xl">
               <img
                 src={stickerPack}
@@ -104,7 +104,7 @@ const ForgotPassword = () => {
                   transition={{ delay: 0.5, duration: 0.8 }}
                   className="flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20"
                 >
-                  <Sparkles className="w-3.5 h-3.5 text-violet-400" />
+                  <Sparkles className="w-3.5 h-3.5 text-brand-400" />
                   <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
                     Secure Recovery
                   </span>
@@ -116,7 +116,7 @@ const ForgotPassword = () => {
                   className="text-5xl sm:text-6xl font-black tracking-tighter leading-none italic text-white drop-shadow-2xl"
                 >
                   Regain <br />
-                  <span className="text-violet-400">Access.</span>
+                  <span className="text-brand-400">Access.</span>
                 </motion.h2>
               </div>
             </div>
@@ -133,7 +133,7 @@ const ForgotPassword = () => {
           >
             {/* Branding */}
             <div className="mb-5 flex flex-col items-center lg:items-start">
-              <div className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-violet-500">
+              <div className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-brand-500">
                 <Fingerprint className="w-5 h-5" />
               </div>
               <h1 className="text-2xl font-black text-slate-900 tracking-tighter">
@@ -158,7 +158,7 @@ const ForgotPassword = () => {
                     className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
                       error
                         ? "text-red-500"
-                        : "text-slate-400 group-focus-within:text-violet-500"
+                        : "text-slate-400 group-focus-within:text-brand-500"
                     }`}
                   />
                   <input
@@ -173,7 +173,7 @@ const ForgotPassword = () => {
                     className={`w-full pl-11 pr-4 py-2 bg-slate-50 border ${
                       error
                         ? "border-red-300 focus:border-red-400 focus:ring-red-400/20"
-                        : "border-slate-200 focus:border-violet-500 focus:ring-violet-500/20"
+                        : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
                     } rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`}
                   />
                 </div>
@@ -198,7 +198,7 @@ const ForgotPassword = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-2 bg-violet-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-violet-500 disabled:opacity-70 disabled:cursor-not-allowed mt-2 relative overflow-hidden group"
+                className="w-full py-2 bg-brand-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-brand-500 disabled:opacity-70 disabled:cursor-not-allowed mt-2 relative overflow-hidden group"
               >
                 {loading ? (
                   <span className="text-xs uppercase tracking-widest">
@@ -232,3 +232,4 @@ const ForgotPassword = () => {
 };
 
 export default ForgotPassword;
+

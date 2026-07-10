@@ -144,13 +144,13 @@ export const ChatHeader = ({
                     <>
                       <button
                         onClick={handleReportUser}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-brand-50 transition-colors"
                       >
                         Report User
                       </button>
                       <button
                         onClick={handleBlockUser}
-                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                        className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-brand-50 transition-colors"
                       >
                         {isBlocked ? "Unblock User" : "Block User"}
                       </button>
@@ -160,7 +160,7 @@ export const ChatHeader = ({
                 })()}
               <button
                 onClick={handleClearChat}
-                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-purple-50 transition-colors"
+                className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-brand-50 transition-colors"
               >
                 Clear Chat
               </button>
@@ -179,3 +179,4 @@ export const ChatHeader = ({
 };
 
 export default ChatHeader;
+

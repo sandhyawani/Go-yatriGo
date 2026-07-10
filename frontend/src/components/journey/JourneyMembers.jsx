@@ -120,15 +120,15 @@ const JourneyMembers = ({
         key={userIdStr}
         className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-300 flex items-center justify-between relative group overflow-hidden ${
           isSelf
-            ? "bg-gradient-to-br from-purple-500/10 via-white dark:via-slate-900 to-purple-500/5 border-purple-300 dark:border-purple-800 shadow-sm"
-            : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-slate-200/80 dark:border-slate-800 hover:border-[#6C4DF6]/40 shadow-xs"
+            ? "bg-gradient-to-br from-brand-500/10 via-white dark:via-slate-900 to-brand-500/5 border-brand-300 dark:border-brand-800 shadow-sm"
+            : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-slate-200/80 dark:border-slate-800 hover:border-[#8B5CF6]/40 shadow-xs"
         }`}
       >
         <div className="flex items-center gap-3 min-w-0 pr-2">
           <div className="relative shrink-0">
             <Avatar
               user={u}
-              className="w-10 h-10 rounded-xl object-cover ring-1 ring-purple-500/20 shadow-xs"
+              className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-500/20 shadow-xs"
             />
             {u.online && (
               <span
@@ -144,7 +144,7 @@ const JourneyMembers = ({
                 {u.name || "Traveler"}
               </h4>
               {isSelf && (
-                <span className="text-[9px] bg-[#6C4DF6] text-white px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
+                <span className="text-[9px] bg-[#8B5CF6] text-white px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
                   YOU
                 </span>
               )}
@@ -163,7 +163,7 @@ const JourneyMembers = ({
             </span>
           )}
           {mem.role === "Co-Organizer" && (
-            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-xs">
+            <span className="px-2.5 py-1 rounded-lg bg-gradient-to-r from-brand-600 to-brand-600 text-white text-[9px] font-black uppercase tracking-wider flex items-center gap-1 shadow-xs">
               <ShieldAlert className="w-3 h-3 stroke-[2.5]" /> Co-Lead
             </span>
           )}
@@ -195,9 +195,9 @@ const JourneyMembers = ({
                       onClick={() =>
                         handleRoleChange(userIdStr, "Co-Organizer")
                       }
-                      className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-purple-50 dark:hover:bg-purple-950/40 hover:text-[#6C4DF6] flex items-center gap-2 transition-colors"
+                      className="w-full px-3.5 py-2 text-left text-slate-700 dark:text-slate-200 hover:bg-brand-50 dark:hover:bg-brand-900/40 hover:text-[#8B5CF6] flex items-center gap-2 transition-colors"
                     >
-                      <Award className="w-3.5 h-3.5 text-purple-500" /> Promote
+                      <Award className="w-3.5 h-3.5 text-brand-500" /> Promote
                       to Co-Org
                     </button>
                   )}
@@ -256,11 +256,11 @@ const JourneyMembers = ({
   return (
     <div className="space-y-5 animate-fade-in pb-8">
       {/* Actions */}
-      <div className="bg-gradient-to-r from-violet-600/10 via-purple-600/10 to-indigo-600/10 dark:from-violet-950/40 dark:via-purple-950/40 dark:to-indigo-950/40 border border-purple-200/60 dark:border-purple-800/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-brand-600/10 via-brand-600/10 to-brand-600/10 dark:from-brand-900/40 dark:via-brand-900/40 dark:to-brand-900/40 border border-brand-200/60 dark:border-brand-800/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-purple-100 dark:bg-purple-900/60 text-[#6C4DF6] dark:text-purple-300 flex items-center justify-center shrink-0 border border-purple-200/50">
+          <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/60 text-[#8B5CF6] dark:text-brand-300 flex items-center justify-center shrink-0 border border-brand-200/50">
             <Users className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
@@ -269,7 +269,7 @@ const JourneyMembers = ({
             </h3>
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
               Origin Hub:{" "}
-              <span className="font-extrabold text-[#6C4DF6] uppercase">
+              <span className="font-extrabold text-[#8B5CF6] uppercase">
                 {journey?.createdFrom || "Manual Creation"}
               </span>
             </p>
@@ -279,7 +279,7 @@ const JourneyMembers = ({
         {(isOrganizer || isCoOrganizer) && journey.status !== "Cancelled" && (
           <button
             onClick={onInviteClick}
-            className="relative z-10 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#6C4DF6] to-[#7c3aed] hover:from-[#5b3ee0] hover:to-[#6C4DF6] text-white text-xs font-black shadow-md shadow-[#6C4DF6]/20 transition-all active:scale-95 shrink-0 group"
+            className="relative z-10 flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#8B5CF6] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#8B5CF6] text-white text-xs font-black shadow-md shadow-[#8B5CF6]/20 transition-all active:scale-95 shrink-0 group"
           >
             <UserPlus className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />{" "}
             Invite Squad Buddies
@@ -303,7 +303,7 @@ const JourneyMembers = ({
       {coOrganizersList.length > 0 && (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
-            <h4 className="text-[11px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-[11px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-wider flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 stroke-[2.5]" /> Co-Organizers
             </h4>
           </div>
@@ -390,3 +390,4 @@ const JourneyMembers = ({
 };
 
 export default JourneyMembers;
+

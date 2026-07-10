@@ -49,17 +49,17 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
   };
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-purple-100 dark:border-slate-800 shadow-sm hover:border-[#6C4DF6]/40 transition-all space-y-3 relative overflow-hidden group animate-fade-in">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-brand-100 dark:border-slate-800 shadow-sm hover:border-[#8B5CF6]/40 transition-all space-y-3 relative overflow-hidden group animate-fade-in">
       {/* Top Row: Organizer Inviter + Expiry */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
           <img
             src={
               organizer.profilePic ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(organizer.name || "Organizer")}&background=6C4DF6&color=fff&bold=true`
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(organizer.name || "Organizer")}&background=8b5cf6&color=fff&bold=true`
             }
             alt={organizer.name}
-            className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-purple-100 dark:ring-slate-700"
+            className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-brand-100 dark:ring-slate-700"
           />
           <p className="text-xs text-slate-600 dark:text-slate-300 truncate m-0">
             <span className="font-extrabold text-slate-900 dark:text-white mr-1">
@@ -69,12 +69,12 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
           </p>
         </div>
         <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 flex items-center gap-1 shrink-0 bg-slate-50 dark:bg-slate-800 px-2 py-0.5 rounded-full">
-          <Clock className="w-2.5 h-2.5 text-[#6C4DF6]" /> 7d left
+          <Clock className="w-2.5 h-2.5 text-[#8B5CF6]" /> 7d left
         </span>
       </div>
 
       {/* Middle Row: Trip Snapshot Box */}
-      <div className="flex items-center gap-3 bg-purple-50/40 dark:bg-slate-800/40 p-2.5 rounded-xl border border-purple-100/80 dark:border-slate-700/60 transition-colors group-hover:bg-purple-50 dark:group-hover:bg-slate-800">
+      <div className="flex items-center gap-3 bg-brand-50/40 dark:bg-slate-800/40 p-2.5 rounded-xl border border-brand-100/80 dark:border-slate-700/60 transition-colors group-hover:bg-brand-50 dark:group-hover:bg-slate-800">
         <img
           src={
             journey.coverImage ||
@@ -85,10 +85,10 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-1">
-            <h4 className="text-sm font-black text-slate-900 dark:text-white truncate m-0 group-hover:text-[#6C4DF6] transition-colors">
+            <h4 className="text-sm font-black text-slate-900 dark:text-white truncate m-0 group-hover:text-[#8B5CF6] transition-colors">
               {journey.title || "Secret Trip"}
             </h4>
-            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#6C4DF6]/10 text-[#6C4DF6] uppercase tracking-wider shrink-0">
+            <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-[#8B5CF6]/10 text-[#8B5CF6] uppercase tracking-wider shrink-0">
               {journey.journeyType || "Squad"}
             </span>
           </div>
@@ -101,7 +101,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
               <>
                 <span>•</span>
                 <span className="flex items-center gap-1 shrink-0">
-                  <Calendar className="w-3 h-3 text-[#6C4DF6]" />
+                  <Calendar className="w-3 h-3 text-[#8B5CF6]" />
                   {new Date(journey.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -119,7 +119,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
           type="button"
           onClick={handleAccept}
           disabled={loadingAction !== null}
-          className="flex-1 py-2 px-3 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-extrabold shadow-sm shadow-[#6C4DF6]/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
+          className="flex-1 py-2 px-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-extrabold shadow-sm shadow-[#8B5CF6]/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
         >
           {loadingAction === "accept" ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -142,7 +142,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         {journey._id && (
           <Link
             to={`/social/journeys/${journey._id}`}
-            className="p-2 rounded-xl text-slate-400 hover:text-[#6C4DF6] hover:bg-purple-50 dark:hover:bg-slate-800 transition-colors shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800"
+            className="p-2 rounded-xl text-slate-400 hover:text-[#8B5CF6] hover:bg-brand-50 dark:hover:bg-slate-800 transition-colors shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800"
             title="Preview Hub"
           >
             <ArrowRight className="w-4 h-4" />
@@ -154,3 +154,4 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
 };
 
 export default JourneyInvitationCard;
+

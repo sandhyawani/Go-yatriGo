@@ -103,3 +103,4 @@ const SettingsToggle = ({
 };
 
 export default SettingsToggle;
+

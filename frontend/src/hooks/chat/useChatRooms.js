@@ -272,3 +272,4 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
   };
 };
 export default useChatRooms;
+

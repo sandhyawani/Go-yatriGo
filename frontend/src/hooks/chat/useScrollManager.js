@@ -100,3 +100,4 @@ export const useScrollManager = ({
   };
 };
 export default useScrollManager;
+

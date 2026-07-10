@@ -8,7 +8,7 @@ export const FollowRequestItem = ({
   handleRejectFollow
 }) => {
   return (
-    <div className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 border border-transparent">
+    <div className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-brand-50/50 border border-transparent">
       <div
         className="relative shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
         onClick={() => navigate(`/profile/${n.sender?._id}`)}
@@ -58,3 +58,4 @@ export const FollowRequestItem = ({
   );
 };
 export default FollowRequestItem;
+

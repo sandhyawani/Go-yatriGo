@@ -7,6 +7,7 @@ const Follow = require("../models/Follow");
 const Block = require("../models/Block");
 const Report = require("../models/Report");
 const Post = require("../models/Post"); // Moved to top to prevent runtime errors
+const { INDIAN_STATES_AND_CITIES } = require("../utils/locationData");
 
 const SOCKET_EVENTS = {
   NEW_NOTIFICATION: "new_notification",
@@ -33,9 +34,50 @@ const updateUser = asyncHandler(async (req, res) => {
     });
   }
 
+  const hasStateUpdate = req.body.state !== undefined;
+  const hasCityUpdate = req.body.city !== undefined;
+
+  if (hasStateUpdate || hasCityUpdate) {
+    const existingUser = await User.findById(targetUserId);
+    if (!existingUser) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    const stateToValidate = hasStateUpdate ? req.body.state : existingUser.state;
+    const cityToValidate = hasCityUpdate ? req.body.city : existingUser.city;
+
+    if (hasStateUpdate && (!stateToValidate || !stateToValidate.trim())) {
+      return res.status(400).json({ success: false, message: "State cannot be empty" });
+    }
+    if (hasCityUpdate && (!cityToValidate || !cityToValidate.trim())) {
+      return res.status(400).json({ success: false, message: "City cannot be empty" });
+    }
+
+    const trimmedState = (stateToValidate || "").trim();
+    const trimmedCity = (cityToValidate || "").trim();
+
+    // Check if the state exists in our location data
+    const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
+    if (!validCities) {
+      return res.status(400).json({ success: false, message: `Invalid state: ${trimmedState}` });
+    }
+
+    // Check if the city belongs to the state
+    if (!validCities.includes(trimmedCity)) {
+      return res.status(400).json({
+        success: false,
+        message: `City ${trimmedCity} does not belong to ${trimmedState}`
+      });
+    }
+
+    // Update req.body values to trimmed ones
+    if (hasStateUpdate) req.body.state = trimmedState;
+    if (hasCityUpdate) req.body.city = trimmedCity;
+  }
+
   // Prevent mass assignment vulnerability by whitelisting safe updates
   const allowedUpdates = [
-    "name", "username", "bio", "city", "interests", "role", "type",
+    "name", "username", "bio", "city", "state", "interests", "role", "type",
     "img", "pic", "avatar", "profilePic", "govId", "privacySettings"
   ];
   
@@ -138,15 +180,31 @@ const getAllUsers = asyncHandler(async (req, res) => {
 // Search and filter users
 const searchUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search || req.query.q || "";
+  const filterCity = req.query.city;
+  const filterState = req.query.state;
   const currentUserId = req.user?._id || req.user?.id;
 
-  const users = await User.find({
+  let queryConditions = {
     ...(currentUserId && { _id: { $ne: currentUserId } }),
-    $or: [
+  };
+
+  if (keyword) {
+    queryConditions.$or = [
       { name: { $regex: keyword, $options: "i" } },
       { username: { $regex: keyword, $options: "i" } },
-    ],
-  }).select("-password -email -mobile -govId -blockedUsers");
+      { city: { $regex: keyword, $options: "i" } },
+      { state: { $regex: keyword, $options: "i" } },
+    ];
+  }
+
+  if (filterCity) {
+    queryConditions.city = { $regex: filterCity, $options: "i" };
+  }
+  if (filterState) {
+    queryConditions.state = { $regex: filterState, $options: "i" };
+  }
+
+  const users = await User.find(queryConditions).select("-password -email -mobile -govId -blockedUsers");
 
   res.status(200).json({ success: true, users });
 });
@@ -418,7 +476,7 @@ const reportUser = asyncHandler(async (req, res) => {
 // Get traveler suggestions
 const getTravelerSuggestions = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
-  const currentUser = await User.findById(currentUserId).select("following");
+  const currentUser = await User.findById(currentUserId).select("following city state");
   const followingList = currentUser?.following || [];
 
   const suggestionQuery = {
@@ -436,31 +494,52 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     );
   };
 
+  const userCity = currentUser?.city?.trim().toLowerCase();
+  const userState = currentUser?.state?.trim().toLowerCase();
+
+  const getPriorityScore = (u) => {
+    let score = 0;
+    const uCity = u.city?.trim().toLowerCase();
+    const uState = u.state?.trim().toLowerCase();
+
+    if (userCity && uCity === userCity) {
+      score += 100;
+    }
+    if (userState && uState === userState) {
+      score += 10;
+    }
+    return score;
+  };
+
   let suggestions = await User.find({
     ...suggestionQuery,
     _id: { $ne: currentUserId, $nin: followingList },
   })
-    .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city bio")
-    .limit(30)
+    .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
+    .limit(100)
     .lean();
 
-  suggestions = filterUsers(suggestions).slice(0, 12);
+  suggestions = filterUsers(suggestions);
+  suggestions.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+  suggestions = suggestions.slice(0, 12);
 
   if (suggestions.length === 0) {
     suggestions = await User.find({
       ...suggestionQuery,
       _id: { $ne: currentUserId },
     })
-      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city bio")
-      .limit(30)
+      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
+      .limit(100)
       .lean();
 
-    suggestions = filterUsers(suggestions).slice(0, 12);
+    suggestions = filterUsers(suggestions);
+    suggestions.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
+    suggestions = suggestions.slice(0, 12);
   }
 
   if (suggestions.length === 0) {
     suggestions = await User.find({ _id: { $ne: currentUserId } })
-      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city bio")
+      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
       .limit(5)
       .lean();
   }

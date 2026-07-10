@@ -184,3 +184,4 @@ export const useChatSocket = (user, syncRoomMessages) => {
   return socketConnected;
 };
 export default useChatSocket;
+

@@ -315,7 +315,7 @@ const TravelBuddyHub = () => {
         <div className="flex justify-between items-center gap-4 select-none pt-0">
           <div>
             <h1 className="text-2xl sm:text-3xl font-black text-[#111827] tracking-tight leading-tight">
-              Travel <span className="text-[#6C4DF6]">Groups</span>
+              Travel <span className="text-brand-600">Groups</span>
             </h1>
           </div>
         </div>
@@ -353,9 +353,9 @@ const TravelBuddyHub = () => {
             <div className="relative z-40">
               <button
                 onClick={() => setShowStatusFilter(!showStatusFilter)}
-                className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-[#6C4DF6] transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+                className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
               >
-                <BadgeCheck className="w-4 h-4 text-[#6C4DF6]" />
+                <BadgeCheck className="w-4 h-4 text-brand-600" />
                 <span className="hidden sm:inline">
                   {selectedStatus === "All" ? "All Status" : selectedStatus}
                 </span>
@@ -401,13 +401,13 @@ const TravelBuddyHub = () => {
                           }}
                           className={`w-full flex text-left items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
                             isSelected
-                              ? "bg-[#6C4DF6]/10 text-[#6C4DF6]"
+                              ? "bg-brand-50 text-brand-600"
                               : "text-slate-600 hover:bg-slate-50"
                           }`}
                         >
                           <span>{label}</span>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-[#6C4DF6]" />
+                            <Check className="w-4 h-4 text-brand-600" />
                           )}
                         </button>
                       );
@@ -427,9 +427,9 @@ const TravelBuddyHub = () => {
                 return (
                   <button
                     onClick={() => setShowSort(!showSort)}
-                    className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-[#6C4DF6] transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+                    className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
                   >
-                    <ActiveIcon className="w-4 h-4 text-[#6C4DF6]" />
+                    <ActiveIcon className="w-4 h-4 text-brand-600" />
                     <span>{currentSortObj.label}</span>
                     <ChevronDown
                       className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showSort ? "rotate-180" : ""}`}
@@ -469,18 +469,18 @@ const TravelBuddyHub = () => {
                           }}
                           className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
                             isSelected
-                              ? "bg-[#6C4DF6]/10 text-[#6C4DF6]"
+                              ? "bg-brand-50 text-brand-600"
                               : "text-slate-600 hover:bg-slate-50"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <Icon
-                              className={`w-4 h-4 ${isSelected ? "text-[#6C4DF6]" : "text-slate-400"}`}
+                              className={`w-4 h-4 ${isSelected ? "text-brand-600" : "text-slate-400"}`}
                             />
                             <span>{label}</span>
                           </div>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-[#6C4DF6]" />
+                            <Check className="w-4 h-4 text-brand-600" />
                           )}
                         </button>
                       );
@@ -567,7 +567,7 @@ const TravelBuddyHub = () => {
 
           {loadingMore && (
             <div className="flex justify-center py-6">
-              <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-[#6C4DF6] animate-spin"></div>
+              <div className="w-8 h-8 rounded-full border-2 border-slate-200 border-t-brand-600 animate-spin"></div>
             </div>
           )}
         </div>
@@ -577,3 +577,4 @@ const TravelBuddyHub = () => {
 };
 
 export default TravelBuddyHub;
+

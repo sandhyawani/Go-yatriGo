@@ -43,3 +43,4 @@ export const SOCKET_EVENTS = {
   EMIT_TYPING: "typing",
   EMIT_STOP_TYPING: "stop_typing",
 };
+

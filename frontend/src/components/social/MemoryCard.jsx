@@ -21,7 +21,7 @@ const MemoryCard = ({ item, user }) => {
   const getBadgeInfo = (postType) => {
     switch (postType) {
       case "story":
-        return { icon: <Clapperboard className="w-3 h-3" />, label: "Story", bg: "bg-white/90 text-purple-600" };
+        return { icon: <Clapperboard className="w-3 h-3" />, label: "Story", bg: "bg-white/90 text-brand-600" };
       case "group":
         return { icon: <Users className="w-3 h-3" />, label: "Group Memory", bg: "bg-white/90 text-blue-600" };
       case "document":
@@ -33,7 +33,7 @@ const MemoryCard = ({ item, user }) => {
       case "memory":
         return { icon: <MapPin className="w-3 h-3" />, label: "Travel Memory", bg: "bg-white/90 text-rose-600" };
       case "travel_video":
-        return { icon: <Video className="w-3 h-3" />, label: "Travel Video", bg: "bg-white/90 text-indigo-600" };
+        return { icon: <Video className="w-3 h-3" />, label: "Travel Video", bg: "bg-white/90 text-brand-600" };
       default:
         return { icon: <ImageIcon className="w-3 h-3" />, label: "Memory", bg: "bg-white/90 text-slate-600" };
     }
@@ -140,7 +140,7 @@ const MemoryCard = ({ item, user }) => {
             )}
             {item.location && (
               <div className="flex items-center gap-1.5 text-white/90 text-sm font-bold mb-2 line-clamp-1">
-                <MapPin className="w-4 h-4 text-purple-400 shrink-0" />
+                <MapPin className="w-4 h-4 text-brand-400 shrink-0" />
                 {item.location}
               </div>
             )}
@@ -188,3 +188,4 @@ const MemoryCard = ({ item, user }) => {
 };
 
 export default MemoryCard;
+

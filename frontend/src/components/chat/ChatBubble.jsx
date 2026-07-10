@@ -151,14 +151,14 @@
 // //                           </>
 // //                         )
 // //                       ) : (
-// //                         <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-lg">
+// //                         <div className="w-full h-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-lg">
 // //                           📷
 // //                         </div>
 // //                       )}
 // //                     </div>
 // //                     {/* Story caption/info */}
 // //                     <div className="flex-1 min-w-0 pr-1">
-// //                       <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-200" : "text-primary-600"}`}>
+// //                       <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-brand-200" : "text-primary-600"}`}>
 // //                         {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Story Reply"}
 // //                       </div>
 // //                       <div className={`truncate text-[12px] font-medium opacity-80 ${isSelf ? "text-white" : "text-slate-600"}`}>
@@ -502,14 +502,14 @@
 //                           </>
 //                         )
 //                       ) : (
-//                         <div className="w-full h-full bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white text-lg">
+//                         <div className="w-full h-full bg-gradient-to-br from-brand-400 to-brand-600 flex items-center justify-center text-white text-lg">
 //                           📷
 //                         </div>
 //                       )}
 //                     </div>
 //                     {/* Story caption/info */}
 //                     <div className="flex-1 min-w-0 pr-1">
-//                       <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-purple-200" : "text-primary-600"}`}>
+//                       <div className={`font-bold mb-0.5 text-[11px] uppercase tracking-wider ${isSelf ? "text-brand-200" : "text-primary-600"}`}>
 //                         {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Story Reaction" : "💬 Story Reply"}
 //                       </div>
 //                       <div className={`truncate text-[12px] font-medium opacity-80 ${isSelf ? "text-white" : "text-slate-600"}`}>
@@ -1043,3 +1043,4 @@ const ChatBubble = ({
 };
 
 export default ChatBubble;
+

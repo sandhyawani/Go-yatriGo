@@ -84,7 +84,12 @@ export const AuthContextProvider = ({ children }) => {
       const { data } = await axios.post("/auth/login", credentials, {
         withCredentials: true,
       });
-      dispatch({ type: "LOGIN_SUCCESS", payload: data });
+      const flattenedUser = {
+        ...data.details,
+        isAdmin: data.isAdmin,
+        token: data.token,
+      };
+      dispatch({ type: "LOGIN_SUCCESS", payload: flattenedUser });
       return { success: true };
     } catch (err) {
       const message = extractErrorMessage(err);
@@ -136,3 +141,4 @@ export const useAuth = () => {
   }
   return ctx;
 };
+

@@ -38,3 +38,4 @@ export const getAvatarUrl = (...args) => {
   return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=7c3aed&color=fff&bold=true`;
 };
 
+

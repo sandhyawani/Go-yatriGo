@@ -65,7 +65,7 @@ router.post("/like/:id", userMiddleware, checkSuspended, async (req, res) => {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, message: "Post not found" });
 
-    const userId = req.user.toString();
+    const userId = req.user._id.toString();
     const hasLiked = post.likes.includes(userId);
 
     if (hasLiked) {

@@ -1,4 +1,4 @@
-﻿import { showToast } from "../utils/showToast";
+import { showToast } from "../utils/showToast";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import moment from "moment";
@@ -47,7 +47,7 @@ const UserpageA = () => {
       <div className="max-w-5xl mx-auto px-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-purple-600 transition-colors"
+          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors"
         >
           Back to Directory
         </button>
@@ -71,13 +71,13 @@ const UserpageA = () => {
               <h1 className="text-xl font-black text-slate-900 tracking-tight">
                 {state.name}
               </h1>
-              <span className="inline-flex px-3 py-1 bg-purple-50 text-purple-600 rounded-full text-[8px] font-black uppercase tracking-widest mt-1 border border-purple-100">
+              <span className="inline-flex px-3 py-1 bg-brand-50 text-brand-600 rounded-full text-[8px] font-black uppercase tracking-widest mt-1 border border-brand-100">
                 {state.type}
               </span>
 
               <div className="mt-6 flex flex-col gap-2">
                 <button
-                  className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 transition-all active:scale-95 shadow-lg"
+                  className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-brand-600 transition-all active:scale-95 shadow-lg"
                   onClick={getUser}
                 >
                   Update Details
@@ -158,3 +158,4 @@ const UserpageA = () => {
 };
 
 export default UserpageA;
+

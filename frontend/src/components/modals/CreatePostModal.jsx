@@ -655,7 +655,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       setMediaFiles([]);
                       setCurrentMediaIndex(0);
                     }}
-                    className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-violet-600 active:scale-95"
+                    className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-brand-600 active:scale-95"
                     aria-label="Back"
                   >
                     <ArrowLeft className="h-5 w-5" />
@@ -667,7 +667,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                         ? setStep("crop")
                         : setStep("upload")
                     }
-                    className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-violet-600 active:scale-95"
+                    className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-brand-600 active:scale-95"
                     aria-label="Back"
                   >
                     <ArrowLeft className="h-5 w-5" />
@@ -722,7 +722,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                         showToast.error("Failed to crop image.");
                       }
                     }}
-                    className="text-[14px] font-bold text-violet-600 transition-all hover:text-violet-700 active:scale-95"
+                    className="text-[14px] font-bold text-brand-600 transition-all hover:text-brand-700 active:scale-95"
                   >
                     {mediaFiles.length > 1 &&
                     mediaFiles.some(
@@ -735,7 +735,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                   <button
                     onClick={handleSubmit}
                     disabled={loading}
-                    className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-4 py-1.5 text-[13px] font-bold text-white transition-all hover:bg-violet-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-1.5 text-[13px] font-bold text-white transition-all hover:bg-brand-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {loading ? (
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -766,15 +766,15 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                   <div
                     className={`flex min-h-[420px] w-full flex-col items-center justify-center rounded-[28px] border-2 border-dashed p-8 text-center transition-all ${
                       isDragging
-                        ? "border-violet-500 bg-violet-50 shadow-[0_18px_45px_rgba(139,92,246,0.18)]"
-                        : "border-violet-200 bg-gradient-to-br from-violet-50 via-white to-rose-50"
+                        ? "border-brand-500 bg-brand-50 shadow-[0_18px_45px_rgba(139,92,246,0.18)]"
+                        : "border-brand-200 bg-gradient-to-br from-brand-50 via-white to-rose-50"
                     }`}
                   >
-                    <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[28px] bg-white shadow-xl shadow-violet-500/10">
-                      <ImagePlus className="h-11 w-11 text-violet-600" />
+                    <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[28px] bg-white shadow-xl shadow-brand-500/10">
+                      <ImagePlus className="h-11 w-11 text-brand-600" />
                     </div>
 
-                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-violet-600 shadow-sm">
+                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-brand-600 shadow-sm">
                       <Sparkles className="h-4 w-4" />
                       Travel Memory
                     </div>
@@ -793,13 +793,13 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                     <div className="mt-7 sm:hidden flex gap-3 w-full">
                       <button
                         onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
+                        className="flex-1 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95"
                       >
                         📷 Camera
                       </button>
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
+                        className="flex-1 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95"
                       >
                         🖼️ Gallery
                       </button>
@@ -807,7 +807,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                     {/* Desktop: Select Media button */}
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="hidden sm:block mt-7 rounded-2xl bg-violet-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-violet-500/25 transition-all hover:-translate-y-0.5 hover:bg-violet-700 hover:shadow-violet-500/40 active:scale-95"
+                      className="hidden sm:block mt-7 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95"
                     >
                       Select Media
                     </button>
@@ -880,7 +880,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               }
                               setCurrentMediaIndex(idx);
                             }}
-                            className={`w-12 h-12 rounded-lg overflow-hidden border-2 cursor-pointer transition-all shrink-0 ${idx === currentMediaIndex ? "border-violet-500 scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"}`}
+                            className={`w-12 h-12 rounded-lg overflow-hidden border-2 cursor-pointer transition-all shrink-0 ${idx === currentMediaIndex ? "border-brand-500 scale-110 shadow-lg" : "border-transparent opacity-60 hover:opacity-100"}`}
                           >
                             {m.type === "video" ? (
                               <video
@@ -914,9 +914,9 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           max={3}
                           step={0.05}
                           onChange={(e) => setZoom(Number(e.target.value))}
-                          className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-violet-600"
+                          className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600"
                         />
-                        <span className="text-xs font-bold text-violet-600 w-10 text-right">
+                        <span className="text-xs font-bold text-brand-600 w-10 text-right">
                           {Math.round(zoom * 100)}%
                         </span>
                       </div>
@@ -932,9 +932,9 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           max={360}
                           step={1}
                           onChange={(e) => setRotation(Number(e.target.value))}
-                          className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-violet-600"
+                          className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600"
                         />
-                        <span className="text-xs font-bold text-violet-600 w-10 text-right">
+                        <span className="text-xs font-bold text-brand-600 w-10 text-right">
                           {rotation}°
                         </span>
                       </div>
@@ -952,7 +952,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                             onClick={() => setAspect(item.value)}
                             className={`rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${
                               aspect === item.value
-                                ? "bg-violet-600 text-white shadow-md shadow-violet-500/25"
+                                ? "bg-brand-600 text-white shadow-md shadow-brand-500/25"
                                 : "bg-slate-50 text-slate-600 hover:bg-slate-100"
                             }`}
                           >
@@ -964,7 +964,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => setShowGrid(!showGrid)}
-                          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${showGrid ? "bg-violet-100 text-violet-700" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                          className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${showGrid ? "bg-brand-100 text-brand-700" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
                           title="Toggle Grid"
                         >
                           <Sliders className="h-3 w-3" />{" "}
@@ -1031,7 +1031,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           <div
                             key={idx}
                             onClick={() => setCurrentMediaIndex(idx)}
-                            className={`h-2 rounded-full cursor-pointer transition-all ${idx === currentMediaIndex ? "w-6 bg-violet-600" : "w-2 bg-slate-300 hover:bg-violet-400"}`}
+                            className={`h-2 rounded-full cursor-pointer transition-all ${idx === currentMediaIndex ? "w-6 bg-brand-600" : "w-2 bg-slate-300 hover:bg-brand-400"}`}
                           />
                         ))}
                       </div>
@@ -1053,7 +1053,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               <button
                                 type="button"
                                 onClick={() => setShowLocationPicker(false)}
-                                className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-50 text-violet-600 transition-all hover:bg-violet-100"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100"
                               >
                                 <ArrowLeft className="h-4 w-4" />
                               </button>
@@ -1076,7 +1076,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           </div>
 
                           <div className="relative mb-3 shrink-0">
-                            <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+                            <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
                             <input
                               autoFocus
                               type="text"
@@ -1085,7 +1085,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               onChange={(e) =>
                                 handleLocationSearch(e.target.value)
                               }
-                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-500/10 shadow-2xs"
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs"
                             />
                             {locationQuery && (
                               <button
@@ -1100,7 +1100,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                           <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                             {searchingLocation ? (
-                              <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-violet-600">
+                              <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                                 <span className="text-xs font-bold text-slate-500">
                                   Searching destinations...
@@ -1124,12 +1124,12 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                             setLocationQuery("");
                                             setLocationResults([]);
                                           }}
-                                          className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-violet-200 hover:bg-violet-50/60 hover:shadow-2xs active:scale-[0.99]"
+                                          className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/60 hover:shadow-2xs active:scale-[0.99]"
                                         >
                                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-2xs group-hover:scale-110 transition-transform">
                                             {dest.label.split(" ")[0]}
                                           </div>
-                                          <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-violet-950">
+                                          <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-brand-900">
                                             {dest.label
                                               .split(" ")
                                               .slice(1)
@@ -1167,13 +1167,13 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                               setLocationQuery("");
                                               setLocationResults([]);
                                             }}
-                                            className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-violet-200 hover:bg-violet-50/70 hover:shadow-2xs active:scale-[0.99]"
+                                            className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
                                           >
-                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-violet-100 text-violet-600 transition-transform group-hover:scale-105 group-hover:bg-violet-600 group-hover:text-white">
+                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
                                               <MapPin className="h-4 w-4" />
                                             </div>
                                             <span className="min-w-0 flex-1">
-                                              <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-violet-950">
+                                              <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
                                                 {placeName}
                                               </span>
                                               <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
@@ -1227,7 +1227,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                     audioRef.current.pause();
                                   setIsPlayingMusic(false);
                                 }}
-                                className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-50 text-violet-600 transition-all hover:bg-violet-100"
+                                className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100"
                               >
                                 <ArrowLeft className="h-4 w-4" />
                               </button>
@@ -1254,14 +1254,14 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           </div>
 
                           <div className="relative mb-3 shrink-0">
-                            <Music2 className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-violet-500" />
+                            <Music2 className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
                             <input
                               autoFocus
                               type="text"
                               placeholder="Search movies, artists, hits..."
                               value={musicQuery}
                               onChange={(e) => setMusicQuery(e.target.value)}
-                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-violet-500 focus:bg-white focus:ring-4 focus:ring-violet-500/10 shadow-2xs"
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs"
                             />
                             {musicQuery && (
                               <button
@@ -1285,7 +1285,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                   }
                                   className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
                                     selectedMusicLang === lang.value
-                                      ? "bg-violet-600 text-white shadow-xs"
+                                      ? "bg-brand-600 text-white shadow-xs"
                                       : "bg-slate-100 text-slate-600 hover:bg-slate-200"
                                   }`}
                                 >
@@ -1297,7 +1297,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                           <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                             {isSearchingMusic ? (
-                              <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-violet-600">
+                              <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                                 <span className="text-xs font-bold text-slate-500">
                                   Searching songs...
@@ -1373,8 +1373,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                       }}
                                       className={`group mb-1.5 flex w-full items-center justify-between gap-3 rounded-2xl border p-2.5 transition-all cursor-pointer ${
                                         selectedMusic?.id === song.id
-                                          ? "border-violet-300 bg-violet-50/80 shadow-2xs"
-                                          : "border-slate-100 bg-slate-50/60 hover:border-violet-200 hover:bg-violet-50/70 hover:shadow-2xs"
+                                          ? "border-brand-300 bg-brand-50/80 shadow-2xs"
+                                          : "border-slate-100 bg-slate-50/60 hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs"
                                       }`}
                                     >
                                       <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -1389,7 +1389,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                           />
                                         </div>
                                         <div className="min-w-0 flex-1 pr-2">
-                                          <p className="truncate text-xs font-bold text-slate-900 group-hover:text-violet-950">
+                                          <p className="truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
                                             {song.title}
                                           </p>
                                           <p className="truncate text-[11px] font-medium text-slate-500">
@@ -1405,7 +1405,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                             onClick={(e) =>
                                               handlePreviewToggle(song, e)
                                             }
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white shadow-2xs transition-all hover:scale-110"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white shadow-2xs transition-all hover:scale-110"
                                           >
                                             <div className="flex h-3 items-end gap-[2px]">
                                               <motion.span
@@ -1440,7 +1440,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                             onClick={(e) =>
                                               handlePreviewToggle(song, e)
                                             }
-                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-slate-200/80 text-violet-600 shadow-2xs transition-all hover:bg-violet-600 hover:border-violet-600 hover:text-white hover:scale-110"
+                                            className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-slate-200/80 text-brand-600 shadow-2xs transition-all hover:bg-brand-600 hover:border-brand-600 hover:text-white hover:scale-110"
                                           >
                                             <Play className="h-3.5 w-3.5 translate-x-[1px] fill-current" />
                                           </button>
@@ -1477,10 +1477,10 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           src={avatar}
                           alt={username}
                           onError={() => setImgError(true)}
-                          className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-violet-100"
+                          className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-brand-100"
                         />
                       ) : (
-                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-violet-600 text-sm font-extrabold text-white ring-2 ring-violet-100">
+                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white ring-2 ring-brand-100">
                           {username?.charAt(0)?.toUpperCase() || "T"}
                         </div>
                       )}
@@ -1495,7 +1495,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       </div>
                     </div>
 
-                    <div className="relative flex flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 transition-all focus-within:border-violet-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-violet-500/10">
+                    <div className="relative flex flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 transition-all focus-within:border-brand-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-brand-500/10">
                       <input
                         type="text"
                         value={postTitle}
@@ -1516,7 +1516,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                           {extractedTags.map((tag) => (
                             <span
                               key={tag}
-                              className="text-[10px] font-bold text-violet-600 bg-violet-100 px-2 py-0.5 rounded-full"
+                              className="text-[10px] font-bold text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full"
                             >
                               #{tag}
                             </span>
@@ -1536,8 +1536,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               }}
                               className={`rounded-full p-2 transition-all ${
                                 showEmojiPicker
-                                  ? "bg-violet-100 text-violet-600"
-                                  : "text-slate-400 hover:bg-white hover:text-violet-600"
+                                  ? "bg-brand-100 text-brand-600"
+                                  : "text-slate-400 hover:bg-white hover:text-brand-600"
                               }`}
                             >
                               <Smile className="h-4 w-4" />
@@ -1579,8 +1579,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               }}
                               className={`rounded-full p-2 transition-all ${
                                 showLocationPicker
-                                  ? "bg-violet-100 text-violet-600"
-                                  : "text-slate-400 hover:bg-white hover:text-violet-600"
+                                  ? "bg-brand-100 text-brand-600"
+                                  : "text-slate-400 hover:bg-white hover:text-brand-600"
                               }`}
                             >
                               <MapPin className="h-4 w-4" />
@@ -1597,8 +1597,8 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               }}
                               className={`rounded-full p-2 transition-all ${
                                 showMusicPicker
-                                  ? "bg-violet-100 text-violet-600"
-                                  : "text-slate-400 hover:bg-white hover:text-violet-600"
+                                  ? "bg-brand-100 text-brand-600"
+                                  : "text-slate-400 hover:bg-white hover:text-brand-600"
                               }`}
                             >
                               <Music2 className="h-4 w-4" />
@@ -1612,7 +1612,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       </div>
 
                       {location && (
-                        <div className="mt-3 flex w-fit max-w-full items-center gap-1 rounded-xl bg-violet-50 px-3 py-2 text-[11px] font-bold text-violet-600">
+                        <div className="mt-3 flex w-fit max-w-full items-center gap-1 rounded-xl bg-brand-50 px-3 py-2 text-[11px] font-bold text-brand-600">
                           <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">
                             {location.length > 42
@@ -1629,12 +1629,12 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                       )}
 
                       {selectedMusic && (
-                        <div className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-2xl bg-indigo-50 border border-indigo-100 p-1.5 pr-4 text-[11px] font-bold text-primary-600 shadow-sm">
+                        <div className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-2xl bg-brand-50 border border-brand-100 p-1.5 pr-4 text-[11px] font-bold text-primary-600 shadow-sm">
                           {selectedMusic.preview ? (
                             <button
                               type="button"
                               onClick={toggleMusicPreview}
-                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-indigo-100 text-primary-600 shadow-sm transition-all hover:bg-indigo-100 hover:scale-105 active:scale-95"
+                              className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white border border-brand-100 text-primary-600 shadow-sm transition-all hover:bg-brand-100 hover:scale-105 active:scale-95"
                             >
                               {isPlayingMusic ? (
                                 <Pause className="h-3 w-3 fill-current" />
@@ -1643,7 +1643,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               )}
                             </button>
                           ) : (
-                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-indigo-100 text-primary-600">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-brand-100 text-primary-600">
                               <Music2 className="h-3 w-3" />
                             </div>
                           )}
@@ -1690,7 +1690,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                               setIsPlayingMusic(false);
                               if (audioRef.current) audioRef.current.pause();
                             }}
-                            className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100/50 text-indigo-400 transition-all hover:bg-rose-100 hover:text-rose-500"
+                            className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-brand-100/50 text-brand-400 transition-all hover:bg-rose-100 hover:text-rose-500"
                           >
                             <X className="h-2.5 w-2.5" />
                           </button>
@@ -1736,7 +1736,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                                     }
                                     className="peer sr-only"
                                   />
-                                  <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-violet-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                  <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                                 </div>
                               </label>
                             </div>
@@ -1752,7 +1752,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
             {loading && (
               <div className="absolute inset-0 z-[100000] flex items-center justify-center rounded-[32px] bg-white/65 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-4 rounded-3xl bg-white px-8 py-6 shadow-2xl w-[280px]">
-                  <Loader2 className="h-9 w-9 animate-spin text-violet-600" />
+                  <Loader2 className="h-9 w-9 animate-spin text-brand-600" />
                   <div className="flex flex-col items-center gap-1.5 w-full">
                     <p className="text-sm font-extrabold text-slate-700 text-center">
                       {uploadProgress > 0 && uploadProgress < 100 ? `Uploading (${uploadProgress}%)` : "Sharing your memory..."}
@@ -1760,7 +1760,7 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
                     {uploadProgress > 0 && uploadProgress < 100 && (
                       <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-violet-600 transition-all duration-300 rounded-full" 
+                          className="h-full bg-brand-600 transition-all duration-300 rounded-full" 
                           style={{ width: `${uploadProgress}%` }}
                         />
                       </div>
@@ -1784,3 +1784,4 @@ const CreatePostModal = ({ isOpen, onClose, onSuccess, user }) => {
 };
 
 export default CreatePostModal;
+

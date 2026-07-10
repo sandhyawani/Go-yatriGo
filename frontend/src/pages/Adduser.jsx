@@ -4,7 +4,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUploadOutlined";
 import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
-import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
+import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
@@ -45,6 +46,8 @@ function getFieldError(form) {
   if (!MOBILE_REGEX.test(form.mobile)) {
     return { field: "mobile", message: "Mobile number must be exactly 10 digits." };
   }
+  if (!form.state) return { field: "state", message: "State is required." };
+  if (!form.city) return { field: "city", message: "City is required." };
   if (!form.password) {
     return { field: "password", message: "Password is required." };
   }
@@ -127,7 +130,8 @@ const AddUser = () => {
   const [form, setForm] = useState({
     name: "",
     email: "",
-    country: "",
+    state: "",
+    city: "",
     mobile: "",
     type: "traveler",
     password: "",
@@ -229,7 +233,8 @@ const AddUser = () => {
         name: form.name.trim(),
         email: form.email.trim(),
         mobile: form.mobile.trim(),
-        country: form.country.trim(),
+        state: form.state.trim(),
+        city: form.city.trim(),
         type: form.type,
         password: form.password,
         ...(imgUrl ? { img: imgUrl } : {}),
@@ -386,20 +391,56 @@ const AddUser = () => {
                 </FormField>
 
                 <FormField
-                  id="country"
-                  label="Country"
-                  icon={<PublicOutlinedIcon fontSize="small" />}
-                  error={errors.country}
-                  helperText="Optional"
+                  id="state"
+                  label="State *"
+                  icon={<PlaceOutlinedIcon fontSize="small" />}
+                  error={errors.state}
+                  helperText="Required"
                 >
-                  <input
-                    id="country"
-                    type="text"
-                    value={form.country}
-                    onChange={(e) => updateField("country", e.target.value)}
-                    placeholder="Enter country"
-                    className={inputClass(!!errors.country)}
-                  />
+                  <select
+                    id="state"
+                    value={form.state}
+                    onChange={(e) => {
+                      updateField("state", e.target.value);
+                      updateField("city", "");
+                    }}
+                    className={inputClass(!!errors.state)}
+                  >
+                    <option value="" disabled>
+                      Select State
+                    </option>
+                    {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
+
+                <FormField
+                  id="city"
+                  label="City *"
+                  icon={<PlaceOutlinedIcon fontSize="small" />}
+                  error={errors.city}
+                  helperText="Required"
+                >
+                  <select
+                    id="city"
+                    value={form.city}
+                    onChange={(e) => updateField("city", e.target.value)}
+                    disabled={!form.state}
+                    className={inputClass(!!errors.city)}
+                  >
+                    <option value="" disabled>
+                      {form.state ? "Select City" : "Select State first"}
+                    </option>
+                    {form.state &&
+                      INDIAN_STATES_AND_CITIES[form.state].map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                  </select>
                 </FormField>
 
                 <FormField
@@ -510,3 +551,4 @@ const AddUser = () => {
 };
 
 export default AddUser;
+

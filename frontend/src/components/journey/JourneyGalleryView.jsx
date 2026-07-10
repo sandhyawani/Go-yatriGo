@@ -190,7 +190,7 @@ const JourneyGalleryView = ({ journeyId }) => {
               onClick={() => setFilter(tab)}
               className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
                 filter === tab
-                  ? "bg-[#6C4DF6] text-white shadow-md shadow-[#6C4DF6]/30/20"
+                  ? "bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30/20"
                   : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
               }`}
             >
@@ -201,7 +201,7 @@ const JourneyGalleryView = ({ journeyId }) => {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-md shadow-[#6C4DF6]/25 transition-all active:scale-95 whitespace-nowrap"
+          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95 whitespace-nowrap"
         >
           <Upload className="w-4 h-4" /> Direct Memory Upload
         </button>
@@ -226,7 +226,7 @@ const JourneyGalleryView = ({ journeyId }) => {
               className="group relative aspect-square rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300"
             >
               {item.mediaType === "video" ? (
-                <div className="w-full h-full relative flex items-center justify-center bg-[#5b3ee0]">
+                <div className="w-full h-full relative flex items-center justify-center bg-[#7c3aed]">
                   <video
                     src={item.mediaUrl}
                     className="w-full h-full object-cover opacity-80"
@@ -245,7 +245,7 @@ const JourneyGalleryView = ({ journeyId }) => {
 
               {/* Hover Overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-[#6C4DF6] text-white w-max mb-1.5">
+                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-[#8B5CF6] text-white w-max mb-1.5">
                   {item.itemType}
                 </span>
                 <p className="text-xs font-bold text-white line-clamp-2">
@@ -265,9 +265,9 @@ const JourneyGalleryView = ({ journeyId }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
             {/* Header Banner */}
-            <div className="relative bg-purple-50 dark:bg-purple-950/40 p-5 border-b border-purple-100 dark:border-purple-900/50 flex items-center justify-between shrink-0">
+            <div className="relative bg-brand-50 dark:bg-brand-900/40 p-5 border-b border-brand-100 dark:border-brand-900/50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-[#6C4DF6] text-white flex items-center justify-center shadow-lg shadow-[#6C4DF6]/30">
+                <div className="w-10 h-10 rounded-2xl bg-[#8B5CF6] text-white flex items-center justify-center shadow-lg shadow-[#8B5CF6]/30">
                   <Sparkles className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
@@ -313,8 +313,8 @@ const JourneyGalleryView = ({ journeyId }) => {
                     onClick={() => fileInputRef.current?.click()}
                     className={`group relative w-full py-8 px-5 border-2 border-dashed rounded-2xl cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${
                       isDragging
-                        ? "border-[#6C4DF6] bg-purple-50 dark:bg-purple-950/30 scale-[0.99]"
-                        : "border-slate-200 dark:border-slate-800 hover:border-[#6C4DF6]/60 hover:bg-purple-50/20 dark:hover:bg-slate-800/50"
+                        ? "border-[#8B5CF6] bg-brand-50 dark:bg-brand-900/30 scale-[0.99]"
+                        : "border-slate-200 dark:border-slate-800 hover:border-[#8B5CF6]/60 hover:bg-brand-50/20 dark:hover:bg-slate-800/50"
                     }`}
                   >
                     <input
@@ -333,7 +333,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                       onChange={(e) => handleFileSelect(e.target.files?.[0])}
                       className="hidden"
                     />
-                    <div className="w-14 h-14 rounded-2xl bg-purple-100 dark:bg-purple-900/40 text-[#6C4DF6] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center mb-3 shadow-xs">
+                    <div className="w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-[#8B5CF6] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center mb-3 shadow-xs">
                       <Upload className="w-7 h-7" />
                     </div>
                     <h4 className="text-sm font-extrabold text-slate-800 dark:text-white mb-1">
@@ -341,7 +341,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-3.5">
                       Drag & Drop your media here or{" "}
-                      <span className="text-[#6C4DF6] font-bold underline decoration-dotted underline-offset-4">
+                      <span className="text-[#8B5CF6] font-bold underline decoration-dotted underline-offset-4">
                         browse device
                       </span>
                     </p>
@@ -356,14 +356,14 @@ const JourneyGalleryView = ({ journeyId }) => {
                       <button
                         type="button"
                         onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-[#6C4DF6] border-2 border-[#6C4DF6]/30 bg-[#6C4DF6]/5 hover:bg-[#6C4DF6]/10 transition-all flex items-center justify-center gap-2"
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-[#8B5CF6] border-2 border-[#8B5CF6]/30 bg-[#8B5CF6]/5 hover:bg-[#8B5CF6]/10 transition-all flex items-center justify-center gap-2"
                       >
                         📷 Camera
                       </button>
                       <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-violet-600 to-purple-600 shadow-md hover:-translate-y-0.5 transition-all"
+                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all"
                       >
                         🖼️ Gallery
                       </button>
@@ -413,7 +413,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                       <span className="text-base">{detectedType === "video" ? "🎥" : "📷"}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{selectedFile.name}</p>
-                        <p className="text-[11px] text-[#6C4DF6] font-semibold">
+                        <p className="text-[11px] text-[#8B5CF6] font-semibold">
                           {formatFileSize(selectedFile.size)} · {detectedType === "video" ? "Video Clip" : "Photo"}
                         </p>
                       </div>
@@ -447,21 +447,21 @@ const JourneyGalleryView = ({ journeyId }) => {
                       value={caption}
                       onChange={(e) => setCaption(e.target.value)}
                       placeholder="Share the story or feeling behind this memory..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#6C4DF6] focus:ring-2 focus:ring-[#6C4DF6]/20 transition-all resize-none"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all resize-none"
                     />
                   </div>
                 </div>
 
                 {/* Upload Progress */}
                 {loading && (
-                  <div className="p-4 bg-purple-50 dark:bg-purple-950/20 rounded-2xl border border-purple-200/50 dark:border-purple-800/30 space-y-2 animate-fade-in">
-                    <div className="flex items-center justify-between text-xs font-extrabold text-[#6C4DF6]">
+                  <div className="p-4 bg-brand-50 dark:bg-brand-900/20 rounded-2xl border border-brand-200/50 dark:border-brand-800/30 space-y-2 animate-fade-in">
+                    <div className="flex items-center justify-between text-xs font-extrabold text-[#8B5CF6]">
                       <span>Uploading...</span>
                       <span>{uploadProgress}%</span>
                     </div>
-                    <div className="w-full h-2 bg-purple-100 dark:bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-full h-2 bg-brand-100 dark:bg-brand-900/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#6C4DF6] transition-all duration-300 rounded-full"
+                        className="h-full bg-[#8B5CF6] transition-all duration-300 rounded-full"
                         style={{ width: `${uploadProgress}%` }}
                       />
                     </div>
@@ -493,7 +493,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                 <button
                   type="submit"
                   disabled={!selectedFile || loading || uploadSuccess}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] disabled:opacity-50 text-white text-xs font-extrabold shadow-md shadow-[#6C4DF6]/25 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] disabled:opacity-50 text-white text-xs font-extrabold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed"
                 >
                   {loading ? (
                     <>
@@ -517,3 +517,4 @@ const JourneyGalleryView = ({ journeyId }) => {
 };
 
 export default JourneyGalleryView;
+

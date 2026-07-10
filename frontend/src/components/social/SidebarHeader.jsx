@@ -124,7 +124,7 @@ export const SidebarHeader = ({
                   <button
                     onClick={() => setIsCreateStoryOpen(true)}
                     className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"
+                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
                     }`}
                   >
                     <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-500 shrink-0">
@@ -142,7 +142,7 @@ export const SidebarHeader = ({
                   <button
                     onClick={() => setIsCreatePostOpen(true)}
                     className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"
+                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
                     }`}
                   >
                     <div className="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 shrink-0">
@@ -160,7 +160,7 @@ export const SidebarHeader = ({
                   <Link
                     to="/social/buddy/new"
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"
+                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
                     }`}
                   >
                     <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500 shrink-0">
@@ -186,3 +186,4 @@ export const SidebarHeader = ({
   );
 };
 export default SidebarHeader;
+

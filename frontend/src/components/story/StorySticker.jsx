@@ -62,7 +62,7 @@ const StorySticker = ({
           onClick={() => isEdit && onMusicClick && onMusicClick()}
           className={`bg-white/95 backdrop-blur-xl p-2.5 rounded-full flex items-center gap-3 min-w-[160px] max-w-[200px] border border-white/20 shadow-[0_10px_30px_rgba(0,0,0,0.15)] ${isEdit ? 'cursor-pointer' : ''}`}
         >
-          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-50 shrink-0">
+          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-brand-50 shrink-0">
             <span className="text-sm">🎵</span>
           </div>
           <div className="overflow-hidden min-w-0 flex-1">
@@ -144,3 +144,4 @@ const StorySticker = ({
 };
 
 export default StorySticker;
+

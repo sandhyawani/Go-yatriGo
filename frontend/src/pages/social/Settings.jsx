@@ -164,7 +164,7 @@ const Settings = () => {
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">1. Account</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
               <SettingsRow icon={User} title="Edit Profile" subtitle="Public travel identity" to="/updateProfile" colorClass="text-blue-500 bg-blue-50" />
-              <SettingsRow icon={Lock} title="Change Password" subtitle="Update your password" to="/settings/security?tab=password" colorClass="text-indigo-500 bg-indigo-50" />
+              <SettingsRow icon={Lock} title="Change Password" subtitle="Update your password" to="/settings/security?tab=password" colorClass="text-brand-500 bg-brand-50" />
               <SettingsRow icon={Activity} title="Login Activity" subtitle="Where you're logged in" to="/settings/security?tab=sessions" colorClass="text-cyan-500 bg-cyan-50" />
             </div>
           </div>
@@ -173,7 +173,7 @@ const Settings = () => {
           <div>
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">2. Privacy & Safety</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
-              <SettingsRow icon={Shield} title="Privacy Settings" subtitle="Private account, online status, invites" to="/settings/privacy" colorClass="text-purple-500 bg-purple-50" />
+              <SettingsRow icon={Shield} title="Privacy Settings" subtitle="Private account, online status, invites" to="/settings/privacy" colorClass="text-brand-500 bg-brand-50" />
               <SettingsRow icon={EyeOff} title="Blocked Users" subtitle="Manage blocked travelers" to="/blocked-users" colorClass="text-slate-500 bg-slate-100" />
             </div>
           </div>
@@ -201,7 +201,7 @@ const Settings = () => {
             <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">5. Support</h2>
             <div className="bg-white rounded-3xl p-2 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-1">
               <SettingsRow icon={Headphones} title="Help & Support" subtitle="Get help with your account" to="/help-support" colorClass="text-sky-500 bg-sky-50" />
-              <SettingsRow icon={MessageSquare} title="Contact Us" subtitle="Reach out to our team" to="/contact" colorClass="text-indigo-500 bg-indigo-50" />
+              <SettingsRow icon={MessageSquare} title="Contact Us" subtitle="Reach out to our team" to="/contact" colorClass="text-brand-500 bg-brand-50" />
               <SettingsRow icon={AlertTriangle} title="Report a Problem" subtitle="Report bugs or issues" to="/report" colorClass="text-orange-500 bg-orange-50" />
             </div>
           </div>
@@ -235,3 +235,4 @@ const Settings = () => {
 };
 
 export default Settings;
+

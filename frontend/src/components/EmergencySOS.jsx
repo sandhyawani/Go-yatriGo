@@ -1,8 +1,10 @@
 import { showToast } from "../utils/showToast";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback, useContext } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { AlertTriangle, Shield, MapPin, Phone, X } from "lucide-react";
 import { useLocation } from "react-router-dom";
+import { AuthContext } from "../context/authContext";
+import axios from "../api/axios";
 
 const HIDDEN_ROUTES = ["/social/memories"];
 
@@ -31,6 +33,7 @@ const fetchLocation = () =>
   });
 
 const EmergencySOS = () => {
+  const { updateUser } = useContext(AuthContext);
   const location = useLocation();
 
   const [isOpen, setIsOpen] = useState(false);
@@ -52,17 +55,27 @@ const EmergencySOS = () => {
     setIsSent(false);
   }, []);
 
-  const handleSOS = useCallback(() => {
-    setIsSent(true);
-
-    showToast.success("SOS Alert Sent! Emergency contacts notified.", {
-      icon: "🚨",
-      duration: 5000,
-      style: { background: "#be123c", color: "#fff", fontWeight: "bold" },
-    });
-
+  const handleSOS = useCallback(async () => {
+    try {
+      setIsSent(true);
+      const res = await axios.post("/emergency/sos", {});
+      if (res.data.success) {
+        if (updateUser) {
+          updateUser({ sosActive: true });
+        }
+        showToast.success("SOS Alert Sent! Emergency contacts notified.", {
+          icon: "🚨",
+          duration: 5000,
+          style: { background: "#be123c", color: "#fff", fontWeight: "bold" },
+        });
+      }
+    } catch (error) {
+      showToast.error("Failed to trigger SOS alert.");
+      console.error(error);
+      setIsSent(false);
+    }
     timeoutRef.current = setTimeout(handleClose, AUTO_CLOSE_MS);
-  }, [handleClose]);
+  }, [handleClose, updateUser]);
 
   if (HIDDEN_ROUTES.includes(location.pathname)) return null;
 
@@ -188,3 +201,4 @@ const EmergencySOS = () => {
 };
 
 export default EmergencySOS;
+

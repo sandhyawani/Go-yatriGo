@@ -1,4 +1,4 @@
-ï»¿import { showToast } from "../utils/showToast";
+import { showToast } from "../utils/showToast";
 import axios from "../api/axios";
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
@@ -107,7 +107,7 @@ const Login = () => {
         navigate("/", { replace: true });
       }
 
-      // Toast after navigation is fine â€” it's non-blocking
+      // Toast after navigation is fine — it's non-blocking
       showToast.success("Welcome Back");
     } catch (err) {
       if (!isMounted.current) return;
@@ -125,7 +125,7 @@ const Login = () => {
       if (isDbDown && process.env.NODE_ENV === "development") {
         // Keep server details out of user-facing errors.
         console.warn(
-          "[DEV] DB offline â€” use local bypass credentials from .env.local",
+          "[DEV] DB offline — use local bypass credentials from .env.local",
         );
       }
 
@@ -305,7 +305,7 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     id="password"
                     autoComplete="current-password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                     value={credentials.password}
                     onChange={handleChange}
                     onKeyUp={handleKeyUp}
@@ -416,3 +416,4 @@ const Login = () => {
 };
 
 export default Login;
+

@@ -7,7 +7,7 @@
 :root {
   /* Primary Brand scale */
   --primary-50: #f5f3ff;
-  --primary-100: #ede9fe;
+  --primary-100: #f3e8ff;
   --primary-200: #ddd6fe;
   --primary-300: #c4b5fd;
   --primary-400: #a78bfa;
@@ -30,7 +30,7 @@
   --secondary-900: #0f172a;
 
   /* Semantic tokens */
-  --success: #10b981;
+  --success: #22c55e;
   --warning: #f59e0b;
   --danger: #ef4444;
   --error: var(--danger);
@@ -38,12 +38,12 @@
   --background: #f8fafc;
   --surface: #ffffff;
   
-  --text-primary: #0f172a;
+  --text-primary: #111827;
   --text: var(--text-primary);
-  --text-secondary: #64748b;
+  --text-secondary: #6b7280;
   --text-muted: var(--text-secondary);
   
-  --border-color: #f1f5f9;
+  --border-color: #e5e7eb;
   --border: var(--border-color);
 
   /* Maintain backward compatibility with --brand-* scale */
@@ -83,7 +83,7 @@ h1, h2, h3, h4, h5, h6 {
 @layer components {
   /* Reusable Card Style */
   .card {
-    @apply bg-white rounded-3xl border border-slate-100 shadow-sm transition-all duration-300;
+    @apply bg-white rounded-2xl border border-slate-100 shadow-sm transition-all duration-300;
   }
   .card:hover {
     @apply shadow-md;
@@ -91,26 +91,26 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Reusable Button System */
   .btn-primary {
-    @apply px-5 py-2.5 rounded-3xl bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-full bg-brand-600 hover:bg-brand-700 text-white font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
   }
   .btn-secondary {
-    @apply px-5 py-2.5 rounded-3xl bg-brand-50 text-brand-600 hover:bg-brand-100 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
   }
   .btn-outline {
-    @apply px-5 py-2.5 rounded-3xl border border-brand-200 text-brand-600 hover:bg-brand-50 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
+    @apply px-5 py-2.5 rounded-full border border-brand-200 text-brand-600 hover:bg-brand-50 font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2;
   }
 
   /* Input fields */
   .input-field {
-    @apply w-full rounded-3xl border border-slate-200 px-4 py-3 bg-white text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all;
+    @apply w-full rounded-2xl border border-slate-200 px-4 py-3 bg-white text-sm focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 outline-none transition-all;
   }
 
   /* Chat Bubbles */
   .chat-bubble-self {
-    @apply bg-brand-600 text-white rounded-3xl rounded-tr-none px-4 py-2.5 text-sm;
+    @apply bg-brand-600 text-white rounded-2xl rounded-tr-none px-4 py-2.5 text-sm;
   }
   .chat-bubble-other {
-    @apply bg-white border border-slate-100 text-slate-800 rounded-3xl rounded-tl-none px-4 py-2.5 text-sm;
+    @apply bg-white border border-slate-100 text-slate-800 rounded-2xl rounded-tl-none px-4 py-2.5 text-sm;
   }
 }
 

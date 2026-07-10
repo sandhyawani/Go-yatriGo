@@ -24,3 +24,4 @@ export const SidebarSearchInput = ({ searchQuery, setSearchQuery, handleClearSea
   );
 };
 export default SidebarSearchInput;
+

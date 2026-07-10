@@ -102,11 +102,11 @@ const AdminProfile = () => {
           {...fade()}
           className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-violet-50/60 via-white to-white" />
-          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-violet-100/40 blur-2xl" />
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-brand-50/60 via-white to-white" />
+          <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-brand-100/40 blur-2xl" />
 
           <div className="relative flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center sm:p-6">
-            <div className="h-16 w-16 shrink-0 rounded-xl bg-gradient-to-tr from-violet-500 to-fuchsia-500 p-[2px] shadow-md sm:h-20 sm:w-20">
+            <div className="h-16 w-16 shrink-0 rounded-xl bg-gradient-to-tr from-brand-500 to-fuchsia-500 p-[2px] shadow-md sm:h-20 sm:w-20">
               <div className="h-full w-full overflow-hidden rounded-[10px] bg-white">
                 <img
                   className="h-full w-full object-cover"
@@ -129,7 +129,7 @@ const AdminProfile = () => {
 
             <div className="min-w-0 flex-1">
               <div className="mb-1.5 flex flex-wrap items-center gap-1.5">
-                <span className="inline-flex items-center gap-1 rounded bg-violet-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet-700">
+                <span className="inline-flex items-center gap-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-brand-700">
                   <ShieldCheck className="h-2.5 w-2.5" />
                   Super Admin
                 </span>
@@ -154,7 +154,7 @@ const AdminProfile = () => {
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
             >
               <h3 className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                <User className="h-4 w-4 text-violet-500" />
+                <User className="h-4 w-4 text-brand-500" />
                 Account Information
               </h3>
 
@@ -172,9 +172,9 @@ const AdminProfile = () => {
                     icon: <Phone className="h-3.5 w-3.5 text-slate-400" />,
                   },
                   {
-                    label: "Country",
-                    value: user.country,
-                    icon: <Globe className="h-3.5 w-3.5 text-slate-400" />,
+                    label: "Location",
+                    value: user.city && user.state ? `${user.city}, ${user.state}` : "Location not added",
+                    icon: <MapPin className="h-3.5 w-3.5 text-slate-400" />,
                   },
                 ].map(({ label, value, icon }) => (
                   <div key={label}>
@@ -205,7 +205,7 @@ const AdminProfile = () => {
               className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
             >
               <h3 className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-slate-900">
-                <Lock className="h-4 w-4 text-violet-500" />
+                <Lock className="h-4 w-4 text-brand-500" />
                 Security & Access
               </h3>
 
@@ -225,7 +225,7 @@ const AdminProfile = () => {
                   <button
                     type="button"
                     onClick={() => navigate("/admin/settings/security?tab=password")}
-                    className="text-[12px] font-semibold text-violet-600 transition-colors hover:text-violet-700"
+                    className="text-[12px] font-semibold text-brand-600 transition-colors hover:text-brand-700"
                   >
                     Update
                   </button>
@@ -246,7 +246,7 @@ const AdminProfile = () => {
                   <button
                     type="button"
                     onClick={() => navigate("/admin/settings/security?tab=2fa")}
-                    className="text-[12px] font-semibold text-violet-600 transition-colors hover:text-violet-700"
+                    className="text-[12px] font-semibold text-brand-600 transition-colors hover:text-brand-700"
                   >
                     Manage
                   </button>
@@ -271,7 +271,7 @@ const AdminProfile = () => {
                   "Content Moderation",
                 ].map((item) => (
                   <li key={item} className="flex items-center gap-2 text-[12px] text-slate-600">
-                    <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-violet-500" />
+                    <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
                     {item}
                   </li>
                 ))}
@@ -324,7 +324,7 @@ const AdminProfile = () => {
 
               <button
                 type="button"
-                className="mt-4 flex w-full items-center justify-center gap-1 text-[12px] font-medium text-violet-600 transition-colors hover:text-violet-700"
+                className="mt-4 flex w-full items-center justify-center gap-1 text-[12px] font-medium text-brand-600 transition-colors hover:text-brand-700"
               >
                 View All
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -338,3 +338,4 @@ const AdminProfile = () => {
 };
 
 export default AdminProfile;
+

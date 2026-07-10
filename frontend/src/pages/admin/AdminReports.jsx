@@ -23,9 +23,9 @@ const getStatus = (report) => (report.status || "pending").toLowerCase();
 const getName = (user) => user?.username || user?.name || "Unknown user";
 
 const statusClasses = {
-  pending: "border-purple-300 bg-purple-50 text-purple-700",
-  resolved: "border-purple-500 bg-purple-100 text-purple-800",
-  dismissed: "border-purple-200 bg-white text-purple-600",
+  pending: "border-brand-300 bg-brand-50 text-brand-700",
+  resolved: "border-brand-500 bg-brand-100 text-brand-800",
+  dismissed: "border-brand-200 bg-white text-brand-600",
 };
 
 const ActionIconButton = ({ icon: Icon, title, onClick, toneClass }) => (
@@ -153,7 +153,7 @@ const AdminReports = () => {
           className="mb-4 flex flex-col justify-between gap-3 lg:flex-row lg:items-end"
         >
           <div>
-            <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-purple-600">
+            <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-600">
               <ShieldAlert className="h-4 w-4" />
               Priority workspace
             </p>
@@ -164,9 +164,9 @@ const AdminReports = () => {
           </div>
           <div className="flex flex-wrap gap-2">
             {[
-              { label: "Pending", value: summary.pending, tone: "text-purple-700 bg-purple-100" },
-              { label: "Resolved", value: summary.resolved, tone: "text-purple-800 bg-purple-200" },
-              { label: "Dismissed", value: summary.dismissed, tone: "text-purple-600 bg-purple-50" },
+              { label: "Pending", value: summary.pending, tone: "text-brand-700 bg-brand-100" },
+              { label: "Resolved", value: summary.resolved, tone: "text-brand-800 bg-brand-200" },
+              { label: "Dismissed", value: summary.dismissed, tone: "text-brand-600 bg-brand-50" },
             ].map((item) => (
               <div key={item.label} className={`rounded-lg px-3 py-1.5 ${item.tone}`}>
                 <p className="text-base font-semibold">{item.value}</p>
@@ -179,7 +179,7 @@ const AdminReports = () => {
         <div
           role="region"
           aria-label="Filter reports"
-          className="mb-4 flex flex-col gap-2 rounded-xl border border-purple-200 bg-purple-50 p-2 sm:flex-row"
+          className="mb-4 flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-2 sm:flex-row"
         >
           <label className="relative flex-1">
             <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
@@ -188,7 +188,7 @@ const AdminReports = () => {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search reporter, user, reason..."
-              className="h-9 w-full rounded-lg border border-purple-200 bg-white pl-9 pr-3 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-violet-400/35"
+              className="h-9 w-full rounded-lg border border-brand-200 bg-white pl-9 pr-3 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-brand-400/35"
             />
           </label>
           <label className="relative sm:w-48">
@@ -196,7 +196,7 @@ const AdminReports = () => {
             <select
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
-              className="h-9 w-full appearance-none rounded-lg border border-purple-200 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none focus:border-violet-400/35"
+              className="h-9 w-full appearance-none rounded-lg border border-brand-200 bg-white pl-9 pr-3 text-xs text-slate-800 outline-none focus:border-brand-400/35"
             >
               <option value="all">All statuses</option>
               <option value="pending">Pending</option>
@@ -207,10 +207,10 @@ const AdminReports = () => {
         </div>
 
         {error && (
-          <div className="mb-4 flex items-center gap-2 rounded-xl border border-purple-300 bg-purple-50 px-3 py-2 text-xs text-purple-800">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-purple-600" />
+          <div className="mb-4 flex items-center gap-2 rounded-xl border border-brand-300 bg-brand-50 px-3 py-2 text-xs text-brand-800">
+            <AlertTriangle className="h-4 w-4 shrink-0 text-brand-600" />
             <span className="flex-1">{error}</span>
-            <button type="button" onClick={fetchReports} className="font-medium text-purple-900 hover:underline">
+            <button type="button" onClick={fetchReports} className="font-medium text-brand-900 hover:underline">
               Retry
             </button>
           </div>
@@ -219,23 +219,23 @@ const AdminReports = () => {
         <div
           role="region"
           aria-label="Moderation report queue"
-          className="overflow-hidden rounded-xl border border-purple-200 bg-purple-50 shadow-sm"
+          className="overflow-hidden rounded-xl border border-brand-200 bg-brand-50 shadow-sm"
         >
           {loading ? (
             <div className="flex h-48 items-center justify-center gap-2 text-xs text-slate-600">
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-violet-300/25 border-t-violet-300" />
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-300/25 border-t-brand-300" />
               Loading reports...
             </div>
           ) : filteredReports.length === 0 ? (
             <div className="flex h-48 flex-col items-center justify-center text-slate-600">
-              <CheckCircle2 className="mb-2 h-6 w-6 text-purple-500" />
+              <CheckCircle2 className="mb-2 h-6 w-6 text-brand-500" />
               <p className="text-xs font-medium text-slate-800">No reports match this view</p>
               <p className="mt-1 text-[10px] text-slate-500">Try adjusting your search or status filter.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[1020px] text-left text-sm">
-                <thead className="border-b border-purple-200 bg-purple-50 text-[9px] uppercase tracking-[0.18em] text-slate-500">
+                <thead className="border-b border-brand-200 bg-brand-50 text-[9px] uppercase tracking-[0.18em] text-slate-500">
                   <tr>
                     <th className="px-3 py-2.5 font-medium">Received</th>
                     <th className="px-3 py-2.5 font-medium">Reporter</th>
@@ -253,7 +253,7 @@ const AdminReports = () => {
                     return (
                       <tr
                         key={report._id}
-                        className="border-b border-purple-200 text-slate-700 transition last:border-0 hover:bg-purple-50"
+                        className="border-b border-brand-200 text-slate-700 transition last:border-0 hover:bg-brand-50"
                       >
                         <td className="whitespace-nowrap px-3 py-2 text-[11px] text-slate-600">
                           <span className="flex items-center gap-1.5">
@@ -299,7 +299,7 @@ const AdminReports = () => {
                                       payload: { id: report._id, status: "resolved" },
                                     })
                                   }
-                                  toneClass="border-purple-300 bg-purple-100 text-purple-700 hover:bg-purple-200"
+                                  toneClass="border-brand-300 bg-brand-100 text-brand-700 hover:bg-brand-200"
                                 />
                                 <ActionIconButton
                                   icon={XCircle}
@@ -313,7 +313,7 @@ const AdminReports = () => {
                                       payload: { id: report._id, status: "dismissed" },
                                     })
                                   }
-                                  toneClass="border-purple-200 bg-white text-slate-600 hover:bg-purple-50 hover:text-purple-600"
+                                  toneClass="border-brand-200 bg-white text-slate-600 hover:bg-brand-50 hover:text-brand-600"
                                 />
                               </>
                             )}
@@ -330,7 +330,7 @@ const AdminReports = () => {
                                     payload: { id: report.targetId },
                                   })
                                 }
-                                toneClass="border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
                               />
                             )}
                             {report.targetType === "group" && (
@@ -346,7 +346,7 @@ const AdminReports = () => {
                                     payload: { id: report.targetId },
                                   })
                                 }
-                                toneClass="border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
                               />
                             )}
                             {report.reportedUser?._id && (
@@ -357,7 +357,7 @@ const AdminReports = () => {
                                   onClick={() =>
                                     setWarnModal({ isOpen: true, userId: report.reportedUser._id, message: "" })
                                   }
-                                  toneClass="border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100"
+                                  toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100"
                                 />
                                 {report.reportedUser.isSuspended ? (
                                   <ActionIconButton
@@ -372,7 +372,7 @@ const AdminReports = () => {
                                         payload: { id: report.reportedUser._id },
                                       })
                                     }
-                                    toneClass="border-purple-200 bg-white text-purple-600 hover:bg-purple-50"
+                                    toneClass="border-brand-200 bg-white text-brand-600 hover:bg-brand-50"
                                   />
                                 ) : (
                                   <ActionIconButton
@@ -387,7 +387,7 @@ const AdminReports = () => {
                                         payload: { id: report.reportedUser._id },
                                       })
                                     }
-                                    toneClass="border-purple-400 bg-purple-100 text-purple-800 hover:bg-purple-200"
+                                    toneClass="border-brand-400 bg-brand-100 text-brand-800 hover:bg-brand-200"
                                   />
                                 )}
                               </>
@@ -416,7 +416,7 @@ const AdminReports = () => {
               initial={{ opacity: 0, y: 12, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              className="w-full max-w-sm rounded-3xl border border-purple-200 bg-white p-6 shadow-2xl"
+              className="w-full max-w-sm rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl"
             >
               <div className="mb-2 flex items-start justify-between">
                 <h3 className="text-base font-semibold text-slate-900">{confirmModal.title}</h3>
@@ -429,7 +429,7 @@ const AdminReports = () => {
                 <button
                   type="button"
                   onClick={() => setConfirmModal(blankConfirm)}
-                  className="rounded-lg border border-purple-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-purple-50"
+                  className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-brand-50"
                 >
                   Cancel
                 </button>
@@ -437,7 +437,7 @@ const AdminReports = () => {
                   type="button"
                   disabled={actionLoading}
                   onClick={executeAction}
-                  className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-purple-500 disabled:opacity-50"
+                  className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-brand-500 disabled:opacity-50"
                 >
                   {actionLoading ? "Working..." : "Confirm"}
                 </button>
@@ -457,7 +457,7 @@ const AdminReports = () => {
               initial={{ opacity: 0, y: 12, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 12, scale: 0.98 }}
-              className="w-full max-w-md rounded-3xl border border-purple-200 bg-white p-6 shadow-2xl"
+              className="w-full max-w-md rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl"
             >
               <div className="mb-2 flex items-start justify-between">
                 <h3 className="text-base font-semibold text-slate-900">Send warning</h3>
@@ -470,7 +470,7 @@ const AdminReports = () => {
                 <textarea
                   value={warnModal.message}
                   onChange={(event) => setWarnModal({ ...warnModal, message: event.target.value })}
-                  className="h-20 w-full resize-none rounded-lg border border-purple-200 bg-purple-50 p-2 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-amber-300/40"
+                  className="h-20 w-full resize-none rounded-lg border border-brand-200 bg-brand-50 p-2 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="Enter warning message..."
                   required
                 />
@@ -478,14 +478,14 @@ const AdminReports = () => {
                   <button
                     type="button"
                     onClick={() => setWarnModal(blankWarning)}
-                    className="rounded-lg border border-purple-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-purple-50"
+                    className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-brand-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-purple-500 disabled:opacity-50"
+                    className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-500 disabled:opacity-50"
                   >
                     {actionLoading ? "Sending..." : "Send warning"}
                   </button>
@@ -500,3 +500,4 @@ const AdminReports = () => {
 };
 
 export default AdminReports;
+

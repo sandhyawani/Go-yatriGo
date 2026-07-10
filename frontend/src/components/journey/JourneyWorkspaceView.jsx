@@ -225,15 +225,15 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             onClick={() => setActiveTab("All")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap select-none shrink-0 ${
               activeTab === "All"
-                ? "bg-white dark:bg-slate-800 text-[#6C4DF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
+                ? "bg-white dark:bg-slate-800 text-[#8B5CF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
                 : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/40"
             }`}
           >
             <Layers
-              className={`w-3.5 h-3.5 ${activeTab === "All" ? "text-[#6C4DF6]" : "text-slate-400"}`}
+              className={`w-3.5 h-3.5 ${activeTab === "All" ? "text-[#8B5CF6]" : "text-slate-400"}`}
             />
             <span>All Notes</span>
-            <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-purple-100 dark:bg-purple-950 text-[#6C4DF6] rounded-md font-black">
+            <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-brand-100 dark:bg-brand-900 text-[#8B5CF6] rounded-md font-black">
               {notes.length}
             </span>
           </button>
@@ -246,12 +246,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 onClick={() => setActiveTab(c.name)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap select-none shrink-0 ${
                   isActive
-                    ? "bg-white dark:bg-slate-800 text-[#6C4DF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
+                    ? "bg-white dark:bg-slate-800 text-[#8B5CF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/40"
                 }`}
               >
                 <span
-                  className={isActive ? "text-[#6C4DF6]" : "text-slate-400"}
+                  className={isActive ? "text-[#8B5CF6]" : "text-slate-400"}
                 >
                   {c.icon}
                 </span>
@@ -266,7 +266,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-md shadow-[#6C4DF6]/25 transition-all active:scale-95 shrink-0 whitespace-nowrap ml-1"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95 shrink-0 whitespace-nowrap ml-1"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />{" "}
           <span className="hidden sm:inline">New Note / Checklist</span>
@@ -277,11 +277,11 @@ const JourneyWorkspaceView = ({ journeyId }) => {
       {/* Notes Grid or WOW Empty State */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 items-stretch">
         {filteredNotes.length === 0 ? (
-          <div className="col-span-full py-14 px-6 text-center bg-gradient-to-br from-purple-900/10 via-slate-900/40 to-slate-900/40 dark:from-purple-950/20 dark:to-slate-900 rounded-3xl border border-purple-500/20 relative overflow-hidden shadow-sm">
-            <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-[#6C4DF6]/15 rounded-full blur-3xl pointer-events-none" />
+          <div className="col-span-full py-14 px-6 text-center bg-gradient-to-br from-brand-900/10 via-slate-900/40 to-slate-900/40 dark:from-brand-900/20 dark:to-slate-900 rounded-3xl border border-brand-500/20 relative overflow-hidden shadow-sm">
+            <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-[#8B5CF6]/15 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -right-10 -top-10 w-40 h-40 bg-pink-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="w-14 h-14 bg-[#6C4DF6]/15 border border-[#6C4DF6]/30 text-[#6C4DF6] rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-sm relative z-10">
+            <div className="w-14 h-14 bg-[#8B5CF6]/15 border border-[#8B5CF6]/30 text-[#8B5CF6] rounded-2xl flex items-center justify-center mx-auto mb-3.5 shadow-sm relative z-10">
               <Sparkles className="w-7 h-7 animate-pulse" />
             </div>
 
@@ -295,7 +295,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
             <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-[#6C4DF6] text-xs font-extrabold shadow-md hover:bg-purple-50 dark:hover:bg-slate-700 transition-all border border-purple-200 dark:border-purple-800/60 relative z-10 active:scale-95"
+              className="mt-5 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-white dark:bg-slate-800 text-[#8B5CF6] text-xs font-extrabold shadow-md hover:bg-brand-50 dark:hover:bg-slate-700 transition-all border border-brand-200 dark:border-brand-800/60 relative z-10 active:scale-95"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" /> Create First Item
             </button>
@@ -307,19 +307,19 @@ const JourneyWorkspaceView = ({ journeyId }) => {
               className={`relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-3xl p-5 border transition-all duration-300 flex flex-col justify-between h-full group ${
                 note.isPinned
                   ? "border-amber-400/80 bg-gradient-to-br from-amber-500/10 via-white to-white dark:from-amber-950/30 dark:to-slate-900 shadow-md ring-1 ring-amber-400/30"
-                  : "border-slate-200/80 dark:border-slate-800 hover:border-[#6C4DF6]/50 hover:shadow-lg shadow-xs"
+                  : "border-slate-200/80 dark:border-slate-800 hover:border-[#8B5CF6]/50 hover:shadow-lg shadow-xs"
               }`}
             >
               <div className="flex-1 flex flex-col min-h-0">
                 {/* Note Header */}
                 <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-                  <span className="px-3 py-1 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-[10px] font-black uppercase tracking-wider text-[#6C4DF6] dark:text-purple-300 border border-purple-100 dark:border-purple-800/50">
+                  <span className="px-3 py-1 rounded-xl bg-brand-50 dark:bg-brand-900/60 text-[10px] font-black uppercase tracking-wider text-[#8B5CF6] dark:text-brand-300 border border-brand-100 dark:border-brand-800/50">
                     {note.category}
                   </span>
                   <div className="flex items-center gap-1 opacity-85 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleEditClick(note)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-[#6C4DF6] hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors"
+                      className="p-1.5 rounded-xl text-slate-400 hover:text-[#8B5CF6] hover:bg-brand-50 dark:hover:bg-brand-900/50 transition-colors"
                       title="Edit Note"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -360,12 +360,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       <div
                         key={idx}
                         onClick={() => toggleChecklistItem(note, idx)}
-                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 cursor-pointer hover:bg-purple-50/60 dark:hover:bg-slate-800 transition-all border border-slate-200/50 dark:border-slate-700/50 hover:border-purple-300 dark:hover:border-purple-700"
+                        className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 cursor-pointer hover:bg-brand-50/60 dark:hover:bg-slate-800 transition-all border border-slate-200/50 dark:border-slate-700/50 hover:border-brand-300 dark:hover:border-brand-700"
                       >
                         <div
                           className={`w-4 h-4 rounded-lg flex items-center justify-center border transition-all shrink-0 ${
                             it.isCompleted
-                              ? "bg-[#6C4DF6] border-[#6C4DF6] text-white shadow-xs"
+                              ? "bg-[#8B5CF6] border-[#8B5CF6] text-white shadow-xs"
                               : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
                           }`}
                         >
@@ -414,7 +414,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto relative">
             <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
               <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-[#6C4DF6]" />{" "}
+                <Sparkles className="w-4 h-4 text-[#8B5CF6]" />{" "}
                 {editingNoteId ? "Edit Workspace Item" : "Add Workspace Item"}
               </h3>
               <button
@@ -436,7 +436,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 <select
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#6C4DF6]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#8B5CF6]"
                 >
                   {categories.map((c) => (
                     <option key={c.name} value={c.name}>
@@ -456,7 +456,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Flight Boarding Gates & Hotel Link"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#6C4DF6]"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#8B5CF6]"
                 />
               </div>
 
@@ -473,12 +473,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={checklistInput}
                       onChange={(e) => setChecklistInput(e.target.value)}
                       placeholder="e.g. Pack chargers & adapter"
-                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium outline-none focus:border-[#6C4DF6]"
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium outline-none focus:border-[#8B5CF6]"
                     />
                     <button
                       type="button"
                       onClick={handleAddItem}
-                      className="px-4 py-2 bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white rounded-xl text-xs font-extrabold transition-all shrink-0"
+                      className="px-4 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white rounded-xl text-xs font-extrabold transition-all shrink-0"
                     >
                       Add
                     </button>
@@ -511,7 +511,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="Enter important instructions, meeting spot addresses, or travel tips..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#6C4DF6]"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#8B5CF6]"
                   />
                 </div>
               )}
@@ -522,7 +522,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                   id="pinNote"
                   checked={isPinned}
                   onChange={(e) => setIsPinned(e.target.checked)}
-                  className="rounded text-[#6C4DF6] focus:ring-[#6C4DF6] w-4 h-4 cursor-pointer"
+                  className="rounded text-[#8B5CF6] focus:ring-[#8B5CF6] w-4 h-4 cursor-pointer"
                 />
                 <label
                   htmlFor="pinNote"
@@ -546,7 +546,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="px-6 py-2 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-extrabold shadow-md shadow-[#6C4DF6]/25 transition-all active:scale-95"
+                  className="px-6 py-2 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-extrabold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95"
                 >
                   {loading
                     ? "Saving..."
@@ -564,3 +564,4 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 };
 
 export default JourneyWorkspaceView;
+

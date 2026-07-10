@@ -31,8 +31,10 @@ import {
   Check,
   X,
   ShieldAlert,
+  MapPin,
 } from "lucide-react";
 import moment from "moment";
+import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 
 const CLOUD_NAME =
   process.env.REACT_APP_CLOUDINARY_CLOUD ||
@@ -59,7 +61,8 @@ const getProfileId = (profile) => profile?._id || profile?.id || "";
 const buildProfilePayload = ({
   name,
   username,
-  country,
+  city,
+  state,
   mobile,
   bio,
   interests,
@@ -67,7 +70,9 @@ const buildProfilePayload = ({
 }) => ({
   name: normalizeSingleLine(name),
   username: normalizeUsername(username),
-  country: normalizeSingleLine(country),
+  city: normalizeSingleLine(city),
+  state: normalizeSingleLine(state),
+  country: "India",
   mobile: normalizeSingleLine(mobile),
   bio: normalizeBio(bio),
   interests: interests || [],
@@ -99,8 +104,17 @@ const validateProfile = (payload) => {
       "Use 3-30 lowercase letters, numbers, dots, or underscores.";
   }
 
-  if (payload.country.length > MAX_COUNTRY_LENGTH) {
-    nextErrors.country = `Use ${MAX_COUNTRY_LENGTH} characters or fewer.`;
+  if (!payload.state) {
+    nextErrors.state = "State is required.";
+  }
+
+  if (!payload.city) {
+    nextErrors.city = "City is required.";
+  } else if (payload.state) {
+    const validCities = INDIAN_STATES_AND_CITIES[payload.state];
+    if (!validCities || !validCities.includes(payload.city)) {
+      nextErrors.city = "Invalid city/state combination.";
+    }
   }
 
   if (payload.mobile && !MOBILE_REGEX.test(payload.mobile)) {
@@ -162,7 +176,8 @@ const Profileupdate = () => {
 
   const [name, setName] = useState(profileUser?.name || "");
   const [username, setUsername] = useState(profileUser?.username || "");
-  const [country, setCountry] = useState(profileUser?.country || "");
+  const [city, setCity] = useState(profileUser?.city || "");
+  const [stateVal, setStateVal] = useState(profileUser?.state || "");
   const [mobile, setMobile] = useState(profileUser?.mobile || "");
   const [bio, setBio] = useState(profileUser?.bio || "");
   const [interests, setInterests] = useState(profileUser?.interests || []);
@@ -200,13 +215,14 @@ const Profileupdate = () => {
       buildProfilePayload({
         name,
         username,
-        country,
+        city,
+        state: stateVal,
         mobile,
         bio,
         interests,
         govIdType,
       }),
-    [name, username, country, mobile, bio, interests, govIdType],
+    [name, username, city, stateVal, mobile, bio, interests, govIdType],
   );
 
   const originalPayload = useMemo(
@@ -214,7 +230,8 @@ const Profileupdate = () => {
       buildProfilePayload({
         name: profileUser?.name || "",
         username: profileUser?.username || "",
-        country: profileUser?.country || "",
+        city: profileUser?.city || "",
+        state: profileUser?.state || "",
         mobile: profileUser?.mobile || "",
         bio: profileUser?.bio || "",
         interests: profileUser?.interests || [],
@@ -243,7 +260,8 @@ const Profileupdate = () => {
 
     setName(profileUser.name || "");
     setUsername(profileUser.username || "");
-    setCountry(profileUser.country || "");
+    setCity(profileUser.city || "");
+    setStateVal(profileUser.state || "");
     setMobile(profileUser.mobile || "");
     setBio(profileUser.bio || "");
     setInterests(profileUser.interests || []);
@@ -281,7 +299,7 @@ const Profileupdate = () => {
   }, [navigate, profileUser]);
 
   const inputClass =
-    "w-full rounded-2xl border border-slate-100 bg-[#FAFAFA]/80 px-5 py-3 text-xs font-bold text-[#111827] shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-[#6C4DF6] focus:bg-white focus:ring-4 focus:ring-[#6C4DF6]/10";
+    "w-full rounded-2xl border border-slate-100 bg-[#FAFAFA]/80 px-5 py-3 text-xs font-bold text-[#111827] shadow-inner outline-none transition-all placeholder:text-slate-400 focus:border-[#8B5CF6] focus:bg-white focus:ring-4 focus:ring-[#8B5CF6]/10";
 
   const labelClass =
     "mb-2 ml-2 block select-none text-[10px] font-black uppercase tracking-widest text-slate-500";
@@ -293,6 +311,20 @@ const Profileupdate = () => {
       delete next[field];
       return next;
     });
+  };
+
+  const handleStateChange = (e) => {
+    const val = e.target.value;
+    setStateVal(val);
+    setCity("");
+    clearError("state");
+    clearError("city");
+  };
+
+  const handleCityChange = (e) => {
+    const val = e.target.value;
+    setCity(val);
+    clearError("city");
   };
 
   const handleFileChange = (event) => {
@@ -478,7 +510,7 @@ const Profileupdate = () => {
       const refreshedUser = {
         ...user,
         ...profileUser,
-        ...response.data,
+        ...(response.data?.user || response.data),
         token: user?.token || profileUser.token,
       };
 
@@ -506,15 +538,15 @@ const Profileupdate = () => {
 
   return (
     <div className="relative min-h-screen bg-[#FDFDFD] px-4 pb-24 md:pb-8 pt-0 font-sans antialiased text-[#111827] sm:px-6 lg:px-8">
-      <div className="pointer-events-none absolute top-10 right-0 h-[30rem] w-[30rem] rounded-full bg-gradient-to-br from-[#6C4DF6]/10 to-fuchsia-400/10 blur-[80px]" />
-      <div className="pointer-events-none absolute bottom-40 left-0 h-[20rem] w-[20rem] rounded-full bg-gradient-to-tr from-[#6C4DF6]/10 to-transparent blur-[80px]" />
+      <div className="pointer-events-none absolute top-10 right-0 h-[30rem] w-[30rem] rounded-full bg-gradient-to-br from-[#8B5CF6]/10 to-fuchsia-400/10 blur-[80px]" />
+      <div className="pointer-events-none absolute bottom-40 left-0 h-[20rem] w-[20rem] rounded-full bg-gradient-to-tr from-[#8B5CF6]/10 to-transparent blur-[80px]" />
 
       <div className="relative z-10 mx-auto max-w-5xl space-y-2">
         <Link
           to={backPath}
-          className="group inline-flex select-none items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#6C4DF6]"
+          className="group inline-flex select-none items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-slate-400 transition-colors hover:text-[#8B5CF6]"
         >
-          <div className="p-2 bg-white rounded-full shadow-sm border border-slate-100 group-hover:border-[#6C4DF6]/20 group-hover:bg-[#6C4DF6]/5 transition-all">
+          <div className="p-2 bg-white rounded-full shadow-sm border border-slate-100 group-hover:border-[#8B5CF6]/20 group-hover:bg-[#8B5CF6]/5 transition-all">
             <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-0.5" />
           </div>
           <span>{pageMeta.backLabel}</span>
@@ -534,10 +566,10 @@ const Profileupdate = () => {
           >
             {/* Avatar Card */}
             <div className="rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl p-6 text-center shadow-[0_10px_40px_rgba(0,0,0,0.06)] relative overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#6C4DF6]/5 to-transparent"></div>
+              <div className="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-[#8B5CF6]/5 to-transparent"></div>
 
               <div className="group relative inline-block select-none mb-4 mt-2">
-                <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full border-[6px] border-white shadow-xl ring-4 ring-[#6C4DF6]/20 transition-transform duration-300 group-hover:scale-105">
+                <div className="relative mx-auto h-32 w-32 overflow-hidden rounded-full border-[6px] border-white shadow-xl ring-4 ring-[#8B5CF6]/20 transition-transform duration-300 group-hover:scale-105">
                   <img
                     src={
                       preview ||
@@ -553,7 +585,7 @@ const Profileupdate = () => {
                   />
                   <label
                     htmlFor="file"
-                    className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-[#6C4DF6]/80 text-white opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
+                    className="absolute inset-0 flex cursor-pointer flex-col items-center justify-center bg-[#8B5CF6]/80 text-white opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100"
                   >
                     <Camera className="mb-1 h-6 w-6" />
                     <span className="text-[8px] font-black uppercase tracking-widest">
@@ -561,7 +593,7 @@ const Profileupdate = () => {
                     </span>
                   </label>
                 </div>
-                <div className="absolute bottom-1 right-1 bg-[#6C4DF6] rounded-full p-1.5 border-2 border-white shadow-md">
+                <div className="absolute bottom-1 right-1 bg-[#8B5CF6] rounded-full p-1.5 border-2 border-white shadow-md">
                   <ShieldCheck className="h-4 w-4 text-white" />
                 </div>
                 <input
@@ -592,7 +624,7 @@ const Profileupdate = () => {
                 <div className="mt-4">
                   <div className="h-1 w-full rounded-full bg-slate-100 overflow-hidden">
                     <div
-                      className="h-full rounded-full bg-[#6C4DF6] transition-all duration-200"
+                      className="h-full rounded-full bg-[#8B5CF6] transition-all duration-200"
                       style={{ width: `${uploadProgress}%` }}
                     />
                   </div>
@@ -610,7 +642,7 @@ const Profileupdate = () => {
                   Bio / About Me
                 </label>
                 <div className="group relative flex-1">
-                  <AlignLeft className="absolute left-4 top-4 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
+                  <AlignLeft className="absolute left-4 top-4 h-4 w-4 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
                   <textarea
                     id="bio"
                     rows="3"
@@ -649,7 +681,7 @@ const Profileupdate = () => {
                   {interests.map((interest, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 px-2 py-1 bg-white border border-[#6C4DF6]/20 text-[#6C4DF6] text-[10px] font-bold rounded-xl shadow-sm"
+                      className="flex items-center gap-2 px-2 py-1 bg-white border border-[#8B5CF6]/20 text-[#8B5CF6] text-[10px] font-bold rounded-xl shadow-sm"
                     >
                       {interest}
                       <button
@@ -657,7 +689,7 @@ const Profileupdate = () => {
                         onClick={() =>
                           setInterests(interests.filter((_, i) => i !== idx))
                         }
-                        className="text-[#6C4DF6]/60 hover:text-[#6C4DF6] transition-colors focus:outline-none"
+                        className="text-[#8B5CF6]/60 hover:text-[#8B5CF6] transition-colors focus:outline-none"
                       >
                         <X className="h-3 w-3" />
                       </button>
@@ -696,7 +728,7 @@ const Profileupdate = () => {
                           setNewInterest("");
                         }
                       }}
-                      className="px-4 py-3 bg-[#6C4DF6]/10 text-[#6C4DF6] rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#6C4DF6]/20 transition-colors"
+                      className="px-4 py-3 bg-[#8B5CF6]/10 text-[#8B5CF6] rounded-2xl text-[10px] font-black uppercase tracking-wider hover:bg-[#8B5CF6]/20 transition-colors"
                     >
                       Add
                     </button>
@@ -716,7 +748,7 @@ const Profileupdate = () => {
             <div className="rounded-3xl border border-white/50 bg-white/80 backdrop-blur-xl p-6 shadow-[0_10px_40px_rgba(0,0,0,0.06)] relative overflow-hidden">
               <div className="mb-5 flex items-center justify-between border-b border-slate-100 pb-4 select-none">
                 <div className="flex items-center gap-4">
-                  <div className="rounded-2xl border border-[#6C4DF6]/20 bg-gradient-to-br from-[#6C4DF6]/10 to-fuchsia-500/10 p-3 text-[#6C4DF6]">
+                  <div className="rounded-2xl border border-[#8B5CF6]/20 bg-gradient-to-br from-[#8B5CF6]/10 to-fuchsia-500/10 p-3 text-[#8B5CF6]">
                     <UserIcon className="h-5 w-5" />
                   </div>
                   <div>
@@ -737,7 +769,7 @@ const Profileupdate = () => {
                       Full Name
                     </label>
                     <div className="group relative">
-                      <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
+                      <User className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
                       <input
                         id="name"
                         className={`${inputClass} pl-11`}
@@ -764,7 +796,7 @@ const Profileupdate = () => {
                       Username
                     </label>
                     <div className="group relative">
-                      <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
+                      <AtSign className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
                       <input
                         id="username"
                         className={`${inputClass} pl-11`}
@@ -809,7 +841,7 @@ const Profileupdate = () => {
                       Phone Number
                     </label>
                     <div className="group relative">
-                      <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#6C4DF6]" />
+                      <Phone className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
                       <input
                         id="mobile"
                         className={`${inputClass} pl-11`}
@@ -829,6 +861,64 @@ const Profileupdate = () => {
                       />
                     </div>
                     <FieldError id="mobile-error" message={errors.mobile} />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 mt-4">
+                  <div>
+                    <label htmlFor="state" className={labelClass}>
+                      State 
+                    </label>
+                    <div className="group relative">
+                      <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
+                      <select
+                        id="state"
+                        className={`${inputClass} pl-11 !py-2.5`}
+                        value={stateVal}
+                        onChange={handleStateChange}
+                        aria-invalid={Boolean(errors.state)}
+                        aria-describedby={errors.state ? "state-error" : undefined}
+                      >
+                        <option value="" disabled>
+                          Select State
+                        </option>
+                        {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <FieldError id="state-error" message={errors.state} />
+                  </div>
+
+                  <div>
+                    <label htmlFor="city" className={labelClass}>
+                      City
+                    </label>
+                    <div className="group relative">
+                      <MapPin className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-[#8B5CF6]" />
+                      <select
+                        id="city"
+                        className={`${inputClass} pl-11 !py-2.5`}
+                        value={city}
+                        onChange={handleCityChange}
+                        disabled={!stateVal}
+                        aria-invalid={Boolean(errors.city)}
+                        aria-describedby={errors.city ? "city-error" : undefined}
+                      >
+                        <option value="" disabled>
+                          {stateVal ? "Select City" : "Select State first"}
+                        </option>
+                        {stateVal &&
+                          INDIAN_STATES_AND_CITIES[stateVal].map((c) => (
+                            <option key={c} value={c}>
+                              {c}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <FieldError id="city-error" message={errors.city} />
                   </div>
                 </div>
 
@@ -868,11 +958,11 @@ const Profileupdate = () => {
 
                     <div className="relative group">
                       <ShieldCheck
-                        className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-purple-500"}`}
+                        className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
                       />
                       <label
                         htmlFor="govIdFile"
-                        className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-purple-500 hover:border-purple-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-slate-50 focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer ${!govIdType ? "opacity-50 pointer-events-none" : ""}`}
+                        className={`w-full pl-11 pr-4 py-3 bg-white border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-slate-50 focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer ${!govIdType ? "opacity-50 pointer-events-none" : ""}`}
                       >
                         <span className="truncate">
                           {govIdFile
@@ -907,7 +997,7 @@ const Profileupdate = () => {
                   <button
                     type="submit"
                     disabled={loading || !hasChanges}
-                    className="flex h-11 w-full md:w-auto md:px-8 items-center justify-center gap-2 rounded-md text-sm font-semibold text-white bg-[#6C4DF6] hover:bg-[#5b3ee0] shadow-md shadow-[#6c4df6]/20 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
+                    className="flex h-11 w-full md:w-auto md:px-8 items-center justify-center gap-2 rounded-md text-sm font-semibold text-white bg-[#8B5CF6] hover:bg-[#7c3aed] shadow-md shadow-[#8B5CF6]/20 transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-70"
                   >
                     {loading ? (
                       <>
@@ -932,14 +1022,14 @@ const Profileupdate = () => {
         <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-[4.5rem] items-center justify-around border-t border-slate-100 bg-white/90 backdrop-blur-md px-4 pb-safe md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
           <Link
             to="/"
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#8B5CF6] transition-colors p-2"
           >
             <HomeIcon className="h-5 w-5" />
             <span className="text-[9px] font-bold">Home</span>
           </Link>
           <Link
             to="/social/buddy"
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#8B5CF6] transition-colors p-2"
           >
             <Compass className="h-5 w-5" />
             <span className="text-[9px] font-bold">Explore</span>
@@ -948,24 +1038,24 @@ const Profileupdate = () => {
             to="/social/buddy/new"
             className="relative -top-5 flex flex-col items-center"
           >
-            <div className="bg-[#6C4DF6] text-white p-3.5 rounded-2xl shadow-lg shadow-[#6c4df6]/30 transform rotate-3 hover:rotate-6 transition-transform">
+            <div className="bg-[#8B5CF6] text-white p-3.5 rounded-2xl shadow-lg shadow-[#8B5CF6]/30 transform rotate-3 hover:rotate-6 transition-transform">
               <Plus className="h-6 w-6" />
             </div>
           </Link>
           <Link
             to="/social/chat"
-            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#6C4DF6] transition-colors p-2"
+            className="flex flex-col items-center gap-1 text-slate-400 hover:text-[#8B5CF6] transition-colors p-2"
           >
             <MessageCircle className="h-5 w-5" />
             <span className="text-[9px] font-bold">Chat</span>
           </Link>
           <Link
             to="/profile"
-            className="flex flex-col items-center gap-1 text-[#6C4DF6] transition-colors p-2"
+            className="flex flex-col items-center gap-1 text-[#8B5CF6] transition-colors p-2"
           >
             <div className="relative">
               <UserIcon className="h-5 w-5" />
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#6C4DF6] rounded-full"></div>
+              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[#8B5CF6] rounded-full"></div>
             </div>
             <span className="text-[9px] font-bold">Profile</span>
           </Link>
@@ -976,3 +1066,4 @@ const Profileupdate = () => {
 };
 
 export default Profileupdate;
+

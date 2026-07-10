@@ -72,3 +72,4 @@ export const useRoomSearch = ({
   };
 };
 export default useRoomSearch;
+

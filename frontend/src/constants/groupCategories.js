@@ -17,3 +17,4 @@ export const LIFECYCLE_STATUSES = {
   COMPLETED: "completed",
   CANCELLED: "cancelled"
 };
+

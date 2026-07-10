@@ -20,7 +20,7 @@ const AppToast = () => {
         classNames: {
           toast: 'group-[.toaster]:backdrop-blur-xl group-[.toaster]:bg-white/10 group-[.toaster]:border-white/20',
           title: 'text-base font-semibold text-white',
-          description: 'text-sm text-purple-100',
+          description: 'text-sm text-brand-100',
           icon: 'text-white',
           success: 'app-toast-success',
           error: 'app-toast-error',
@@ -34,3 +34,4 @@ const AppToast = () => {
 };
 
 export default AppToast;
+

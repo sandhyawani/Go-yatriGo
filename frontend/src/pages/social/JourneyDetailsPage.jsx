@@ -81,8 +81,8 @@ const JourneyDetailsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="w-14 h-14 rounded-2xl bg-[#6C4DF6]/10 flex items-center justify-center">
-          <Compass className="w-7 h-7 text-[#6C4DF6] animate-spin" />
+        <div className="w-14 h-14 rounded-2xl bg-[#8B5CF6]/10 flex items-center justify-center">
+          <Compass className="w-7 h-7 text-[#8B5CF6] animate-spin" />
         </div>
         <p className="text-sm font-bold text-slate-500">
           Entering Journey Hub...
@@ -151,14 +151,14 @@ const JourneyDetailsPage = () => {
           to="/social/journeys"
           className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-bold text-sm"
         >
-          <ChevronLeft className="w-4 h-4 text-[#6C4DF6]" />
+          <ChevronLeft className="w-4 h-4 text-[#8B5CF6]" />
           Journeys
         </Link>
         <div className="flex items-center gap-2">
           {journey.chatRoomId && (
             <Link
               to={`/social/chat/${journey.chatRoomId}`}
-              className="p-2 rounded-xl bg-[#6C4DF6]/10 text-[#6C4DF6]"
+              className="p-2 rounded-xl bg-[#8B5CF6]/10 text-[#8B5CF6]"
             >
               <MessageSquare className="w-4 h-4" />
             </Link>
@@ -167,7 +167,7 @@ const JourneyDetailsPage = () => {
             <>
               <button
                 onClick={() => setIsInviteOpen(true)}
-                className="p-2 rounded-xl bg-[#6C4DF6]/10 text-[#6C4DF6]"
+                className="p-2 rounded-xl bg-[#8B5CF6]/10 text-[#8B5CF6]"
               >
                 <UserPlus className="w-4 h-4" />
               </button>
@@ -194,7 +194,7 @@ const JourneyDetailsPage = () => {
         {journey.chatRoomId && (
           <Link
             to={`/social/chat/${journey.chatRoomId}`}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-bold shadow-md shadow-[#6C4DF6]/25 transition-all active:scale-95"
+            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95"
           >
             <MessageSquare className="w-4 h-4" /> Open Squad Chat
           </Link>
@@ -205,11 +205,11 @@ const JourneyDetailsPage = () => {
 
         {/* Welcome Banner */}
         {showWelcome && (
-          <div className="bg-gradient-to-r from-slate-900 via-purple-950/90 to-slate-900 text-white p-4 rounded-2xl border border-purple-500/30 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in relative overflow-hidden">
-            <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#6C4DF6]/20 rounded-full blur-3xl pointer-events-none" />
+          <div className="bg-gradient-to-r from-slate-900 via-brand-900/90 to-slate-900 text-white p-4 rounded-2xl border border-brand-500/30 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fade-in relative overflow-hidden">
+            <div className="absolute -right-10 -top-10 w-40 h-40 bg-[#8B5CF6]/20 rounded-full blur-3xl pointer-events-none" />
             <div className="flex items-center gap-3 relative z-10">
-              <div className="p-2.5 bg-[#6C4DF6]/20 border border-[#6C4DF6]/40 rounded-xl shrink-0">
-                <Sparkles className="w-5 h-5 text-purple-300 animate-pulse" />
+              <div className="p-2.5 bg-[#8B5CF6]/20 border border-[#8B5CF6]/40 rounded-xl shrink-0">
+                <Sparkles className="w-5 h-5 text-brand-300 animate-pulse" />
               </div>
               <div>
                 <h3 className="text-sm font-black tracking-tight text-white">
@@ -222,7 +222,7 @@ const JourneyDetailsPage = () => {
             </div>
             <button
               onClick={() => setSearchParams({})}
-              className="px-4 py-2 bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0 border border-purple-400/30 relative z-10 w-full sm:w-auto"
+              className="px-4 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white rounded-xl text-xs font-bold shadow-md transition-all shrink-0 border border-brand-400/30 relative z-10 w-full sm:w-auto"
             >
               Let's Collaborate!
             </button>
@@ -244,10 +244,10 @@ const JourneyDetailsPage = () => {
               <div className="flex items-center gap-2 flex-wrap">
                 <JourneyStatusBadge status={journey.status} size="md" />
                 <span className="px-3 py-1 rounded-xl bg-white/15 dark:bg-black/40 backdrop-blur-md text-white text-xs font-bold border border-white/20 shadow-sm flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-purple-300" />{" "}
+                  <User className="w-3.5 h-3.5 text-brand-300" />{" "}
                   {getJourneyBadge(journey)}
                 </span>
-                <span className="px-3 py-1 rounded-xl bg-white/15 dark:bg-black/40 backdrop-blur-md text-purple-200 text-xs font-bold border border-white/20 shadow-sm flex items-center gap-1.5 capitalize">
+                <span className="px-3 py-1 rounded-xl bg-white/15 dark:bg-black/40 backdrop-blur-md text-brand-200 text-xs font-bold border border-white/20 shadow-sm flex items-center gap-1.5 capitalize">
                   <Sparkles className="w-3.5 h-3.5 text-amber-300" />{" "}
                   {journey.sourceType || "Manual Plan"}
                 </span>
@@ -273,7 +273,7 @@ const JourneyDetailsPage = () => {
 
             {/* Title & Specs Overlay */}
             <div className="absolute bottom-3 left-4 right-4 space-y-1">
-              <div className="flex items-center gap-1.5 text-purple-300 text-[10px] font-extrabold tracking-wider uppercase">
+              <div className="flex items-center gap-1.5 text-brand-300 text-[10px] font-extrabold tracking-wider uppercase">
                 <MapPin className="w-3 h-3 text-emerald-400 shrink-0" />
                 <span className="truncate">{journey.destination} • {journey.journeyType}</span>
               </div>
@@ -301,12 +301,12 @@ const JourneyDetailsPage = () => {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all select-none shrink-0 whitespace-nowrap ${
                   isActive
-                    ? "bg-white dark:bg-slate-800 text-[#6C4DF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
+                    ? "bg-white dark:bg-slate-800 text-[#8B5CF6] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
                     : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/40"
                 }`}
               >
                 <tab.icon
-                  className={`w-3.5 h-3.5 ${isActive ? "text-[#6C4DF6]" : "text-slate-400"}`}
+                  className={`w-3.5 h-3.5 ${isActive ? "text-[#8B5CF6]" : "text-slate-400"}`}
                 />
                 <span>{tab.label}</span>
               </button>
@@ -316,15 +316,15 @@ const JourneyDetailsPage = () => {
 
         {/* Organizer Live Feed (overview only) */}
         {activeTab === "overview" && isOrganizer && (
-          <div className="bg-gradient-to-r from-purple-900/10 via-slate-900/40 to-purple-900/10 dark:from-purple-950/30 dark:to-slate-900 p-4 rounded-2xl border border-purple-500/20 shadow-xs">
+          <div className="bg-gradient-to-r from-brand-900/10 via-slate-900/40 to-brand-900/10 dark:from-brand-900/30 dark:to-slate-900 p-4 rounded-2xl border border-brand-500/20 shadow-xs">
             <div className="flex items-center gap-3 mb-3">
-              <div className="w-8 h-8 bg-[#6C4DF6]/15 rounded-xl flex items-center justify-center text-[#6C4DF6] shrink-0">
+              <div className="w-8 h-8 bg-[#8B5CF6]/15 rounded-xl flex items-center justify-center text-[#8B5CF6] shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
                 <h3 className="text-xs font-black text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-2">
                   Organizer Live Feed
-                  <span className="text-[9px] bg-purple-50 dark:bg-purple-950 text-[#6C4DF6] border border-purple-200 dark:border-purple-800 px-2 py-0.5 rounded-md font-black">
+                  <span className="text-[9px] bg-brand-50 dark:bg-brand-900 text-[#8B5CF6] border border-brand-200 dark:border-brand-800 px-2 py-0.5 rounded-md font-black">
                     LIVE
                   </span>
                 </h3>
@@ -337,7 +337,7 @@ const JourneyDetailsPage = () => {
               {[
                 { label: "Pending", value: journey.pendingInvitationCount || 0, color: "text-amber-500" },
                 { label: "Accepted", value: journey.acceptedInvitationCount || 0, color: "text-emerald-600 dark:text-emerald-400" },
-                { label: "Squad", value: journey.members?.length || journey.memberCount || 1, color: "text-[#6C4DF6]" },
+                { label: "Squad", value: journey.members?.length || journey.memberCount || 1, color: "text-[#8B5CF6]" },
                 {
                   label: "Conv.",
                   value: (journey.acceptedInvitationCount || 0) + (journey.pendingInvitationCount || 0) > 0
@@ -400,7 +400,7 @@ const JourneyDetailsPage = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex flex-col items-center justify-center gap-0.5 min-w-[52px] py-1.5 px-1 rounded-xl transition-all shrink-0 ${
-                  isActive ? "text-[#6C4DF6]" : "text-slate-400"
+                  isActive ? "text-[#8B5CF6]" : "text-slate-400"
                 }`}
               >
                 <tab.icon className="w-5 h-5" />
@@ -431,3 +431,4 @@ const JourneyDetailsPage = () => {
 };
 
 export default JourneyDetailsPage;
+

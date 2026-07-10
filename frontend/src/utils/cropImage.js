@@ -127,3 +127,4 @@ export default async function getCroppedImg(
 
   return dataUrl;
 }
+

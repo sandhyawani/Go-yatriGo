@@ -71,3 +71,4 @@ class AudioManager {
 
 const audioManagerInstance = new AudioManager();
 export default audioManagerInstance;
+

@@ -1,4 +1,4 @@
-﻿import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -37,8 +37,8 @@ const KPI_CONFIG = [
     detail: "Registered travelers",
     to: "/users",
     Icon: Users,
-    iconClass: "bg-purple-100 text-purple-700",
-    glowClass: "from-purple-200",
+    iconClass: "bg-brand-100 text-brand-700",
+    glowClass: "from-brand-200",
   },
   {
     key: "activeUsers",
@@ -46,8 +46,8 @@ const KPI_CONFIG = [
     detail: "Sessions in last 30 min",
     to: "/users?filter=online",
     Icon: Activity,
-    iconClass: "bg-purple-100 text-purple-700",
-    glowClass: "from-purple-200",
+    iconClass: "bg-brand-100 text-brand-700",
+    glowClass: "from-brand-200",
   },
   {
     key: "reportsPending",
@@ -55,8 +55,8 @@ const KPI_CONFIG = [
     detail: "Needs a moderator",
     to: "/admin/reports",
     Icon: ShieldAlert,
-    iconClass: "bg-purple-100 text-purple-700",
-    glowClass: "from-purple-300",
+    iconClass: "bg-brand-100 text-brand-700",
+    glowClass: "from-brand-300",
     priority: true,
   },
   {
@@ -65,8 +65,8 @@ const KPI_CONFIG = [
     detail: "Access restricted",
     to: "/users?filter=suspended",
     Icon: XCircle,
-    iconClass: "bg-purple-100 text-purple-700",
-    glowClass: "from-purple-200",
+    iconClass: "bg-brand-100 text-brand-700",
+    glowClass: "from-brand-200",
   },
   {
     key: "newPostsToday",
@@ -74,8 +74,8 @@ const KPI_CONFIG = [
     detail: "Community submissions",
     to: "/",
     Icon: FileText,
-    iconClass: "bg-purple-100 text-purple-700",
-    glowClass: "from-purple-200",
+    iconClass: "bg-brand-100 text-brand-700",
+    glowClass: "from-brand-200",
   },
 ];
 
@@ -109,11 +109,11 @@ const formatReportAge = (date) => {
 };
 
 const MetricSkeleton = () => (
-  <div className="flex h-full min-h-[120px] animate-pulse flex-col justify-between rounded-xl border border-purple-200 bg-purple-50 p-3">
-    <div className="mb-3 h-8 w-8 rounded-lg bg-purple-100" />
+  <div className="flex h-full min-h-[120px] animate-pulse flex-col justify-between rounded-xl border border-brand-200 bg-brand-50 p-3">
+    <div className="mb-3 h-8 w-8 rounded-lg bg-brand-100" />
     <div>
-      <div className="mb-1.5 h-6 w-16 rounded bg-purple-100" />
-      <div className="h-3 w-24 rounded bg-purple-100" />
+      <div className="mb-1.5 h-6 w-16 rounded bg-brand-100" />
+      <div className="h-3 w-24 rounded bg-brand-100" />
     </div>
   </div>
 );
@@ -125,8 +125,8 @@ const MetricCard = ({ config, value, index }) => {
     <div
       className={`group relative flex h-full min-h-[120px] flex-col justify-between overflow-hidden rounded-xl border p-3 transition duration-300 ${
         priority
-          ? "border-purple-300 bg-purple-50 hover:border-purple-400"
-          : "border-purple-200 bg-white hover:border-purple-300 hover:bg-purple-50"
+          ? "border-brand-300 bg-brand-50 hover:border-brand-400"
+          : "border-brand-200 bg-white hover:border-brand-300 hover:bg-brand-50"
       }`}
     >
       <div
@@ -139,7 +139,7 @@ const MetricCard = ({ config, value, index }) => {
           <Icon className="h-4 w-4" />
         </span>
         {priority && (
-          <span className="rounded-full border border-purple-200 bg-white px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-purple-700">
+          <span className="rounded-full border border-brand-200 bg-white px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-brand-700">
             Urgent
           </span>
         )}
@@ -181,7 +181,7 @@ const ChartTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="rounded-xl border border-purple-200 bg-white/95 px-3 py-2 shadow-xl backdrop-blur">
+    <div className="rounded-xl border border-brand-200 bg-white/95 px-3 py-2 shadow-xl backdrop-blur">
       <p className="mb-1.5 text-xs font-medium text-slate-700">{label}</p>
       {payload.map((item) => (
         <p
@@ -290,12 +290,12 @@ const Admin = () => {
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative mb-4 overflow-hidden rounded-xl border border-purple-200 bg-gradient-to-br from-purple-50 via-white to-purple-50 px-4 py-3 shadow-sm sm:px-5 sm:py-4"
+          className="relative mb-4 overflow-hidden rounded-xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 px-4 py-3 shadow-sm sm:px-5 sm:py-4"
         >
-          <div className="pointer-events-none absolute -right-12 -top-20 h-52 w-52 rounded-full bg-purple-200 blur-3xl" />
+          <div className="pointer-events-none absolute -right-12 -top-20 h-52 w-52 rounded-full bg-brand-200 blur-3xl" />
           <div className="relative flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div>
-              <p className="mb-2 text-xs font-medium text-purple-600">
+              <p className="mb-2 text-xs font-medium text-brand-600">
                 {greeting}, {user.name || "Administrator"}
               </p>
               <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
@@ -311,7 +311,7 @@ const Admin = () => {
                 type="button"
                 onClick={() => fetchStats()}
                 disabled={loading}
-                className="flex h-9 items-center gap-1.5 rounded-lg border border-purple-200 bg-purple-50 px-3 text-xs font-medium text-slate-700 transition hover:bg-purple-50 hover:text-slate-900 disabled:opacity-60"
+                className="flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 text-xs font-medium text-slate-700 transition hover:bg-brand-50 hover:text-slate-900 disabled:opacity-60"
               >
                 <RefreshCw
                   className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
@@ -320,7 +320,7 @@ const Admin = () => {
               </button>
               <Link
                 to="/admin/reports"
-                className="flex h-9 items-center gap-1.5 rounded-lg bg-purple-600 px-4 text-xs font-semibold text-white shadow-md shadow-purple-900/20 transition hover:bg-purple-700"
+                className="flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-4 text-xs font-semibold text-white shadow-md shadow-brand-900/20 transition hover:bg-brand-700"
               >
                 Review reports
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -343,14 +343,14 @@ const Admin = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             role="alert"
-            className="mb-4 flex items-center gap-2 rounded-xl border border-purple-300 bg-purple-50 px-3 py-2 text-xs text-purple-800"
+            className="mb-4 flex items-center gap-2 rounded-xl border border-brand-300 bg-brand-50 px-3 py-2 text-xs text-brand-800"
           >
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-purple-600" />
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-brand-600" />
             <span className="flex-1">{error}</span>
             <button
               type="button"
               onClick={() => fetchStats()}
-              className="font-medium text-purple-900 hover:underline"
+              className="font-medium text-brand-900 hover:underline"
             >
               Retry
             </button>
@@ -383,18 +383,18 @@ const Admin = () => {
             aria-label="Moderation alerts"
             className={`relative overflow-hidden rounded-xl border p-4 shadow-sm sm:p-5 ${
               hasReports
-                ? "border-purple-300 bg-gradient-to-br from-purple-100 via-white to-transparent"
-                : "border-purple-200 bg-gradient-to-br from-purple-50 via-white to-transparent"
+                ? "border-brand-300 bg-gradient-to-br from-brand-100 via-white to-transparent"
+                : "border-brand-200 bg-gradient-to-br from-brand-50 via-white to-transparent"
             }`}
           >
-            <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-purple-200/50 blur-3xl" />
+            <div className="pointer-events-none absolute -right-20 -top-24 h-52 w-52 rounded-full bg-brand-200/50 blur-3xl" />
             <div className="relative mb-4 flex items-start justify-between gap-3">
               <div className="flex gap-3">
                 <span
                   className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                     hasReports
-                      ? "bg-purple-200 text-purple-700"
-                      : "bg-purple-100 text-purple-600"
+                      ? "bg-brand-200 text-brand-700"
+                      : "bg-brand-100 text-brand-600"
                   }`}
                 >
                   {hasReports ? (
@@ -421,7 +421,7 @@ const Admin = () => {
               </div>
               <Link
                 to="/admin/reports"
-                className="hidden items-center gap-1 text-xs font-medium text-purple-600 transition hover:text-slate-900 sm:flex"
+                className="hidden items-center gap-1 text-xs font-medium text-brand-600 transition hover:text-slate-900 sm:flex"
               >
                 Full queue <ArrowRight className="h-3.5 w-3.5" />
               </Link>
@@ -433,9 +433,9 @@ const Admin = () => {
                   <Link
                     key={report._id}
                     to="/admin/reports"
-                    className="group flex items-center gap-2 rounded-xl border border-purple-200 bg-white px-3 py-2 transition hover:border-purple-300 hover:bg-purple-50"
+                    className="group flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-3 py-2 transition hover:border-brand-300 hover:bg-brand-50"
                   >
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-purple-500 shadow-sm" />
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand-500 shadow-sm" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-xs font-medium text-slate-900">
                         {displayName(report.reportedUser)}
@@ -453,7 +453,7 @@ const Admin = () => {
                   </Link>
                 ))
               ) : (
-                <div className="rounded-xl border border-purple-200 bg-white px-3 py-5 text-center text-xs text-slate-500">
+                <div className="rounded-xl border border-brand-200 bg-white px-3 py-5 text-center text-xs text-slate-500">
                   No flagged items waiting in the queue.
                 </div>
               )}
@@ -464,7 +464,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="rounded-xl border border-purple-200 bg-purple-50 p-4 shadow-sm sm:p-5"
+            className="rounded-xl border border-brand-200 bg-brand-50 p-4 shadow-sm sm:p-5"
             role="region"
             aria-label="Recent moderation activity"
           >
@@ -503,7 +503,7 @@ const Admin = () => {
                           </span>
                         </p>
                       </div>
-                      <span className="rounded-md bg-purple-100 px-1.5 py-0.5 text-[9px] capitalize text-slate-600">
+                      <span className="rounded-md bg-brand-100 px-1.5 py-0.5 text-[9px] capitalize text-slate-600">
                         {status}
                       </span>
                     </div>
@@ -523,7 +523,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.23 }}
-            className="rounded-xl border border-purple-200 bg-purple-50 p-4 shadow-sm sm:p-5"
+            className="rounded-xl border border-brand-200 bg-brand-50 p-4 shadow-sm sm:p-5"
             role="region"
             aria-label="Content and reports analytics"
           >
@@ -536,7 +536,7 @@ const Admin = () => {
                   Safety signals over 7 days
                 </h2>
               </div>
-              <span className="flex items-center gap-1 rounded-md bg-purple-100 px-2 py-1 text-[10px] font-medium text-purple-700">
+              <span className="flex items-center gap-1 rounded-md bg-brand-100 px-2 py-1 text-[10px] font-medium text-brand-700">
                 <TrendingUp className="h-3.5 w-3.5" />
                 Live data
               </span>
@@ -614,7 +614,7 @@ const Admin = () => {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.26 }}
-            className="rounded-xl border border-purple-200 bg-purple-50 p-4 shadow-sm sm:p-5"
+            className="rounded-xl border border-brand-200 bg-brand-50 p-4 shadow-sm sm:p-5"
             role="region"
             aria-label="Report outcomes"
           >
@@ -682,3 +682,4 @@ const Admin = () => {
 };
 
 export default Admin;
+

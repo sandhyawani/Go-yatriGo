@@ -60,6 +60,9 @@ import StoryViewer from "../components/story/StoryViewer";
 import JourneyStatistics from "../components/journey/JourneyStatistics";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileTabs from "../components/profile/ProfileTabs";
+import CreatePostModal from "../components/modals/CreatePostModal";
+import CreateStoryModal from "../components/modals/CreateStoryModal";
+import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 
 const Profile = () => {
   const { id } = useParams();
@@ -134,6 +137,8 @@ const Profile = () => {
   const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [storyToDelete, setStoryToDelete] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [showCreateStoryModal, setShowCreateStoryModal] = useState(false);
 
   // Story Viewer State
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
@@ -862,6 +867,8 @@ const Profile = () => {
           userTrips={userTrips}
           openRelationsModal={openRelationsModal}
           setActiveTab={setActiveTab}
+          userStories={userStories}
+          handleOpenStory={handleOpenStory}
         />
 
         {/* Rate Traveler removed to modal */}
@@ -882,6 +889,172 @@ const Profile = () => {
           </div>
         ) : (
           <div className="space-y-6">
+            {isOwnProfile &&
+             userMemories?.length === 0 &&
+             (profileUser?.postsCount || 0) === 0 &&
+             (profileUser?.following?.length || 0) === 0 &&
+             (profileUser?.followers?.length || 0) === 0 && (
+              <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100/80 rounded-3xl p-6 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 select-none">
+                  <div>
+                    <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
+                      🚀 Welcome to your Onboarding Checklist
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Complete these quick steps to set up your profile and start exploring Go YatriGo.
+                    </p>
+                  </div>
+                  <span className="text-xs font-black bg-brand-600 text-white px-3 py-1 rounded-full shadow-sm self-start sm:self-center">
+                    {
+                      [
+                        !!profileUser?.city,
+                        !!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")),
+                        userMemories?.length > 0,
+                        (profileUser?.following?.length || 0) >= 5,
+                        joinedTrips?.length > 0
+                      ].filter(Boolean).length
+                    }/5 Completed
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                  {/* Task 1: Add your city */}
+                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center">
+                        {profileUser?.city ? (
+                          <span className="text-emerald-500 text-lg">✅</span>
+                        ) : (
+                          <span className="text-slate-300 text-lg">⬜</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${profileUser?.city ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          Add your city & state
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">To connect with nearby travelers.</p>
+                      </div>
+                    </div>
+                    {!profileUser?.city && (
+                      <button
+                        onClick={() => navigate("/updateProfile", { state: profileUser })}
+                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+                      >
+                        Add
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 2: Upload profile picture */}
+                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center">
+                        {profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? (
+                          <span className="text-emerald-500 text-lg">✅</span>
+                        ) : (
+                          <span className="text-slate-300 text-lg">⬜</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          Upload profile picture
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">Let other explorers recognize you.</p>
+                      </div>
+                    </div>
+                    {!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")) && (
+                      <button
+                        onClick={() => navigate("/updateProfile", { state: profileUser })}
+                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+                      >
+                        Upload
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 3: Share your first memory */}
+                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center">
+                        {userMemories?.length > 0 ? (
+                          <span className="text-emerald-500 text-lg">✅</span>
+                        ) : (
+                          <span className="text-slate-300 text-lg">⬜</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${userMemories?.length > 0 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          Share your first memory
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">Publish a photo of your travels.</p>
+                      </div>
+                    </div>
+                    {userMemories?.length === 0 && (
+                      <button
+                        onClick={() => setShowCreatePostModal(true)}
+                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+                      >
+                        Post
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 4: Follow 5 travelers */}
+                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center">
+                        {(profileUser?.following?.length || 0) >= 5 ? (
+                          <span className="text-emerald-500 text-lg">✅</span>
+                        ) : (
+                          <span className="text-slate-300 text-lg">⬜</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${(profileUser?.following?.length || 0) >= 5 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          Follow 5 travelers ({(profileUser?.following?.length || 0)}/5)
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">Build your social travel feed.</p>
+                      </div>
+                    </div>
+                    {(profileUser?.following?.length || 0) < 5 && (
+                      <button
+                        onClick={() => navigate("/")}
+                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+                      >
+                        Explore
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Task 5: Join a travel group */}
+                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm col-span-1 md:col-span-2">
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center">
+                        {joinedTrips?.length > 0 ? (
+                          <span className="text-emerald-500 text-lg">✅</span>
+                        ) : (
+                          <span className="text-slate-300 text-lg">⬜</span>
+                        )}
+                      </div>
+                      <div>
+                        <p className={`text-xs font-bold ${joinedTrips?.length > 0 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                          Join a travel group (squad)
+                        </p>
+                        <p className="text-[10px] text-slate-400 font-medium">Find squad buddies to travel together.</p>
+                      </div>
+                    </div>
+                    {joinedTrips?.length === 0 && (
+                      <button
+                        onClick={() => navigate("/social/buddy")}
+                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
+                      >
+                        Join
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <ProfileTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -924,16 +1097,25 @@ const Profile = () => {
                   ) : userMemories.length === 0 ? (
                     <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
-                        <div className="absolute inset-0 bg-primary-600/5 rounded-full blur-xl animate-pulse"></div>
-                        <Grid className="w-10 h-10 text-slate-300 relative z-10" />
+                        <div className="absolute inset-0 bg-brand-500/5 rounded-full blur-xl animate-pulse"></div>
+                        <Globe className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-1">
-                        No Travel Memories
+                      <h3 className="text-base font-black text-slate-900 mb-1">
+                        {isOwnProfile ? "🌍 Welcome to Go YatriGo!" : "No Travel Memories"}
                       </h3>
-                      <p className="text-[13px] text-slate-500 font-medium">
-                        This traveler has not posted any travel photo updates
-                        yet.
+                      <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
+                        {isOwnProfile 
+                          ? "Share your first travel memory to inspire other travelers." 
+                          : "This traveler has not posted any travel photo updates yet."}
                       </p>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => setShowCreatePostModal(true)}
+                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" /> Create Your First Memory
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <>
@@ -1056,14 +1238,24 @@ const Profile = () => {
                     <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-pink-500/5 rounded-full blur-xl animate-pulse"></div>
-                        <Activity className="w-10 h-10 text-slate-300 relative z-10" />
+                        <Activity className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-1">
-                        No Stories
+                      <h3 className="text-base font-black text-slate-900 mb-1">
+                        {isOwnProfile ? "No stories yet." : "No Stories"}
                       </h3>
-                      <p className="text-[13px] text-slate-500 font-medium">
-                        You don't have any active stories.
+                      <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
+                        {isOwnProfile 
+                          ? "Capture your first journey!" 
+                          : "This traveler has not posted any active stories."}
                       </p>
+                      {isOwnProfile && (
+                        <button
+                          onClick={() => setShowCreateStoryModal(true)}
+                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
+                        >
+                          <Plus className="w-4 h-4" /> Share a Story
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="grid grid-cols-3 gap-2 sm:gap-4">
@@ -1172,7 +1364,7 @@ const Profile = () => {
                             badgeInfo = {
                               icon: <Clapperboard className="w-3 h-3" />,
                               label: "Story",
-                              bg: "text-purple-600",
+                              bg: "text-brand-600",
                             };
                           else if (post.postType === "group")
                             badgeInfo = {
@@ -1196,7 +1388,7 @@ const Profile = () => {
                             badgeInfo = {
                               icon: <Video className="w-3 h-3" />,
                               label: "Travel Video",
-                              bg: "text-indigo-600",
+                              bg: "text-brand-600",
                             };
 
                           return (
@@ -1272,7 +1464,7 @@ const Profile = () => {
                       {feltPosts.length > 3 && (
                         <button
                           onClick={() => navigate("/felt-vibes")}
-                          className="w-full py-4 bg-white/80 backdrop-blur-xl hover:bg-purple-50 text-purple-700 text-sm font-extrabold rounded-3xl transition-all duration-300 border border-purple-100 shadow-[0_4px_20px_rgba(124,58,237,0.05)] hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] flex items-center justify-center gap-2 group"
+                          className="w-full py-4 bg-white/80 backdrop-blur-xl hover:bg-brand-50 text-brand-700 text-sm font-extrabold rounded-3xl transition-all duration-300 border border-brand-100 shadow-[0_4px_20px_rgba(124,58,237,0.05)] hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] flex items-center justify-center gap-2 group"
                         >
                           View All Felt Vibes
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -1286,18 +1478,31 @@ const Profile = () => {
                     .length === 0 ? (
                     <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
-                        <div className="absolute inset-0 bg-indigo-500/5 rounded-full blur-xl animate-pulse"></div>
-                        <Compass className="w-10 h-10 text-slate-300 relative z-10" />
+                        <div className="absolute inset-0 bg-brand-500/5 rounded-full blur-xl animate-pulse"></div>
+                        <Compass className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-1">
-                        {groupFilter === "hosted"
-                          ? "No Squads Hosted"
-                          : "No Squads Joined"}
+                      <h3 className="text-base font-black text-slate-900 mb-1">
+                        {isOwnProfile && groupFilter === "joined"
+                          ? "You haven't joined any travel groups yet."
+                          : groupFilter === "hosted"
+                            ? "No Squads Hosted"
+                            : "No Squads Joined"}
                       </h3>
-                      <p className="text-[13px] text-slate-500 font-medium">
-                        This traveler has not hosted any short-term squad trips
-                        yet.
+                      <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
+                        {isOwnProfile && groupFilter === "joined"
+                          ? "Explore active travel squads and join other travelers on their journeys!"
+                          : groupFilter === "hosted"
+                            ? "This traveler has not hosted any short-term squad trips yet."
+                            : "This traveler has not joined any short-term squad trips yet."}
                       </p>
+                      {isOwnProfile && groupFilter === "joined" && (
+                        <button
+                          onClick={() => navigate("/social/buddy")}
+                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
+                        >
+                          <Compass className="w-4 h-4" /> Find Travel Groups
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -1324,7 +1529,7 @@ const Profile = () => {
                             className="bg-white border border-slate-100/80 p-5 rounded-3xl hover:shadow-md transition-all duration-300 cursor-pointer space-y-3 shadow-sm hover:-translate-y-1"
                           >
                             <div className="flex justify-between items-center select-none">
-                              <span className="bg-indigo-50 text-indigo-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
+                              <span className="bg-brand-50 text-brand-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
                                 {trip.category}
                               </span>
                               <span className="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-3 py-1 rounded-full">
@@ -2015,7 +2220,7 @@ const Profile = () => {
                             className="w-9 h-9 rounded-full object-cover border border-slate-100 group-hover:scale-102 transition-transform shadow-sm"
                             onError={(e) => {
                               e.target.onerror = null;
-                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Explorer")}&background=6C4DF6&color=fff&bold=true`;
+                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
                             }}
                           />
                           <div className="min-w-0">
@@ -2083,8 +2288,28 @@ const Profile = () => {
         )}
       </AnimatePresence>
 
+      <CreatePostModal
+        isOpen={showCreatePostModal}
+        onClose={() => setShowCreatePostModal(false)}
+        onSuccess={() => {
+          setShowCreatePostModal(false);
+          fetchProfile();
+        }}
+        user={currentUser}
+      />
+
+      <CreateStoryModal
+        isOpen={showCreateStoryModal}
+        onClose={() => setShowCreateStoryModal(false)}
+        onSuccess={() => {
+          setShowCreateStoryModal(false);
+          fetchProfile();
+        }}
+      />
+
     </div>
   );
 };
 
 export default Profile;
+

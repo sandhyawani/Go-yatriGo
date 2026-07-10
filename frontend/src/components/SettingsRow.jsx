@@ -98,3 +98,4 @@ const SettingsRow = ({
 };
 
 export default SettingsRow;
+

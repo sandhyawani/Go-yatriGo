@@ -152,8 +152,8 @@ const Userlist = ({ columns }) => {
 
   return (
     <div className="user-management-page relative min-h-[calc(100vh-72px)] overflow-hidden bg-white px-3 pb-6 pt-4 sm:px-4 lg:px-6">
-      <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full bg-purple-400/10 blur-3xl" />
-      <div className="pointer-events-none absolute left-10 top-52 h-64 w-64 rounded-full bg-purple-400/5 blur-3xl" />
+      <div className="pointer-events-none absolute -right-28 -top-36 h-96 w-96 rounded-full bg-brand-400/10 blur-3xl" />
+      <div className="pointer-events-none absolute left-10 top-52 h-64 w-64 rounded-full bg-brand-400/5 blur-3xl" />
 
       <div className="relative mx-auto max-w-[1450px] space-y-4">
         <motion.header
@@ -164,8 +164,8 @@ const Userlist = ({ columns }) => {
         >
           <div>
             <div className="mb-1 flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-purple-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
-              <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-purple-600">
+              <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
+              <span className="text-[9px] font-bold uppercase tracking-[0.3em] text-brand-600">
                 Trust and Safety
               </span>
             </div>
@@ -185,7 +185,7 @@ const Userlist = ({ columns }) => {
           <div className="flex flex-wrap items-center gap-2">
             <Link
               to="/adduser"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-purple-600 px-3.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-purple-500 hover:shadow-md active:translate-y-0"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-md active:translate-y-0"
             >
               <UserPlus className="h-3.5 w-3.5" />
               Add Operator
@@ -194,7 +194,7 @@ const Userlist = ({ columns }) => {
               type="button"
               onClick={generatePDF}
               disabled={usersLoading || !users.length}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-purple-200 bg-white/55 px-3.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-purple-300 hover:bg-purple-50 hover:text-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-white/55 px-3.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <Download className="h-3.5 w-3.5" />
               {usersLoading ? "Loading..." : "Export Report"}
@@ -216,13 +216,13 @@ const Userlist = ({ columns }) => {
               onClick={() => handleMetricClick(filterValue)}
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.98 }}
-              className={`group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-xl border bg-white p-3 transition-colors duration-300 hover:border-purple-300 hover:bg-purple-50 ${
-                activeFilter === filterValue ? "border-purple-400 bg-purple-50/50 shadow-sm" : "border-purple-200"
+              className={`group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-xl border bg-white p-3 transition-colors duration-300 hover:border-brand-300 hover:bg-brand-50 ${
+                activeFilter === filterValue ? "border-brand-400 bg-brand-50/50 shadow-sm" : "border-brand-200"
               }`}
             >
-              <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br from-purple-200 to-transparent blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
+              <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br from-brand-200 to-transparent blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                activeFilter === filterValue ? "bg-purple-200 text-purple-800" : "bg-purple-100 text-purple-700 group-hover:bg-purple-200"
+                activeFilter === filterValue ? "bg-brand-200 text-brand-800" : "bg-brand-100 text-brand-700 group-hover:bg-brand-200"
               }`}>
                 <Icon className="h-5 w-5" />
               </span>
@@ -248,3 +248,4 @@ const Userlist = ({ columns }) => {
 };
 
 export default Userlist;
+

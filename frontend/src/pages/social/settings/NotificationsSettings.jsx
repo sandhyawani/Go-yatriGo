@@ -29,7 +29,7 @@ const NotificationsSettings = () => {
           to="/settings"
           className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold shadow-sm transition-all"
         >
-          <ArrowLeft className="w-4 h-4 text-purple-600" />
+          <ArrowLeft className="w-4 h-4 text-brand-600" />
           <span>Back to Settings</span>
         </Link>
         <div className="mb-8">
@@ -82,3 +82,4 @@ const NotificationsSettings = () => {
 };
 
 export default NotificationsSettings;
+

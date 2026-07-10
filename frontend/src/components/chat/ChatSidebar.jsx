@@ -167,7 +167,7 @@ export const ChatSidebar = ({
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-1.5 text-[11px] font-semibold capitalize rounded-md transition-all ${
                 activeTab === tab
-                  ? "bg-white shadow-sm text-[#534AB7] border-b-2 border-[#534AB7]"
+                  ? "bg-white shadow-sm text-brand-600 border-b-2 border-brand-600"
                   : "text-slate-500 hover:text-slate-700"
               }`}
             >
@@ -293,7 +293,7 @@ export const ChatSidebar = ({
                   key={room._id}
                   className={`group/item relative flex items-center gap-3 px-3 py-2.5 rounded-xl cursor-pointer select-none transition-all duration-300 ${
                     isSelected
-                      ? "bg-purple-50/70 border border-purple-100/30"
+                      ? "bg-brand-50/70 border border-brand-100/30"
                       : "hover:bg-slate-50 border border-transparent"
                   }`}
                   onClick={() =>
@@ -409,7 +409,7 @@ export const ChatSidebar = ({
                       <button
                         key={u._id}
                         onClick={() => handleSelectGlobalUser(u)}
-                        className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-purple-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
+                        className="w-full text-left px-3 py-2.5 rounded-xl transition-all duration-300 flex gap-3 hover:bg-brand-50/50 hover:-translate-y-[1px] hover:shadow-sm border border-transparent"
                       >
                         <div className="relative shrink-0">
                           <img
@@ -444,3 +444,4 @@ export const ChatSidebar = ({
 };
 
 export default ChatSidebar;
+

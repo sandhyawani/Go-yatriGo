@@ -59,7 +59,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess }) => {
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#6C4DF6] rounded-2xl">
+            <div className="p-2.5 bg-[#8B5CF6] rounded-2xl">
               <ShieldCheck className="w-6 h-6 text-white animate-bounce" />
             </div>
             <div>
@@ -91,7 +91,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess }) => {
                 >
                   {type}
                   {checkInType === type && (
-                    <CheckCircle className="w-4 h-4 text-[#6C4DF6]" />
+                    <CheckCircle className="w-4 h-4 text-[#8B5CF6]" />
                   )}
                 </button>
               ))}
@@ -138,7 +138,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-sm font-bold shadow-lg shadow-[#6C4DF6]/30 transition-all active:scale-95 disabled:opacity-50"
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-sm font-bold shadow-lg shadow-[#8B5CF6]/30 transition-all active:scale-95 disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               {loading ? "Broadcasting..." : "Broadcast Safely"}
@@ -151,3 +151,4 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess }) => {
 };
 
 export default SafeCheckInModal;
+

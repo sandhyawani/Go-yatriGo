@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import axios from "../../api/axios";
 import Swal from "sweetalert2";
@@ -214,13 +214,13 @@ const VerificationRequests = () => {
         {loading ? (
           <div className="flex items-center justify-center py-32">
             <div className="flex flex-col items-center gap-4">
-              <Loader2 className="h-10 w-10 animate-spin text-purple-600" />
+              <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
               <p className="text-slate-500 font-medium">Loading requests...</p>
             </div>
           </div>
         ) : requests.length === 0 ? (
           <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center shadow-lg shadow-slate-200/50 max-w-2xl mx-auto mt-10">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-50 text-purple-600 mb-6 border-8 border-cyan-50/50">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-50 text-brand-600 mb-6 border-8 border-cyan-50/50">
               <CheckCircle className="h-10 w-10" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">
@@ -232,7 +232,7 @@ const VerificationRequests = () => {
             </p>
             <button
               onClick={fetchRequests}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition font-bold shadow-lg shadow-purple-600/20"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition font-bold shadow-lg shadow-brand-600/20"
             >
               <RefreshCw className="w-4 h-4 text-white" /> Check Again
             </button>
@@ -242,7 +242,7 @@ const VerificationRequests = () => {
             {requests.map((user) => (
               <div
                 key={user._id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col hover:border-purple-600/30 hover:shadow-purple-600/10 transition-all group"
+                className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col hover:border-brand-600/30 hover:shadow-brand-600/10 transition-all group"
               >
                 <div className="p-5 flex items-start gap-4">
                   <img
@@ -258,7 +258,7 @@ const VerificationRequests = () => {
                     className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-sm"
                   />
                   <div className="min-w-0 flex-1">
-                    <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-purple-600 transition-colors">
+                    <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-brand-600 transition-colors">
                       {user.name}
                     </h3>
                     <p className="text-xs text-slate-500 truncate mb-2">
@@ -292,7 +292,7 @@ const VerificationRequests = () => {
                   </div>
                   <button
                     onClick={() => setSelectedUser(user)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-purple-600 hover:bg-purple-700 border border-purple-600 text-white text-sm font-semibold transition-all shadow-md shadow-purple-600/20"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 border border-brand-600 text-white text-sm font-semibold transition-all shadow-md shadow-brand-600/20"
                   >
                     <FileText className="w-4 h-4" />
                     Quick View
@@ -351,7 +351,7 @@ const VerificationRequests = () => {
                         </span>
                       </h2>
                       <p className="text-slate-500 text-sm">
-                        @{selectedUser.username} • Submitted{" "}
+                        @{selectedUser.username} � Submitted{" "}
                         {moment(selectedUser.updatedAt).format("MMM DD, YYYY")}
                       </p>
                     </div>
@@ -361,7 +361,7 @@ const VerificationRequests = () => {
                       onClick={() =>
                         handleDownload(selectedUser.govId, selectedUser.name)
                       }
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-200 transition group tooltip-trigger"
+                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition group tooltip-trigger"
                     >
                       <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
                     </button>
@@ -430,7 +430,7 @@ const VerificationRequests = () => {
                     <div className="flex-1 overflow-hidden flex items-center justify-center p-8 relative">
                       {!imageLoaded && (
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
+                          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
                         </div>
                       )}
                       {isPdf ? (
@@ -472,7 +472,7 @@ const VerificationRequests = () => {
 
                       <div className="space-y-5">
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <User className="w-4 h-4" />
                           </div>
                           <div>
@@ -486,7 +486,7 @@ const VerificationRequests = () => {
                         </div>
 
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <Mail className="w-4 h-4" />
                           </div>
                           <div>
@@ -500,7 +500,7 @@ const VerificationRequests = () => {
                         </div>
 
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <Phone className="w-4 h-4" />
                           </div>
                           <div>
@@ -520,7 +520,7 @@ const VerificationRequests = () => {
 
                       <div className="space-y-5">
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <Fingerprint className="w-4 h-4" />
                           </div>
                           <div>
@@ -534,7 +534,7 @@ const VerificationRequests = () => {
                         </div>
 
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <Calendar className="w-4 h-4" />
                           </div>
                           <div>
@@ -550,7 +550,7 @@ const VerificationRequests = () => {
                         </div>
 
                         <div className="flex items-start gap-4">
-                          <div className="p-2.5 rounded-xl bg-slate-50 text-purple-600 border border-slate-100">
+                          <div className="p-2.5 rounded-xl bg-slate-50 text-brand-600 border border-slate-100">
                             <AlertCircle className="w-4 h-4" />
                           </div>
                           <div>
@@ -571,7 +571,7 @@ const VerificationRequests = () => {
                         <button
                           disabled={actionLoading}
                           onClick={() => handleApprove(selectedUser._id)}
-                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-purple-600/20 disabled:opacity-50"
+                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-brand-600/20 disabled:opacity-50"
                         >
                           {actionLoading ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
@@ -647,7 +647,7 @@ const VerificationRequests = () => {
                                     setCustomReason(e.target.value)
                                   }
                                   placeholder="Type detailed rejection reason here..."
-                                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-900 placeholder:text-slate-500 focus:border-purple-600 focus:ring-1 focus:ring-purple-600 outline-none transition-all shadow-inner"
+                                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-900 placeholder:text-slate-500 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all shadow-inner"
                                   rows={3}
                                 />
                               </motion.div>
@@ -693,3 +693,4 @@ const VerificationRequests = () => {
 };
 
 export default VerificationRequests;
+

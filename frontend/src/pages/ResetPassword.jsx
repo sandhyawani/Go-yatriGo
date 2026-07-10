@@ -1,4 +1,4 @@
-ï»¿import axios from "../api/axios";
+import axios from "../api/axios";
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { showToast } from "../utils/showToast";
@@ -253,7 +253,7 @@ const ResetPassword = () => {
                     id="new-password"
                     type={showPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                     value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
@@ -337,7 +337,7 @@ const ResetPassword = () => {
                     id="confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
                     autoComplete="new-password"
-                    placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                    placeholder="••••••••"
                     value={confirmPassword}
                     onChange={(e) => {
                       setConfirmPassword(e.target.value);
@@ -402,7 +402,7 @@ const ResetPassword = () => {
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 {loading ? (
                   <span className="text-xs uppercase tracking-widest">
-                    Updatingâ€¦
+                    Updating…
                   </span>
                 ) : (
                   <>
@@ -432,3 +432,4 @@ const ResetPassword = () => {
 };
 
 export default ResetPassword;
+

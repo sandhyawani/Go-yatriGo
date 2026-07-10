@@ -34,9 +34,14 @@ export const userColumns = [
     width: 150,
   },
   {
-    field: "country",
-    headerName: "Country",
-    width: 150,
+    field: "city",
+    headerName: "City",
+    width: 130,
+  },
+  {
+    field: "state",
+    headerName: "State",
+    width: 130,
   },
   {
     field: "type",
@@ -300,3 +305,4 @@ export const restaurantColumns = [
     )
   },
 ];
+

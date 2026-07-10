@@ -381,7 +381,7 @@
 //                           className={`px-3 py-1 rounded-xl text-[11px] font-bold transition-all shrink-0 ${
 //                             notifCategory === cat
 //                               ? "bg-primary-600 text-white shadow-xs"
-//                               : "bg-white text-slate-600 hover:bg-purple-100/60 border border-slate-200/80"
+//                               : "bg-white text-slate-600 hover:bg-brand-100/60 border border-slate-200/80"
 //                           }`}
 //                         >
 //                           {cat}{" "}
@@ -393,10 +393,10 @@
 //                     )}
 //                   </div>
 
-//                   <div className="overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-purple-200 hover:scrollbar-thumb-purple-300 scrollbar-track-transparent flex-1">
+//                   <div className="overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-brand-200 hover:scrollbar-thumb-brand-300 scrollbar-track-transparent flex-1">
 //                     {(notifCategory === "All" || notifCategory === "Journey") &&
 //                       journeyInvitations.length > 0 && (
-//                         <div className="p-4 bg-purple-50/60 border-b border-purple-100 space-y-3">
+//                         <div className="p-4 bg-brand-50/60 border-b border-brand-100 space-y-3">
 //                           <span className="text-[10px] font-black uppercase text-primary-600 tracking-wider block px-1">
 //                             Official Journey Invitations
 //                           </span>
@@ -464,10 +464,10 @@
 //                                         onClick={() =>
 //                                           handleNotificationClick(n)
 //                                         }
-//                                         className={`relative flex items-start gap-4 px-5 py-4 transition-all duration-200 cursor-pointer group hover:bg-purple-50 border-b border-slate-50 last:border-b-0 ${
+//                                         className={`relative flex items-start gap-4 px-5 py-4 transition-all duration-200 cursor-pointer group hover:bg-brand-50 border-b border-slate-50 last:border-b-0 ${
 //                                           n.isRead
 //                                             ? "bg-white"
-//                                             : "bg-purple-50/40"
+//                                             : "bg-brand-50/40"
 //                                         }`}
 //                                       >
 //                                         <div className="relative shrink-0">
@@ -481,7 +481,7 @@
 //                                             className="w-11 h-11 rounded-full object-cover border-[3px] border-white shadow-sm"
 //                                             onError={(e) => {
 //                                               e.target.onerror = null;
-//                                               e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(n.sender?.name || "User")}&background=6C4DF6&color=fff&bold=true`;
+//                                               e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(n.sender?.name || "User")}&background=8b5cf6&color=fff&bold=true`;
 //                                             }}
 //                                           />
 //                                           <div className="absolute -bottom-1 -right-1 bg-white rounded-full p-1 shadow-sm border border-slate-50">
@@ -619,7 +619,7 @@
 
 //           {/* Create Dropdown */}
 //           <Menu as="div" className="relative w-full">
-//             <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-violet-500 to-primary-600 text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(124,58,237,0.25)] hover:shadow-[0_15px_40px_rgba(124,58,237,0.35)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
+//             <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-brand-500 to-primary-600 text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(124,58,237,0.25)] hover:shadow-[0_15px_40px_rgba(124,58,237,0.35)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
 //               <PlusSquare className="w-4 h-4" />
 //               Create
 //             </Menu.Button>
@@ -640,7 +640,7 @@
 //                     {({ active }) => (
 //                       <button
 //                         onClick={() => setIsCreateStoryOpen(true)}
-//                         className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"}`}
+//                         className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"}`}
 //                       >
 //                         <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-500 shrink-0">
 //                           <PlusSquare className="w-4.5 h-4.5" />
@@ -660,7 +660,7 @@
 //                     {({ active }) => (
 //                       <button
 //                         onClick={() => setIsCreatePostOpen(true)}
-//                         className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"}`}
+//                         className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"}`}
 //                       >
 //                         <div className="w-9 h-9 rounded-xl bg-primary-600/10 flex items-center justify-center text-primary-600 shrink-0">
 //                           <PlusSquare className="w-4.5 h-4.5" />
@@ -680,7 +680,7 @@
 //                     {({ active }) => (
 //                       <Link
 //                         to="/social/buddy/new"
-//                         className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-purple-50 scale-[1.01]" : "bg-transparent"}`}
+//                         className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"}`}
 //                       >
 //                         <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500 shrink-0">
 //                           <Compass className="w-4.5 h-4.5" />
@@ -705,7 +705,7 @@
 //                         <div className="flex-1">
 //                           <p className="text-[13px] font-extrabold text-slate-800 flex items-center justify-between">
 //                             Go Live
-//                             <span className="px-2 py-0.5 bg-purple-100 text-purple-600 text-[9px] font-bold uppercase rounded-full tracking-wider">
+//                             <span className="px-2 py-0.5 bg-brand-100 text-brand-600 text-[9px] font-bold uppercase rounded-full tracking-wider">
 //                               Soon
 //                             </span>
 //                           </p>
@@ -766,9 +766,9 @@
 //             {location.pathname.startsWith("/settings/") ? (
 //               <Link
 //                 to="/settings"
-//                 className="flex items-center gap-2 text-slate-800 font-extrabold text-[15px] hover:text-purple-600 transition-colors"
+//                 className="flex items-center gap-2 text-slate-800 font-extrabold text-[15px] hover:text-brand-600 transition-colors"
 //               >
-//                 <ArrowLeft className="w-5 h-5 text-purple-600" />
+//                 <ArrowLeft className="w-5 h-5 text-brand-600" />
 //                 <span>Settings</span>
 //               </Link>
 //             ) : (
@@ -879,7 +879,7 @@
 //               onClick={() => setIsOpen(true)}
 //               className="flex flex-col items-center justify-center gap-0.5 px-2 py-1"
 //             >
-//               <div className="p-1.5 bg-gradient-to-r from-violet-500 to-primary-600 text-white rounded-xl shadow-md shadow-primary-600/25 active:scale-95 transition-transform">
+//               <div className="p-1.5 bg-gradient-to-r from-brand-500 to-primary-600 text-white rounded-xl shadow-md shadow-primary-600/25 active:scale-95 transition-transform">
 //                 <PlusSquare className="w-5 h-5" />
 //               </div>
 //               <span className="text-[9px] font-bold leading-none text-slate-400">Create</span>
@@ -2648,3 +2648,4 @@ const SocialSidebar = () => {
 };
 
 export default SocialSidebar;
+

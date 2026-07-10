@@ -311,14 +311,37 @@ exports.getAllTravelBuddyTrips = async (req, res) => {
     const allMatchingGroups = await TravelGroup.find(query)
       .populate(
         "host",
-        "name username pic img isVerified rating completedTrips"
+        "name username pic img isVerified rating completedTrips city state"
       )
       .populate("members.user", "name username pic img");
 
     const nowSort = new Date();
     const nowTime = nowSort.getTime();
 
+    const userCity = currentUser?.city?.trim().toLowerCase();
+    const userState = currentUser?.state?.trim().toLowerCase();
+
+    const getLocationScore = (group) => {
+      let score = 0;
+      const hostCity = group.host?.city?.trim().toLowerCase();
+      const hostState = group.host?.state?.trim().toLowerCase();
+
+      if (userCity && hostCity === userCity) {
+        score += 100;
+      }
+      if (userState && hostState === userState) {
+        score += 10;
+      }
+      return score;
+    };
+
     allMatchingGroups.sort((a, b) => {
+      const scoreA = getLocationScore(a);
+      const scoreB = getLocationScore(b);
+      if (scoreB !== scoreA) {
+        return scoreB - scoreA;
+      }
+
       const startA = new Date(a.startDate).getTime();
       const startB = new Date(b.startDate).getTime();
       const endA = new Date(a.endDate).getTime();
@@ -2375,81 +2398,7 @@ exports.reactToStory = async (req, res) => {
   }
 };
 
-// Search travelers, travel groups, and posts
-exports.globalSocialSearch = async (req, res) => {
-  try {
-    const q = req.query.q || "";
-    const currentUserId = req.user._id || req.user.id;
 
-    if (!q.trim()) {
-      return res.status(200).json({
-        success: true,
-        travelers: [],
-        trips: [],
-        memories: [],
-      });
-    }
-
-    const regex = new RegExp(q, "i");
-
-    // Search users, groups, and posts at the same time
-    const [travelers, groups, posts] = await Promise.all([
-      User.find({
-        _id: { $ne: currentUserId },
-        type: { $in: ["traveler", "Traveler"] },
-        $or: [
-          { name: regex },
-          { username: regex },
-          { country: regex },
-          { interests: regex },
-        ],
-      })
-        .select(
-          "name username pic img avatar profilePic profilePicture userPic type isVerified rating completedTrips interests"
-        )
-        .limit(10),
-
-      TravelGroup.find({
-        $or: [
-          { destination: regex },
-          { title: regex },
-          { category: regex },
-        ],
-      })
-        .populate("host", "name username pic img avatar isVerified")
-        .limit(10),
-
-      Post.find({
-        $or: [
-          { caption: regex },
-          { location: regex },
-          { tags: regex },
-        ],
-      })
-        .populate("userId", "name username pic img avatar isVerified")
-        .limit(10),
-    ]);
-
-    // Format group data for frontend
-    const trips = groups.map((group) => {
-      const trip = group.toObject();
-      trip.userId = group.host;
-      return trip;
-    });
-
-    res.status(200).json({
-      success: true,
-      travelers,
-      trips,
-      memories: posts,
-    });
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: error.message,
-    });
-  }
-};
 
 // Reply to a travel story
 exports.replyToStory = async (req, res) => {
@@ -2690,12 +2639,13 @@ exports.globalSocialSearch = async (req, res) => {
         $or: [
           { name: regex },
           { username: regex },
-          { country: regex },
+          { city: regex },
+          { state: regex },
           { interests: regex },
         ],
       })
         .select(
-          "name username pic img avatar profilePic profilePicture userPic type isVerified rating completedTrips interests"
+          "name username pic img avatar profilePic profilePicture userPic type isVerified rating completedTrips interests city state"
         )
         .limit(10),
 

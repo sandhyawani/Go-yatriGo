@@ -8,3 +8,4 @@ export const storyService = {
     return res.data;
   }
 };
+

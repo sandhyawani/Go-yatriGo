@@ -19,7 +19,7 @@ export const NotificationItem = ({
       case "like":
         return <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 animate-pulse" />;
       case "comment":
-        return <MessageCircle className="w-3.5 h-3.5 text-indigo-500 fill-indigo-50" />;
+        return <MessageCircle className="w-3.5 h-3.5 text-brand-500 fill-brand-50" />;
       case "follow":
       case "follow_request":
         return <UserPlus className="w-3.5 h-3.5 text-brand-500" />;
@@ -48,7 +48,7 @@ export const NotificationItem = ({
       className={`p-3.5 rounded-2xl border transition-all duration-300 relative flex items-start gap-3 cursor-pointer ${
         n.isRead
           ? "bg-white border-slate-100/50 hover:bg-slate-50/50"
-          : "bg-purple-50/20 border-purple-100/30 hover:bg-purple-50/30 shadow-[0_2px_8px_rgba(108,77,246,0.02)]"
+          : "bg-brand-50/20 border-brand-100/30 hover:bg-brand-50/30 shadow-[0_2px_8px_rgba(108,77,246,0.02)]"
       }`}
     >
       {!n.isRead && (
@@ -133,3 +133,4 @@ export const NotificationItem = ({
   );
 };
 export default NotificationItem;
+

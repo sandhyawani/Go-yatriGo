@@ -1,4 +1,4 @@
-﻿import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { AuthContext } from "../../context/authContext";
 import axios from "../../api/axios";
 import {
@@ -17,6 +17,7 @@ import {
 import { showToast } from "../../utils/showToast";
 
 const EmergencyContacts = () => {
+  const { user, updateUser } = useContext(AuthContext);
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -30,9 +31,15 @@ const EmergencyContacts = () => {
     isPrimary: false,
   });
 
-  // Mock global toggles
-  const [sosActive, setSosActive] = useState(false);
+  // Global toggles synced with user context
+  const [sosActive, setSosActive] = useState(user?.sosActive || false);
   const [locationSharing, setLocationSharing] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      setSosActive(user.sosActive || false);
+    }
+  }, [user?.sosActive]);
 
   const fetchContacts = async () => {
     try {
@@ -133,15 +140,26 @@ const EmergencyContacts = () => {
     setIsAdding(true);
   };
 
-  const handleSOSToggle = () => {
-    setSosActive(!sosActive);
-    if (!sosActive) {
-      showToast.error(
-        "SOS Alert Activated! Emergency contacts have been notified.",
-        { icon: "🚨" },
-      );
-    } else {
-      showToast.success("SOS Alert Deactivated.");
+  const handleSOSToggle = async () => {
+    try {
+      const res = await axios.post("/emergency/sos", {}, { withCredentials: true });
+      if (res.data.success) {
+        setSosActive(res.data.sosActive);
+        if (updateUser) {
+          updateUser({ sosActive: res.data.sosActive });
+        }
+        if (res.data.sosActive) {
+          showToast.error(
+            "SOS Alert Activated! Emergency contacts have been notified.",
+            { icon: "🚨" },
+          );
+        } else {
+          showToast.success("SOS Alert Deactivated.");
+        }
+      }
+    } catch (err) {
+      showToast.error("Failed to update SOS status.");
+      console.error(err);
     }
   };
 
@@ -433,3 +451,4 @@ const EmergencyContacts = () => {
 };
 
 export default EmergencyContacts;
+

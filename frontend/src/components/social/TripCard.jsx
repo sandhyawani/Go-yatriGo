@@ -28,7 +28,7 @@ const TripCard = ({ trip, user, handleLike }) => {
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'active now':
-      case 'active': return 'bg-rose-500/90 text-white border border-white/20';
+      case 'active': return 'bg-brand-600/90 text-white border border-white/20';
       case 'upcoming': return 'bg-white/95 text-[#111827] border border-white/40 shadow-sm';
       case 'completed': return 'bg-black/60 text-white border border-white/20';
       case 'cancelled': return 'bg-red-500/90 text-white border border-white/20';
@@ -119,7 +119,7 @@ const TripCard = ({ trip, user, handleLike }) => {
         {/* Host & Title */}
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0 flex-1">
-            <h3 className="text-[17px] font-black text-[#111827] leading-tight mb-1 truncate group-hover:text-[#6C4DF6] transition-colors">
+            <h3 className="text-[17px] font-black text-[#111827] leading-tight mb-1 truncate group-hover:text-[#8B5CF6] transition-colors">
               {trip.title}
             </h3>
             <div className="flex items-center gap-1.5 text-[12px] text-slate-500 font-medium">
@@ -135,14 +135,14 @@ const TripCard = ({ trip, user, handleLike }) => {
             onClick={(e) => { e.stopPropagation(); navigate(`/profile/${trip.userId?._id}`); }}
             src={getAvatarUrl(trip.userId?.pic, trip.userId?.img, trip.userId?.name)}
             alt={trip.userId?.name}
-            className="w-11 h-11 rounded-full object-cover shadow-sm shrink-0 cursor-pointer border border-slate-100 hover:ring-2 hover:ring-[#6C4DF6] hover:scale-105 transition-all duration-300"
+            className="w-11 h-11 rounded-full object-cover shadow-sm shrink-0 cursor-pointer border border-slate-100 hover:ring-2 hover:ring-[#8B5CF6] hover:scale-105 transition-all duration-300"
           />
         </div>
 
         {/* Route & Date Details Container */}
         <div className="flex flex-col gap-2 mb-4">
           <div className="flex items-start gap-2.5 text-[13px] font-bold text-slate-700">
-            <MapPin className="w-4 h-4 text-[#6C4DF6] shrink-0 mt-0.5" />
+            <MapPin className="w-4 h-4 text-[#8B5CF6] shrink-0 mt-0.5" />
             <span className="line-clamp-1 leading-snug">
               {trip.from ? `${trip.from} ` : ''}
               {trip.from && <span className="text-slate-400 font-medium mx-1">→</span>}
@@ -161,7 +161,7 @@ const TripCard = ({ trip, user, handleLike }) => {
              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider leading-none">Availability</span>
              <span className="text-[13px] font-black text-[#111827] leading-none mt-1">
                {slotsOpen > 0 ? (
-                 <><span className="text-[#6C4DF6]">{slotsOpen}</span> spots left</>
+                 <><span className="text-[#8B5CF6]">{slotsOpen}</span> spots left</>
                ) : (
                  <span className="text-red-500">Full</span>
                )}
@@ -176,11 +176,11 @@ const TripCard = ({ trip, user, handleLike }) => {
                   navigate(`/social/buddy/${trip._id}`);
                 }
               }}
-              className={`px-5 py-2.5 text-[12px] font-black tracking-wide rounded-full shadow-md transition-all active:scale-95 ${
-                hasJoined ? "bg-slate-800 text-white shadow-slate-800/25" :
-                hasRequested ? "bg-amber-500 text-white shadow-amber-500/25" :
-                slotsOpen > 0 ? "bg-gradient-to-r from-[#6C4DF6] to-[#8B74FE] text-white shadow-[#6C4DF6]/25 hover:shadow-lg hover:shadow-[#6C4DF6]/40" :
-                "bg-slate-100 text-slate-400 shadow-none"
+              className={`px-5 py-2.5 text-[12px] font-black tracking-wide rounded-full shadow-md transition-all active:scale-[0.97] hover:-translate-y-0.5 duration-200 ${
+                hasJoined ? "bg-brand-100 text-brand-700 shadow-sm shadow-brand-500/5 hover:bg-brand-200/80" :
+                hasRequested ? "bg-brand-50 text-brand-600 border border-brand-200/60 shadow-sm shadow-brand-500/5 hover:bg-brand-100/60" :
+                slotsOpen > 0 ? "bg-gradient-to-r from-brand-500 to-brand-600 text-white shadow-md shadow-brand-500/20 hover:shadow-lg hover:shadow-brand-500/30 hover:scale-105 active:scale-95" :
+                "bg-slate-100 text-slate-400 shadow-none pointer-events-none"
               }`}
             >
               {hasJoined ? "Joined" : hasRequested ? "Pending" : slotsOpen > 0 ? "Join Trip" : "Full"}
@@ -194,3 +194,4 @@ const TripCard = ({ trip, user, handleLike }) => {
 };
 
 export default TripCard;
+

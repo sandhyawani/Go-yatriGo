@@ -23,3 +23,4 @@ export const useTyping = (socketConnected) => {
   return { sendTypingIndicator };
 };
 export default useTyping;
+

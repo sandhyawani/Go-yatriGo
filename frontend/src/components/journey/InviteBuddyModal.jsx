@@ -41,7 +41,7 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
         {/* Header */}
         <div className="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#6C4DF6] rounded-2xl">
+            <div className="p-2.5 bg-[#8B5CF6] rounded-2xl">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>
@@ -100,7 +100,7 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
             <button
               onClick={handleSendInvites}
               disabled={selectedIds.length === 0 || loading}
-              className="flex-1 py-3 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-sm font-bold shadow-lg shadow-purple-600/30 transition-all disabled:opacity-50 active:scale-95"
+              className="flex-1 py-3 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-sm font-bold shadow-lg shadow-brand-600/30 transition-all disabled:opacity-50 active:scale-95"
             >
               {loading ? "Sending..." : `Send Invite${selectedIds.length > 1 ? "s" : ""}`}
             </button>
@@ -112,3 +112,4 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
 };
 
 export default InviteBuddyModal;
+

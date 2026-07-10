@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Unconditionally connect to Render cloud backend when running on Vercel or production
 const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
-const baseURL = isProduction ? 'https://go-yatrigo.onrender.com/api' : (process.env.REACT_APP_API_URL || 'http://localhost:5000/api');
+const baseURL = process.env.REACT_APP_API_URL || (isProduction ? 'https://go-yatrigo.onrender.com/api' : 'http://localhost:5000/api');
 
 const axiosInstance = axios.create({
   baseURL,
@@ -47,3 +47,4 @@ axiosInstance.interceptors.response.use(
 );
 
 export default axiosInstance;
+

@@ -70,3 +70,4 @@ export const useNotifications = (user) => {
   };
 };
 export default useNotifications;
+

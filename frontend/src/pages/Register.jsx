@@ -16,8 +16,10 @@ import {
   EyeOff,
   CheckCircle2,
   AlertCircle,
+  MapPin,
 } from "lucide-react";
 import { AuthContext } from "../context/authContext";
+import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 import { compressImage } from "../utils/compressImage";
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/sign.jpg";
@@ -49,6 +51,8 @@ const Register = () => {
     repeatPassword: "",
     acceptedPolicies: false,
     govIdType: "",
+    state: "",
+    city: "",
   });
 
   const [errors, setErrors] = useState({});
@@ -96,11 +100,20 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === "checkbox" ? checked : value,
-    }));
+    setFormData((prev) => {
+      const nextData = {
+        ...prev,
+        [id]: type === "checkbox" ? checked : value,
+      };
+      if (id === "state") {
+        nextData.city = ""; // Reset city selection when state changes
+      }
+      return nextData;
+    });
     if (errors[id]) setErrors((prev) => ({ ...prev, [id]: "" }));
+    if (id === "state") {
+      setErrors((prev) => ({ ...prev, city: "" }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -166,7 +179,7 @@ const Register = () => {
     e.preventDefault();
     if (loading) return; // Guard against multiple form submissions
 
-    const { name, email, mobile, password, repeatPassword, govIdType } =
+    const { name, email, mobile, password, repeatPassword, govIdType, state, city } =
       formData;
     const newErrors = {};
 
@@ -176,8 +189,9 @@ const Register = () => {
     if (!mobile) newErrors.mobile = "Phone is required";
     else if (!validatePhone(mobile)) newErrors.mobile = "Invalid phone format";
     if (!govIdType) newErrors.govIdType = "Document type is required";
+    if (!state) newErrors.state = "State is required";
+    if (!city) newErrors.city = "City is required";
     if (!password) newErrors.password = "Password is required";
-    // Verify that passwords match during the unified validation check
     if (password && repeatPassword && password !== repeatPassword) {
       newErrors.repeatPassword = "Passwords do not match";
     } else if (password && !repeatPassword) {
@@ -379,49 +393,49 @@ const Register = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-3" noValidate>
-              {/* Name & Email */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  {/* FIX: htmlFor matches input id */}
-                  <label htmlFor="name" className={labelClass}>
-                    Full Name
-                  </label>
-                  <div className="relative group">
-                    <User
-                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.name ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
-                    />
-                    <motion.input
-                      whileFocus={{ scale: 1.01 }}
-                      id="name"
-                      type="text"
-                      autoComplete="name"
-                      placeholder="Arjun Sharma"
-                      value={formData.name}
-                      onChange={handleChange}
-                      aria-invalid={!!errors.name}
-                      aria-describedby={errors.name ? "name-error" : undefined}
-                      className={`${inputClass("name")} pr-4`}
-                    />
-                  </div>
-                  <AnimatePresence>
-                    {errors.name && (
-                      <motion.div
-                        id="name-error"
-                        role="alert"
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
-                      >
-                        <AlertCircle className="w-3 h-3" />
-                        <span className="text-[10px] font-bold">
-                          {errors.name}
-                        </span>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
+              {/* Full Name */}
+              <div className="space-y-1">
+                <label htmlFor="name" className={labelClass}>
+                  Full Name
+                </label>
+                <div className="relative group">
+                  <User
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.name ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
+                  />
+                  <motion.input
+                    whileFocus={{ scale: 1.01 }}
+                    id="name"
+                    type="text"
+                    autoComplete="name"
+                    placeholder="Arjun Sharma"
+                    value={formData.name}
+                    onChange={handleChange}
+                    aria-invalid={!!errors.name}
+                    aria-describedby={errors.name ? "name-error" : undefined}
+                    className={`${inputClass("name")} pr-4`}
+                  />
                 </div>
+                <AnimatePresence>
+                  {errors.name && (
+                    <motion.div
+                      id="name-error"
+                      role="alert"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                    >
+                      <AlertCircle className="w-3 h-3" />
+                      <span className="text-[10px] font-bold">
+                        {errors.name}
+                      </span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
+              {/* Email & Phone */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="email" className={labelClass}>
                     Email Address
@@ -463,140 +477,234 @@ const Register = () => {
                     )}
                   </AnimatePresence>
                 </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="mobile" className={labelClass}>
+                    Phone Number
+                  </label>
+                  <div className="relative group">
+                    <Phone
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.mobile ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
+                    />
+                    <motion.input
+                      whileFocus={{ scale: 1.01 }}
+                      id="mobile"
+                      type="tel"
+                      autoComplete="tel"
+                      inputMode="tel"
+                      placeholder="+91 00000 00000"
+                      value={formData.mobile}
+                      onChange={handleChange}
+                      aria-invalid={!!errors.mobile}
+                      aria-describedby={
+                        errors.mobile ? "mobile-error" : undefined
+                      }
+                      className={`${inputClass("mobile")} pr-4`}
+                    />
+                  </div>
+                  <AnimatePresence>
+                    {errors.mobile && (
+                      <motion.div
+                        id="mobile-error"
+                        role="alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold">
+                          {errors.mobile}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
-              {/* Phone */}
-              <div className="space-y-1">
-                <label htmlFor="mobile" className={labelClass}>
-                  Phone Number
-                </label>
-                <div className="relative group">
-                  <Phone
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.mobile ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
-                  />
-                  <motion.input
-                    whileFocus={{ scale: 1.01 }}
-                    id="mobile"
-                    type="tel"
-                    autoComplete="tel"
-                    inputMode="tel"
-                    placeholder="+91 00000 00000"
-                    value={formData.mobile}
-                    onChange={handleChange}
-                    aria-invalid={!!errors.mobile}
-                    aria-describedby={
-                      errors.mobile ? "mobile-error" : undefined
-                    }
-                    className={`${inputClass("mobile")} pr-4`}
-                  />
-                </div>
-                <AnimatePresence>
-                  {errors.mobile && (
-                    <motion.div
-                      id="mobile-error"
-                      role="alert"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
-                    >
-                      <AlertCircle className="w-3 h-3" />
-                      <span className="text-[10px] font-bold">
-                        {errors.mobile}
-                      </span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              <div className="mb-4 space-y-1">
-                <label htmlFor="govIdType" className={labelClass}>
-                  Document Type
-                </label>
-                <select
-                  id="govIdType"
-                  className={`${inputClass("govIdType")} !py-2`}
-                  value={formData.govIdType}
-                  onChange={handleChange}
-                  aria-invalid={!!errors.govIdType}
-                  aria-describedby={
-                    errors.govIdType ? "govIdType-error" : undefined
-                  }
-                >
-                  <option value="" disabled>
-                    Select Document Type
-                  </option>
-                  <option value="Aadhaar Card">Aadhaar Card</option>
-                  <option value="PAN Card">PAN Card</option>
-                  <option value="Passport">Passport</option>
-                  <option value="Driving License">Driving License</option>
-                </select>
-                <AnimatePresence>
-                  {errors.govIdType && (
-                    <motion.div
-                      id="govIdType-error"
-                      role="alert"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
-                    >
-                      <AlertCircle className="w-3 h-3" />
-                      <span className="text-[10px] font-bold">
-                        {errors.govIdType}
-                      </span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-              {/* Government ID Upload */}
-              <div className="space-y-1">
-                <label className={labelClass}>
-                  Government ID (Required for Verification)
-                </label>
-                <div className="relative group">
-                  <ShieldCheck
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
-                  />
-                  <label
-                    htmlFor="govIdFile"
-                    className={`w-full pl-11 pr-4 py-1.5 bg-slate-50 border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer`}
-                  >
-                    <span className="truncate text-slate-500 font-medium">
-                      {govIdFile ? govIdFile.name : "Upload Image..."}
-                    </span>
-                    {govIdPreview && (
-                      <img
-                        src={govIdPreview}
-                        alt="Gov ID"
-                        className="h-6 w-10 object-cover rounded shadow-sm border border-slate-200"
-                      />
-                    )}
+              {/* State & City Selection */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label htmlFor="state" className={labelClass}>
+                    State 
                   </label>
-                  <input
-                    type="file"
-                    id="govIdFile"
-                    className="hidden"
-                    accept="image/*,.heic,.heif"
-                    onChange={handleGovIdChange}
-                  />
-                </div>
-                <AnimatePresence>
-                  {errors.govId && (
-                    <motion.div
-                      id="govId-error"
-                      role="alert"
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                  <div className="relative group">
+                    <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.state ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    <select
+                      id="state"
+                      className={`${inputClass("state")} !pl-11 !py-2`}
+                      value={formData.state}
+                      onChange={handleChange}
+                      aria-invalid={!!errors.state}
+                      aria-describedby={errors.state ? "state-error" : undefined}
                     >
-                      <AlertCircle className="w-3 h-3" />
-                      <span className="text-[10px] font-bold">
-                        {errors.govId}
+                      <option value="" disabled>
+                        Select State
+                      </option>
+                      {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <AnimatePresence>
+                    {errors.state && (
+                      <motion.div
+                        id="state-error"
+                        role="alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold">
+                          {errors.state}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="city" className={labelClass}>
+                    City
+                  </label>
+                  <div className="relative group">
+                    <MapPin className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.city ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    <select
+                      id="city"
+                      className={`${inputClass("city")} !pl-11 !py-2`}
+                      value={formData.city}
+                      onChange={handleChange}
+                      disabled={!formData.state}
+                      aria-invalid={!!errors.city}
+                      aria-describedby={errors.city ? "city-error" : undefined}
+                    >
+                      <option value="" disabled>
+                        {formData.state ? "Select City" : "Select State first"}
+                      </option>
+                      {formData.state &&
+                        INDIAN_STATES_AND_CITIES[formData.state].map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
+                  <AnimatePresence>
+                    {errors.city && (
+                      <motion.div
+                        id="city-error"
+                        role="alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold">
+                          {errors.city}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </div>
+
+              {/* Document Type & Government ID Upload */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label htmlFor="govIdType" className={labelClass}>
+                    Document Type
+                  </label>
+                  <select
+                    id="govIdType"
+                    className={`${inputClass("govIdType")} !py-2`}
+                    value={formData.govIdType}
+                    onChange={handleChange}
+                    aria-invalid={!!errors.govIdType}
+                    aria-describedby={
+                      errors.govIdType ? "govIdType-error" : undefined
+                    }
+                  >
+                    <option value="" disabled>
+                      Select Document Type
+                    </option>
+                    <option value="Aadhaar Card">Aadhaar Card</option>
+                    <option value="PAN Card">PAN Card</option>
+                    <option value="Passport">Passport</option>
+                    <option value="Driving License">Driving License</option>
+                  </select>
+                  <AnimatePresence>
+                    {errors.govIdType && (
+                      <motion.div
+                        id="govIdType-error"
+                        role="alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold">
+                          {errors.govIdType}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                <div className="space-y-1">
+                  <label className={labelClass}>
+                    Government ID (Required)
+                  </label>
+                  <div className="relative group">
+                    <ShieldCheck
+                      className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`}
+                    />
+                    <label
+                      htmlFor="govIdFile"
+                      className={`w-full pl-11 pr-4 py-1.5 bg-slate-50 border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer`}
+                    >
+                      <span className="truncate text-slate-500 font-medium">
+                        {govIdFile ? govIdFile.name : "Upload Image..."}
                       </span>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      {govIdPreview && (
+                        <img
+                          src={govIdPreview}
+                          alt="Gov ID"
+                          className="h-6 w-10 object-cover rounded shadow-sm border border-slate-200"
+                        />
+                      )}
+                    </label>
+                    <input
+                      type="file"
+                      id="govIdFile"
+                      className="hidden"
+                      accept="image/*,.heic,.heif"
+                      onChange={handleGovIdChange}
+                    />
+                  </div>
+                  <AnimatePresence>
+                    {errors.govId && (
+                      <motion.div
+                        id="govId-error"
+                        role="alert"
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="flex items-center gap-1.5 mt-1 ml-1 text-red-500"
+                      >
+                        <AlertCircle className="w-3 h-3" />
+                        <span className="text-[10px] font-bold">
+                          {errors.govId}
+                        </span>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
 
               {/* Password & Confirm */}
@@ -837,3 +945,4 @@ const Register = () => {
 };
 
 export default Register;
+

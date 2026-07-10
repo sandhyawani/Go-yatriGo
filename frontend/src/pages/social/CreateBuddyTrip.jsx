@@ -235,7 +235,7 @@ const CreateBuddyTrip = () => {
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-24 selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-24 selection:bg-brand-100 selection:text-brand-900">
       {/* Header */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-sm supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
@@ -246,7 +246,7 @@ const CreateBuddyTrip = () => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-xl font-extrabold bg-gradient-to-r from-indigo-600 to-violet-600 bg-clip-text text-transparent">
+            <h1 className="text-xl font-extrabold bg-gradient-to-r from-brand-600 to-brand-600 bg-clip-text text-transparent">
               Create New Trip
             </h1>
           </div>
@@ -255,7 +255,7 @@ const CreateBuddyTrip = () => {
             whileTap={{ scale: 0.98 }}
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold text-sm rounded-full transition-all shadow-md shadow-indigo-200 disabled:opacity-50 flex items-center gap-2"
+            className="px-6 py-2 bg-gradient-to-r from-brand-600 to-brand-600 hover:from-brand-700 hover:to-brand-700 text-white font-bold text-sm rounded-full transition-all shadow-md shadow-brand-200 disabled:opacity-50 flex items-center gap-2"
           >
             {isSubmitting ? (
               <>
@@ -301,7 +301,7 @@ const CreateBuddyTrip = () => {
             className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden bg-white shadow-sm border border-slate-100 group"
           >
             <div
-              className={`absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors ${imagePreview ? "" : "bg-gradient-to-br from-indigo-50/50 to-violet-50/50 hover:from-indigo-100/50 hover:to-violet-100/50"}`}
+              className={`absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors ${imagePreview ? "" : "bg-gradient-to-br from-brand-50/50 to-brand-50/50 hover:from-brand-100/50 hover:to-brand-100/50"}`}
               onClick={() => !imagePreview && fileInputRef.current?.click()}
             >
               {imagePreview ? (
@@ -326,9 +326,9 @@ const CreateBuddyTrip = () => {
                   </div>
                 </>
               ) : (
-                <div className="flex flex-col items-center text-indigo-400">
+                <div className="flex flex-col items-center text-brand-400">
                   <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
-                    <Camera className="w-6 h-6 text-indigo-500" />
+                    <Camera className="w-6 h-6 text-brand-500" />
                   </div>
                   <span className="text-sm font-bold text-slate-700 mb-1">
                     Upload Trip Cover
@@ -360,7 +360,7 @@ const CreateBuddyTrip = () => {
                 className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100"
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 bg-indigo-50 text-indigo-600 rounded-xl">
+                  <div className="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
                     <Map className="w-5 h-5" />
                   </div>
                   <h2 className="text-lg font-bold text-slate-800">
@@ -379,7 +379,7 @@ const CreateBuddyTrip = () => {
                       placeholder="e.g. Mystical Manali Weekend"
                       value={formData.title}
                       onChange={handleInputChange}
-                      className={`w-full bg-slate-50/50 border ${errors.title ? "border-rose-300 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"} rounded-2xl px-4 py-3.5 text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-medium focus:bg-white outline-none transition-all focus:ring-4`}
+                      className={`w-full bg-slate-50/50 border ${errors.title ? "border-rose-300 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl px-4 py-3.5 text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-medium focus:bg-white outline-none transition-all focus:ring-4`}
                     />
                     <ErrorMessage message={errors.title} />
                   </div>
@@ -399,7 +399,7 @@ const CreateBuddyTrip = () => {
                           placeholder="City or Landmark"
                           value={formData.from}
                           onChange={handleInputChange}
-                          className={`w-full bg-slate-50/50 border ${errors.from ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`}
+                          className={`w-full bg-slate-50/50 border ${errors.from ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`}
                         />
                       </div>
                       <ErrorMessage message={errors.from} />
@@ -410,7 +410,7 @@ const CreateBuddyTrip = () => {
                       </label>
                       <div className="relative">
                         <MapPin
-                          className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${errors.destination ? "text-rose-400" : "text-indigo-400"}`}
+                          className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${errors.destination ? "text-rose-400" : "text-brand-400"}`}
                         />
                         <input
                           type="text"
@@ -418,7 +418,7 @@ const CreateBuddyTrip = () => {
                           placeholder="Where to?"
                           value={formData.destination}
                           onChange={handleInputChange}
-                          className={`w-full bg-slate-50/50 border ${errors.destination ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`}
+                          className={`w-full bg-slate-50/50 border ${errors.destination ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`}
                         />
                       </div>
                       <ErrorMessage message={errors.destination} />
@@ -438,7 +438,7 @@ const CreateBuddyTrip = () => {
                           value={formData.startDate}
                           min={todayStr}
                           onChange={handleInputChange}
-                          className={`w-full bg-slate-50/50 border ${errors.startDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`}
+                          className={`w-full bg-slate-50/50 border ${errors.startDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`}
                         />
                       </div>
                       <ErrorMessage message={errors.startDate} />
@@ -455,7 +455,7 @@ const CreateBuddyTrip = () => {
                           value={formData.endDate}
                           min={formData.startDate || todayStr}
                           onChange={handleInputChange}
-                          className={`w-full bg-slate-50/50 border ${errors.endDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-indigo-500 focus:ring-indigo-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`}
+                          className={`w-full bg-slate-50/50 border ${errors.endDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`}
                         />
                       </div>
                       <ErrorMessage message={errors.endDate} />
@@ -472,7 +472,7 @@ const CreateBuddyTrip = () => {
                 className="bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100"
               >
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 bg-violet-50 text-violet-600 rounded-xl">
+                  <div className="p-2.5 bg-brand-50 text-brand-600 rounded-xl">
                     <FileText className="w-5 h-5" />
                   </div>
                   <h2 className="text-lg font-bold text-slate-800">
@@ -491,7 +491,7 @@ const CreateBuddyTrip = () => {
                       placeholder="What's the plan? Describe the vibe, places you'll visit, and what kind of travel buddies you're looking for..."
                       value={formData.description}
                       onChange={handleInputChange}
-                      className={`w-full bg-slate-50/50 border ${errors.description ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-violet-500 focus:ring-violet-500/20"} rounded-2xl px-4 py-3 text-sm font-medium focus:bg-white outline-none transition-all focus:ring-4 resize-none`}
+                      className={`w-full bg-slate-50/50 border ${errors.description ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl px-4 py-3 text-sm font-medium focus:bg-white outline-none transition-all focus:ring-4 resize-none`}
                     />
                     <div className="flex justify-between items-center mt-1.5">
                       <ErrorMessage message={errors.description} />
@@ -519,8 +519,8 @@ const CreateBuddyTrip = () => {
                             onClick={() => handleTagToggle(tag)}
                             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                               isSelected
-                                ? "bg-violet-600 text-white border-violet-600 shadow-md shadow-violet-200"
-                                : "bg-white text-slate-500 border-slate-200 hover:border-violet-300 hover:text-violet-600"
+                                ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-200"
+                                : "bg-white text-slate-500 border-slate-200 hover:border-brand-300 hover:text-brand-600"
                             }`}
                           >
                             #{tag}
@@ -682,3 +682,4 @@ const CreateBuddyTrip = () => {
 };
 
 export default CreateBuddyTrip;
+

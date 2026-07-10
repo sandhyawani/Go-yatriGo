@@ -298,3 +298,4 @@ const ModerationPipeline = ({ type }) => {
 };
 
 export default ModerationPipeline;
+

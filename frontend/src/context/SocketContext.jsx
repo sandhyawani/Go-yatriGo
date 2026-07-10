@@ -6,7 +6,7 @@ import { SOCKET_EVENTS } from "../constants/socketEvents";
 export const SocketContext = createContext(null);
 
 const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
-const SOCKET_URL = isProduction ? 'https://go-yatrigo.onrender.com' : (process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000');
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || (isProduction ? 'https://go-yatrigo.onrender.com' : 'http://localhost:5000');
 
 export const SocketProvider = ({ children }) => {
   const { user } = useContext(AuthContext);
@@ -45,3 +45,4 @@ export const SocketProvider = ({ children }) => {
     </SocketContext.Provider>
   );
 };
+

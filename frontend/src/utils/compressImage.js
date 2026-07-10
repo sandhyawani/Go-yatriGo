@@ -47,3 +47,4 @@ export const compressImage = async (file, maxSizeMB = 1, maxWidthOrHeight = 1200
     return file;
   }
 };
+

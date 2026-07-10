@@ -26,10 +26,16 @@ const UserSchema = new mongoose.Schema(
     },
     country: {
       type: String,
-      default: "",
+      default: "India",
     },
     city: {
       type: String,
+      trim: true,
+      default: "",
+    },
+    state: {
+      type: String,
+      trim: true,
       default: "",
     },
     img: {
@@ -189,5 +195,8 @@ const UserSchema = new mongoose.Schema(
 );
 
 UserSchema.index({ privateAccount: 1 });
+UserSchema.index({ city: 1 });
+UserSchema.index({ state: 1 });
+UserSchema.index({ city: 1, state: 1 });
 
 module.exports = mongoose.model("User", UserSchema);

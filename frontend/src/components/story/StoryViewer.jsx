@@ -116,7 +116,7 @@ const StoryViewer = ({
   };
 
   const handleAvatarError = useCallback((e, name) => {
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=6C4DF6&color=fff`;
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=8b5cf6&color=fff`;
   }, []);
 
   const videoRef = useRef(null);
@@ -401,7 +401,7 @@ const StoryViewer = ({
         {/* Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 via-fuchsia-500 to-indigo-500 shrink-0">
+            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-brand-400 via-brand-500 to-brand-600 shrink-0">
               <div className="w-full h-full rounded-full border-[1.5px] border-black overflow-hidden bg-zinc-800">
                 <img
                   src={getAvatarUrl(
@@ -413,7 +413,7 @@ const StoryViewer = ({
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStoryGroup.userName || "Explorer")}&background=6C4DF6&color=fff&bold=true`;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStoryGroup.userName || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
                   }}
                 />
               </div>
@@ -613,7 +613,7 @@ const StoryViewer = ({
                       transition={{ delay: 0.1, duration: 0.4, type: "spring" }}
                       className={`absolute w-full px-5 text-center font-black text-xl z-30 tracking-tight pointer-events-none leading-snug
                       ${currentStory.captionPosition === "top" ? "top-32" : currentStory.captionPosition === "bottom" ? "bottom-32" : "top-1/2 -translate-y-1/2"}
-                      ${currentStory.captionColor === "black" ? "text-black" : currentStory.captionColor === "purple" ? "text-purple-400" : "text-white"}`}
+                      ${currentStory.captionColor === "black" ? "text-black" : currentStory.captionColor === "purple" ? "text-brand-400" : "text-white"}`}
                       style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}
                     >
                       {currentStory.caption}
@@ -680,7 +680,7 @@ const StoryViewer = ({
                 <button
                   onClick={handleStoryReply}
                   disabled={replyingToStory || !storyReplyText.trim()}
-                  className="w-10 h-10 flex items-center justify-center bg-gradient-to-tr from-rose-500 to-indigo-500 text-white rounded-full disabled:opacity-40 transition-all shrink-0"
+                  className="w-10 h-10 flex items-center justify-center bg-gradient-to-tr from-brand-500 to-brand-600 text-white rounded-full disabled:opacity-40 transition-all shrink-0 hover:scale-105 active:scale-95"
                   aria-label="Send"
                 >
                   {replyingToStory ? (
@@ -901,3 +901,4 @@ const StoryViewer = ({
 };
 
 export default StoryViewer;
+

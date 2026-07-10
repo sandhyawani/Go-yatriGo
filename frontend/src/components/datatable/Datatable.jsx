@@ -409,7 +409,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     if (!query) return baseList;
 
     return baseList.filter((item) =>
-      [item.name, item.username, item.type, item.role, item.email, item.mobile, item.country, item.ownerName]
+      [item.name, item.username, item.type, item.role, item.email, item.mobile, item.city, item.state, item.ownerName]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
@@ -457,13 +457,13 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
             </p>
           </div>
           <label className="directory-search group relative w-full md:max-w-[470px]">
-            <Search className="absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-purple-600" />
+            <Search className="absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
             <input
               type="search"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search users, email, role or location..."
-              className="h-9 w-full rounded-lg border border-purple-100 bg-white/55 pl-10 pr-3 text-xs text-slate-700 outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-purple-300 focus:bg-white/90 focus:ring-4 focus:ring-purple-500/10"
+              className="h-9 w-full rounded-lg border border-brand-100 bg-white/55 pl-10 pr-3 text-xs text-slate-700 outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-brand-300 focus:bg-white/90 focus:ring-4 focus:ring-brand-500/10"
             />
           </label>
         </div>
@@ -486,7 +486,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
                   ? Array.from({ length: 5 }, (_, index) => (
                       <tr className="loading-row" key={`loading-${index}`}>
                         <td colSpan={6}>
-                          <div className="h-10 animate-pulse rounded-lg bg-purple-50/80" />
+                          <div className="h-10 animate-pulse rounded-lg bg-brand-50/80" />
                         </td>
                       </tr>
                     ))
@@ -524,7 +524,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
                           <td>
                             <span className={`user-role-badge ${role.className}`}>{role.label}</span>
                           </td>
-                          <td className="text-xs text-slate-500">{user.country || "Not specified"}</td>
+                           <td className="text-xs text-slate-500">{user.city && user.state ? `${user.city}, ${user.state}` : "Not specified"}</td>
                           <td>
                             <span className={`user-status ${status.className}`}>
                               <span />
@@ -549,14 +549,14 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
               </tbody>
             </table>
             {!dataLoading && !visibleUsers.length && (
-              <div className="my-4 rounded-xl border border-dashed border-purple-200 bg-white/50 p-6 text-center">
+              <div className="my-4 rounded-xl border border-dashed border-brand-200 bg-white/50 p-6 text-center">
                 <p className="text-xs font-medium text-slate-700">No users match your search.</p>
-                <p className="mt-1 text-[10px] text-slate-400">Try a name, email address, role, or country.</p>
+                <p className="mt-1 text-[10px] text-slate-400">Try a name, email address, role, or location.</p>
               </div>
             )}
           </div>
 
-          <footer className="flex flex-col gap-2 border-t border-purple-100 px-2 pb-1 pt-2 text-[10px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <footer className="flex flex-col gap-2 border-t border-brand-100 px-2 pb-1 pt-2 text-[10px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
             <p>
               Showing {filteredList.length ? page * USER_PAGE_SIZE + 1 : 0}-
               {Math.min((page + 1) * USER_PAGE_SIZE, filteredList.length)} of {filteredList.length}
@@ -633,7 +633,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
               <button
                 title="Delete"
                 onClick={() => handleDelete(params.row._id)}
-                className="rounded-lg bg-purple-50 p-1.5 text-purple-600 shadow-sm transition-all hover:bg-purple-600 hover:text-white"
+                className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white"
               >
                 <Trash2 className="h-3.5 w-3.5" />
               </button>
@@ -648,9 +648,9 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 pb-12 pt-0">
       <div className="flex justify-end">
         <label className="group relative w-full md:max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-purple-600" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
           <input
-            className="w-full rounded-lg border border-purple-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10"
+            className="w-full rounded-lg border border-brand-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
             placeholder="Filter data..."
             type="text"
             value={searchQuery}
@@ -658,7 +658,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
           />
         </label>
       </div>
-      <div className="overflow-hidden rounded-xl border border-purple-100 bg-white shadow-sm">
+      <div className="overflow-hidden rounded-xl border border-brand-100 bg-white shadow-sm">
         <DataGrid
           className="datagrid"
           rows={filteredList}
@@ -701,3 +701,4 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
 };
 
 export default Datatable;
+

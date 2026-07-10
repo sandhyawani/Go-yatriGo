@@ -42,12 +42,12 @@ const CreatorGroup = ({ authorId, groupData }) => {
           <img
             src={authorPic}
             alt={authorName}
-            className="w-11 h-11 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-purple-100 shadow-sm shrink-0"
+            className="w-11 h-11 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-brand-100 shadow-sm shrink-0"
           />
           <div className="min-w-0 flex-1">
             <h3 className="text-base sm:text-xl font-bold text-slate-900 truncate">{authorName}</h3>
             <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
-              <span className="text-purple-600 font-bold">
+              <span className="text-brand-600 font-bold">
                 {groupData.items.length}
               </span>{" "}
               memories inspired you
@@ -56,7 +56,7 @@ const CreatorGroup = ({ authorId, groupData }) => {
         </div>
         <button
           onClick={() => navigate(`/profile/${authorId}`)}
-          className="px-4 py-2 sm:px-5 sm:py-2.5 bg-slate-100/80 hover:bg-purple-50 text-slate-700 hover:text-purple-700 text-xs sm:text-sm font-bold rounded-xl transition-colors border border-slate-200/80 hover:border-purple-200 w-full sm:w-fit text-center shrink-0"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-xs sm:text-sm font-bold rounded-xl transition-colors border border-slate-200/80 hover:border-brand-200 w-full sm:w-fit text-center shrink-0"
         >
           View Profile
         </button>
@@ -76,14 +76,14 @@ const CreatorGroup = ({ authorId, groupData }) => {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               onClick={() => setExpanded(true)}
-              className="w-full sm:w-[200px] h-[210px] sm:h-[260px] rounded-2xl sm:rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-purple-50 hover:border-purple-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group p-2 text-center sm:snap-start"
+              className="w-full sm:w-[200px] h-[210px] sm:h-[260px] rounded-2xl sm:rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group p-2 text-center sm:snap-start"
             >
               <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:shadow-md transition-all">
-                <span className="text-purple-600 font-bold text-lg sm:text-xl">
+                <span className="text-brand-600 font-bold text-lg sm:text-xl">
                   +{remainingCount}
                 </span>
               </div>
-              <span className="text-xs sm:text-sm font-bold text-slate-600 group-hover:text-purple-700 transition-colors">
+              <span className="text-xs sm:text-sm font-bold text-slate-600 group-hover:text-brand-700 transition-colors">
                 View All Memories
               </span>
             </motion.div>
@@ -200,8 +200,8 @@ const FeltVibes = () => {
   return (
     <div className="bg-[#FAFAFA] text-[#111827] min-h-[100dvh] pb-20 pt-2 md:pt-4 md:pb-24 font-sans antialiased relative z-0">
       {/* Decorative Background Elements */}
-      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-br from-purple-100/40 via-violet-50/40 to-transparent -z-10 pointer-events-none" />
-      <div className="fixed top-[-10%] right-[-5%] w-[400px] h-[400px] bg-purple-400/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
+      <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-br from-brand-100/40 via-brand-50/40 to-transparent -z-10 pointer-events-none" />
+      <div className="fixed top-[-10%] right-[-5%] w-[400px] h-[400px] bg-brand-400/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 relative z-10">
         {/* Header */}
@@ -219,7 +219,7 @@ const FeltVibes = () => {
             {/* Top Statistics */}
             <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-y-2 mt-4 text-xs font-bold text-slate-600 bg-white/60 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-white/50 shadow-sm w-full sm:w-fit">
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-purple-600 text-sm font-extrabold">{stats.total}</span>
+                <span className="text-brand-600 text-sm font-extrabold">{stats.total}</span>
                 <span>Total Vibes</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
@@ -229,7 +229,7 @@ const FeltVibes = () => {
               </div>
               <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-purple-500 text-sm font-extrabold">{stats.stories}</span>
+                <span className="text-brand-500 text-sm font-extrabold">{stats.stories}</span>
                 <span>Stories</span>
               </div>
               <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
@@ -241,7 +241,7 @@ const FeltVibes = () => {
           </div>
           <Link
             to="/social/explore"
-            className="text-sm font-bold text-white text-center bg-gradient-to-r from-purple-500 to-violet-600 hover:from-purple-600 hover:to-violet-700 shadow-md shadow-purple-500/20 px-6 py-3.5 rounded-xl w-full sm:w-fit shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5"
+            className="text-sm font-bold text-white text-center bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-md shadow-brand-500/20 px-6 py-3.5 rounded-xl w-full sm:w-fit shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5"
           >
             Explore More
           </Link>
@@ -325,7 +325,7 @@ const FeltVibes = () => {
                         }}
                         className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors ${
                           sortBy === option
-                            ? "text-purple-600 bg-purple-50/50 font-bold"
+                            ? "text-brand-600 bg-brand-50/50 font-bold"
                             : "text-slate-600 hover:bg-slate-50"
                         }`}
                       >
@@ -343,7 +343,7 @@ const FeltVibes = () => {
         {/* Content Area */}
         {loading ? (
           <div className="flex justify-center py-32">
-            <Loader2 className="w-10 h-10 text-purple-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
           </div>
         ) : groupedVibes.length === 0 ? (
           <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-16 text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)] mt-10">
@@ -402,3 +402,4 @@ const FeltVibes = () => {
 };
 
 export default FeltVibes;
+

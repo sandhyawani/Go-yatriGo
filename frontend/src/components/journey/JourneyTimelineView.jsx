@@ -30,7 +30,7 @@ const JourneyTimelineView = ({
         );
       case "journey_completed":
         return (
-          <div className="p-2.5 bg-purple-500 text-white rounded-full shadow-md">
+          <div className="p-2.5 bg-brand-500 text-white rounded-full shadow-md">
             <CheckCircle2 className="w-4 h-4" />
           </div>
         );
@@ -63,7 +63,7 @@ const JourneyTimelineView = ({
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Safe Check-in Bar */}
-      <div className="bg-gradient-to-r bg-[#6C4DF6] p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+      <div className="bg-gradient-to-r bg-[#8B5CF6] p-6 rounded-3xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
         <div className="flex items-center gap-4">
           <div className="p-3 bg-white/20 rounded-2xl backdrop-blur-md">
             <ShieldCheck className="w-8 h-8 text-white animate-pulse" />
@@ -83,7 +83,7 @@ const JourneyTimelineView = ({
             onClick={onTriggerCheckIn}
             className="w-full sm:w-auto px-6 py-3 rounded-2xl bg-white text-emerald-800 text-xs font-black uppercase tracking-wider shadow-xl hover:bg-emerald-50 active:scale-95 transition-all flex items-center justify-center gap-2"
           >
-            <ShieldCheck className="w-4 h-4 text-[#6C4DF6]" /> Broadcast Safe
+            <ShieldCheck className="w-4 h-4 text-[#8B5CF6]" /> Broadcast Safe
             Check-In
           </button>
         )}
@@ -169,3 +169,4 @@ const JourneyTimelineView = ({
 };
 
 export default JourneyTimelineView;
+

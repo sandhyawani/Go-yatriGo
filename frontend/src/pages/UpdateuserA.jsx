@@ -7,6 +7,7 @@ import DriveFolderUploadOutlinedIcon from "@mui/icons-material/DriveFolderUpload
 import moment from "moment";
 import Swal from "sweetalert2";
 import Spinner from "../components/spinner/LoadingSpinner";
+import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 
 const CLOUD_NAME   = process.env.REACT_APP_CLOUDINARY_CLOUD || "dpgelkpd4";
 const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_PRESET || "upload";
@@ -22,7 +23,8 @@ const UpdateuserA = () => {
   const [preview, setPreview]   = useState("");
 
   const [name,    setName]    = useState(state?.name    ?? "");
-  const [country, setCountry] = useState(state?.country ?? "");
+  const [city,    setCity]    = useState(state?.city    ?? "");
+  const [stateVal, setStateVal] = useState(state?.state ?? "");
   const [isAdmin, setIsAdmin] = useState(state?.isAdmin ?? false);
   const [mobile,  setMobile]  = useState(state?.mobile  ?? "");
   const [type,    setType]    = useState(state?.type    ?? "traveler");
@@ -70,6 +72,20 @@ const UpdateuserA = () => {
     event.preventDefault();
     if (loading2) return;
 
+    if (!stateVal) {
+      showToast.error("State is required.");
+      return;
+    }
+    if (!city) {
+      showToast.error("City is required.");
+      return;
+    }
+    const validCities = INDIAN_STATES_AND_CITIES[stateVal];
+    if (!validCities || !validCities.includes(city)) {
+      showToast.error("Invalid city/state combination.");
+      return;
+    }
+
     const confirmResult = await Swal.fire({
       title: "Confirm Update",
       text: "Save these changes to the user profile?",
@@ -107,7 +123,9 @@ const UpdateuserA = () => {
 
       await axios.put(`/users/${state._id}`, {
         name,
-        country,
+        city,
+        state: stateVal,
+        country: "India",
         isAdmin,
         type,
         mobile,
@@ -136,7 +154,7 @@ const UpdateuserA = () => {
       <div className="max-w-4xl mx-auto px-6">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-purple-600 transition-colors"
+          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors"
         >
           Cancel Changes
         </button>
@@ -145,12 +163,12 @@ const UpdateuserA = () => {
           <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row">
 
             {/* Left: avatar */}
-            <div className="lg:w-1/3 bg-purple-50/50 border-r border-purple-100 p-8 text-slate-800 flex flex-col items-center justify-center text-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-100/40 to-transparent pointer-events-none" />
+            <div className="lg:w-1/3 bg-brand-50/50 border-r border-brand-100 p-8 text-slate-800 flex flex-col items-center justify-center text-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-100/40 to-transparent pointer-events-none" />
 
               <div className="relative z-10 mb-6">
                 <div className="relative inline-block group">
-                  <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl group-hover:border-purple-200 transition-all duration-300">
+                  <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl group-hover:border-brand-200 transition-all duration-300">
                     <img
                       className="w-full h-full object-cover"
                       src={
@@ -162,7 +180,7 @@ const UpdateuserA = () => {
                   </div>
                   <label
                     htmlFor="file"
-                    className="absolute -bottom-2 -right-2 p-3 bg-purple-600 text-white rounded-xl shadow-lg cursor-pointer hover:bg-purple-700 transition-all active:scale-90"
+                    className="absolute -bottom-2 -right-2 p-3 bg-brand-600 text-white rounded-xl shadow-lg cursor-pointer hover:bg-brand-700 transition-all active:scale-90"
                     aria-label="Upload new photo"
                   >
                     <DriveFolderUploadOutlinedIcon className="w-4 h-4" />
@@ -184,12 +202,12 @@ const UpdateuserA = () => {
                   Update profile and system access levels.
                 </p>
                 {createdatnew && (
-                  <p className="text-[9px] text-purple-600/80 font-bold mt-3">
+                  <p className="text-[9px] text-brand-600/80 font-bold mt-3">
                     Created {createdatnew}
                   </p>
                 )}
                 {updatedatnew && (
-                  <p className="text-[9px] text-purple-600/80 font-bold">
+                  <p className="text-[9px] text-brand-600/80 font-bold">
                     Updated {updatedatnew}
                   </p>
                 )}
@@ -198,7 +216,7 @@ const UpdateuserA = () => {
               {loading2 && (
                 <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
                   <Spinner />
-                  <p className="text-[10px] font-black uppercase tracking-widest mt-4 animate-pulse text-purple-700">Saving…</p>
+                  <p className="text-[10px] font-black uppercase tracking-widest mt-4 animate-pulse text-brand-700">Saving…</p>
                 </div>
               )}
             </div>
@@ -224,7 +242,7 @@ const UpdateuserA = () => {
                     onChange={(e) => setName(e.target.value)}
                     autoComplete="name"
                     required
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-purple-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
                     placeholder="Enter full name"
                   />
                 </div>
@@ -240,24 +258,56 @@ const UpdateuserA = () => {
                     autoComplete="tel"
                     value={mobile}
                     onChange={(e) => setMobile(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-purple-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
                     placeholder="+91 XXXXX XXXXX"
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="u-country" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
-                    Region / Locale
+                  <label htmlFor="u-state" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
+                    State 
                   </label>
-                  <input
-                    id="u-country"
-                    type="text"
-                    autoComplete="country-name"
-                    value={country}
-                    onChange={(e) => setCountry(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-purple-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all"
-                    placeholder="e.g. India"
-                  />
+                  <select
+                    id="u-state"
+                    value={stateVal}
+                    onChange={(e) => {
+                      setStateVal(e.target.value);
+                      setCity("");
+                    }}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  >
+                    <option value="" disabled>
+                      Select State
+                    </option>
+                    {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                      <option key={s} value={s}>
+                        {s}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label htmlFor="u-city" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
+                    City
+                  </label>
+                  <select
+                    id="u-city"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    disabled={!stateVal}
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  >
+                    <option value="" disabled>
+                      {stateVal ? "Select City" : "Select State first"}
+                    </option>
+                    {stateVal &&
+                      INDIAN_STATES_AND_CITIES[stateVal].map((c) => (
+                        <option key={c} value={c}>
+                          {c}
+                        </option>
+                      ))}
+                  </select>
                 </div>
 
                 <div>
@@ -268,7 +318,7 @@ const UpdateuserA = () => {
                     id="u-admin"
                     value={String(isAdmin)}
                     onChange={(e) => setIsAdmin(e.target.value === "true")}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-purple-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
                   >
                     <option value="false">Standard Access</option>
                     <option value="true">Super Administrator</option>
@@ -283,7 +333,7 @@ const UpdateuserA = () => {
                     id="u-type"
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-purple-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 transition-all cursor-pointer"
+                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
                   >
                     <option value="traveler">Traveler</option>
                     <option value="financeManager">Finance Manager</option>
@@ -296,7 +346,7 @@ const UpdateuserA = () => {
                 <button
                   type="submit"
                   disabled={loading2}
-                  className="w-full bg-purple-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-purple-700 transition-all active:scale-[0.98] shadow-xl shadow-purple-600/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full bg-brand-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-700 transition-all active:scale-[0.98] shadow-xl shadow-brand-600/20 disabled:opacity-60 disabled:cursor-not-allowed"
                 >
                   {loading2 ? "Saving…" : "Commit Changes"}
                 </button>
@@ -310,3 +360,4 @@ const UpdateuserA = () => {
 };
 
 export default UpdateuserA;
+

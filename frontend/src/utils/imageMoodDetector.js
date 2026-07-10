@@ -87,3 +87,4 @@ export const detectImageMood = (imageUrl) => {
     }
   });
 };
+

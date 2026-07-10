@@ -29,10 +29,10 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
   // Generate a consistent, harmonious gradient based on the user's name
   const getGradient = (str = "") => {
     const gradients = [
-      "from-violet-500 to-purple-600",
-      "from-purple-500 to-indigo-600",
+      "from-brand-500 to-brand-600",
+      "from-brand-500 to-brand-600",
       "from-fuchsia-500 to-pink-600",
-      "from-indigo-500 to-blue-600",
+      "from-brand-500 to-blue-600",
       "from-rose-500 to-red-600",
       "from-emerald-500 to-teal-600"
     ];
@@ -63,3 +63,4 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
 };
 
 export default Avatar;
+

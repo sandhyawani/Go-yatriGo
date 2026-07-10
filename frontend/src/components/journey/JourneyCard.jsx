@@ -28,7 +28,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80";
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-[#6C4DF6]/40 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-[#8B5CF6]/40 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
       {/* Compact Media Header */}
       <div className="relative h-36 w-full overflow-hidden bg-slate-100">
         <img
@@ -45,9 +45,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           </div>
           <span className="shrink-0 whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-[10px] font-black text-slate-800 dark:text-slate-200 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
             {isSolo ? (
-              <User className="w-3 h-3 text-[#6C4DF6] shrink-0" />
+              <User className="w-3 h-3 text-[#8B5CF6] shrink-0" />
             ) : (
-              <Users className="w-3 h-3 text-[#6C4DF6] shrink-0" />
+              <Users className="w-3 h-3 text-[#8B5CF6] shrink-0" />
             )}
             <span>{getJourneyTypeBadge()}</span>
           </span>
@@ -70,7 +70,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
         {/* Date & Duration */}
         <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
           <span className="flex items-center truncate">
-            <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#6C4DF6] shrink-0" />
+            <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#8B5CF6] shrink-0" />
             {journey.startDate
               ? new Date(journey.startDate).toLocaleDateString("en-US", {
                   month: "short",
@@ -78,7 +78,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
                 })
               : "Date TBD"}
           </span>
-          <span className="text-[#6C4DF6] bg-purple-50 dark:bg-purple-950/60 px-2.5 py-1 rounded-lg font-black text-[11px] border border-purple-100 dark:border-purple-800/50 shrink-0">
+          <span className="text-[#8B5CF6] bg-brand-50 dark:bg-brand-900/60 px-2.5 py-1 rounded-lg font-black text-[11px] border border-brand-100 dark:border-brand-800/50 shrink-0">
             {journey.durationDays || 3} Days
           </span>
         </div>
@@ -121,7 +121,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
         {/* Prominent Full-Width Action Button */}
         <Link
           to={`/social/journeys/${journey._id}`}
-          className="w-full mt-1 py-2.5 px-4 rounded-xl bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white text-xs font-extrabold shadow-md shadow-[#6C4DF6]/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 group/btn"
+          className="w-full mt-1 py-2.5 px-4 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-extrabold shadow-md shadow-[#8B5CF6]/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 group/btn"
         >
           <span>Open Journey</span>
           <ArrowUpRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
@@ -132,3 +132,4 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
 };
 
 export default JourneyCard;
+

@@ -214,7 +214,7 @@ const TravelBuddyDetails = () => {
   if (loading) {
     return (
       <div className="bg-[#FAFAFA] text-slate-800 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-600"></div>
       </div>
     );
   }
@@ -349,8 +349,8 @@ const TravelBuddyDetails = () => {
                     )}
                   </>
                 ) : (
-                  <div className="w-full h-full bg-[#6C4DF6]/20 flex items-center justify-center">
-                    <MapPin className="w-12 h-12 text-[#6C4DF6]/40" />
+                  <div className="w-full h-full bg-[#8B5CF6]/20 flex items-center justify-center">
+                    <MapPin className="w-12 h-12 text-[#8B5CF6]/40" />
                   </div>
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
@@ -363,7 +363,7 @@ const TravelBuddyDetails = () => {
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="bg-[#6C4DF6]/10 border border-[#6C4DF6]/15 text-[#6C4DF6] text-[10px] font-black px-2.5 py-1 rounded-full">
+                    <span className="bg-[#8B5CF6]/10 border border-[#8B5CF6]/15 text-[#8B5CF6] text-[10px] font-black px-2.5 py-1 rounded-full">
                       {trip.category}
                     </span>
                     {trip.isPrivate ? (
@@ -372,7 +372,7 @@ const TravelBuddyDetails = () => {
                       </span>
                     ) : (
                       <span className="bg-slate-50 border border-slate-200 text-slate-500 text-[9px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                        <Globe className="w-3 h-3 text-[#6C4DF6]" /> Public
+                        <Globe className="w-3 h-3 text-[#8B5CF6]" /> Public
                       </span>
                     )}
                     {trip.status === "cancelled" && (
@@ -416,7 +416,7 @@ const TravelBuddyDetails = () => {
                         Route
                       </span>
                       <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[#6C4DF6] truncate">
+                        <span className="text-[#8B5CF6] truncate">
                           {routeFrom}
                         </span>
                         <span className="text-slate-400 text-[10px]">to</span>
@@ -427,7 +427,7 @@ const TravelBuddyDetails = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <Calendar className="w-4 h-4 text-[#6C4DF6] mt-0.5 shrink-0" />
+                    <Calendar className="w-4 h-4 text-[#8B5CF6] mt-0.5 shrink-0" />
                     <div>
                       <span className="text-[9px] font-black text-slate-500 block mb-0.5">
                         Dates
@@ -482,7 +482,7 @@ const TravelBuddyDetails = () => {
               className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4"
             >
               <h3 className="text-sm font-medium text-[#111827] flex items-center gap-2 border-b border-slate-100 pb-3">
-                <MessageSquare className="w-4 h-4 text-[#6C4DF6]" /> Group Chat
+                <MessageSquare className="w-4 h-4 text-[#8B5CF6]" /> Group Chat
               </h3>
 
               {showChat ? (
@@ -511,7 +511,7 @@ const TravelBuddyDetails = () => {
                           state: { groupId: trip._id },
                         })
                       }
-                      className="px-4 py-2 bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white rounded-xl text-[10px] font-black transition-all shadow-sm"
+                      className="px-4 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white rounded-xl text-[10px] font-black transition-all shadow-sm"
                     >
                       Open Chat
                     </button>
@@ -560,12 +560,12 @@ const TravelBuddyDetails = () => {
                   <div className="flex items-center gap-1">
                     <h4
                       onClick={() => navigate(`/profile/${trip.userId?._id}`)}
-                      className="text-sm font-black text-[#111827] truncate cursor-pointer hover:text-[#6C4DF6] transition-colors"
+                      className="text-sm font-black text-[#111827] truncate cursor-pointer hover:text-[#8B5CF6] transition-colors"
                     >
                       {trip.userId?.name || "Traveler"}
                     </h4>
                   </div>
-                  <span className="text-[10px] font-semibold text-[#6C4DF6] capitalize">
+                  <span className="text-[10px] font-semibold text-[#8B5CF6] capitalize">
                     {trip.userId?.type || "Traveler"}
                   </span>
                 </div>
@@ -634,7 +634,7 @@ const TravelBuddyDetails = () => {
                   <div className="space-y-3">
                     <button
                       disabled
-                      className="w-full py-2.5 bg-[#6C4DF6]/10 text-[#6C4DF6] border border-[#6C4DF6]/20 rounded-xl font-black text-[10px] shadow-sm flex items-center justify-center gap-1.5 opacity-100 cursor-default"
+                      className="w-full py-2.5 bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 rounded-xl font-black text-[10px] shadow-sm flex items-center justify-center gap-1.5 opacity-100 cursor-default"
                     >
                       <UserCheck className="w-4 h-4" /> Joined
                     </button>
@@ -675,12 +675,12 @@ const TravelBuddyDetails = () => {
                       placeholder="Describe your interests, why you want to join..."
                       value={requestMessage}
                       onChange={(e) => setRequestMessage(e.target.value)}
-                      className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-[#6C4DF6] transition-all resize-none h-20 shadow-inner"
+                      className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all resize-none h-20 shadow-inner"
                     />
                     <button
                       type="submit"
                       disabled={submittingRequest}
-                      className="w-full py-2.5 bg-[#7F77DD] hover:bg-[#6C4DF6] text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       <UserPlus className="w-4 h-4" />{" "}
                       {submittingRequest ? "Submitting..." : "Request to Join"}
@@ -695,7 +695,7 @@ const TravelBuddyDetails = () => {
                     <button
                       type="submit"
                       disabled={submittingRequest}
-                      className="w-full py-2.5 bg-[#7F77DD] hover:bg-[#6C4DF6] text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+                      className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
                     >
                       <UserPlus className="w-4 h-4" />{" "}
                       {submittingRequest ? "Joining..." : "Join Group"}
@@ -804,12 +804,12 @@ const TravelBuddyDetails = () => {
                           <div className="flex items-center gap-1">
                             <h4
                               onClick={() => navigate(`/profile/${mId}`)}
-                              className="text-xs font-bold text-[#111827] leading-tight truncate cursor-pointer hover:text-[#6C4DF6]"
+                              className="text-xs font-bold text-[#111827] leading-tight truncate cursor-pointer hover:text-brand-600"
                             >
                               {mUser.name || "User"}
                             </h4>
                             <span
-                              className={`text-[8px] font-black px-1.5 py-0.5 rounded ${memberObj.role === "host" ? "bg-[#6C4DF6]/10 text-[#6C4DF6]" : memberObj.role === "cohost" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
+                              className={`text-[8px] font-black px-1.5 py-0.5 rounded ${memberObj.role === "host" ? "bg-brand-50 text-brand-600" : memberObj.role === "cohost" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
                             >
                               {memberObj.role}
                             </span>
@@ -858,7 +858,7 @@ const TravelBuddyDetails = () => {
                                     });
                                     setOpenDropdownId(null);
                                   }}
-                                  className="w-full text-left px-4 py-2 text-xs font-semibold text-[#6C4DF6] hover:bg-slate-50"
+                                  className="w-full text-left px-4 py-2 text-xs font-semibold text-brand-600 hover:bg-slate-50"
                                 >
                                   {memberObj.role === "cohost"
                                     ? "Demote to Member"
@@ -959,7 +959,7 @@ const TravelBuddyDetails = () => {
               </button>
               <button
                 onClick={handleManageMember}
-                className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "warn" ? "bg-amber-500 hover:bg-amber-600" : manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-[#6C4DF6] hover:bg-[#5b3ee0]"}`}
+                className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "warn" ? "bg-amber-500 hover:bg-amber-600" : manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-brand-600 hover:bg-brand-700"}`}
               >
                 Confirm
               </button>
@@ -1100,7 +1100,7 @@ const TravelBuddyDetails = () => {
                           {mUser.name || "User"}
                         </h4>
                         {memberObj.role === "host" && (
-                          <span className="bg-[#EEEDFE] text-[#534AB7] text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          <span className="bg-brand-50 text-brand-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                             Host
                           </span>
                         )}
@@ -1131,3 +1131,4 @@ const TravelBuddyDetails = () => {
 };
 
 export default TravelBuddyDetails;
+

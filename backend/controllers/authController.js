@@ -5,15 +5,44 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { getJwtSecret } = require("../config/jwt");
 const sendEmail = require("../utils/sendEmail");
+const { INDIAN_STATES_AND_CITIES } = require("../utils/locationData");
 
 // Register User
 const registerUser = async (req, res, next) => {
   try {
-    const { email, password, name, img, username, acceptedPolicies } = req.body;
+    const { email, password, name, img, username, acceptedPolicies, city, state } = req.body;
 
     if (!acceptedPolicies) {
       return res.status(400).json({
         message: "Please accept Privacy Policy and Terms of Service",
+      });
+    }
+
+    if (!state || !state.trim()) {
+      return res.status(400).json({
+        message: "State is required",
+      });
+    }
+
+    if (!city || !city.trim()) {
+      return res.status(400).json({
+        message: "City is required",
+      });
+    }
+
+    const trimmedState = state.trim();
+    const trimmedCity = city.trim();
+
+    const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
+    if (!validCities) {
+      return res.status(400).json({
+        message: `Invalid state selected: ${trimmedState}`,
+      });
+    }
+
+    if (!validCities.includes(trimmedCity)) {
+      return res.status(400).json({
+        message: `City ${trimmedCity} does not belong to ${trimmedState}`,
       });
     }
 
@@ -46,6 +75,8 @@ const registerUser = async (req, res, next) => {
       username: finalUsername,
       password: hashedPassword,
       pic: img || "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg",
+      city: trimmedCity,
+      state: trimmedState,
       followers: [],
       following: [],
       policiesAcceptedAt: new Date(),
@@ -138,7 +169,11 @@ const logoutUser = async (req, res) => {
       await Session.deleteOne({ token });
     }
 
-    res.clearCookie("access_token");
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    });
     res.status(200).json({
       message: "Logged out successfully",
     });

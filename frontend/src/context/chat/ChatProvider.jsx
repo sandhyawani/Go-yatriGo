@@ -12,3 +12,4 @@ export const ChatProvider = ({ children }) => {
   );
 };
 export default ChatProvider;
+

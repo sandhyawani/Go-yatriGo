@@ -68,3 +68,4 @@ export const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
 };
 
 export default ProfileTabs;
+
