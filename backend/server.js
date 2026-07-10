@@ -17,6 +17,7 @@ require("colors");
 const connectDB = require("./config/db");
 
 const app = express();
+app.set("trust proxy", 1);
 const server = http.createServer(app);
 const PORT = process.env.PORT || 5000;
 
@@ -102,22 +103,54 @@ app.get("/", (req, res) => {
 // Routes
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/auth", require("./routes/authRoutes"));
+
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/users", require("./routes/userRoutes"));
+
 app.use("/api/posts", require("./routes/postRoutes"));
+app.use("/posts", require("./routes/postRoutes"));
+
 app.use("/api/stories", require("./routes/storyRoutes"));
+app.use("/stories", require("./routes/storyRoutes"));
+
 app.use("/api/chat", require("./routes/chatRoutes"));
+app.use("/chat", require("./routes/chatRoutes"));
+
 app.use("/api/social", require("./routes/socialTravelRoute"));
+app.use("/social", require("./routes/socialTravelRoute"));
+
 app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/admin", require("./routes/adminRoutes"));
+
 app.use("/api/contact", require("./routes/contactRoutes"));
+app.use("/contact", require("./routes/contactRoutes"));
+
 app.use("/api/emergency", require("./routes/emergencyRoutes"));
+app.use("/emergency", require("./routes/emergencyRoutes"));
+
 app.use("/api/notifications", require("./routes/notificationRoutes"));
+app.use("/notifications", require("./routes/notificationRoutes"));
+
 app.use("/api/support", require("./routes/supportRoutes"));
+app.use("/support", require("./routes/supportRoutes"));
+
 app.use("/api/upload", require("./routes/uploadRoute"));
+app.use("/upload", require("./routes/uploadRoute"));
+
 app.use("/api/security", require("./routes/securityRoutes"));
+app.use("/security", require("./routes/securityRoutes"));
+
 app.use("/api/settings", require("./routes/settings"));
+app.use("/settings", require("./routes/settings"));
+
 app.use("/api/legal", require("./routes/legal"));
+app.use("/legal", require("./routes/legal"));
+
 app.use("/api/music", require("./routes/musicRoute"));
+app.use("/music", require("./routes/musicRoute"));
+
 app.use("/api/journeys", require("./routes/journeyRoutes"));
+app.use("/journeys", require("./routes/journeyRoutes"));
 
 // 404 handler
 app.use((req, res) => {
