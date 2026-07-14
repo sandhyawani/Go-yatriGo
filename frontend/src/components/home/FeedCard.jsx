@@ -148,8 +148,8 @@ const FeedCard = React.forwardRef(
         }}
         className="card shadow-md hover:shadow-lg overflow-hidden group transition-all duration-300"
       >
-        {/* Post header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+        {/* Post header (Reduced vertical padding from py-5 to py-3) */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-slate-100">
           <div className="flex items-center gap-4 min-w-0">
             <Link
               to={`/profile/${post.userId?._id || post.userId}`}
@@ -160,7 +160,7 @@ const FeedCard = React.forwardRef(
                 pic={post.userId?.pic}
                 img={post.userId?.img || post.userPic}
                 name={post.userId?.name || post.userName}
-                className="h-12 w-12 rounded-full object-cover ring-2 ring-white shadow-sm"
+                className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
               />
             </Link>
 
@@ -231,7 +231,7 @@ const FeedCard = React.forwardRef(
                 }
 
                 return (
-                  <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500 min-w-0">
+                  <div className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-slate-500 min-w-0">
                     {metadataItems.reduce((acc, item, index) => {
                       if (index === 0) return [item];
                       return [
@@ -295,11 +295,11 @@ const FeedCard = React.forwardRef(
           </div>
         </div>
 
-        {/* Post image */}
+        {/* Post image (Reduced bottom margin from my-4 to mt-4 mb-2 to pull the actions row closer) */}
         <div
           onClick={(e) => handlePostTap(e, post._id, post.likes)}
           style={{ touchAction: "manipulation" }}
-          className="relative mx-5 my-4 rounded-2xl border border-slate-100 bg-slate-50 select-none overflow-hidden cursor-pointer flex items-center justify-center shadow-sm"
+          className="relative mx-5 mt-4 mb-2 rounded-2xl border border-slate-100 bg-slate-50 select-none overflow-hidden cursor-pointer flex items-center justify-center shadow-sm"
         >
           {post.mediaType === "video" ? (
             <video
@@ -392,9 +392,10 @@ const FeedCard = React.forwardRef(
           </AnimatePresence>
         </div>
 
-        {/* Post actions & comments */}
-        <div className="px-5 pt-3 pb-3">
-          <div className="flex items-center justify-between w-full bg-slate-50 px-3.5 py-2 rounded-2xl border border-slate-100 shadow-xs">
+        {/* Post actions & comments wrapper (Reduced padding from px-5 pt-3 pb-3 to px-5 pt-1 pb-2) */}
+        <div className="px-5 pt-1 pb-2">
+          {/* Like, Comment & Share row container (Reduced padding from py-2 to py-1.5) */}
+          <div className="flex items-center justify-between w-full bg-slate-50 px-3.5 py-1.5 rounded-2xl border border-slate-100 shadow-xs">
             <div className="flex items-center gap-5 shrink-0 overflow-hidden">
               {/* ✨ Felt / Sparkles Option */}
               <button
@@ -449,8 +450,8 @@ const FeedCard = React.forwardRef(
             </button>
           </div>
 
-          {/* Caption Section */}
-          <div className="pt-4">
+          {/* Caption Section (Reduced top padding from pt-4 to pt-2) */}
+          <div className="pt-2">
             <div className="text-[13px] px-1 pb-1.5 leading-relaxed">
               <span className="font-extrabold text-slate-900">{post.userName}</span>
               <span className="ml-2 text-slate-600">
@@ -462,10 +463,11 @@ const FeedCard = React.forwardRef(
           {(activeCommentPost === post._id ? visibleComments : previewComments)
             .length > 0 && (
             <>
-              <div className="mt-3 border-t border-slate-100" />
+              {/* Reduced margins on the comment divider */}
+              <div className="mt-1.5 border-t border-slate-100" />
 
-              {/* Comments Section */}
-              <div className="mt-3 space-y-2 pl-1">
+              {/* Comments Section (Reduced vertical spacing from space-y-2 to space-y-1) */}
+              <div className="mt-1.5 space-y-1 pl-1">
                 {(activeCommentPost === post._id
                   ? visibleComments
                   : previewComments
@@ -498,7 +500,7 @@ const FeedCard = React.forwardRef(
             </>
           )}
           {commentsLoadingMap[post._id] && (
-            <div className="flex justify-center my-2">
+            <div className="flex justify-center my-1.5">
               <Loader2 className="w-4 h-4 text-brand-600 animate-spin" />
             </div>
           )}
@@ -507,16 +509,16 @@ const FeedCard = React.forwardRef(
             !commentsLoadingMap[post._id] && (
               <button
                 onClick={() => handleOpenComments(post._id)}
-                className="text-xs font-semibold text-slate-400 hover:text-brand-600 mt-2 pl-1 block transition-colors"
+                className="text-xs font-semibold text-slate-400 hover:text-brand-600 mt-1 pl-1 block transition-colors"
               >
                 View all {visibleCommentsCount} Thoughts
               </button>
             )}
 
-          {/* Comment input */}
+          {/* Comment input form (Reduced margins from pt-3 mt-3 to pt-2 mt-2) */}
           <form
             onSubmit={(e) => handleCommentSubmit(e, post._id)}
-            className="flex items-center gap-2.5 pt-3 mt-3 border-t border-slate-100"
+            className="flex items-center gap-2.5 pt-2 mt-2 border-t border-slate-100"
           >
             <Avatar
               user={user}
@@ -537,7 +539,7 @@ const FeedCard = React.forwardRef(
                 }
                 placeholder="Share your thoughts..."
                 maxLength={500}
-                className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-2 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-xs transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-xs transition-all"
               />
               <button
                 type="submit"
