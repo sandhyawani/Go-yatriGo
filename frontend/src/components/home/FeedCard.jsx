@@ -392,7 +392,7 @@ const FeedCard = React.forwardRef(
           </AnimatePresence>
         </div>
 
-        {/* Post actions & comments wrapper (Reduced padding from px-5 pt-3 pb-3 to px-5 pt-1 pb-2) */}
+        {/* Post actions & comments wrapper */}
         <div className="px-5 pt-1 pb-2">
           {/* Like, Comment & Share row container (Reduced padding from py-2 to py-1.5) */}
           <div className="flex items-center justify-between w-full bg-slate-50 px-3.5 py-1.5 rounded-2xl border border-slate-100 shadow-xs">
@@ -539,7 +539,7 @@ const FeedCard = React.forwardRef(
                 }
                 placeholder="Share your thoughts..."
                 maxLength={500}
-                className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-xs transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-full pl-4 pr-10 py-2.5 text-xs text-slate-800 placeholder:text-slate-400 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-xs transition-all"
               />
               <button
                 type="submit"
