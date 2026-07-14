@@ -109,59 +109,16 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             ))}
           </nav>
         </div>
-
-        <div className="rounded-3xl border border-brand-200 bg-gradient-to-br from-brand-50 via-white to-brand-50 p-4">
-          <div className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-700">
-            <Sparkles className="h-3.5 w-3.5" />
-            Trust Center
-          </div>
-          <p className="text-sm font-medium leading-5 text-slate-900">Review safety reports first.</p>
-          <p className="mt-1 text-xs leading-5 text-slate-600">
-            Keep the community protected with fast moderation decisions.
-          </p>
-          <Link
-            to="/admin/reports"
-            onClick={onClose}
-            className="mt-3 flex items-center justify-between rounded-xl bg-white px-3 py-2.5 text-xs font-semibold text-slate-700 border border-brand-100 transition hover:bg-brand-50"
-          >
-            Open queue
-            <ChevronRight className="h-4 w-4 text-brand-600" />
-          </Link>
-        </div>
       </div>
 
       <div className="mt-auto border-t border-slate-100 pt-3 flex-shrink-0">
-        <div className="mb-3 flex items-center gap-3 rounded-2xl bg-white border border-slate-100 p-2.5">
-          <img
-            className="h-9 w-9 rounded-xl object-cover"
-            src={
-              user?.img ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || "Admin")}&background=7c3aed&color=fff`
-            }
-            alt=""
-          />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-slate-900">{user?.name || "Administrator"}</p>
-            <p className="text-xs text-slate-500">Administrator</p>
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Link
-            to="/"
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-slate-100 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:bg-brand-50 hover:text-brand-700"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            App
-          </Link>
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-rose-100 bg-white px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-50 hover:text-rose-700"
-          >
-            <LogOut className="h-4 w-4" />
-            Sign out
-          </button>
-        </div>
+        <Link
+          to="/"
+          className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to User App
+        </Link>
       </div>
     </aside>
   );

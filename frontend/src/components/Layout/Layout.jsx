@@ -52,7 +52,7 @@ const Layout = () => {
           isChatPage ? "" : "overflow-x-hidden"
         } ${
           isAdminWorkspace
-            ? "lg:ml-[264px] lg:w-[calc(100%-264px)]"
+            ? "lg:ml-[240px] lg:w-[calc(100%-240px)]"
             : isChatPage
             ? "p-0 lg:h-screen lg:overflow-hidden"
             : "px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6 lg:h-screen lg:overflow-y-auto"
