@@ -869,7 +869,7 @@ const Home = () => {
               ),
             );
           } else {
-            showToast.success(`Following ${targetUser.name}! ✈️`);
+            showToast.success(`You are now journey mates with ${targetUser.name}! ✈️`);
             setSuggestions((prev) =>
               prev.map((s) =>
                 s._id === targetUser._id

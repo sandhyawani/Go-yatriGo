@@ -38,20 +38,20 @@ import StorySticker from "../story/StorySticker";
 import Avatar from "../common/Avatar";
 
 const travelEmojis = [
-  "🌄",
-  "🏕️",
-  "🚗",
-  "✈️",
-  "🌍",
-  "☕",
-  "⛰️",
-  "🌅",
-  "📍",
-  "🌴",
-  "🌊",
-  "🎒",
-  "🛵",
-  "🚂",
+  "ðŸŒ„",
+  "ðŸ•ï¸",
+  "ðŸš—",
+  "âœˆï¸",
+  "ðŸŒ",
+  "â˜•",
+  "â›°ï¸",
+  "ðŸŒ…",
+  "ðŸ“",
+  "ðŸŒ´",
+  "ðŸŒŠ",
+  "ðŸŽ’",
+  "ðŸ›µ",
+  "ðŸš‚",
 ];
 const fonts = [
   { name: "Clean", family: "Inter, sans-serif" },
@@ -70,30 +70,30 @@ const textColors = [
 ];
 
 const popularLanguages = [
-  { label: "🔥 All Languages", value: "" },
-  { label: "🇮🇳 Hindi", value: "Hindi" },
-  { label: "🇮🇳 Telugu", value: "Telugu" },
-  { label: "🇮🇳 Tamil", value: "Tamil" },
-  { label: "🇮🇳 Punjabi", value: "Punjabi" },
-  { label: "🇮🇳 Malayalam", value: "Malayalam" },
-  { label: "🇮🇳 Kannada", value: "Kannada" },
-  { label: "🇮🇳 Marathi", value: "Marathi" },
-  { label: "🎧 English Pop", value: "English" },
-  { label: "🌸 K-Pop", value: "K-Pop" },
-  { label: "💃 Spanish", value: "Spanish" },
+  { label: "ðŸ”¥ All Languages", value: "" },
+  { label: "ðŸ‡®ðŸ‡³ Hindi", value: "Hindi" },
+  { label: "ðŸ‡®ðŸ‡³ Telugu", value: "Telugu" },
+  { label: "ðŸ‡®ðŸ‡³ Tamil", value: "Tamil" },
+  { label: "ðŸ‡®ðŸ‡³ Punjabi", value: "Punjabi" },
+  { label: "ðŸ‡®ðŸ‡³ Malayalam", value: "Malayalam" },
+  { label: "ðŸ‡®ðŸ‡³ Kannada", value: "Kannada" },
+  { label: "ðŸ‡®ðŸ‡³ Marathi", value: "Marathi" },
+  { label: "ðŸŽ§ English Pop", value: "English" },
+  { label: "ðŸŒ¸ K-Pop", value: "K-Pop" },
+  { label: "ðŸ’ƒ Spanish", value: "Spanish" },
 ];
 
 const popularDestinations = [
-  { label: "🏖️ Goa", value: "Goa" },
-  { label: "🏔️ Manali", value: "Manali" },
-  { label: "🏰 Jaipur", value: "Jaipur" },
-  { label: "🏍️ Ladakh", value: "Ladakh" },
-  { label: "🌴 Kerala", value: "Kerala" },
-  { label: "🌃 Mumbai", value: "Mumbai" },
-  { label: "🧘 Rishikesh", value: "Rishikesh" },
-  { label: "🏰 Udaipur", value: "Udaipur" },
-  { label: "🛕 Varanasi", value: "Varanasi" },
-  { label: "☕ Coorg", value: "Coorg" },
+  { label: "ðŸ–ï¸ Goa", value: "Goa" },
+  { label: "ðŸ”ï¸ Manali", value: "Manali" },
+  { label: "ðŸ° Jaipur", value: "Jaipur" },
+  { label: "ðŸï¸ Ladakh", value: "Ladakh" },
+  { label: "ðŸŒ´ Kerala", value: "Kerala" },
+  { label: "ðŸŒƒ Mumbai", value: "Mumbai" },
+  { label: "ðŸ§˜ Rishikesh", value: "Rishikesh" },
+  { label: "ðŸ° Udaipur", value: "Udaipur" },
+  { label: "ðŸ›• Varanasi", value: "Varanasi" },
+  { label: "â˜• Coorg", value: "Coorg" },
 ];
 
 const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
@@ -241,14 +241,13 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           try {
             setIsSearchingUsers(true);
             const res = await axios.get(
-              `/users/${user._id}`,
-              { withCredentials: true },
+              `/users/${user._id}/following`
             );
             if (res.data?.following) {
               setUserSearchResults(res.data.following);
             }
           } catch (err) {
-            console.error("Error creating story:", err);
+            console.error(err);
           } finally {
             setIsSearchingUsers(false);
           }
@@ -457,13 +456,13 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
     } else if (isImageFile(file)) {
       if (file.size > 10 * 1024 * 1024)
         return showToast.error("Image must be under 10MB");
-      // Use FileReader instead of createObjectURL — prevents black preview
+      // Use FileReader instead of createObjectURL â€” prevents black preview
       // on mobile Safari where blob URL decoding can be deferred/fail.
       // Also works for HEIC files which may not have a recognised MIME type.
       const reader = new FileReader();
       reader.onload = (ev) => {
         setMediaType("image");
-        setMediaUrl(ev.target.result); // data:image/... URL — always works on mobile
+        setMediaUrl(ev.target.result); // data:image/... URL â€” always works on mobile
         setMediaFile(file);
         setStep(2);
         setActiveOverlay(null);
@@ -544,7 +543,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           case 6: ctx.transform(0, 1, -1, 0, canvas.height, 0); break;
           case 7: ctx.transform(0, -1, -1, 0, canvas.height, canvas.width); break;
           case 8: ctx.transform(0, -1, 1, 0, 0, canvas.width); break;
-          default: break; // orientation 1 — no transform needed
+          default: break; // orientation 1 â€” no transform needed
         }
 
         ctx.drawImage(
@@ -745,7 +744,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
           exit={{ opacity: 0 }}
           className={`fixed inset-0 z-[100000] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-slate-900/60 backdrop-blur-sm" : "bg-black"}`}
         >
-          {/* Gallery file input — all media */}
+          {/* Gallery file input â€” all media */}
           <input
             type="file"
             ref={fileInputRef}
@@ -753,7 +752,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
             className="hidden"
             onChange={handleFileChange}
           />
-          {/* Camera input — direct camera capture on mobile */}
+          {/* Camera input â€” direct camera capture on mobile */}
           <input
             type="file"
             ref={cameraInputRef}
@@ -795,11 +794,11 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                   Tap to pick from gallery, or use the buttons below.
                 </p>
                 <div className="text-[11px] font-bold text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                  JPG · PNG · MP4 (MAX 1 MIN)
+                  JPG Â· PNG Â· MP4 (MAX 1 MIN)
                 </div>
               </div>
 
-              {/* Action buttons — three options on mobile */}
+              {/* Action buttons â€” three options on mobile */}
               <div className="mt-5 flex gap-2 shrink-0">
                 <button
                   onClick={handleClose}
@@ -807,12 +806,12 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                 >
                   Cancel
                 </button>
-                {/* Camera button — opens native camera directly on mobile */}
+                {/* Camera button â€” opens native camera directly on mobile */}
                 <button
                   onClick={() => cameraInputRef.current?.click()}
                   className="flex-1 py-3.5 rounded-xl font-bold text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-2"
                 >
-                  📷 Camera
+                  ðŸ“· Camera
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -1252,7 +1251,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                           {!locationQuery.trim() && (
                             <div className="mb-2">
                               <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                🔥 Popular Destinations
+                                ðŸ”¥ Popular Destinations
                               </p>
                               <div className="flex flex-col gap-1.5">
                                 {popularDestinations.map((dest) => (

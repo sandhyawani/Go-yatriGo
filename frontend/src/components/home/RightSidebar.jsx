@@ -105,12 +105,12 @@ const RightSidebar = ({
                     {isFollowing ? (
                       <>
                         <Check className="w-3 h-3" />
-                        Following
+                        My Journey Mates
                       </>
                     ) : isRequested ? (
                       "Requested"
                     ) : (
-                      "Follow"
+                      "Journey Mates"
                     )}
                   </button>
                 </div>

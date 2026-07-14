@@ -112,7 +112,7 @@ export const ProfileHeader = ({
                 currentUser?.isAdmin &&
                 !isOwnProfile && (
                   <span className="text-[10px] uppercase font-bold tracking-wider text-primary-600 bg-white border border-primary-600 px-2 py-0.5 rounded-md inline-block w-fit mt-1">
-                    Private Account 🔒 — Admin Override Active
+                    Private Account ðŸ”’ â€” Admin Override Active
                   </span>
                 )}
             </div>
@@ -142,21 +142,26 @@ export const ProfileHeader = ({
                 <button
                   onClick={handleFollowToggle}
                   disabled={followLoading}
-                  className={`px-5 py-1.5 rounded-lg text-sm font-bold transition-all shadow-sm flex-1 sm:flex-none ${
+                  className={`group px-5 py-1.5 rounded-lg text-sm font-bold transition-all shadow-sm flex-1 sm:flex-none ${
                     followLoading ? "opacity-50 cursor-not-allowed" : ""
                   } ${
                     isFollowing || isRequested
-                      ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-primary-600/5"
+                      ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-rose-50 hover:text-rose-600 hover:border-rose-600"
                       : "bg-primary-600 hover:bg-primary-700 text-white"
                   }`}
                 >
-                  {followLoading
-                    ? "..."
-                    : isFollowing
-                      ? "Unfollow"
-                      : isRequested
-                        ? "Requested"
-                        : "Follow"}
+                  {followLoading ? (
+                    "..."
+                  ) : isFollowing ? (
+                    <>
+                      <span className="group-hover:hidden">My Journey Mates</span>
+                      <span className="hidden group-hover:inline">Unfollow</span>
+                    </>
+                  ) : isRequested ? (
+                    "Requested"
+                  ) : (
+                    "Journey Mates"
+                  )}
                 </button>
                 <button
                   onClick={() =>
@@ -257,7 +262,7 @@ export const ProfileHeader = ({
                 {profileUser.followers?.length || 0}
               </span>
               <span className="text-xs text-slate-500 font-medium tracking-wide">
-                Followers
+                Journey Mates
               </span>
             </div>
             <div
@@ -268,7 +273,7 @@ export const ProfileHeader = ({
                 {profileUser.following?.length || 0}
               </span>
               <span className="text-xs text-slate-500 font-medium tracking-wide">
-                Following
+                My Journey Mates
               </span>
             </div>
           </div>

@@ -10,7 +10,7 @@ const MemberSelector = ({
   excludeUserIds = [],
 }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("Friends"); // Friends, Followers, Previous Companions
+  const [activeTab, setActiveTab] = useState("Friends"); // Friends, Journey Mates, Previous Companions
   const [users, setUsers] = useState([]);
   const [followersList, setFollowersList] = useState([]);
   const [followingList, setFollowingList] = useState([]);
@@ -101,17 +101,17 @@ const MemberSelector = ({
     if (activeTab === "Friends") {
       return {
         category: "Friends",
-        badgeIcon: "⭐",
+        badgeIcon: "â­",
         badgeText: "Mutual Friend",
         subText: `${(index % 5) + 2} Mutual Journeys`,
         verified: index % 2 === 0,
         online: index % 3 === 0,
       };
     }
-    if (activeTab === "Followers") {
+    if (activeTab === "Journey Mates") {
       return {
-        category: "Followers",
-        badgeIcon: "✨",
+        category: "Journey Mates",
+        badgeIcon: "âœ¨",
         badgeText: "Follower",
         subText: "Follows You",
         verified: index % 3 === 0,
@@ -124,7 +124,7 @@ const MemberSelector = ({
   let rawList = [];
   if (activeTab === "Previous Companions") {
     rawList = previousCompanions;
-  } else if (activeTab === "Followers") {
+  } else if (activeTab === "Journey Mates") {
     rawList = followersList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
   } else {
     // Friends / Connections tab: show following list if available, else fall back to all users
@@ -160,11 +160,11 @@ const MemberSelector = ({
   const displayUsers = filteredList.slice(0, displayLimit);
 
   const tabs = [
-    { id: "Friends", label: "👥 Friends", desc: "(Mutual Connections)" },
-    { id: "Followers", label: "⭐ Followers", desc: "(People following you)" },
+    { id: "Friends", label: "ðŸ‘¥ Friends", desc: "(Mutual Connections)" },
+    { id: "Journey Mates", label: "â­ Journey Mates", desc: "(People following you)" },
     {
       id: "Previous Companions",
-      label: "🏕 Previous Companions",
+      label: "ðŸ• Previous Companions",
       desc: "(Past travel squad)",
     },
   ];
@@ -280,12 +280,12 @@ const MemberSelector = ({
                         {activeTab === "Previous Companions" ? (
                           <>
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/60 text-[#8B5CF6] dark:text-brand-300 text-[10px] font-extrabold border border-brand-100 dark:border-brand-800/60">
-                              🏕 {u.tripsCount || 1}{" "}
+                              ðŸ• {u.tripsCount || 1}{" "}
                               {u.tripsCount === 1 ? "Trip" : "Trips"} Together
                             </span>
                             {lastTripName && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[10px] font-semibold border border-amber-100 dark:border-amber-800/50 truncate max-w-[160px]">
-                                🌄 Last Trip: {lastTripName}
+                                ðŸŒ„ Last Trip: {lastTripName}
                               </span>
                             )}
                           </>

@@ -263,7 +263,7 @@ const Profile = () => {
     lastTapTime.current = now;
   };
 
-  // Followers/Following relations modal states
+  // Journey Mates/My Journey Mates relations modal states
   const [showRelationsModal, setShowRelationsModal] = useState(false);
   const [relationsModalType, setRelationsModalType] = useState("followers"); // "followers" or "following"
   const [relationsSearch, setRelationsSearch] = useState("");
@@ -898,7 +898,7 @@ const Profile = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 select-none">
                   <div>
                     <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
-                      🚀 Welcome to your Onboarding Checklist
+                      ðŸš€ Welcome to your Onboarding Checklist
                     </h3>
                     <p className="text-xs text-slate-500 font-medium mt-0.5">
                       Complete these quick steps to set up your profile and start exploring Go YatriGo.
@@ -922,9 +922,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
                         {profileUser?.city ? (
-                          <span className="text-emerald-500 text-lg">✅</span>
+                          <span className="text-emerald-500 text-lg">âœ…</span>
                         ) : (
-                          <span className="text-slate-300 text-lg">⬜</span>
+                          <span className="text-slate-300 text-lg">â¬œ</span>
                         )}
                       </div>
                       <div>
@@ -949,9 +949,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
                         {profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? (
-                          <span className="text-emerald-500 text-lg">✅</span>
+                          <span className="text-emerald-500 text-lg">âœ…</span>
                         ) : (
-                          <span className="text-slate-300 text-lg">⬜</span>
+                          <span className="text-slate-300 text-lg">â¬œ</span>
                         )}
                       </div>
                       <div>
@@ -976,9 +976,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
                         {userMemories?.length > 0 ? (
-                          <span className="text-emerald-500 text-lg">✅</span>
+                          <span className="text-emerald-500 text-lg">âœ…</span>
                         ) : (
-                          <span className="text-slate-300 text-lg">⬜</span>
+                          <span className="text-slate-300 text-lg">â¬œ</span>
                         )}
                       </div>
                       <div>
@@ -1003,9 +1003,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
                         {(profileUser?.following?.length || 0) >= 5 ? (
-                          <span className="text-emerald-500 text-lg">✅</span>
+                          <span className="text-emerald-500 text-lg">âœ…</span>
                         ) : (
-                          <span className="text-slate-300 text-lg">⬜</span>
+                          <span className="text-slate-300 text-lg">â¬œ</span>
                         )}
                       </div>
                       <div>
@@ -1030,9 +1030,9 @@ const Profile = () => {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
                         {joinedTrips?.length > 0 ? (
-                          <span className="text-emerald-500 text-lg">✅</span>
+                          <span className="text-emerald-500 text-lg">âœ…</span>
                         ) : (
-                          <span className="text-slate-300 text-lg">⬜</span>
+                          <span className="text-slate-300 text-lg">â¬œ</span>
                         )}
                       </div>
                       <div>
@@ -1101,7 +1101,7 @@ const Profile = () => {
                         <Globe className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
                       <h3 className="text-base font-black text-slate-900 mb-1">
-                        {isOwnProfile ? "🌍 Welcome to Go YatriGo!" : "No Travel Memories"}
+                        {isOwnProfile ? "ðŸŒ Welcome to Go YatriGo!" : "No Travel Memories"}
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
                         {isOwnProfile 
@@ -1159,7 +1159,7 @@ const Profile = () => {
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                                 <span className="flex items-center gap-1.5 font-bold">
                                   <span className="text-base leading-none">
-                                    ✨
+                                    âœ¨
                                   </span>{" "}
                                   {post.likes?.length || 0}
                                 </span>
@@ -1283,7 +1283,7 @@ const Profile = () => {
                             )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
-                                <span className="text-[18px]">✨</span>{" "}
+                                <span className="text-[18px]">âœ¨</span>{" "}
                                 {story.reactions?.length ||
                                   story.storyReactions?.length ||
                                   0}
@@ -1345,7 +1345,7 @@ const Profile = () => {
                         <Star className="w-10 h-10 text-amber-200 fill-amber-100 relative z-10" />
                       </div>
                       <h3 className="text-sm font-bold text-slate-900 mb-1">
-                        No felt vibes yet ✨
+                        No felt vibes yet âœ¨
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium">
                         No travel memories have been felt yet.
@@ -1442,7 +1442,7 @@ const Profile = () => {
                                   <div className="flex items-center gap-3 text-white/90 text-xs font-semibold">
                                     <div className="flex items-center gap-1">
                                       <span className="text-xs leading-none">
-                                        ✨
+                                        âœ¨
                                       </span>{" "}
                                       {post.likes?.length ||
                                         post.likesCount ||
@@ -1623,7 +1623,7 @@ const Profile = () => {
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
                                 <span className="text-base leading-none">
-                                  ✨
+                                  âœ¨
                                 </span>{" "}
                                 {post.likes?.length || 0}
                               </span>
@@ -2028,7 +2028,7 @@ const Profile = () => {
                     className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50"
                   >
                     <span className="text-6xl drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">
-                      ✨
+                      âœ¨
                     </span>
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -2100,7 +2100,7 @@ const Profile = () => {
                 className="absolute bottom-4 left-4 bg-black/60 hover:bg-black/80 transition-all backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-white shadow-sm border border-white/20 cursor-pointer active:scale-95"
               >
                 <span className="text-[18px] drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] scale-110 transition-transform">
-                  ✨
+                  âœ¨
                 </span>
                 <span className="text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
                   {selectedMemory.likes?.length || 0} Felt This
@@ -2130,8 +2130,8 @@ const Profile = () => {
               <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50">
                 <h3 className="text-xs font-black text-[#111827] uppercase tracking-wider">
                   {relationsModalType === "followers"
-                    ? "Followers"
-                    : "Following"}
+                    ? "Journey Mates"
+                    : "My Journey Mates"}
                 </h3>
                 <button
                   onClick={() => {
@@ -2235,23 +2235,28 @@ const Profile = () => {
 
                         {!isSelf && (
                           <button
-                            onClick={() => handleFollowToggleForUser(u)}
+                            onClick={() => handleRelationsFollowToggle(u)}
                             disabled={loadingRelationId === u._id}
-                            className={`px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all shadow-sm ${
+                            className={`group px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 select-none ${
                               loadingRelationId === u._id
                                 ? "opacity-50 cursor-not-allowed"
                                 : ""
                             } ${
                               isFollowedByMe
-                                ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-primary-600/5"
+                                ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-rose-50 hover:text-rose-600 hover:border-rose-600"
                                 : "bg-primary-600 hover:bg-primary-700 text-white"
                             }`}
                           >
-                            {loadingRelationId === u._id
-                              ? "..."
-                              : isFollowedByMe
-                                ? "Unfollow"
-                                : "Follow"}
+                            {loadingRelationId === u._id ? (
+                              "..."
+                            ) : isFollowedByMe ? (
+                              <>
+                                <span className="group-hover:hidden">My Journey Mates</span>
+                                <span className="hidden group-hover:inline">Unfollow</span>
+                              </>
+                            ) : (
+                              "Journey Mates"
+                            )}
                           </button>
                         )}
                       </div>
