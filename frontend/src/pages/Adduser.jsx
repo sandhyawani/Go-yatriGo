@@ -96,28 +96,30 @@ function FormField({
     <div className={className}>
       <label
         htmlFor={id}
-        className="mb-2 flex items-center gap-2 text-sm font-semibold text-slate-700"
+        className="mb-1.5 flex items-center gap-2 text-sm font-semibold text-slate-700"
       >
         <span className="text-slate-400 flex items-center justify-center">{icon}</span>
         {label}
       </label>
       {children}
-      <div className="mt-1 min-h-[20px]">
-        {error ? (
-          <p className="text-xs font-semibold text-red-500">{error}</p>
-        ) : helperText ? (
-          <p className="text-xs font-medium text-slate-400">{helperText}</p>
-        ) : null}
-      </div>
+      {error || helperText ? (
+        <div className="mt-1">
+          {error ? (
+            <p className="text-xs font-semibold text-red-500">{error}</p>
+          ) : (
+            <p className="text-xs font-medium text-slate-400">{helperText}</p>
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
 
 function StatChip({ label, value }) {
   return (
-    <div className="rounded-2xl border border-slate-100 bg-white px-4 py-3 shadow-sm">
+    <div className="rounded-2xl border border-slate-100 bg-white px-4 py-2.5 shadow-sm">
       <p className="text-xs font-bold uppercase tracking-wider text-slate-400">{label}</p>
-      <p className="mt-1 text-base font-bold text-slate-900">{value}</p>
+      <p className="mt-0.5 text-sm font-bold text-slate-900">{value}</p>
     </div>
   );
 }
@@ -152,7 +154,7 @@ const AddUser = () => {
 
   const inputClass = (hasError) =>
     [
-      "w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 outline-none transition",
+      "w-full rounded-xl border bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 outline-none transition",
       "placeholder:text-slate-400 placeholder:font-normal",
       hasError
         ? "border-red-200 bg-white ring-4 ring-red-50 focus:border-red-400"
@@ -255,34 +257,39 @@ const AddUser = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50/50 px-6 py-10">
-      <div className="mx-auto max-w-7xl">
-        <div className="mb-10 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+    <div className="min-h-screen bg-white px-6 py-8">
+      <div className="mx-auto max-w-4xl">
+        {/* Header Section */}
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-brand-600">
               User Management
             </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            <h1 className="mt-1 text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
               Add New User
             </h1>
-            <p className="mt-2 max-w-2xl text-sm font-medium text-slate-500">
+            <p className="mt-1.5 text-xs font-medium text-slate-500">
               Create a new traveler account with optional profile photo upload.
-              Required fields are clearly marked and validated before submit.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-3 sm:w-72">
-            <StatChip label="User Type" value="Traveler" />
-            <StatChip label="Photo Upload" value="Optional" />
+          <div className="flex gap-2 sm:w-64">
+            <div className="flex-1">
+              <StatChip label="User Type" value="Traveler" />
+            </div>
+            <div className="flex-1">
+              <StatChip label="Photo" value="Optional" />
+            </div>
           </div>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <aside className="overflow-hidden rounded-3xl border border-slate-100 bg-white shadow-sm">
-            <div className="h-28 bg-gradient-to-r from-brand-600 to-brand-500" />
-
-            <div className="-mt-14 px-6 pb-6">
-              <div className="mx-auto flex h-28 w-28 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-slate-50 shadow-md">
+        {/* Form Container */}
+        <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm md:p-8">
+          <form onSubmit={handleSubmit} noValidate>
+            
+            {/* Profile Photo Uploader */}
+            <div className="flex flex-col items-center gap-2.5 mb-8">
+              <div className="relative group h-24 w-24 rounded-full overflow-hidden border-4 border-slate-100 bg-slate-50 shadow-inner">
                 {previewUrl ? (
                   <img
                     src={previewUrl}
@@ -290,260 +297,222 @@ const AddUser = () => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <span className="text-3xl font-bold text-slate-300">U</span>
+                  <div className="flex h-full w-full items-center justify-center text-2xl font-bold text-slate-300">
+                    U
+                  </div>
                 )}
-              </div>
-
-              <div className="mt-4 text-center">
-                <h2 className="text-xl font-bold text-slate-900 truncate">
-                  {form.name.trim() || "New User"}
-                </h2>
-                <p className="mt-1 text-xs font-semibold text-slate-400 truncate">
-                  {form.email.trim() || "email@example.com"}
-                </p>
-              </div>
-
-              <div className="mt-6 rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-                  Profile picture
-                </p>
-                <p className="mt-1.5 text-xs font-medium leading-relaxed text-slate-500">
-                  Upload a square image for the best result. Supported formats:
-                  JPEG, PNG, WebP, GIF. Maximum size: {MAX_FILE_SIZE_MB} MB.
-                </p>
-
                 <label
                   htmlFor="file"
-                  className="mt-4 inline-flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 shadow-sm"
+                  className="absolute inset-0 bg-slate-900/60 flex flex-col items-center justify-center text-[10px] font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer uppercase tracking-wider"
                 >
-                  <DriveFolderUploadOutlinedIcon fontSize="small" />
-                  Choose Image
+                  <DriveFolderUploadOutlinedIcon className="mb-0.5 h-4 w-4" />
+                  Change
                 </label>
-
-                <input
-                  id="file"
-                  name="file"
-                  type="file"
-                  accept="image/*,.heic,.heif"
-                  className="hidden"
-                  onChange={(e) => updateField("file", e.target.files?.[0] ?? null)}
-                />
-
-                <div className="mt-3 min-h-[20px]">
-                  {errors.file ? (
-                    <p className="text-xs font-semibold text-red-500">{errors.file}</p>
-                  ) : form.file ? (
-                    <p className="text-xs font-semibold text-slate-500 truncate">
-                      {form.file.name} · {(form.file.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  ) : (
-                    <p className="text-xs font-medium text-slate-400">No file selected.</p>
-                  )}
-                </div>
               </div>
-            </div>
-          </aside>
+              
+              <input
+                id="file"
+                name="file"
+                type="file"
+                accept="image/*,.heic,.heif"
+                className="hidden"
+                onChange={(e) => updateField("file", e.target.files?.[0] ?? null)}
+              />
 
-          <section className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm md:p-8">
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="mb-6 flex items-center justify-between border-b border-slate-100 pb-4">
-                <div>
-                  <h2 className="text-xl font-bold text-slate-900">
-                    Account Details
-                  </h2>
-                  <p className="mt-1 text-xs font-semibold text-slate-400">
-                    Fill out the required fields to create the account.
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-x-5 gap-y-2 md:grid-cols-2">
-                <FormField
-                  id="name"
-                  label="Full Name *"
-                  icon={<PersonOutlineOutlinedIcon fontSize="small" />}
-                  error={errors.name}
-                >
-                  <input
-                    id="name"
-                    type="text"
-                    value={form.name}
-                    onChange={(e) => updateField("name", e.target.value)}
-                    placeholder="Enter full name"
-                    className={inputClass(!!errors.name)}
-                  />
-                </FormField>
-
-                <FormField
-                  id="email"
-                  label="Email Address *"
-                  icon={<EmailOutlinedIcon fontSize="small" />}
-                  error={errors.email}
-                >
-                  <input
-                    id="email"
-                    type="email"
-                    value={form.email}
-                    onChange={(e) => updateField("email", e.target.value)}
-                    placeholder="Enter email address"
-                    className={inputClass(!!errors.email)}
-                  />
-                </FormField>
-
-                <FormField
-                  id="state"
-                  label="State *"
-                  icon={<PlaceOutlinedIcon fontSize="small" />}
-                  error={errors.state}
-                  helperText="Required"
-                >
-                  <select
-                    id="state"
-                    value={form.state}
-                    onChange={(e) => {
-                      updateField("state", e.target.value);
-                      updateField("city", "");
-                    }}
-                    className={inputClass(!!errors.state)}
-                  >
-                    <option value="" disabled>
-                      Select State
-                    </option>
-                    {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-
-                <FormField
-                  id="city"
-                  label="City *"
-                  icon={<PlaceOutlinedIcon fontSize="small" />}
-                  error={errors.city}
-                  helperText="Required"
-                >
-                  <select
-                    id="city"
-                    value={form.city}
-                    onChange={(e) => updateField("city", e.target.value)}
-                    disabled={!form.state}
-                    className={inputClass(!!errors.city)}
-                  >
-                    <option value="" disabled>
-                      {form.state ? "Select City" : "Select State first"}
-                    </option>
-                    {form.state &&
-                      INDIAN_STATES_AND_CITIES[form.state].map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
-                </FormField>
-
-                <FormField
-                  id="mobile"
-                  label="Mobile Number *"
-                  icon={<PhoneOutlinedIcon fontSize="small" />}
-                  error={errors.mobile}
-                  helperText="Exactly 10 digits"
-                >
-                  <input
-                    id="mobile"
-                    type="tel"
-                    inputMode="numeric"
-                    maxLength={10}
-                    value={form.mobile}
-                    onChange={(e) =>
-                      updateField("mobile", e.target.value.replace(/\D/g, ""))
-                    }
-                    placeholder="Enter mobile number"
-                    className={inputClass(!!errors.mobile)}
-                  />
-                </FormField>
-
-                <FormField
-                  id="type"
-                  label="User Type"
-                  icon={<BadgeOutlinedIcon fontSize="small" />}
-                  error={errors.type}
-                  className="md:col-span-2"
-                >
-                  <select
-                    id="type"
-                    value={form.type}
-                    onChange={(e) => updateField("type", e.target.value)}
-                    className={inputClass(!!errors.type)}
-                  >
-                    <option value="traveler">Traveler</option>
-                  </select>
-                </FormField>
-
-                <FormField
-                  id="password"
-                  label="Password *"
-                  icon={<LockOutlinedIcon fontSize="small" />}
-                  error={errors.password}
-                  helperText="Minimum 6 characters"
-                >
-                  <input
-                    id="password"
-                    type="password"
-                    value={form.password}
-                    onChange={(e) => updateField("password", e.target.value)}
-                    placeholder="Enter password"
-                    className={inputClass(!!errors.password)}
-                  />
-                </FormField>
-
-                <FormField
-                  id="confirmPassword"
-                  label="Confirm Password *"
-                  icon={<LockOutlinedIcon fontSize="small" />}
-                  error={errors.confirmPassword}
-                >
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    value={form.confirmPassword}
-                    onChange={(e) =>
-                      updateField("confirmPassword", e.target.value)
-                    }
-                    placeholder="Re-enter password"
-                    className={inputClass(!!errors.confirmPassword)}
-                  />
-                </FormField>
-              </div>
-
-              <div className="mt-8 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
-                <button
-                  type="button"
-                  onClick={() => navigate("/users")}
-                  disabled={isLoading}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="inline-flex min-w-[170px] items-center justify-center rounded-xl bg-brand-600 px-5 py-3 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60 shadow-sm shadow-brand-500/10"
-                >
-                  {isLoading ? (
-                    <span className="inline-flex items-center gap-2">
-                      <Spinner />
-                      Creating...
+              <div className="text-center">
+                <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">
+                  {form.file ? (
+                    <span className="text-brand-600 truncate max-w-[220px] block">
+                      {form.file.name}
                     </span>
                   ) : (
-                    "Create User"
+                    "Upload Photo"
                   )}
-                </button>
+                </span>
+                {errors.file ? (
+                  <p className="mt-1 text-xs font-semibold text-red-500">{errors.file}</p>
+                ) : (
+                  <p className="mt-0.5 text-[10px] text-slate-400">
+                    Square JPEG, PNG, WebP, GIF (Max 5MB)
+                  </p>
+                )}
               </div>
-            </form>
-          </section>
+            </div>
+
+            {/* Form Fields Grid */}
+            <div className="grid gap-x-5 gap-y-1.5 md:grid-cols-2">
+              <FormField
+                id="name"
+                label="Full Name *"
+                icon={<PersonOutlineOutlinedIcon fontSize="small" />}
+                error={errors.name}
+              >
+                <input
+                  id="name"
+                  type="text"
+                  value={form.name}
+                  onChange={(e) => updateField("name", e.target.value)}
+                  placeholder="Enter full name"
+                  className={inputClass(!!errors.name)}
+                />
+              </FormField>
+
+              <FormField
+                id="email"
+                label="Email Address *"
+                icon={<EmailOutlinedIcon fontSize="small" />}
+                error={errors.email}
+              >
+                <input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  placeholder="Enter email address"
+                  className={inputClass(!!errors.email)}
+                />
+              </FormField>
+
+              <FormField
+                id="state"
+                label="State *"
+                icon={<PlaceOutlinedIcon fontSize="small" />}
+                error={errors.state}
+              >
+                <select
+                  id="state"
+                  value={form.state}
+                  onChange={(e) => {
+                    updateField("state", e.target.value);
+                    updateField("city", "");
+                  }}
+                  className={inputClass(!!errors.state)}
+                >
+                  <option value="" disabled>
+                    Select State
+                  </option>
+                  {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
+                    <option key={s} value={s}>
+                      {s}
+                    </option>
+                  ))}
+                </select>
+              </FormField>
+
+              <FormField
+                id="city"
+                label="City *"
+                icon={<PlaceOutlinedIcon fontSize="small" />}
+                error={errors.city}
+              >
+                <select
+                  id="city"
+                  value={form.city}
+                  onChange={(e) => updateField("city", e.target.value)}
+                  disabled={!form.state}
+                  className={inputClass(!!errors.city)}
+                >
+                  <option value="" disabled>
+                    {form.state ? "Select City" : "Select State first"}
+                  </option>
+                  {form.state &&
+                    INDIAN_STATES_AND_CITIES[form.state].map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                </select>
+              </FormField>
+
+              <FormField
+                id="mobile"
+                label="Mobile Number *"
+                icon={<PhoneOutlinedIcon fontSize="small" />}
+                error={errors.mobile}
+                helperText="Exactly 10 digits"
+              >
+                <input
+                  id="mobile"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={form.mobile}
+                  onChange={(e) =>
+                    updateField("mobile", e.target.value.replace(/\D/g, ""))
+                  }
+                  placeholder="Enter mobile number"
+                  className={inputClass(!!errors.mobile)}
+                />
+              </FormField>
+
+              {/* Hidden traveler user type input */}
+              <input type="hidden" name="type" value="traveler" />
+
+              <div className="hidden md:block" />
+
+              <FormField
+                id="password"
+                label="Password *"
+                icon={<LockOutlinedIcon fontSize="small" />}
+                error={errors.password}
+                helperText="Minimum 6 characters"
+              >
+                <input
+                  id="password"
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => updateField("password", e.target.value)}
+                  placeholder="Enter password"
+                  className={inputClass(!!errors.password)}
+                />
+              </FormField>
+
+              <FormField
+                id="confirmPassword"
+                label="Confirm Password *"
+                icon={<LockOutlinedIcon fontSize="small" />}
+                error={errors.confirmPassword}
+              >
+                <input
+                  id="confirmPassword"
+                  type="password"
+                  value={form.confirmPassword}
+                  onChange={(e) =>
+                    updateField("confirmPassword", e.target.value)
+                  }
+                  placeholder="Re-enter password"
+                  className={inputClass(!!errors.confirmPassword)}
+                />
+              </FormField>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => navigate("/users")}
+                disabled={isLoading}
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="inline-flex min-w-[170px] items-center justify-center rounded-xl bg-brand-600 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 disabled:cursor-not-allowed disabled:opacity-60 shadow-sm shadow-brand-500/10"
+              >
+                {isLoading ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner />
+                    Creating...
+                  </span>
+                ) : (
+                  "Create User"
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
