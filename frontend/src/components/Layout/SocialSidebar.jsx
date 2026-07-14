@@ -254,7 +254,7 @@
 //   };
 
 //     <>
-//       {/* ðŸ’» DESKTOP SIDEBAR ðŸ’» */}
+//       {/* 💻 DESKTOP SIDEBAR 💻 */}
 //       <nav className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-white/80 backdrop-blur-xl border-r border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.06)] z-40 py-4 px-3 justify-between transition-colors duration-300">
 //         {/* Top section */}
 //         <div className="flex flex-col gap-0.5">
@@ -1316,7 +1316,7 @@ import { SOCKET_EVENTS } from "../../constants/socketEvents";
 
 const notifIcon = (type) => {
   if (type === "post_like")
-    return <span className="text-sm leading-none">âœ¨</span>;
+    return <Sparkles className="w-3.5 h-3.5 text-amber-500" />;
   if (type === "post_comment")
     return <MessageSquareIcon className="w-3.5 h-3.5 text-brand-600" />;
   if (type === "follow" || type === "new_follower" || type === "follow_request")
@@ -1630,7 +1630,7 @@ const SocialSidebar = () => {
 
   return (
     <>
-      {/* ðŸ’» DESKTOP SIDEBAR ðŸ’» */}
+      {/* DESKTOP SIDEBAR */}
       <div className="hidden lg:block w-64 shrink-0 h-screen sticky top-0 z-50">
         <nav className="flex flex-col h-full bg-white border-r border-slate-100 shadow-sm py-6 px-4 justify-between transition-colors duration-300">
           {/* Top section */}

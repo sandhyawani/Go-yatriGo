@@ -111,8 +111,8 @@ export const ProfileHeader = ({
               {profileUser.privateAccount &&
                 currentUser?.isAdmin &&
                 !isOwnProfile && (
-                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary-600 bg-white border border-primary-600 px-2 py-0.5 rounded-md inline-block w-fit mt-1">
-                    Private Account ðŸ”’ â€” Admin Override Active
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-primary-600 bg-white border border-primary-600 px-2 py-0.5 rounded-md inline-flex items-center gap-1 w-fit mt-1">
+                    Private Account — Admin Override Active
                   </span>
                 )}
             </div>

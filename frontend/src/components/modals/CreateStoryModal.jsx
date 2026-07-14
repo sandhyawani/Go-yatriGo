@@ -38,20 +38,20 @@ import StorySticker from "../story/StorySticker";
 import Avatar from "../common/Avatar";
 
 const travelEmojis = [
-  "ðŸŒ„",
-  "ðŸ•ï¸",
-  "ðŸš—",
-  "âœˆï¸",
-  "ðŸŒ",
-  "â˜•",
-  "â›°ï¸",
-  "ðŸŒ…",
-  "ðŸ“",
-  "ðŸŒ´",
-  "ðŸŒŠ",
-  "ðŸŽ’",
-  "ðŸ›µ",
-  "ðŸš‚",
+  "\u{1F304}",
+  "\u{1F3D5}\uFE0F",
+  "\u{1F697}",
+  "\u2708\uFE0F",
+  "\u{1F30D}",
+  "\u2615",
+  "\u26F0\uFE0F",
+  "\u{1F305}",
+  "\u{1F4CD}",
+  "\u{1F334}",
+  "\u{1F30A}",
+  "\u{1F392}",
+  "\u{1F6F5}",
+  "\u{1F682}",
 ];
 const fonts = [
   { name: "Clean", family: "Inter, sans-serif" },
@@ -70,30 +70,30 @@ const textColors = [
 ];
 
 const popularLanguages = [
-  { label: "ðŸ”¥ All Languages", value: "" },
-  { label: "ðŸ‡®ðŸ‡³ Hindi", value: "Hindi" },
-  { label: "ðŸ‡®ðŸ‡³ Telugu", value: "Telugu" },
-  { label: "ðŸ‡®ðŸ‡³ Tamil", value: "Tamil" },
-  { label: "ðŸ‡®ðŸ‡³ Punjabi", value: "Punjabi" },
-  { label: "ðŸ‡®ðŸ‡³ Malayalam", value: "Malayalam" },
-  { label: "ðŸ‡®ðŸ‡³ Kannada", value: "Kannada" },
-  { label: "ðŸ‡®ðŸ‡³ Marathi", value: "Marathi" },
-  { label: "ðŸŽ§ English Pop", value: "English" },
-  { label: "ðŸŒ¸ K-Pop", value: "K-Pop" },
-  { label: "ðŸ’ƒ Spanish", value: "Spanish" },
+  { label: "All Languages", value: "" },
+  { label: "Hindi", value: "Hindi" },
+  { label: "Telugu", value: "Telugu" },
+  { label: "Tamil", value: "Tamil" },
+  { label: "Punjabi", value: "Punjabi" },
+  { label: "Malayalam", value: "Malayalam" },
+  { label: "Kannada", value: "Kannada" },
+  { label: "Marathi", value: "Marathi" },
+  { label: "English Pop", value: "English" },
+  { label: "K-Pop", value: "K-Pop" },
+  { label: "Spanish", value: "Spanish" },
 ];
 
 const popularDestinations = [
-  { label: "ðŸ–ï¸ Goa", value: "Goa" },
-  { label: "ðŸ”ï¸ Manali", value: "Manali" },
-  { label: "ðŸ° Jaipur", value: "Jaipur" },
-  { label: "ðŸï¸ Ladakh", value: "Ladakh" },
-  { label: "ðŸŒ´ Kerala", value: "Kerala" },
-  { label: "ðŸŒƒ Mumbai", value: "Mumbai" },
-  { label: "ðŸ§˜ Rishikesh", value: "Rishikesh" },
-  { label: "ðŸ° Udaipur", value: "Udaipur" },
-  { label: "ðŸ›• Varanasi", value: "Varanasi" },
-  { label: "â˜• Coorg", value: "Coorg" },
+  { label: "Goa", value: "Goa" },
+  { label: "Manali", value: "Manali" },
+  { label: "Jaipur", value: "Jaipur" },
+  { label: "Ladakh", value: "Ladakh" },
+  { label: "Kerala", value: "Kerala" },
+  { label: "Mumbai", value: "Mumbai" },
+  { label: "Rishikesh", value: "Rishikesh" },
+  { label: "Udaipur", value: "Udaipur" },
+  { label: "Varanasi", value: "Varanasi" },
+  { label: "Coorg", value: "Coorg" },
 ];
 
 const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
@@ -811,7 +811,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                   onClick={() => cameraInputRef.current?.click()}
                   className="flex-1 py-3.5 rounded-xl font-bold text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-2"
                 >
-                  ðŸ“· Camera
+                  Camera
                 </button>
                 <button
                   onClick={() => fileInputRef.current?.click()}
@@ -1251,7 +1251,7 @@ const CreateStoryModal = ({ isOpen, onClose, onSuccess }) => {
                           {!locationQuery.trim() && (
                             <div className="mb-2">
                               <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                ðŸ”¥ Popular Destinations
+                                Popular Destinations
                               </p>
                               <div className="flex flex-col gap-1.5">
                                 {popularDestinations.map((dest) => (

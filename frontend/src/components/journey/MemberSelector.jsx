@@ -111,7 +111,7 @@ const MemberSelector = ({
     if (activeTab === "Journey Mates") {
       return {
         category: "Journey Mates",
-        badgeIcon: "âœ¨",
+        badgeIcon: "✨",
         badgeText: "Follower",
         subText: "Follows You",
         verified: index % 3 === 0,
@@ -160,11 +160,11 @@ const MemberSelector = ({
   const displayUsers = filteredList.slice(0, displayLimit);
 
   const tabs = [
-    { id: "Friends", label: "ðŸ‘¥ Friends", desc: "(Mutual Connections)" },
-    { id: "Journey Mates", label: "â­ Journey Mates", desc: "(People following you)" },
+    { id: "Friends", label: "Friends", desc: "(Mutual Connections)" },
+    { id: "Journey Mates", label: "Journey Mates", desc: "(People following you)" },
     {
       id: "Previous Companions",
-      label: "ðŸ• Previous Companions",
+      label: "Previous Companions",
       desc: "(Past travel squad)",
     },
   ];
@@ -280,12 +280,12 @@ const MemberSelector = ({
                         {activeTab === "Previous Companions" ? (
                           <>
                             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/60 text-[#8B5CF6] dark:text-brand-300 text-[10px] font-extrabold border border-brand-100 dark:border-brand-800/60">
-                              ðŸ• {u.tripsCount || 1}{" "}
+                              {u.tripsCount || 1}{" "}
                               {u.tripsCount === 1 ? "Trip" : "Trips"} Together
                             </span>
                             {lastTripName && (
                               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[10px] font-semibold border border-amber-100 dark:border-amber-800/50 truncate max-w-[160px]">
-                                ðŸŒ„ Last Trip: {lastTripName}
+                                Last Trip: {lastTripName}
                               </span>
                             )}
                           </>

@@ -15,6 +15,7 @@ import {
   Send,
   Globe,
   Calendar,
+  Sparkles,
 } from "lucide-react";
 import moment from "moment";
 import Avatar from "../common/Avatar";
@@ -235,7 +236,7 @@ const FeedCard = React.forwardRef(
                       if (index === 0) return [item];
                       return [
                         ...acc,
-                        <span key={`sep-${index}`} className="text-slate-300 select-none">â€¢</span>,
+                        <span key={`sep-${index}`} className="text-slate-300 select-none">•</span>,
                         item
                       ];
                     }, [])}
@@ -377,7 +378,7 @@ const FeedCard = React.forwardRef(
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                <span className="text-6xl drop-shadow-md">âœ¨</span>
+                <Sparkles className="w-16 h-16 text-amber-400 drop-shadow-md" />
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -392,49 +393,46 @@ const FeedCard = React.forwardRef(
         </div>
 
         {/* Post actions & comments */}
-        <div className="px-5 pt-3.5 pb-2">
-          <div className="flex items-center justify-between w-full bg-slate-50 px-4 py-2.5 rounded-2xl border border-slate-100 shadow-xs">
-            <div className="flex items-center gap-6 shrink-0 overflow-hidden">
+        <div className="px-5 pt-3 pb-3">
+          <div className="flex items-center justify-between w-full bg-slate-50 px-3.5 py-2 rounded-2xl border border-slate-100 shadow-xs">
+            <div className="flex items-center gap-5 shrink-0 overflow-hidden">
+              {/* ✨ Felt / Sparkles Option */}
               <button
                 onClick={() => handleLike(post._id)}
                 disabled={likeLoadingMap[post._id]}
                 aria-label={
                   hasLiked ? "Remove Felt This reaction" : "Felt this travel memory"
                 }
-                className={`flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap ${likeLoadingMap[post._id] ? "opacity-50 cursor-not-allowed" : ""}`}
+                className={`flex items-center gap-1.5 group transition-all duration-200 active:scale-90 py-1 rounded-xl whitespace-nowrap ${likeLoadingMap[post._id] ? "opacity-50 cursor-not-allowed" : ""}`}
               >
+                <span className="text-[15px] select-none">✨</span>
                 <span
-                  className={`text-[15px] transition-all duration-200 ${hasLiked ? "scale-110" : "opacity-75 group-hover:scale-110 group-hover:opacity-100"} leading-none`}
-                >
-                  âœ¨
-                </span>
-                <span
-                  className={`text-xs font-bold transition-colors duration-200 ${hasLiked ? "text-brand-600" : "text-slate-500 group-hover:text-brand-600"}`}
+                  className={`text-[13px] font-bold transition-colors duration-200 ${hasLiked ? "text-brand-600" : "text-slate-500 group-hover:text-brand-600"}`}
                 >
                   {likesCount > 0 ? `${likesCount}` : "0"}
                 </span>
               </button>
+
+              {/* 💬 Comments Option */}
               <button
                 onClick={() => handleOpenComments(post._id)}
                 aria-label="Open Thoughts"
-                className="flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap"
+                className="flex items-center gap-1.5 group transition-all duration-200 active:scale-90 py-1 rounded-xl whitespace-nowrap"
               >
-                <span className="text-[15px] opacity-75 group-hover:opacity-100 transition-opacity leading-none">
-                  ðŸ’­
-                </span>
-                <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
+                <span className="text-[15px] select-none">💬</span>
+                <span className="text-[13px] font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
                   {totalCommentsCount > 0 ? `${totalCommentsCount}` : "0"}
                 </span>
               </button>
+
+              {/* 🌍 Share Option */}
               <button
                 onClick={() => handleShare(post._id)}
                 aria-label="Spread Vibes"
-                className="flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap hidden sm:flex"
+                className="flex items-center gap-1.5 group transition-all duration-200 active:scale-90 py-1 rounded-xl whitespace-nowrap hidden sm:flex"
               >
-                <span className="text-[15px] opacity-75 group-hover:opacity-100 transition-all leading-none">
-                  ðŸŒ
-                </span>
-                <span className="text-xs font-bold text-slate-500 group-hover:text-brand-600 transition-colors">
+                <span className="text-[15px] select-none">🌍</span>
+                <span className="text-[13px] font-bold text-slate-500 group-hover:text-brand-600 transition-colors">
                   Share
                 </span>
               </button>
@@ -443,18 +441,18 @@ const FeedCard = React.forwardRef(
               onClick={() => handleSaveToggle(post._id)}
               disabled={saveLoadingMap[post._id?.toString()]}
               aria-label={isSaved ? "Remove saved travel memory" : "Save travel memory"}
-              className="group transition-all duration-200 active:scale-95 hover:scale-105 disabled:opacity-50 shrink-0 ml-2 p-1.5 rounded-full hover:bg-slate-200"
+              className="group transition-all duration-200 active:scale-95 hover:scale-105 disabled:opacity-50 shrink-0 ml-3 p-1.5 rounded-full hover:bg-slate-200"
             >
               <Bookmark
-                className={`w-4 h-4 ${isSaved ? "text-brand-600 fill-brand-600" : "text-slate-500 group-hover:text-brand-600"} transition-colors`}
+                className={`w-[18px] h-[18px] ${isSaved ? "text-brand-600 fill-brand-600" : "text-slate-500 group-hover:text-brand-600"} transition-colors`}
               />
             </button>
           </div>
 
           {/* Caption Section */}
-          <div className="pt-2">
-            <div className="text-sm px-1 pb-1 leading-relaxed">
-              <span className="font-bold text-slate-800">{post.userName}</span>
+          <div className="pt-4">
+            <div className="text-[13px] px-1 pb-1.5 leading-relaxed">
+              <span className="font-extrabold text-slate-900">{post.userName}</span>
               <span className="ml-2 text-slate-600">
                 {renderClickableText(post.caption || post.title)}
               </span>
@@ -566,4 +564,3 @@ const FeedCard = React.forwardRef(
 FeedCard.displayName = "FeedCard";
 
 export default FeedCard;
-

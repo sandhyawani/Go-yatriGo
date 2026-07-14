@@ -898,7 +898,7 @@ const Profile = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 select-none">
                   <div>
                     <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
-                      ðŸš€ Welcome to your Onboarding Checklist
+                      <Compass className="w-5 h-5 text-brand-600" /> Welcome to your Onboarding Checklist
                     </h3>
                     <p className="text-xs text-slate-500 font-medium mt-0.5">
                       Complete these quick steps to set up your profile and start exploring Go YatriGo.
@@ -1100,8 +1100,8 @@ const Profile = () => {
                         <div className="absolute inset-0 bg-brand-500/5 rounded-full blur-xl animate-pulse"></div>
                         <Globe className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
-                      <h3 className="text-base font-black text-slate-900 mb-1">
-                        {isOwnProfile ? "ðŸŒ Welcome to Go YatriGo!" : "No Travel Memories"}
+                      <h3 className="text-base font-black text-slate-900 mb-1 flex items-center gap-2 justify-center">
+                        {isOwnProfile ? <><Globe className="w-5 h-5 text-brand-500" /> Welcome to Go YatriGo!</> : "No Travel Memories"}
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
                         {isOwnProfile 
@@ -1158,9 +1158,7 @@ const Profile = () => {
                               )}
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                                 <span className="flex items-center gap-1.5 font-bold">
-                                  <span className="text-base leading-none">
-                                    âœ¨
-                                  </span>{" "}
+                                  <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />{" "}
                                   {post.likes?.length || 0}
                                 </span>
                                 <span className="flex items-center gap-1.5 font-bold">
@@ -1283,7 +1281,7 @@ const Profile = () => {
                             )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
-                                <span className="text-[18px]">âœ¨</span>{" "}
+                                <Sparkles className="w-5 h-5 text-amber-400 fill-amber-400" />{" "}
                                 {story.reactions?.length ||
                                   story.storyReactions?.length ||
                                   0}
@@ -1344,8 +1342,8 @@ const Profile = () => {
                         <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl animate-pulse"></div>
                         <Star className="w-10 h-10 text-amber-200 fill-amber-100 relative z-10" />
                       </div>
-                      <h3 className="text-sm font-bold text-slate-900 mb-1">
-                        No felt vibes yet âœ¨
+                      <h3 className="text-sm font-bold text-slate-900 mb-1 flex items-center gap-1.5 justify-center">
+                        No felt vibes yet <Sparkles className="w-4 h-4 text-amber-500" />
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium">
                         No travel memories have been felt yet.
@@ -1441,9 +1439,7 @@ const Profile = () => {
                                 <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
                                   <div className="flex items-center gap-3 text-white/90 text-xs font-semibold">
                                     <div className="flex items-center gap-1">
-                                      <span className="text-xs leading-none">
-                                        âœ¨
-                                      </span>{" "}
+                                      <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{" "}
                                       {post.likes?.length ||
                                         post.likesCount ||
                                         0}
@@ -1622,9 +1618,7 @@ const Profile = () => {
                             )}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
-                                <span className="text-base leading-none">
-                                  âœ¨
-                                </span>{" "}
+                                <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />{" "}
                                 {post.likes?.length || 0}
                               </span>
                               <span className="flex items-center gap-1.5 font-bold">
@@ -2027,9 +2021,7 @@ const Profile = () => {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50"
                   >
-                    <span className="text-6xl drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]">
-                      âœ¨
-                    </span>
+                    <Sparkles className="w-16 h-16 text-amber-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -2099,9 +2091,7 @@ const Profile = () => {
                 }}
                 className="absolute bottom-4 left-4 bg-black/60 hover:bg-black/80 transition-all backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-white shadow-sm border border-white/20 cursor-pointer active:scale-95"
               >
-                <span className="text-[18px] drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] scale-110 transition-transform">
-                  âœ¨
-                </span>
+                <Sparkles className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] scale-110 transition-transform" />
                 <span className="text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
                   {selectedMemory.likes?.length || 0} Felt This
                 </span>
