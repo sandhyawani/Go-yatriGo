@@ -44,7 +44,7 @@ export const SidebarSearch = ({
                 <Search className="w-4 h-4 text-brand-500" /> Search
               </h3>
               <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
-                Travelers · Trips · Memories
+                Travelers Â· Trips Â· Memories
               </p>
             </div>
             <button
@@ -88,7 +88,7 @@ export const SidebarSearch = ({
                   searchTab === tab ? "bg-brand-500 text-white shadow-sm shadow-brand-500/20" : "bg-slate-50 text-slate-500 hover:bg-slate-100"
                 }`}
               >
-                {tab}
+                {tab === "posts" ? "Travel Memories" : tab}
               </button>
             ))}
           </div>
@@ -161,7 +161,7 @@ export const SidebarSearch = ({
                           <h4 className="text-[13px] font-bold text-slate-800 truncate">{trip.title}</h4>
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="text-[8px] bg-brand-500/10 text-brand-500 font-bold px-1.5 py-0.5 rounded">{trip.category}</span>
-                            <span className="text-[10px] text-slate-400 truncate">→ {trip.destination}</span>
+                            <span className="text-[10px] text-slate-400 truncate">â†’ {trip.destination}</span>
                           </div>
                         </div>
                         <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-500 transition-colors" />

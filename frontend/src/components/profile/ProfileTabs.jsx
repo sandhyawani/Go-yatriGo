@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 
 export const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
   const tabs = [
-    { id: "posts", icon: Grid, label: "Posts", show: true },
+    { id: "posts", icon: Grid, label: "Travel Memories", show: true },
     {
       id: "stories",
       icon: Activity,

@@ -254,7 +254,7 @@
 //   };
 
 //     <>
-//       {/* 💻 DESKTOP SIDEBAR 💻 */}
+//       {/* ðŸ’» DESKTOP SIDEBAR ðŸ’» */}
 //       <nav className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-[260px] bg-white/80 backdrop-blur-xl border-r border-white/40 shadow-[0_8px_30px_rgba(0,0,0,0.06)] z-40 py-4 px-3 justify-between transition-colors duration-300">
 //         {/* Top section */}
 //         <div className="flex flex-col gap-0.5">
@@ -422,7 +422,7 @@
 //                           <Bell className="w-8 h-8 text-primary-600/40" />
 //                         </div>
 //                         <p className="text-sm text-slate-500 font-bold">
-//                           No new travel updates in {notifCategory} ✈️
+//                           No new travel updates in {notifCategory} âœˆï¸
 //                         </p>
 //                       </div>
 //                     ) : (
@@ -753,7 +753,7 @@
 //         </div>
 //       </nav>
 
-//       {/* mobile top header — hidden on full-screen focused routes */}
+//       {/* mobile top header â€” hidden on full-screen focused routes */}
 //       {(() => {
 
 //           /^\/social\/chat\/.+/.test(path) ||
@@ -832,7 +832,7 @@
 //         );
 //       })()}
 
-//       {/* mobile bottom nav — hidden on full-screen focused routes like individual chat, settings pages, trip creation, etc. */}
+//       {/* mobile bottom nav â€” hidden on full-screen focused routes like individual chat, settings pages, trip creation, etc. */}
 //       {user && (() => {
 
 //         // Hide on any route where the user is doing a focused task
@@ -1028,7 +1028,7 @@
 //                   <Search className="w-4 h-4 text-primary-600" /> Search
 //                 </h3>
 //                 <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
-//                   Travelers · Trips · Memories
+//                   Travelers Â· Trips Â· Memories
 //                 </p>
 //               </div>
 //               <button
@@ -1179,7 +1179,7 @@
 //                                   {trip.category}
 //                                 </span>
 //                                 <span className="text-[10px] text-slate-400 truncate">
-//                                   → {trip.destination}
+//                                   â†’ {trip.destination}
 //                                 </span>
 //                               </div>
 //                             </div>
@@ -1316,7 +1316,7 @@ import { SOCKET_EVENTS } from "../../constants/socketEvents";
 
 const notifIcon = (type) => {
   if (type === "post_like")
-    return <span className="text-sm leading-none">✨</span>;
+    return <span className="text-sm leading-none">âœ¨</span>;
   if (type === "post_comment")
     return <MessageSquareIcon className="w-3.5 h-3.5 text-brand-600" />;
   if (type === "follow" || type === "new_follower" || type === "follow_request")
@@ -1630,7 +1630,7 @@ const SocialSidebar = () => {
 
   return (
     <>
-      {/* 💻 DESKTOP SIDEBAR 💻 */}
+      {/* ðŸ’» DESKTOP SIDEBAR ðŸ’» */}
       <div className="hidden lg:block w-64 shrink-0 h-screen sticky top-0 z-50">
         <nav className="flex flex-col h-full bg-white border-r border-slate-100 shadow-sm py-6 px-4 justify-between transition-colors duration-300">
           {/* Top section */}
@@ -1797,7 +1797,7 @@ const SocialSidebar = () => {
                           <Bell className="w-8 h-8 text-slate-300" />
                         </div>
                         <p className="text-sm text-slate-500 font-bold">
-                          No new travel updates in {notifCategory} ✈️
+                          No new travel updates in {notifCategory} âœˆï¸
                         </p>
                       </div>
                     ) : (
@@ -2401,7 +2401,7 @@ const SocialSidebar = () => {
                   <Search className="w-4 h-4 text-brand-600" /> Search
                 </h3>
                 <p className="text-[10px] text-slate-400 font-medium mt-0.5 uppercase tracking-wider">
-                  Travelers · Trips · Memories
+                  Travelers Â· Trips Â· Memories
                 </p>
               </div>
               <button
@@ -2443,7 +2443,7 @@ const SocialSidebar = () => {
                   onClick={() => setSearchTab(tab)}
                   className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all capitalize whitespace-nowrap ${searchTab === tab ? "bg-brand-600 text-white shadow-xs" : "bg-slate-50 text-slate-500 hover:bg-slate-100"}`}
                 >
-                  {tab}
+                  {tab === "posts" ? "Travel Memories" : tab}
                 </button>
               ))}
             </div>
@@ -2552,7 +2552,7 @@ const SocialSidebar = () => {
                                   {trip.category}
                                 </span>
                                 <span className="text-[10px] text-slate-400 truncate">
-                                  → {trip.destination}
+                                  â†’ {trip.destination}
                                 </span>
                               </div>
                             </div>

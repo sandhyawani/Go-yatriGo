@@ -251,7 +251,7 @@ export const ProfileHeader = ({
                 {userMemories?.length || 0}
               </span>
               <span className="text-xs text-slate-500 font-medium tracking-wide">
-                Posts
+                Travel Memories
               </span>
             </div>
             <div

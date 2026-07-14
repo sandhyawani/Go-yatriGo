@@ -235,7 +235,7 @@ const FeedCard = React.forwardRef(
                       if (index === 0) return [item];
                       return [
                         ...acc,
-                        <span key={`sep-${index}`} className="text-slate-300 select-none">•</span>,
+                        <span key={`sep-${index}`} className="text-slate-300 select-none">â€¢</span>,
                         item
                       ];
                     }, [])}
@@ -313,7 +313,7 @@ const FeedCard = React.forwardRef(
           ) : (
             <LazyImage
               src={post.mediaUrl || post.image}
-              alt={post.location || post.caption || "Post image"}
+              alt={post.location || post.caption || "Travel memory image"}
               className="w-full h-[380px] object-cover hover:scale-[1.01] transition-all duration-500"
             />
           )}
@@ -377,7 +377,7 @@ const FeedCard = React.forwardRef(
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.3, ease: "easeOut" }}
               >
-                <span className="text-6xl drop-shadow-md">✨</span>
+                <span className="text-6xl drop-shadow-md">âœ¨</span>
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -399,14 +399,14 @@ const FeedCard = React.forwardRef(
                 onClick={() => handleLike(post._id)}
                 disabled={likeLoadingMap[post._id]}
                 aria-label={
-                  hasLiked ? "Remove Felt This reaction" : "Felt This post"
+                  hasLiked ? "Remove Felt This reaction" : "Felt this travel memory"
                 }
                 className={`flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap ${likeLoadingMap[post._id] ? "opacity-50 cursor-not-allowed" : ""}`}
               >
                 <span
                   className={`text-[15px] transition-all duration-200 ${hasLiked ? "scale-110" : "opacity-75 group-hover:scale-110 group-hover:opacity-100"} leading-none`}
                 >
-                  ✨
+                  âœ¨
                 </span>
                 <span
                   className={`text-xs font-bold transition-colors duration-200 ${hasLiked ? "text-brand-600" : "text-slate-500 group-hover:text-brand-600"}`}
@@ -420,7 +420,7 @@ const FeedCard = React.forwardRef(
                 className="flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap"
               >
                 <span className="text-[15px] opacity-75 group-hover:opacity-100 transition-opacity leading-none">
-                  💭
+                  ðŸ’­
                 </span>
                 <span className="text-xs font-bold text-slate-500 group-hover:text-slate-700 transition-colors">
                   {totalCommentsCount > 0 ? `${totalCommentsCount}` : "0"}
@@ -432,7 +432,7 @@ const FeedCard = React.forwardRef(
                 className="flex items-center gap-2 group transition-all duration-200 active:scale-90 px-2 py-1 rounded-xl whitespace-nowrap hidden sm:flex"
               >
                 <span className="text-[15px] opacity-75 group-hover:opacity-100 transition-all leading-none">
-                  🌍
+                  ðŸŒ
                 </span>
                 <span className="text-xs font-bold text-slate-500 group-hover:text-brand-600 transition-colors">
                   Share
@@ -442,7 +442,7 @@ const FeedCard = React.forwardRef(
             <button
               onClick={() => handleSaveToggle(post._id)}
               disabled={saveLoadingMap[post._id?.toString()]}
-              aria-label={isSaved ? "Remove saved post" : "Save post"}
+              aria-label={isSaved ? "Remove saved travel memory" : "Save travel memory"}
               className="group transition-all duration-200 active:scale-95 hover:scale-105 disabled:opacity-50 shrink-0 ml-2 p-1.5 rounded-full hover:bg-slate-200"
             >
               <Bookmark
