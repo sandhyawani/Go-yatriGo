@@ -90,7 +90,7 @@ const VerificationRequests = () => {
     setActionLoading(true);
     try {
       await axios.put(
-        `/admin/user/${id}/verify/approve`,
+        `/admin/users/${id}/verify/approve`,
         {},
         { withCredentials: true },
       );
@@ -135,7 +135,7 @@ const VerificationRequests = () => {
     setActionLoading(true);
     try {
       await axios.put(
-        `/admin/user/${id}/verify/reject`,
+        `/admin/users/${id}/verify/reject`,
         { reason: finalReason },
         { withCredentials: true },
       );
@@ -351,7 +351,7 @@ const VerificationRequests = () => {
                         </span>
                       </h2>
                       <p className="text-slate-500 text-sm">
-                        @{selectedUser.username} • Submitted{" "}
+                        @{selectedUser.username} â€¢ Submitted{" "}
                         {moment(selectedUser.updatedAt).format("MMM DD, YYYY")}
                       </p>
                     </div>

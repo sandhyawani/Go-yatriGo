@@ -76,10 +76,10 @@ const AdminReports = () => {
         await axios.put(`/admin/report/${payload.id}/resolve`, { status: payload.status });
         showToast.success(`Report marked as ${payload.status}`);
       } else if (action === "suspend") {
-        await axios.put(`/admin/user/${payload.id}/suspend`);
+        await axios.put(`/admin/users/${payload.id}/suspend`);
         showToast.success("User suspended");
       } else if (action === "unsuspend") {
-        await axios.put(`/admin/user/${payload.id}/unsuspend`);
+        await axios.put(`/admin/users/${payload.id}/unsuspend`);
         showToast.success("User unsuspended");
       } else if (action === "delete_post") {
         await axios.delete(`/admin/post/${payload.id}`);
@@ -103,7 +103,7 @@ const AdminReports = () => {
 
     try {
       setActionLoading(true);
-      await axios.post(`/admin/user/${warnModal.userId}/warn`, { message: warnModal.message });
+      await axios.post(`/admin/users/${warnModal.userId}/warn`, { message: warnModal.message });
       showToast.success("Warning sent to user");
       setWarnModal(blankWarning);
     } catch (requestError) {
