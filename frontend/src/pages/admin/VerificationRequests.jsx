@@ -191,7 +191,7 @@ const VerificationRequests = () => {
   const isPdf = selectedUser?.govId?.toLowerCase().endsWith(".pdf");
 
   return (
-    <div className="min-h-screen pt-4 pb-20 bg-slate-50">
+    <div className="min-h-screen pt-4 pb-20 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8 flex justify-between items-end">
           <div>

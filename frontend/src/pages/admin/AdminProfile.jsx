@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { motion } from "framer-motion";
@@ -32,7 +32,7 @@ const AdminProfile = () => {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-slate-50 px-4 pb-10 pt-5 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-white px-4 pb-10 pt-5 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-4xl animate-pulse space-y-4">
           <div className="h-8 w-48 rounded-lg bg-slate-200" />
           <div className="h-36 w-full rounded-2xl bg-slate-200" />
@@ -47,7 +47,7 @@ const AdminProfile = () => {
 
   if (!user) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+      <main className="flex min-h-screen items-center justify-center bg-white p-4">
         <div className="text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
             <AlertTriangle className="h-6 w-6 text-red-500" />
@@ -79,7 +79,7 @@ const AdminProfile = () => {
   });
 
   return (
-    <main className="min-h-screen bg-slate-50 px-4 pb-10 pt-5 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-white px-4 pb-10 pt-5 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-4xl space-y-4">
         <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
           <div>
