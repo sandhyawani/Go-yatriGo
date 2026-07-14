@@ -409,7 +409,7 @@ const AdminContactRequests = () => {
   const hasActiveFilters = Boolean(searchTerm.trim()) || filter !== STATUS.ALL;
 
   return (
-    <div className="min-h-screen bg-slate-50/50 pb-12">
+    <div className="min-h-screen bg-slate-50 pb-12">
       <div className="mx-auto max-w-7xl px-6 pt-10">
         <div className="mb-10 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>

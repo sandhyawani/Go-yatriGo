@@ -283,7 +283,7 @@ const Admin = () => {
 
   return (
     <main
-      className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6"
+      className="min-h-[calc(100vh-72px)] bg-slate-50 px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6"
       aria-label="Admin dashboard"
     >
       <div className="mx-auto max-w-[1450px]">

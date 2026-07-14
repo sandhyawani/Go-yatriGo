@@ -145,7 +145,7 @@ const AdminReports = () => {
   }, [filter, reports, search]);
 
   return (
-    <main className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6">
+    <main className="min-h-[calc(100vh-72px)] bg-slate-50 px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6">
       <div className="mx-auto max-w-[1450px]">
         <motion.header
           initial={{ opacity: 0, y: 8 }}
