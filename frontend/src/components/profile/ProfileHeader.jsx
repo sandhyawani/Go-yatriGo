@@ -2,13 +2,10 @@ import React from "react";
 import {
   Mail,
   Phone,
-  Globe,
   Calendar,
   MapPin,
   Clock,
   Edit,
-  UserPlus,
-  UserMinus,
   Ban,
   ShieldAlert,
   Star,
@@ -146,17 +143,14 @@ export const ProfileHeader = ({
                     followLoading ? "opacity-50 cursor-not-allowed" : ""
                   } ${
                     isFollowing || isRequested
-                      ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-rose-50 hover:text-rose-600 hover:border-rose-600"
+                      ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-primary-50/50"
                       : "bg-primary-600 hover:bg-primary-700 text-white"
                   }`}
                 >
                   {followLoading ? (
                     "..."
                   ) : isFollowing ? (
-                    <>
-                      <span className="group-hover:hidden">My Journey Mates</span>
-                      <span className="hidden group-hover:inline">Unfollow</span>
-                    </>
+                    "Journey Mates"
                   ) : isRequested ? (
                     "Requested"
                   ) : (
@@ -241,7 +235,7 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          {/* Row 2: Stats (Stats inline with more space) */}
+          {/* Row 2: Stats */}
           <div className="flex items-center justify-center md:justify-start gap-10 select-none text-slate-900">
             <div
               className="cursor-pointer flex flex-col items-center md:items-start hover:opacity-80 transition-opacity"
@@ -355,7 +349,7 @@ export const ProfileHeader = ({
             </div>
           </div>
 
-          {/* Row 4: Extra Stats (Rating & Trips) acting like Highlights / Extra Info */}
+          {/* Row 4: Extra Stats */}
           <div className="flex items-center justify-center md:justify-start gap-4 select-none pt-2">
             <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">
               <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
@@ -396,4 +390,3 @@ export const ProfileHeader = ({
 };
 
 export default ProfileHeader;
-
