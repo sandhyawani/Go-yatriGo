@@ -70,7 +70,7 @@ router.get("/:id", optionalVerifyToken, getUser);
 
 router.route("/")
   .post(registerUser)
-  .get(protect, getAllUsers); // Fixed to use getAllUsers instead of allUsers
+  .get(protect, getAllUsers);
 
 router.get("/admin/all", verifyAdmin, getAllUsers);
 router.post("/login", authUser);

@@ -528,7 +528,6 @@ exports.acceptInvitation = async (req, res) => {
     invitation.status = "accepted";
     await invitation.save({ session });
 
-    // Explicitly determine which party requested access vs accepted standard invitations
     const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
     const journey = await Journey.findById(invitation.journeyId).session(session);
 

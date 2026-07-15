@@ -68,7 +68,6 @@ const registerUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Only allow safe fields to prevent body-injection privilege escalation
     const user = new User({
       name,
       email: email.toLowerCase().trim(),
@@ -80,9 +79,9 @@ const registerUser = async (req, res, next) => {
       followers: [],
       following: [],
       policiesAcceptedAt: new Date(),
-      isAdmin: false,             // Explicitly locked
-      isVerified: false,          // Explicitly locked
-      verificationStatus: "unverified"  // Explicitly locked
+      isAdmin: false,
+      isVerified: false,
+      verificationStatus: "unverified"
     });
 
     await user.save();

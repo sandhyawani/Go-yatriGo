@@ -194,7 +194,6 @@ io.on("connection", (socket) => {
 
     socket.join(userId);
 
-    // SERVER STEP 0 — personal room registration
     console.log("[SERVER] go_online received", {
       userId,
       socketId: socket.id,
@@ -342,7 +341,6 @@ io.on("connection", (socket) => {
       ? (onlineUsers.get(socket.userId)?.size ?? 0) - 1
       : 0;
 
-    // SERVER — socket lifecycle
     console.log("[SERVER] socket disconnected", {
       socketId: socket.id,
       userId: socket.userId || "unknown",
@@ -371,7 +369,6 @@ io.on("connection", (socket) => {
         }
       }
     } else {
-      // Fallback scan if go_online was not called
       for (const [userId, socketIds] of onlineUsers.entries()) {
         if (socketIds instanceof Set && socketIds.has(socket.id)) {
           socketIds.delete(socket.id);

@@ -69,8 +69,8 @@ const NotificationsSettings = () => {
             endpoint="/settings"
           />
           <SettingsToggle
-            title="Follow & Activity"
-            description="Get notified when someone follows you or likes your posts."
+            title="Journey Mates & Activity"
+            description="Get notified when someone adds you as a Journey Mate or likes your posts."
             settingKey="followActivityNotifications"
             initialValue={settings.followActivityNotifications}
             endpoint="/settings"

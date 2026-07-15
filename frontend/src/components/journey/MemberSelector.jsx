@@ -112,8 +112,8 @@ const MemberSelector = ({
       return {
         category: "Journey Mates",
         badgeIcon: "✨",
-        badgeText: "Follower",
-        subText: "Follows You",
+        badgeText: "Journey Mate",
+        subText: "Your Journey Mate",
         verified: index % 3 === 0,
         online: index % 2 === 0,
       };
@@ -127,8 +127,7 @@ const MemberSelector = ({
   } else if (activeTab === "Journey Mates") {
     rawList = followersList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
   } else {
-    // Friends / Connections tab: show following list if available, else fall back to all users
-    const sourceList = followingList.length > 0 ? followingList : users;
+   const sourceList = followingList.length > 0 ? followingList : users;
     rawList = sourceList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
   }
 
@@ -161,7 +160,7 @@ const MemberSelector = ({
 
   const tabs = [
     { id: "Friends", label: "Friends", desc: "(Mutual Connections)" },
-    { id: "Journey Mates", label: "Journey Mates", desc: "(People following you)" },
+    { id: "Journey Mates", label: "Journey Mates", desc: "(Your Journey Mates)" },
     {
       id: "Previous Companions",
       label: "Previous Companions",

@@ -64,7 +64,6 @@ const updateContact = asyncHandler(async (req, res) => {
     throw new Error("Not authorized");
   }
 
-  // Atomic correction swap: Only run reset operations if flag state shifts to true explicitly
   if (isPrimary && !contact.isPrimary) {
     await EmergencyContact.updateMany(
       { user: req.user._id, _id: { $ne: contact._id } },

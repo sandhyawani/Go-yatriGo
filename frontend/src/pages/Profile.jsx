@@ -263,8 +263,7 @@ const Profile = () => {
     lastTapTime.current = now;
   };
 
-  // Journey Mates/My Journey Mates relations modal states
-  const [showRelationsModal, setShowRelationsModal] = useState(false);
+ const [showRelationsModal, setShowRelationsModal] = useState(false);
   const [relationsModalType, setRelationsModalType] = useState("followers"); // "followers" or "following"
   const [relationsSearch, setRelationsSearch] = useState("");
   const [relationsList, setRelationsList] = useState([]);
@@ -2225,7 +2224,7 @@ const Profile = () => {
 
                         {!isSelf && (
                           <button
-                            onClick={() => handleRelationsFollowToggle(u)}
+                            onClick={() => handleFollowToggleForUser(u)}
                             disabled={loadingRelationId === u._id}
                             className={`group px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 select-none ${
                               loadingRelationId === u._id
@@ -2241,11 +2240,11 @@ const Profile = () => {
                               "..."
                             ) : isFollowedByMe ? (
                               <>
-                                <span className="group-hover:hidden">My Journey Mates</span>
-                                <span className="hidden group-hover:inline">Unfollow</span>
+                                <span className="group-hover:hidden">My Journey Mate</span>
+                                <span className="hidden group-hover:inline">Remove Mate</span>
                               </>
                             ) : (
-                              "Journey Mates"
+                              "Add Journey Mate"
                             )}
                           </button>
                         )}

@@ -220,7 +220,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
       setNotifications((prev) =>
         prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
       );
-      showToast.success("Follow request accepted");
+      showToast.success("Journey Mate request accepted");
     } catch (err) {
       showToast.error("Failed to accept request");
     }

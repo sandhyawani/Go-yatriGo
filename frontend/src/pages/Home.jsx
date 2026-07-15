@@ -812,8 +812,7 @@ const Home = () => {
     }
   }, []);
 
-  // Follow / unfollow
-  const handleFollowToggle = useCallback(
+ const handleFollowToggle = useCallback(
     async (targetUser) => {
       if (followLoadingMap[targetUser._id]) return;
       setFollowLoadingMap((prev) => ({ ...prev, [targetUser._id]: true }));
@@ -832,8 +831,8 @@ const Home = () => {
           );
           showToast.success(
             isRequested
-              ? `Follow request cancelled`
-              : `Unfollowed ${targetUser.name}`,
+              ? `Journey Mate request cancelled`
+              : `Removed ${targetUser.name} from My Journey Mates`,
           );
           setSuggestions((prev) =>
             prev.map((s) =>
@@ -857,7 +856,7 @@ const Home = () => {
             { withCredentials: true },
           );
           if (res.data.status === "requested") {
-            showToast.success(`Follow request sent to ${targetUser.name}!`);
+            showToast.success(`Journey Mate request sent to ${targetUser.name}!`);
             setSuggestions((prev) =>
               prev.map((s) =>
                 s._id === targetUser._id
@@ -869,7 +868,7 @@ const Home = () => {
               ),
             );
           } else {
-            showToast.success(`You are now journey mates with ${targetUser.name}! ✈️`);
+            showToast.success(`You are now Journey Mates with ${targetUser.name}! ✈️`);
             setSuggestions((prev) =>
               prev.map((s) =>
                 s._id === targetUser._id

@@ -154,13 +154,13 @@ export const ProfileHeader = ({
                     "..."
                   ) : isFollowing ? (
                     <>
-                      <span className="group-hover:hidden">My Journey Mates</span>
-                      <span className="hidden group-hover:inline">Unfollow</span>
+                      <span className="group-hover:hidden">My Journey Mate</span>
+                      <span className="hidden group-hover:inline">Remove Mate</span>
                     </>
                   ) : isRequested ? (
                     "Requested"
                   ) : (
-                    "Journey Mates"
+                    "Add Journey Mate"
                   )}
                 </button>
                 <button

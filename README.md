@@ -70,7 +70,7 @@ Built with Express.js and Node.js
 - `Post.js` - Travel post model
 - `Story.js` - User story model
 - `Comment.js` - Comment model
-- `Follow.js` - User follow relationship
+- `Follow.js` - User My Journey Mates relationship
 - `Block.js` - User block relationship
 - `EmergencyContact.js` - Emergency contact information
 - `SecurityPreference.js` - User security settings
@@ -229,7 +229,7 @@ Built with React and Tailwind CSS
 
 ## 📝 API Documentation
 
-API endpoints follow RESTful conventions and are organized by feature:
+API endpoints My Journey Mates RESTful conventions and are organized by feature:
 
 - `/api/auth` - Authentication
 - `/api/users` - User management

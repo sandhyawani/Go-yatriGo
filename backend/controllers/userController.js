@@ -172,7 +172,6 @@ const getUser = asyncHandler(async (req, res) => {
 
 // Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
-  // Explicitly select public-safe fields to avoid critical data leakage
   const users = await User.find().select("name username pic img avatar profilePic profilePicture role type isVerified rating");
   res.status(200).json({ success: true, users });
 });
@@ -232,13 +231,12 @@ const followUser = asyncHandler(async (req, res) => {
   }
 
   if (targetUser.followRequests?.some(id => id.toString() === currentUserId.toString())) {
-    return res.status(400).json({ success: false, message: "Follow request already sent" });
+    return res.status(400).json({ success: false, message: "Journey Mate request already sent" });
   }
 
   const io = req.app.get("io");
 
   if (targetUser.privateAccount) {
-    // Atomic push to eliminate target array race condition
     const updatedTarget = await User.findByIdAndUpdate(
       targetUserId,
       { $addToSet: { followRequests: currentUserId } },
@@ -249,7 +247,7 @@ const followUser = asyncHandler(async (req, res) => {
       sender: currentUserId,
       receiver: targetUserId,
       type: "follow_request",
-      message: `${currentUser.username || currentUser.name} requested to follow you`,
+      message: `${currentUser.username || currentUser.name} sent you a Journey Mate request`,
     });
 
     if (io) {
@@ -266,11 +264,10 @@ const followUser = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       status: "requested",
-      message: "Follow request sent successfully",
+      message: "Journey Mate request sent successfully",
     });
   }
 
-  // Atomic operations to guarantee clean data writing
   const [updatedCurrent, updatedTarget] = await Promise.all([
     User.findByIdAndUpdate(currentUserId, { $addToSet: { following: targetUserId } }, { new: true }),
     User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: currentUserId } }, { new: true })
@@ -288,7 +285,7 @@ const followUser = asyncHandler(async (req, res) => {
     sender: currentUserId,
     receiver: targetUserId,
     type: "follow",
-    message: `${currentUser.username || currentUser.name} started following you`,
+    message: `${currentUser.username || currentUser.name} added you as a Journey Mate`,
   });
 
   if (io) {
@@ -309,7 +306,7 @@ const followUser = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     status: "following",
-    message: "Successfully followed traveler",
+    message: "Successfully added as Journey Mate",
   });
 });
 
@@ -340,7 +337,7 @@ const unfollowUser = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       status: "none",
-      message: "Follow request cancelled successfully",
+      message: "Journey Mate request cancelled successfully",
     });
   }
 
@@ -369,7 +366,7 @@ const unfollowUser = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     status: "none",
-    message: "Successfully unfollowed traveler",
+    message: "Successfully removed Journey Mate",
   });
 });
 
@@ -582,7 +579,7 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
 
   const currentUser = await User.findById(currentUserId);
   if (!currentUser || !currentUser.followRequests.some(id => id.toString() === requesterId.toString())) {
-    return res.status(400).json({ success: false, message: "No active follow request found" });
+    return res.status(400).json({ success: false, message: "No active Journey Mate request found" });
   }
 
   const [updatedCurrent, updatedRequester] = await Promise.all([
@@ -602,7 +599,7 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     sender: currentUserId,
     receiver: requesterId,
     type: "follow_accept",
-    message: `${updatedCurrent.username || updatedCurrent.name} accepted your follow request`,
+    message: `${updatedCurrent.username || updatedCurrent.name} accepted your Journey Mate request`,
   });
 
   await Notification.findOneAndDelete({ sender: requesterId, receiver: currentUserId, type: "follow_request" });
@@ -627,7 +624,7 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Follow request accepted successfully",
+    message: "Journey Mate request accepted successfully",
     followersCount: updatedCurrent.followers.length,
     followingCount: updatedCurrent.following.length,
     requesterFollowingCount: updatedRequester.following.length,
@@ -647,7 +644,7 @@ const rejectFollowRequest = asyncHandler(async (req, res) => {
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, { userId: currentUserId.toString() });
   }
 
-  res.status(200).json({ success: true, message: "Follow request rejected" });
+  res.status(200).json({ success: true, message: "Journey Mate request rejected" });
 });
 
 // Get followers
