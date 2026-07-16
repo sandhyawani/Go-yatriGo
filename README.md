@@ -1,10 +1,5 @@
 <div align="center">
 
-<!-- 
-  💡 TIP: Replace this line with a real banner image for maximum impact.
-  Recommended size: 1280x400px. Upload to your repo's /assets folder and reference it, e.g.:
-  <img src="./assets/banner.png" width="100%" alt="Go yatriGo banner"/>
--->
 
 # 🚀 Go yatriGo
 
@@ -43,18 +38,6 @@
 
 <br>
 
-<!-- 
-  ✅ FIX NOTE: the two dynamic badges that were here (github/last-commit and 
-  github/languages/code-size) only render once the GitHub repo at 
-  github.com/sandhyawani/Go-yatriGo is PUBLIC. If the repo is private or the 
-  casing/name doesn't match exactly, shields.io returns a blank/error SVG, 
-  which is almost certainly why badges looked "not visible." Make the repo 
-  public (or fix the repo name to match exactly) and you can re-add:
-  <img src="https://img.shields.io/github/last-commit/sandhyawani/Go-yatriGo?style=flat-square&color=8b5cf6&labelColor=0f172a" alt="Last Commit"/>
-  <img src="https://img.shields.io/github/languages/code-size/sandhyawani/Go-yatriGo?style=flat-square&color=a78bfa&labelColor=0f172a" alt="Code Size"/>
--->
-
----
 
 ## 🔴 Live Demo — Click to Explore
 
@@ -69,7 +52,7 @@
 <br><br>
 
 <a href="https://go-yatri-go.vercel.app">
-  <img src="./assets/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+  <img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
 </a>
 
 *Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
