@@ -52,7 +52,7 @@
 <br><br>
 
 <a href="https://go-yatri-go.vercel.app">
-  <img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+<img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
 </a>
 
 *Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
