@@ -17,8 +17,6 @@
 </p>
 
 <p>
-  <img src="https://img.shields.io/github/last-commit/sandhyawani/Go-yatriGo?style=flat-square&color=8b5cf6&labelColor=0f172a" alt="Last Commit"/>
-  <img src="https://img.shields.io/github/languages/code-size/sandhyawani/Go-yatriGo?style=flat-square&color=a78bfa&labelColor=0f172a" alt="Code Size"/>
   <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=flat-square&labelColor=0f172a" alt="Version"/>
   <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=flat-square&labelColor=0f172a" alt="License"/>
   <img src="https://img.shields.io/badge/PRs-welcome-9333ea?style=flat-square&labelColor=0f172a" alt="PRs Welcome"/>
@@ -45,19 +43,40 @@
 
 <br>
 
+<!-- 
+  ✅ FIX NOTE: the two dynamic badges that were here (github/last-commit and 
+  github/languages/code-size) only render once the GitHub repo at 
+  github.com/sandhyawani/Go-yatriGo is PUBLIC. If the repo is private or the 
+  casing/name doesn't match exactly, shields.io returns a blank/error SVG, 
+  which is almost certainly why badges looked "not visible." Make the repo 
+  public (or fix the repo name to match exactly) and you can re-add:
+  <img src="https://img.shields.io/github/last-commit/sandhyawani/Go-yatriGo?style=flat-square&color=8b5cf6&labelColor=0f172a" alt="Last Commit"/>
+  <img src="https://img.shields.io/github/languages/code-size/sandhyawani/Go-yatriGo?style=flat-square&color=a78bfa&labelColor=0f172a" alt="Code Size"/>
+-->
+
+---
+
+## 🔴 Live Demo — Click to Explore
+
 <div align="center">
-  <a href="#-feature-highlights"><img src="https://img.shields.io/badge/-‣_Features-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-architecture"><img src="https://img.shields.io/badge/-‣_Architecture-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-tech-stack"><img src="https://img.shields.io/badge/-‣_Tech_Stack-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-engineering-highlights"><img src="https://img.shields.io/badge/-‣_Engineering-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-getting-started"><img src="https://img.shields.io/badge/-‣_Setup-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-api-endpoints"><img src="https://img.shields.io/badge/-‣_API-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
-  <a href="#-whats-next"><img src="https://img.shields.io/badge/-‣_Roadmap-8b5cf6?style=flat-square" alt=""/></a>
+
+### 👉 [**Open Go yatriGo Live**](https://go-yatri-go.vercel.app) 👈
+
+<a href="https://go-yatri-go.vercel.app">
+  <img src="https://img.shields.io/badge/🚀_Click_here_to_view_the_live_app-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a&logo=vercel&logoColor=white" alt="Launch Live Demo" width="480"/>
+</a>
+
+<br><br>
+
+<a href="https://go-yatri-go.vercel.app">
+  <img src="./assets/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+</a>
+
+*Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
+
 </div>
 
 <br>
-
----
 
 ## 💡 What is Go yatriGo?
 
@@ -74,26 +93,6 @@
 | 🧩 Mongoose Models | 🛣️ Route Files | 🎮 Controllers | 📄 Frontend Pages | 🧱 Component Dirs |
 |:---:|:---:|:---:|:---:|:---:|
 | **29** | **17** | **15** | **16+** | **18** |
-
-</div>
-
-<br>
-
-## 🖼️ Screenshots / Demo
-
-<!-- 
-  💡 TIP: This section matters most to recruiters — they skim visuals before reading text.
-  Add 2-4 real screenshots or a GIF walkthrough here, e.g.:
-  <p align="center">
-    <img src="./assets/screenshot-home.png" width="45%"/>
-    <img src="./assets/screenshot-chat.png" width="45%"/>
-  </p>
-  Or embed a short Loom/YouTube demo GIF.
--->
-
-<div align="center">
-
-*Add screenshots or a demo GIF here — this is the first thing a recruiter looks at. See tip in the raw markdown.*
 
 </div>
 
@@ -435,15 +434,13 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 
 ## 👋 Connect With Me
 
-<!-- 💡 TIP: Swap these placeholder links for your real profiles — recruiters click these directly. -->
-
 <div align="center">
 
 <p>
   <a href="https://github.com/sandhyawani"><img src="https://img.shields.io/badge/GitHub-sandhyawani-181717?style=for-the-badge&logo=github&logoColor=white"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Portfolio-Visit-8b5cf6?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
-  <a href="#"><img src="https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail&logoColor=white"/></a>
+  <a href="https://linkedin.com/in/sandhyawani"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"/></a>
+  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/Portfolio-Visit-8b5cf6?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
+  <a href="mailto:sandhyawani85@gmail.com"><img src="https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail&logoColor=white"/></a>
 </p>
 
 **Built with 💜 by Sandhya Wani**
