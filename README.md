@@ -1,17 +1,27 @@
 <div align="center">
 
+<!-- 
+  💡 TIP: Replace this line with a real banner image for maximum impact.
+  Recommended size: 1280x400px. Upload to your repo's /assets folder and reference it, e.g.:
+  <img src="./assets/banner.png" width="100%" alt="Go yatriGo banner"/>
+-->
+
 # 🚀 Go yatriGo
 
 ### *Where Journeys Begin and Stories Never End* 🌍
+
+**A full-stack MERN social platform for travelers — built solo, from schema to deployment.**
 
 <p>
   <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/🔴_LIVE_DEMO-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Live Demo"/></a>
 </p>
 
 <p>
-  <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=for-the-badge&labelColor=0f172a" alt="Version"/>
-  <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=for-the-badge&labelColor=0f172a" alt="License"/>
-  <img src="https://img.shields.io/badge/PRs-welcome-9333ea?style=for-the-badge&labelColor=0f172a" alt="PRs Welcome"/>
+  <img src="https://img.shields.io/github/last-commit/sandhyawani/Go-yatriGo?style=flat-square&color=8b5cf6&labelColor=0f172a" alt="Last Commit"/>
+  <img src="https://img.shields.io/github/languages/code-size/sandhyawani/Go-yatriGo?style=flat-square&color=a78bfa&labelColor=0f172a" alt="Code Size"/>
+  <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=flat-square&labelColor=0f172a" alt="Version"/>
+  <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=flat-square&labelColor=0f172a" alt="License"/>
+  <img src="https://img.shields.io/badge/PRs-welcome-9333ea?style=flat-square&labelColor=0f172a" alt="PRs Welcome"/>
 </p>
 
 <p>
@@ -21,7 +31,14 @@
   <img src="https://img.shields.io/badge/Socket.IO-Realtime-010101?style=flat-square&logo=socket.io&logoColor=white" alt="Socket.IO"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
   <img src="https://img.shields.io/badge/Cloudinary-CDN-3448C5?style=flat-square&logo=cloudinary&logoColor=white" alt="Cloudinary"/>
-  <img src="https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel"/>
+  <img src="https://img.shields.io/badge/Vercel-Frontend-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel"/>
+  <img src="https://img.shields.io/badge/Render-Backend-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render"/>
+</p>
+
+<p>
+  <a href="https://go-yatri-go.vercel.app"><b>🔴 Live Demo</b></a> ·
+  <a href="#-getting-started"><b>⚙️ Setup Guide</b></a> ·
+  <a href="#-connect-with-me"><b>👋 Contact Me</b></a>
 </p>
 
 </div>
@@ -29,10 +46,10 @@
 <br>
 
 <div align="center">
-  <img src="https://img.shields.io/badge/-‣_Overview-8b5cf6?style=flat-square" alt=""/> &nbsp;
   <a href="#-feature-highlights"><img src="https://img.shields.io/badge/-‣_Features-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
   <a href="#-architecture"><img src="https://img.shields.io/badge/-‣_Architecture-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
   <a href="#-tech-stack"><img src="https://img.shields.io/badge/-‣_Tech_Stack-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
+  <a href="#-engineering-highlights"><img src="https://img.shields.io/badge/-‣_Engineering-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
   <a href="#-getting-started"><img src="https://img.shields.io/badge/-‣_Setup-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
   <a href="#-api-endpoints"><img src="https://img.shields.io/badge/-‣_API-8b5cf6?style=flat-square" alt=""/></a> &nbsp;
   <a href="#-whats-next"><img src="https://img.shields.io/badge/-‣_Roadmap-8b5cf6?style=flat-square" alt=""/></a>
@@ -47,6 +64,38 @@
 **Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find your **Journey Mates**, plan **Buddy Trips**, share **Travel Memories**, express **Felt Vibes**, chat in real-time, and even trigger an **Emergency SOS** for safety on the go.
 
 > 🇮🇳 **"Yatri"** means *traveler* in Hindi. **Go yatriGo** = Go, Traveler, Go! 🚀
+
+<br>
+
+## 📊 Project at a Glance
+
+<div align="center">
+
+| 🧩 Mongoose Models | 🛣️ Route Files | 🎮 Controllers | 📄 Frontend Pages | 🧱 Component Dirs |
+|:---:|:---:|:---:|:---:|:---:|
+| **29** | **17** | **15** | **16+** | **18** |
+
+</div>
+
+<br>
+
+## 🖼️ Screenshots / Demo
+
+<!-- 
+  💡 TIP: This section matters most to recruiters — they skim visuals before reading text.
+  Add 2-4 real screenshots or a GIF walkthrough here, e.g.:
+  <p align="center">
+    <img src="./assets/screenshot-home.png" width="45%"/>
+    <img src="./assets/screenshot-chat.png" width="45%"/>
+  </p>
+  Or embed a short Loom/YouTube demo GIF.
+-->
+
+<div align="center">
+
+*Add screenshots or a demo GIF here — this is the first thing a recruiter looks at. See tip in the raw markdown.*
+
+</div>
 
 <br>
 
@@ -119,9 +168,9 @@ Go yatriGo
 
 <div align="center">
 
-| | | | | | |
-|:---:|:---:|:---:|:---:|:---:|:---:|
-| <img src="https://skillicons.dev/icons?i=react" width="40"/><br><b>React 18</b> | <img src="https://skillicons.dev/icons?i=nodejs" width="40"/><br><b>Node.js</b> | <img src="https://skillicons.dev/icons?i=express" width="40"/><br><b>Express</b> | <img src="https://skillicons.dev/icons?i=mongodb" width="40"/><br><b>MongoDB</b> | <img src="https://skillicons.dev/icons?i=tailwind" width="40"/><br><b>Tailwind</b> | <img src="https://skillicons.dev/icons?i=vercel" width="40"/><br><b>Vercel</b> |
+| | | | | | | |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| <img src="https://skillicons.dev/icons?i=react" width="40"/><br><b>React 18</b> | <img src="https://skillicons.dev/icons?i=nodejs" width="40"/><br><b>Node.js</b> | <img src="https://skillicons.dev/icons?i=express" width="40"/><br><b>Express</b> | <img src="https://skillicons.dev/icons?i=mongodb" width="40"/><br><b>MongoDB</b> | <img src="https://skillicons.dev/icons?i=tailwind" width="40"/><br><b>Tailwind</b> | <img src="https://skillicons.dev/icons?i=vercel" width="40"/><br><b>Vercel</b> | <img src="https://skillicons.dev/icons?i=render" width="40"/><br><b>Render</b> |
 
 </div>
 
@@ -132,7 +181,20 @@ Go yatriGo
 | **Database** | MongoDB Atlas |
 | **Storage** | Cloudinary CDN (images & media) |
 | **Security** | Helmet · CORS · Rate Limiting · XSS Clean · HPP · Mongo Sanitize |
-| **Deployment** | Vercel (Frontend) · Backend hosted separately |
+| **Deployment** | Vercel (Frontend) · Render (Backend) |
+
+<br>
+
+## 🧠 Engineering Highlights
+
+*What this project demonstrates, beyond just "it works":*
+
+- **Real-time architecture** — Socket.IO powers live chat, notifications, and presence across the app, not bolted on as an afterthought.
+- **Schema design at scale** — 29 interrelated Mongoose models (users, journeys, social graph, moderation, support) designed to avoid duplication and support complex queries.
+- **Security-first backend** — layered protection with Helmet, rate limiting, JWT + HTTP-only cookies, input sanitization (XSS/HPP/Mongo injection), and bcrypt password hashing.
+- **Full moderation pipeline** — block/report system feeding into an admin dashboard with analytics, not just a hidden database flag.
+- **Safety-conscious product thinking** — Emergency SOS wasn't a stretch feature; it shaped how the profile and contacts systems were modeled.
+- **Clean separation of concerns** — controller/route/model layering on the backend; context/hooks/services layering on the frontend, built for maintainability as the codebase grew to 29 models and 17 route files.
 
 <br>
 
@@ -369,11 +431,22 @@ git push origin feature/YourFeature
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
----
+<br>
+
+## 👋 Connect With Me
+
+<!-- 💡 TIP: Swap these placeholder links for your real profiles — recruiters click these directly. -->
 
 <div align="center">
 
-**Built with 💜 by [Sandhya Wani](https://github.com/sandhyawani)**
+<p>
+  <a href="https://github.com/sandhyawani"><img src="https://img.shields.io/badge/GitHub-sandhyawani-181717?style=for-the-badge&logo=github&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Portfolio-Visit-8b5cf6?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
+  <a href="#"><img src="https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail&logoColor=white"/></a>
+</p>
+
+**Built with 💜 by Sandhya Wani**
 
 <p>
   <a href="https://github.com/sandhyawani/Go-yatriGo"><img src="https://img.shields.io/badge/⭐_Star_this_repo-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Star"/></a>
