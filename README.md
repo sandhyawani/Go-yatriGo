@@ -1,15 +1,15 @@
-<p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=700&size=40&pause=1000&color=FF6B35&center=true&vCenter=true&repeat=false&width=600&height=80&lines=🚀+Go+yatriGo" alt="Go yatriGo" />
-</p>
+<h1 align="center">
+  🚀 Go yatriGo
+</h1>
+
+<h3 align="center">
+  <em>Where Journeys Begin and Stories Never End 🌍</em>
+</h3>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Poppins&weight=500&size=20&pause=1000&color=A8DADC&center=true&vCenter=true&repeat=false&width=700&height=40&lines=Where+Journeys+Begin+and+Stories+Never+End+🌍" alt="Tagline" />
-</p>
-
-<p align="center">
-  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/🔴_LIVE-go--yatri--go.vercel.app-FF6B35?style=for-the-badge&labelColor=1D3557" alt="Live Demo"/></a>
-  <img src="https://img.shields.io/badge/version-1.0.0-A8DADC?style=for-the-badge&labelColor=1D3557" alt="Version"/>
-  <img src="https://img.shields.io/badge/license-MIT-E63946?style=for-the-badge&labelColor=1D3557" alt="License"/>
+  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/🔴_LIVE-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Live Demo"/></a>
+  <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=for-the-badge&labelColor=0f172a" alt="Version"/>
+  <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=for-the-badge&labelColor=0f172a" alt="License"/>
 </p>
 
 <p align="center">
@@ -26,7 +26,7 @@
 
 ## 💡 What is Go yatriGo?
 
-**Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find journey mates, plan group trips, share your experiences through posts and stories, chat in real-time, and even have an emergency SOS system for safety on the go.
+**Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find your **Journey Mates**, plan **Buddy Trips**, share **Travel Memories**, express **Felt Vibes**, chat in real-time, and even trigger an **Emergency SOS** for safety on the go.
 
 > **"Yatri"** means traveler in Hindi. **Go yatriGo** = Go, Traveler, Go! 🚀
 
@@ -38,31 +38,31 @@
 <tr>
 <td width="50%">
 
-### 🤝 Journey Mate Hub
-Find and connect with people who share your vibe. Send buddy requests, accept connections, and build your journey squad.
+### 🤝 Journey Mates
+Find and connect with like-minded people. Build your squad of **My Journey Mates** — your travel family who share your vibe.
 
 ### 💬 Real-Time Chat
 Powered by **Socket.IO** — instant messaging with emoji support, read receipts, and group conversations that keep your crew connected.
 
-### 📸 Posts & Stories
-Share your memories with photos, captions, and stories. Like, comment, save, and engage with content from fellow explorers.
+### 📸 Travel Memories
+Share your journeys as **Travel Memories** with photos, captions, and music. Comment, save, and relive every moment.
 
-### 🗺️ Journey Groups
-Create themed groups, invite members, set itineraries, and collaborate on trip planning with a built-in workspace.
+### 💜 Felt Vibes
+Found a Travel Memory you love? **Feel the vibe!** Your curated collection of Felt Vibes showcases the memories that moved you.
 
 </td>
 <td width="50%">
+
+### 🗺️ Buddy Trips & Travel Groups
+Create **Buddy Trips**, form **Travel Groups**, invite members, set itineraries, and collaborate with a built-in journey workspace, timeline & gallery.
 
 ### 🚨 Emergency SOS
 One-tap emergency alert system with saved emergency contacts. Your safety is never an afterthought.
 
 ### 👤 Rich Profiles
-Detailed profiles with cover photos, bio, preferences, follow/unfollow system, and a personal timeline of all your journeys.
+Detailed profiles with cover photos, bio, onboarding checklist, **Journey Mates** system, and a personal timeline of all your Travel Memories and Stories.
 
-### 🛡️ Safety & Moderation
-Block users, report content, admin moderation pipeline, and customizable security preferences to keep the community safe.
-
-### 📊 Admin Dashboard
+### 🛡️ Admin Dashboard
 Full admin panel with user management, content moderation, analytics pie charts, and data grid tables for oversight.
 
 </td>
@@ -77,14 +77,14 @@ Full admin panel with user management, content moderation, analytics pie charts,
 Go yatriGo
 ├── 🎨 Frontend (React 18 + Tailwind CSS)
 │   ├── Pages ──────── Home, Login, Register, Profile, Admin, Settings
-│   ├── Components ─── Chat, Journey, Post, Story, Social, Navbar, Footer
+│   ├── Components ─── Chat, Journey, Travel Memory, Story, Social, Navbar, Footer
 │   ├── Context ────── Auth Context, Socket Context
 │   ├── Hooks ──────── Custom data fetching hooks
 │   ├── Services ───── API service layer
 │   └── Socket ─────── Real-time connection manager
 │
 ├── ⚙️ Backend (Node.js + Express)
-│   ├── Controllers ── Auth, User, Chat, Social, Journey, Post, Emergency
+│   ├── Controllers ── Auth, User, Chat, Social, Journey, Travel Memory, Emergency
 │   ├── Models ─────── 29 Mongoose schemas (User, Journey, Message, Post...)
 │   ├── Routes ─────── 17 RESTful route files
 │   ├── Middleware ──── JWT auth, token verification, error handling
@@ -92,7 +92,7 @@ Go yatriGo
 │   └── Utils ──────── Cloudinary uploads, email service
 │
 └── 🗄️ Database (MongoDB)
-    └── Collections ── Users, Journeys, Messages, Posts, Stories, Groups...
+    └── Collections ── Users, Journeys, Messages, Travel Memories, Stories, Groups...
 ```
 
 ---
@@ -134,9 +134,9 @@ backend/
 │   └── jwt.js                   # JWT configuration
 ├── controllers/
 │   ├── authController.js        # Login, Register, Password Reset
-│   ├── userController.js        # Profile CRUD, Follow/Unfollow
+│   ├── userController.js        # Profile CRUD, Journey Mates system
 │   ├── chatController.js        # Chat rooms, messages, real-time
-│   ├── socialTravelController.js # Groups, buddy matching, social features
+│   ├── socialTravelController.js # Buddy Trips, Travel Groups, social features
 │   ├── journeyController.js     # Journey CRUD, workspace, timeline
 │   ├── musicController.js       # Background music & playlists
 │   ├── emergencyController.js   # SOS & emergency contacts
@@ -172,10 +172,10 @@ backend/
 frontend/src/
 ├── App.js                       # Root component + routing
 ├── pages/
-│   ├── Home.jsx                 # Landing page
+│   ├── Home.jsx                 # Travel Memories feed + Stories
 │   ├── Login.jsx                # User login
 │   ├── Register.jsx             # User registration
-│   ├── Profile.jsx              # User profile (104KB+ of features!)
+│   ├── Profile.jsx              # Profile with Travel Memories, Felt Vibes, Journey Mates
 │   ├── Profileupdate.jsx        # Edit profile
 │   ├── Admin.jsx                # Admin dashboard
 │   ├── ForgotPassword.jsx       # Password recovery
@@ -184,13 +184,13 @@ frontend/src/
 │   ├── PrivacyPolicy.jsx        # Privacy policy
 │   ├── Terms.jsx                # Terms of service
 │   └── social/
-│       ├── TravelBuddyHub.jsx   # Find journey mates
-│       ├── TravelBuddyDetails.jsx # Buddy profile details
+│       ├── TravelBuddyHub.jsx   # Explore Buddy Trips
+│       ├── TravelBuddyDetails.jsx # Buddy Trip details
 │       ├── ChatRoom.jsx         # Real-time messaging
-│       ├── MyJourneys.jsx       # Journey management
+│       ├── MyJourneys.jsx       # My Journeys management
 │       ├── JourneyDetailsPage.jsx # Journey details
-│       ├── CreateBuddyTrip.jsx  # Create group journeys
-│       ├── FeltVibes.jsx        # Mood & vibes sharing
+│       ├── CreateBuddyTrip.jsx  # Create Buddy Trips
+│       ├── FeltVibes.jsx        # Felt Vibes collection
 │       ├── EmergencyContacts.jsx # Emergency contacts
 │       ├── Settings.jsx         # User preferences
 │       ├── HelpSupport.jsx      # Help & FAQ
@@ -199,7 +199,7 @@ frontend/src/
 ├── components/                  # 18 component directories
 │   ├── chat/                    # Chat UI components
 │   ├── journey/                 # Journey cards & views
-│   ├── post/                    # Post creation & feed
+│   ├── post/                    # Travel Memory creation & feed
 │   ├── story/                   # Story viewer & creator
 │   ├── social/                  # Social interaction widgets
 │   ├── profile/                 # Profile sections
@@ -304,10 +304,10 @@ Go yatriGo takes security seriously with multiple layers of protection:
 | Route | Description |
 |:------|:-----------|
 | `/api/auth` | Login, Register, Password Reset, Token Refresh |
-| `/api/users` | Profile CRUD, Follow/Unfollow, Search Users |
-| `/api/posts` | Create, Read, Update, Delete Posts & Stories |
+| `/api/users` | Profile CRUD, Journey Mates system, Search Users |
+| `/api/social/memory` | Create, Like, Comment, Save Travel Memories |
 | `/api/chat` | Chat Rooms, Messages, Real-time Events |
-| `/api/travel` | Groups, Buddy Matching, Social Features |
+| `/api/social/buddy` | Buddy Trips, Felt Vibes, Explore Hub |
 | `/api/journey` | Journey CRUD, Workspace, Timeline, Gallery |
 | `/api/emergency` | SOS Alerts, Emergency Contacts |
 | `/api/security` | Privacy Settings, Security Preferences |
@@ -355,15 +355,15 @@ This project is licensed under the **MIT License** — see the [LICENSE](LICENSE
 ---
 
 <p align="center">
-  <b>Built with ❤️ by <a href="https://github.com/sandhyawani">Sandhya Wani</a></b>
+  <b>Built with 💜 by <a href="https://github.com/sandhyawani">Sandhya Wani</a></b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/sandhyawani/Go-yatriGo"><img src="https://img.shields.io/badge/⭐_Star_this_repo-FF6B35?style=for-the-badge&labelColor=1D3557" alt="Star"/></a>
-  <a href="https://github.com/sandhyawani/Go-yatriGo/issues"><img src="https://img.shields.io/badge/🐛_Report_Bug-E63946?style=for-the-badge&labelColor=1D3557" alt="Bug"/></a>
-  <a href="https://github.com/sandhyawani/Go-yatriGo/pulls"><img src="https://img.shields.io/badge/✨_Request_Feature-A8DADC?style=for-the-badge&labelColor=1D3557" alt="Feature"/></a>
+  <a href="https://github.com/sandhyawani/Go-yatriGo"><img src="https://img.shields.io/badge/⭐_Star_this_repo-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Star"/></a>
+  <a href="https://github.com/sandhyawani/Go-yatriGo/issues"><img src="https://img.shields.io/badge/🐛_Report_Bug-7c3aed?style=for-the-badge&labelColor=0f172a" alt="Bug"/></a>
+  <a href="https://github.com/sandhyawani/Go-yatriGo/pulls"><img src="https://img.shields.io/badge/✨_Request_Feature-6d28d9?style=for-the-badge&labelColor=0f172a" alt="Feature"/></a>
 </p>
 
 <p align="center">
-  <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=14&pause=1000&color=A8DADC&center=true&vCenter=true&repeat=false&width=400&lines=Go+yatriGo+—+Because+every+journey+matters." alt="Footer" />
+  <em>Go yatriGo — Because every journey matters. 💜</em>
 </p>
