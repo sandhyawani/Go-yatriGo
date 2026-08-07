@@ -1093,25 +1093,40 @@ exports.getUserStatistics = async (req, res) => {
 
     let completed = 0;
     let upcoming = 0;
+    let ongoing = 0;
     let cancelled = 0;
     let travelDays = 0;
     let destMap = {};
     const now = new Date();
 
+    const journeySourceIds = new Set(
+      journeys
+        .filter((j) => (j.sourceType === "explore" || j.sourceType === "travel_group") && j.sourceId)
+        .map((j) => j.sourceId.toString())
+    );
+
+    const filteredBuddyTrips = buddyTrips.filter(
+      (trip) => !journeySourceIds.has((trip._id || trip.id).toString())
+    );
+
     journeys.forEach((j) => {
       if (j.status === "Completed") {
         completed++;
         travelDays += j.durationDays || 1;
-      } else if (j.status === "Upcoming") upcoming++;else
-      if (j.status === "Cancelled") cancelled++;
+      } else if (j.status === "Ongoing" || j.status === "Active") {
+        ongoing++;
+      } else if (j.status === "Upcoming" || j.status === "Planning") {
+        upcoming++;
+      } else if (j.status === "Cancelled") cancelled++;
 
       if (j.destination) {
         destMap[j.destination] = (destMap[j.destination] || 0) + 1;
       }
     });
 
-    buddyTrips.forEach((trip) => {
+    filteredBuddyTrips.forEach((trip) => {
       const isCompleted = trip.status === "completed" || trip.endDate && new Date(trip.endDate) < now;
+      const isOngoing = trip.status === "active" || trip.status === "active now" || (trip.startDate && new Date(trip.startDate) <= now && (!trip.endDate || new Date(trip.endDate) >= now) && trip.status !== "cancelled" && trip.status !== "completed");
       const isUpcoming = trip.status === "upcoming" || trip.startDate && new Date(trip.startDate) > now && trip.status !== "cancelled";
       const isCancelled = trip.status === "cancelled";
 
@@ -1122,6 +1137,8 @@ exports.getUserStatistics = async (req, res) => {
         const diffTime = Math.abs(end - start);
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
         travelDays += diffDays;
+      } else if (isOngoing) {
+        ongoing++;
       } else if (isUpcoming) {
         upcoming++;
       } else if (isCancelled) {
@@ -1133,7 +1150,37 @@ exports.getUserStatistics = async (req, res) => {
       }
     });
 
-    const total = journeys.length + buddyTrips.filter((t) => t.status !== "cancelled" && (!t.endDate || new Date(t.endDate) >= now || t.status === "completed")).length;
+    const companionIds = new Set();
+
+    journeys.forEach(j => {
+      if (j.creator && j.creator.toString() !== targetUserId.toString()) {
+        companionIds.add(j.creator.toString());
+      }
+      if (j.members && Array.isArray(j.members)) {
+        j.members.forEach(m => {
+          if (m.user && m.user.toString() !== targetUserId.toString()) {
+            companionIds.add(m.user.toString());
+          }
+        });
+      }
+    });
+
+    filteredBuddyTrips.forEach(t => {
+      if (t.host && t.host.toString() !== targetUserId.toString()) {
+        companionIds.add(t.host.toString());
+      }
+      if (t.members && Array.isArray(t.members)) {
+        t.members.forEach(m => {
+          if (m.user && m.user.toString() !== targetUserId.toString()) {
+            companionIds.add(m.user.toString());
+          }
+        });
+      }
+    });
+
+    const companionsCount = companionIds.size;
+
+    const total = completed + ongoing + upcoming;
 
     let mostVisited = "None";
     let maxCount = 0;
@@ -1178,13 +1225,15 @@ exports.getUserStatistics = async (req, res) => {
         totalJourneys: total,
         completed,
         upcoming,
+        ongoing,
         cancelled,
         travelDays,
-        photosShared: postsShared,
+        photosShared: 0,
         storiesShared,
         postsShared,
         mostVisitedDestination: mostVisited,
-        achievements: badges
+        achievements: badges,
+        companionsCount
       }
     });
   } catch (error) {
@@ -1228,6 +1277,23 @@ exports.getPreviousCompanions = async (req, res) => {
     populate("members.user", "name username bio pic avatar profilePic isVerified verificationStatus").
     populate("creator", "name username bio pic avatar profilePic isVerified verificationStatus").
     sort({ startDate: -1, createdAt: -1 });
+
+    const buddyTrips = await TravelGroup.find({
+      $or: [{ host: userId }, { "members.user": userId }],
+      status: { $ne: "cancelled" }
+    }).
+    populate("members.user", "name username bio pic avatar profilePic isVerified verificationStatus").
+    populate("host", "name username bio pic avatar profilePic isVerified verificationStatus").
+    sort({ startDate: -1, createdAt: -1 });
+
+    const journeySourceIds = new Set(
+      journeys
+        .filter((j) => (j.sourceType === "explore" || j.sourceType === "travel_group") && j.sourceId)
+        .map((j) => j.sourceId.toString())
+    );
+    const filteredBuddyTrips = buddyTrips.filter(
+      (trip) => !journeySourceIds.has((trip._id || trip.id).toString())
+    );
 
     const companionMap = {};
     const groupedByJourney = [];
@@ -1276,6 +1342,54 @@ exports.getPreviousCompanions = async (req, res) => {
           destination: j.destination,
           startDate: j.startDate,
           companions: journeyCompanions
+        });
+      }
+    });
+
+    filteredBuddyTrips.forEach((trip) => {
+      const allUsersInTrip = [];
+
+      if (trip.host && trip.host._id) allUsersInTrip.push(trip.host);
+      if (trip.members && Array.isArray(trip.members)) {
+        trip.members.forEach((m) => {
+          if (m.user && m.user._id) allUsersInTrip.push(m.user);
+        });
+      }
+
+      const tripCompanions = [];
+      allUsersInTrip.forEach((u) => {
+        const uId = u._id.toString();
+        if (uId !== userId.toString()) {
+          tripCompanions.push(u);
+          if (!companionMap[uId]) {
+            companionMap[uId] = {
+              _id: u._id,
+              name: u.name,
+              username: u.username,
+              bio: u.bio || "Travel Enthusiast",
+              profilePic: u.profilePic || u.pic || u.avatar,
+              verified: u.isVerified || u.verificationStatus === "verified",
+              tripsCount: 0,
+              lastJourney: {
+                title: trip.title || trip.destination,
+                destination: trip.destination,
+                date: trip.startDate || trip.createdAt
+              },
+              category: "Previous Companions",
+              pill: "Past Companion"
+            };
+          }
+          companionMap[uId].tripsCount += 1;
+        }
+      });
+
+      if (tripCompanions.length > 0) {
+        groupedByJourney.push({
+          _id: trip._id,
+          title: trip.title || trip.destination,
+          destination: trip.destination,
+          startDate: trip.startDate,
+          companions: tripCompanions
         });
       }
     });

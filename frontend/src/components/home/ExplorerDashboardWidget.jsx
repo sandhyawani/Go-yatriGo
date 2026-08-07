@@ -6,10 +6,7 @@ import SectionHeader from "../common/SectionHeader";
 import EmptyState from "../common/EmptyState";
 
 const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, activeJourneysCount }) => {
-  const journeys = activeJourneysCount || 0;
-
-  const [realMemories, setRealMemories] = useState(null);
-  const [realBuddies, setRealBuddies] = useState(null);
+  const [stats, setStats] = useState(null);
 
   const userId = user?._id || user?.id;
 
@@ -17,17 +14,10 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
     if (!userId) return;
     const fetchStats = async () => {
       try {
-        const [profRes, memRes] = await Promise.all([
-        axios.get(`/users/${userId}`, { withCredentials: true }),
-        axios.get(`/social/memory?userId=${userId}&page=1&limit=50`, { withCredentials: true })]
-        );
+        const statsRes = await axios.get(`/journeys/stats/user/${userId}`, { withCredentials: true });
 
-        if (profRes.data?.success || profRes.data?._id) {
-          const u = profRes.data.user || profRes.data;
-          setRealBuddies((u?.followers?.length || 0) + (u?.following?.length || 0));
-        }
-        if (memRes.data?.success) {
-          setRealMemories(memRes.data.memories?.length || 0);
+        if (statsRes.data?.success && statsRes.data.stats) {
+          setStats(statsRes.data.stats);
         }
       } catch (err) {
         console.error("Failed to sync dashboard stats", err);
@@ -36,9 +26,10 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
     fetchStats();
   }, [userId]);
 
-  const memories = realMemories !== null ? realMemories : fallbackMemories || 0;
-  const buddies = realBuddies !== null ? realBuddies : (user?.followers?.length || 0) + (user?.following?.length || 0);
-  const stamps = Math.floor(memories * 1.5);
+  const journeys = stats?.totalJourneys ?? activeJourneysCount ?? 0;
+  const memories = stats?.postsShared ?? fallbackMemories ?? 0;
+  const buddies = stats?.companionsCount ?? 0;
+  const stamps = stats?.achievements?.length ?? 0;
 
   return (
     <div className="mb-[var(--spacing-section)]">

@@ -120,6 +120,7 @@ const Profile = () => {
   const [userTrips, setUserTrips] = useState([]);
   const [joinedTrips, setJoinedTrips] = useState([]);
   const [userStories, setUserStories] = useState([]);
+  const [journeyStats, setJourneyStats] = useState(null);
   const [savedPosts, setSavedPosts] = useState([]);
   const [feltPosts, setFeltPosts] = useState([]);
   const [groupFilter, setGroupFilter] = useState("hosted");
@@ -465,6 +466,18 @@ const Profile = () => {
           setUserMemories(memRes.data.memories || []);
           setHasMorePosts(memRes.data.memories.length === 30);
           setPostsPage(1);
+        }
+
+        try {
+          const statsRes = await axios.get(
+            `/journeys/stats/user/${targetId}`,
+            { withCredentials: true }
+          );
+          if (statsRes.data?.success && statsRes.data.stats) {
+            setJourneyStats(statsRes.data.stats);
+          }
+        } catch (statsErr) {
+          console.error("Failed to fetch journey stats", statsErr);
         }
       } else if (tab === "trips") {
         setTripsLoading(true);
@@ -945,7 +958,8 @@ const Profile = () => {
         openRelationsModal={openRelationsModal}
         canWriteReview={canWriteReview}
         userStories={userStories}
-        handleOpenStory={handleOpenStory} />
+        handleOpenStory={handleOpenStory}
+        journeyStats={journeyStats} />
 
 
         {}

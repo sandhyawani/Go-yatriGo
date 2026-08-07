@@ -123,7 +123,16 @@ const MyJourneys = () => {
         exploreTrips = raw.map((t) => normaliseBuddyTrip(t, statusLabel || t.lifecycleStatus || "Upcoming"));
       }
 
-      let combined = [...privateJourneys, ...exploreTrips];
+      const activeSourceIds = new Set(
+        privateJourneys
+          .filter((j) => (j.sourceType === "explore" || j.sourceType === "travel_group") && j.sourceId)
+          .map((j) => j.sourceId.toString())
+      );
+      const filteredExploreTrips = exploreTrips.filter(
+        (trip) => !activeSourceIds.has((trip._id || trip.id)?.toString())
+      );
+
+      let combined = [...privateJourneys, ...filteredExploreTrips];
 
 
       if (activeTab === "all") {
@@ -171,11 +180,24 @@ const MyJourneys = () => {
     return isPending && notStarted && notCompleted;
   });
 
-  const upcomingCount = journeys.filter(j => j.status === "Upcoming" || j.lifecycleStatus === "upcoming").length;
-  const activeCount = journeys.filter(j => j.status === "Ongoing" || j.status === "Active" || j.lifecycleStatus === "active").length;
-  const completedCount = journeys.filter(j => j.status === "Completed" || j.lifecycleStatus === "completed").length;
+  const [journeyStats, setJourneyStats] = useState(null);
 
-  const journeySummary = journeys.length > 0 
+  useEffect(() => {
+    if (!myUserId) return;
+    axiosInstance.get(`/journeys/stats/me`, { withCredentials: true })
+      .then(res => {
+        if (res.data?.success && res.data.stats) {
+          setJourneyStats(res.data.stats);
+        }
+      })
+      .catch(err => console.error("Failed to fetch journey stats", err));
+  }, [myUserId]);
+
+  const upcomingCount = journeyStats?.upcoming ?? journeys.filter(j => j.status === "Upcoming" || j.lifecycleStatus === "upcoming").length;
+  const activeCount = journeyStats?.ongoing ?? journeys.filter(j => j.status === "Ongoing" || j.status === "Active" || j.lifecycleStatus === "active").length;
+  const completedCount = journeyStats?.completed ?? journeys.filter(j => j.status === "Completed" || j.lifecycleStatus === "completed").length;
+
+  const journeySummary = (journeyStats?.totalJourneys || journeys.length) > 0 
     ? `${upcomingCount} Upcoming · ${activeCount} Active · ${completedCount} Completed`
     : "Plan your next adventure";
 

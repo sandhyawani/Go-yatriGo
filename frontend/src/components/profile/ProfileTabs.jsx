@@ -11,7 +11,7 @@ export const ProfileTabs = ({ activeTab, setActiveTab, isOwnProfile }) => {
     id: "journeys",
     icon: Globe,
     label: "Journeys",
-    show: isOwnProfile
+    show: true
   },
   {
     id: "saved",

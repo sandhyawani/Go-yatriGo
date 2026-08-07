@@ -42,7 +42,8 @@ export const ProfileHeader = ({
   setActiveTab,
   canWriteReview = false,
   userStories = [],
-  handleOpenStory
+  handleOpenStory,
+  journeyStats
 }) => {
   const createdatnew = profileUser?.createdAt ?
   moment(profileUser.createdAt).format("MMMM YYYY") :
@@ -261,7 +262,7 @@ export const ProfileHeader = ({
             onClick={() => setActiveTab("posts")}>
 
               <span className="font-black text-[17px]">
-                {userMemories?.length || 0}
+                {journeyStats?.postsShared ?? userMemories?.length ?? 0}
               </span>
               <span className="text-xs text-slate-500 font-medium tracking-wide">
                 Travel Memories
@@ -272,7 +273,7 @@ export const ProfileHeader = ({
             onClick={() => openRelationsModal("followers")}>
 
               <span className="font-black text-[17px]">
-                {profileUser.followers?.length || 0}
+                {profileUser.followers?.length ?? 0}
               </span>
               <span className="text-xs text-slate-500 font-medium tracking-wide">
                 Trip Mates
@@ -373,7 +374,7 @@ export const ProfileHeader = ({
             <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100">
               <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
               <span className="text-xs font-black text-amber-700">
-                {profileUser.rating || "4.6"} Rating
+                {profileUser.rating || "New"} Rating
               </span>
             </div>
             <div
@@ -382,7 +383,7 @@ export const ProfileHeader = ({
 
               <Compass className="w-4 h-4 text-slate-500" />
               <span className="text-xs font-black text-slate-700">
-                {userTrips?.length || 0} Trips Hosted
+                {journeyStats?.totalJourneys ?? userTrips?.length ?? 0} Trips
               </span>
             </div>
           </div>

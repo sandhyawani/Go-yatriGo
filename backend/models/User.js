@@ -107,11 +107,11 @@ const UserSchema = new mongoose.Schema(
   },
   completedTrips: {
     type: Number,
-    default: 3
+    default: 0
   },
   rating: {
     type: Number,
-    default: 4.6
+    default: 0
   },
   hostResponseRate: {
     type: Number,
@@ -119,7 +119,7 @@ const UserSchema = new mongoose.Schema(
   },
   reviewsCount: {
     type: Number,
-    default: 5
+    default: 0
   },
   interests: {
     type: [String],

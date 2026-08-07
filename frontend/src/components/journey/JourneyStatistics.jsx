@@ -74,37 +74,35 @@ const JourneyStatistics = ({ userId }) => {
     label: "Total Travel Days",
     val: s.travelDays,
     icon: <Compass className="w-5 h-5 text-brand-500" />
-  },
-  {
-    label: "Memories Captured",
-    val: (s.photosShared || 0) + (s.postsShared || 0),
-    icon: <Camera className="w-5 h-5 text-rose-500" />
-  },
-  {
-    label: "Top Destination",
-    val: s.mostVisitedDestination || "None",
-    icon: <MapPin className="w-5 h-5 text-orange-500" />,
-    isText: true
-  }];
+  }
+  ];
 
+
+  const getTravelerTier = (trips) => {
+    if (!trips || trips === 0) return "Novice";
+    if (trips <= 2) return "Explorer";
+    if (trips <= 5) return "Adventurer";
+    if (trips <= 10) return "Veteran";
+    return "Legend";
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
       {}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-3">
         {statCards.map((c, i) =>
         <div
         key={i}
-        className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+        className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
 
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider line-clamp-1 mr-1">
                 {c.label}
               </span>
-              {c.icon}
+              {React.cloneElement(c.icon, { className: 'w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ' + c.icon.props.className.split(' ').filter(cls => !cls.startsWith('w-') && !cls.startsWith('h-')).join(' ') })}
             </div>
             <span
-          className={`font-black text-slate-800 dark:text-slate-100 ${c.isText ? "text-base sm:text-lg line-clamp-1" : "text-2xl sm:text-3xl"}`}>
+          className={`font-black text-slate-800 dark:text-slate-100 ${c.isText ? "text-sm sm:text-base line-clamp-1" : "text-xl sm:text-2xl"}`}>
 
               {c.val}
             </span>
@@ -132,7 +130,7 @@ const JourneyStatistics = ({ userId }) => {
             </div>
           </div>
           <span className="text-xs font-bold text-[#7C3AED] dark:text-brand-300 px-3.5 py-1.5 rounded-full bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800/60 shadow-sm self-start sm:self-center">
-            Traveler Tier: Explorer
+            Traveler Tier: {getTravelerTier(s.totalJourneys)}
           </span>
         </div>
 
