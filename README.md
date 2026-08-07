@@ -1,42 +1,91 @@
-<h1 align="center">
-  🚀 Go yatriGo
-</h1>
+<div align="center">
 
-<h3 align="center">
-  <em>Where Journeys Begin and Stories Never End 🌍</em>
-</h3>
 
-<p align="center">
-  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/🔴_LIVE-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Live Demo"/></a>
-  <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=for-the-badge&labelColor=0f172a" alt="Version"/>
-  <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=for-the-badge&labelColor=0f172a" alt="License"/>
+# 🚀 Go yatriGo
+
+### *Where Journeys Begin and Stories Never End* 🌍
+
+**A full-stack MERN social platform for travelers — built solo, from schema to deployment.**
+
+<p>
+  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/🔴_LIVE_DEMO-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Live Demo"/></a>
 </p>
 
-<p align="center">
+<p>
+  <img src="https://img.shields.io/badge/version-1.0.0-c4b5fd?style=flat-square&labelColor=0f172a" alt="Version"/>
+  <img src="https://img.shields.io/badge/license-MIT-a78bfa?style=flat-square&labelColor=0f172a" alt="License"/>
+  <img src="https://img.shields.io/badge/PRs-welcome-9333ea?style=flat-square&labelColor=0f172a" alt="PRs Welcome"/>
+</p>
+
+<p>
   <img src="https://img.shields.io/badge/React-18.2-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React"/>
   <img src="https://img.shields.io/badge/Node.js-Express-339933?style=flat-square&logo=node.js&logoColor=white" alt="Node.js"/>
   <img src="https://img.shields.io/badge/MongoDB-Mongoose-47A248?style=flat-square&logo=mongodb&logoColor=white" alt="MongoDB"/>
   <img src="https://img.shields.io/badge/Socket.IO-Realtime-010101?style=flat-square&logo=socket.io&logoColor=white" alt="Socket.IO"/>
   <img src="https://img.shields.io/badge/Tailwind_CSS-3.3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white" alt="Tailwind CSS"/>
   <img src="https://img.shields.io/badge/Cloudinary-CDN-3448C5?style=flat-square&logo=cloudinary&logoColor=white" alt="Cloudinary"/>
-  <img src="https://img.shields.io/badge/Vercel-Deployed-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel"/>
+  <img src="https://img.shields.io/badge/Vercel-Frontend-000000?style=flat-square&logo=vercel&logoColor=white" alt="Vercel"/>
+  <img src="https://img.shields.io/badge/Render-Backend-46E3B7?style=flat-square&logo=render&logoColor=white" alt="Render"/>
 </p>
 
----
+<p>
+  <a href="https://go-yatri-go.vercel.app"><b>🔴 Live Demo</b></a> ·
+  <a href="#-getting-started"><b>⚙️ Setup Guide</b></a> ·
+  <a href="#-connect-with-me"><b>👋 Contact Me</b></a>
+</p>
+
+</div>
+
+<br>
+
+
+## 🔴 Live Demo — Click to Explore
+
+<div align="center">
+
+### 👉 [**Open Go yatriGo Live**](https://go-yatri-go.vercel.app) 👈
+
+<a href="https://go-yatri-go.vercel.app">
+  <img src="https://img.shields.io/badge/🚀_Click_here_to_view_the_live_app-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a&logo=vercel&logoColor=white" alt="Launch Live Demo" width="480"/>
+</a>
+
+<br><br>
+
+<a href="https://go-yatri-go.vercel.app">
+<img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+</a>
+
+*Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
+
+</div>
+
+<br>
 
 ## 💡 What is Go yatriGo?
 
 **Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find your **Journey Mates**, plan **Buddy Trips**, share **Travel Memories**, express **Felt Vibes**, chat in real-time, and even trigger an **Emergency SOS** for safety on the go.
 
-> **"Yatri"** means traveler in Hindi. **Go yatriGo** = Go, Traveler, Go! 🚀
+> 🇮🇳 **"Yatri"** means *traveler* in Hindi. **Go yatriGo** = Go, Traveler, Go! 🚀
 
----
+<br>
+
+## 📊 Project at a Glance
+
+<div align="center">
+
+| 🧩 Mongoose Models | 🛣️ Route Files | 🎮 Controllers | 📄 Frontend Pages | 🧱 Component Dirs |
+|:---:|:---:|:---:|:---:|:---:|
+| **29** | **17** | **15** | **16+** | **18** |
+
+</div>
+
+<br>
 
 ## ✨ Feature Highlights
 
 <table>
 <tr>
-<td width="50%">
+<td width="50%" valign="top">
 
 ### 🤝 Journey Mates
 Find and connect with like-minded people. Build your squad of **My Journey Mates** — your travel family who share your vibe.
@@ -51,7 +100,7 @@ Share your journeys as **Travel Memories** with photos, captions, and music. Com
 Found a Travel Memory you love? **Feel the vibe!** Your curated collection of Felt Vibes showcases the memories that moved you.
 
 </td>
-<td width="50%">
+<td width="50%" valign="top">
 
 ### 🗺️ Buddy Trips & Travel Groups
 Create **Buddy Trips**, form **Travel Groups**, invite members, set itineraries, and collaborate with a built-in journey workspace, timeline & gallery.
@@ -69,7 +118,7 @@ Full admin panel with user management, content moderation, analytics pie charts,
 </tr>
 </table>
 
----
+<br>
 
 ## 🏛️ Architecture
 
@@ -95,36 +144,47 @@ Go yatriGo
     └── Collections ── Users, Journeys, Messages, Travel Memories, Stories, Groups...
 ```
 
----
+<br>
 
 ## 🔧 Tech Stack
 
-<table>
-<tr>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=react" width="40"/><br><b>React 18</b></td>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=nodejs" width="40"/><br><b>Node.js</b></td>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=express" width="40"/><br><b>Express</b></td>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=mongodb" width="40"/><br><b>MongoDB</b></td>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=tailwind" width="40"/><br><b>Tailwind</b></td>
-<td align="center" width="14%"><img src="https://skillicons.dev/icons?i=vercel" width="40"/><br><b>Vercel</b></td>
-</tr>
-</table>
+<div align="center">
+
+| | | | | | | |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| <img src="https://skillicons.dev/icons?i=react" width="40"/><br><b>React 18</b> | <img src="https://skillicons.dev/icons?i=nodejs" width="40"/><br><b>Node.js</b> | <img src="https://skillicons.dev/icons?i=express" width="40"/><br><b>Express</b> | <img src="https://skillicons.dev/icons?i=mongodb" width="40"/><br><b>MongoDB</b> | <img src="https://skillicons.dev/icons?i=tailwind" width="40"/><br><b>Tailwind</b> | <img src="https://skillicons.dev/icons?i=vercel" width="40"/><br><b>Vercel</b> | <img src="https://skillicons.dev/icons?i=render" width="40"/><br><b>Render</b> |
+
+</div>
 
 | Layer | Technologies |
 |:------|:------------|
-| **Frontend** | React 18, Tailwind CSS, Framer Motion, React Router v6, Axios, Socket.IO Client, Recharts, MUI Data Grid, Formik, SweetAlert2, Lucide Icons |
-| **Backend** | Node.js, Express.js, Mongoose, Socket.IO, JWT, Bcrypt.js, Multer, Nodemailer |
+| **Frontend** | React 18 · Tailwind CSS · Framer Motion · React Router v6 · Axios · Socket.IO Client · Recharts · MUI Data Grid · Formik · SweetAlert2 · Lucide Icons |
+| **Backend** | Node.js · Express.js · Mongoose · Socket.IO · JWT · Bcrypt.js · Multer · Nodemailer |
 | **Database** | MongoDB Atlas |
 | **Storage** | Cloudinary CDN (images & media) |
-| **Security** | Helmet, CORS, Rate Limiting, XSS Clean, HPP, Mongo Sanitize, Express Mongo Sanitize |
-| **Deployment** | Vercel (Frontend), Backend hosted separately |
+| **Security** | Helmet · CORS · Rate Limiting · XSS Clean · HPP · Mongo Sanitize |
+| **Deployment** | Vercel (Frontend) · Render (Backend) |
 
----
+<br>
+
+## 🧠 Engineering Highlights
+
+*What this project demonstrates, beyond just "it works":*
+
+- **Real-time architecture** — Socket.IO powers live chat, notifications, and presence across the app, not bolted on as an afterthought.
+- **Schema design at scale** — 29 interrelated Mongoose models (users, journeys, social graph, moderation, support) designed to avoid duplication and support complex queries.
+- **Security-first backend** — layered protection with Helmet, rate limiting, JWT + HTTP-only cookies, input sanitization (XSS/HPP/Mongo injection), and bcrypt password hashing.
+- **Full moderation pipeline** — block/report system feeding into an admin dashboard with analytics, not just a hidden database flag.
+- **Safety-conscious product thinking** — Emergency SOS wasn't a stretch feature; it shaped how the profile and contacts systems were modeled.
+- **Clean separation of concerns** — controller/route/model layering on the backend; context/hooks/services layering on the frontend, built for maintainability as the codebase grew to 29 models and 17 route files.
+
+<br>
 
 ## 📂 Project Structure
 
 <details>
 <summary><b>📁 Backend — 15 Controllers · 29 Models · 17 Routes</b> (click to expand)</summary>
+<br>
 
 ```
 backend/
@@ -167,6 +227,7 @@ backend/
 
 <details>
 <summary><b>📁 Frontend — 16+ Pages · 18 Component Directories</b> (click to expand)</summary>
+<br>
 
 ```
 frontend/src/
@@ -229,17 +290,17 @@ frontend/src/
 
 </details>
 
----
+<br>
 
 ## 🚀 Getting Started
 
 ### Prerequisites
 
-```
-Node.js  ≥ v14
-MongoDB  (local or Atlas)
-Git
-```
+<p>
+  <img src="https://img.shields.io/badge/Node.js-≥_v14-339933?style=flat-square&logo=node.js&logoColor=white"/>
+  <img src="https://img.shields.io/badge/MongoDB-local_or_Atlas-47A248?style=flat-square&logo=mongodb&logoColor=white"/>
+  <img src="https://img.shields.io/badge/Git-required-F05032?style=flat-square&logo=git&logoColor=white"/>
+</p>
 
 ### 1️⃣ Clone & Install
 
@@ -280,9 +341,9 @@ npm install
 npm start
 ```
 
-> App runs at **`http://localhost:3000`**
+> 🌐 App runs at **`http://localhost:3000`**
 
----
+<br>
 
 ## 🔐 Security
 
@@ -290,14 +351,14 @@ Go yatriGo takes security seriously with multiple layers of protection:
 
 | Feature | Implementation |
 |:--------|:--------------|
-| Authentication | JWT tokens with secure HTTP-only cookies |
-| Password Security | Bcrypt hashing with salt rounds |
-| API Protection | Rate limiting, Helmet headers, CORS |
-| Data Sanitization | XSS Clean, HPP, Mongo Sanitize |
-| User Safety | Block/Report system, Admin moderation |
-| Emergency | SOS alerts, Emergency contact management |
+| 🔑 Authentication | JWT tokens with secure HTTP-only cookies |
+| 🔒 Password Security | Bcrypt hashing with salt rounds |
+| 🛡️ API Protection | Rate limiting, Helmet headers, CORS |
+| 🧼 Data Sanitization | XSS Clean, HPP, Mongo Sanitize |
+| 🚷 User Safety | Block/Report system, Admin moderation |
+| 🚨 Emergency | SOS alerts, Emergency contact management |
 
----
+<br>
 
 ## 📡 API Endpoints
 
@@ -316,7 +377,7 @@ Go yatriGo takes security seriously with multiple layers of protection:
 | `/api/settings` | User Preferences, Account Settings |
 | `/api/support` | Help Tickets, FAQ, Contact Requests |
 
----
+<br>
 
 ## 🔮 What's Next
 
@@ -328,7 +389,7 @@ Go yatriGo takes security seriously with multiple layers of protection:
 - [ ] 📊 Advanced analytics & journey insights
 - [ ] 🌐 Multi-language support
 
----
+<br>
 
 ## 🤝 Contributing
 
@@ -346,24 +407,33 @@ git commit -m "Add YourFeature"
 git push origin feature/YourFeature
 ```
 
----
+<br>
 
 ## 📄 License
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
----
+<br>
 
-<p align="center">
-  <b>Built with 💜 by <a href="https://github.com/sandhyawani">Sandhya Wani</a></b>
+## 👋 Connect With Me
+
+<div align="center">
+
+<p>
+  <a href="https://github.com/sandhyawani"><img src="https://img.shields.io/badge/GitHub-sandhyawani-181717?style=for-the-badge&logo=github&logoColor=white"/></a>
+  <a href="https://linkedin.com/in/sandhyawani"><img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white"/></a>
+  <a href="https://go-yatri-go.vercel.app"><img src="https://img.shields.io/badge/Portfolio-Visit-8b5cf6?style=for-the-badge&logo=googlechrome&logoColor=white"/></a>
+  <a href="mailto:sandhyawani85@gmail.com"><img src="https://img.shields.io/badge/Email-Contact-D14836?style=for-the-badge&logo=gmail&logoColor=white"/></a>
 </p>
 
-<p align="center">
+**Built with 💜 by Sandhya Wani**
+
+<p>
   <a href="https://github.com/sandhyawani/Go-yatriGo"><img src="https://img.shields.io/badge/⭐_Star_this_repo-8b5cf6?style=for-the-badge&labelColor=0f172a" alt="Star"/></a>
   <a href="https://github.com/sandhyawani/Go-yatriGo/issues"><img src="https://img.shields.io/badge/🐛_Report_Bug-7c3aed?style=for-the-badge&labelColor=0f172a" alt="Bug"/></a>
   <a href="https://github.com/sandhyawani/Go-yatriGo/pulls"><img src="https://img.shields.io/badge/✨_Request_Feature-6d28d9?style=for-the-badge&labelColor=0f172a" alt="Feature"/></a>
 </p>
 
-<p align="center">
-  <em>Go yatriGo — Because every journey matters. 💜</em>
-</p>
+*Go yatriGo — Because every journey matters.* 💜
+
+</div>
