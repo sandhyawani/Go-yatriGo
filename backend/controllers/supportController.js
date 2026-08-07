@@ -2,14 +2,13 @@ const asyncHandler = require("express-async-handler");
 const SupportTicket = require("../models/SupportTicket");
 const FAQ = require("../models/FAQ");
 
-// Create a new support ticket
 const createTicket = asyncHandler(async (req, res) => {
   const { issueType, subject, description, priority, attachments } = req.body;
 
   if (!issueType || !subject || !description) {
     return res.status(400).json({
       success: false,
-      message: "Issue type, subject and description are required",
+      message: "Issue type, subject and description are required"
     });
   }
 
@@ -21,55 +20,52 @@ const createTicket = asyncHandler(async (req, res) => {
     priority: priority || "Medium",
     attachments: attachments || [],
     replies: [
-      {
-        sender: req.user._id,
-        message: description,
-      },
-    ],
+    {
+      sender: req.user._id,
+      message: description
+    }]
+
   });
 
   await ticket.save();
 
-  
+
 
   res.status(201).json({
     success: true,
-    ticket,
+    ticket
   });
 });
 
-// Get all support tickets of the logged-in user
 const getMyTickets = asyncHandler(async (req, res) => {
   const tickets = await SupportTicket.find({
-    user: req.user._id,
+    user: req.user._id
   }).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
-    tickets,
+    tickets
   });
 });
 
-// Get all active FAQs
 const getFAQs = asyncHandler(async (req, res) => {
   const faqs = await FAQ.find({
-    isActive: true,
+    isActive: true
   }).sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
-    faqs,
+    faqs
   });
 });
 
-// Submit a contact form
 const submitContactForm = asyncHandler(async (req, res) => {
   const { subject, message } = req.body;
 
   if (!subject || !message) {
     return res.status(400).json({
       success: false,
-      message: "Subject and message are required",
+      message: "Subject and message are required"
     });
   }
 
@@ -78,21 +74,20 @@ const submitContactForm = asyncHandler(async (req, res) => {
     issueType: "General Inquiry",
     subject,
     description: message,
-    priority: "Low",
+    priority: "Low"
   });
 
   await ticket.save();
 
-  
+
 
   res.status(200).json({
     success: true,
     message: "Message sent successfully",
-    trackingId: ticket.trackingId,
+    trackingId: ticket.trackingId
   });
 });
 
-// Reply to a support ticket
 const replyTicket = asyncHandler(async (req, res) => {
   const { ticketId } = req.params;
   const { message } = req.body;
@@ -100,47 +95,44 @@ const replyTicket = asyncHandler(async (req, res) => {
   if (!message?.trim()) {
     return res.status(400).json({
       success: false,
-      message: "Reply message is required",
+      message: "Reply message is required"
     });
   }
 
   const ticket = await SupportTicket.findOne({
     _id: ticketId,
-    user: req.user._id,
+    user: req.user._id
   });
 
   if (!ticket) {
     return res.status(404).json({
       success: false,
-      message: "Ticket not found",
+      message: "Ticket not found"
     });
   }
 
-  // Guard clause for closed tickets
   if (ticket.status === "Closed") {
     return res.status(400).json({
       success: false,
-      message: "Cannot reply to a closed ticket. Please open a new one.",
+      message: "Cannot reply to a closed ticket. Please open a new one."
     });
   }
 
   ticket.replies.push({
     sender: req.user._id,
-    message,
+    message
   });
-  
-  // Reset status back to open if it was marked pending or resolved
+
   ticket.status = "Open";
 
   await ticket.save();
 
   res.status(200).json({
     success: true,
-    ticket,
+    ticket
   });
 });
 
-// Report an application issue
 const reportProblem = asyncHandler(async (req, res) => {
   const ReportProblem = require("../models/ReportProblem");
   const { category, message, screenshot } = req.body;
@@ -148,7 +140,7 @@ const reportProblem = asyncHandler(async (req, res) => {
   if (!category || !message) {
     return res.status(400).json({
       success: false,
-      message: "Category and message are required",
+      message: "Category and message are required"
     });
   }
 
@@ -156,12 +148,12 @@ const reportProblem = asyncHandler(async (req, res) => {
     userId: req.user._id,
     category,
     message,
-    screenshot,
+    screenshot
   });
 
   res.status(201).json({
     success: true,
-    report,
+    report
   });
 });
 
@@ -171,5 +163,5 @@ module.exports = {
   getFAQs,
   submitContactForm,
   replyTicket,
-  reportProblem,
+  reportProblem
 };

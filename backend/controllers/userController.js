@@ -3,10 +3,11 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
 const TravelGroup = require("../models/TravelGroup");
+const Journey = require("../models/Journey");
 const Follow = require("../models/Follow");
 const Block = require("../models/Block");
 const Report = require("../models/Report");
-const Post = require("../models/Post"); // Moved to top to prevent runtime errors
+const Post = require("../models/Post");
 const { INDIAN_STATES_AND_CITIES } = require("../utils/locationData");
 
 const SOCKET_EVENTS = {
@@ -15,10 +16,9 @@ const SOCKET_EVENTS = {
   FOLLOWING_UPDATED: "following_updated",
   FOLLOW_REQUEST_RECEIVED: "follow_request_received",
   FOLLOW_REQUEST_ACCEPTED: "follow_request_accepted",
-  FOLLOW_REQUEST_REJECTED: "follow_request_rejected",
+  FOLLOW_REQUEST_REJECTED: "follow_request_rejected"
 };
 
-// Update user profile
 const updateUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -30,7 +30,7 @@ const updateUser = asyncHandler(async (req, res) => {
   if (currentUserId.toString() !== targetUserId.toString() && !req.user?.isAdmin) {
     return res.status(403).json({
       success: false,
-      message: "You are not authorized to update this profile",
+      message: "You are not authorized to update this profile"
     });
   }
 
@@ -56,13 +56,11 @@ const updateUser = asyncHandler(async (req, res) => {
     const trimmedState = (stateToValidate || "").trim();
     const trimmedCity = (cityToValidate || "").trim();
 
-    // Check if the state exists in our location data
     const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
     if (!validCities) {
       return res.status(400).json({ success: false, message: `Invalid state: ${trimmedState}` });
     }
 
-    // Check if the city belongs to the state
     if (!validCities.includes(trimmedCity)) {
       return res.status(400).json({
         success: false,
@@ -70,17 +68,16 @@ const updateUser = asyncHandler(async (req, res) => {
       });
     }
 
-    // Update req.body values to trimmed ones
     if (hasStateUpdate) req.body.state = trimmedState;
     if (hasCityUpdate) req.body.city = trimmedCity;
   }
 
-  // Prevent mass assignment vulnerability by whitelisting safe updates
   const allowedUpdates = [
-    "name", "username", "bio", "city", "state", "interests", "role", "type",
-    "img", "pic", "avatar", "profilePic", "govId", "privacySettings"
-  ];
-  
+  "name", "username", "bio", "city", "state", "interests", "role", "type", "mobile",
+  "img", "pic", "avatar", "profilePic", "govId", "govIdType", "privacySettings",
+  "preferredTravelStyle", "favoriteDestinations"];
+
+
   const updateData = {};
   allowedUpdates.forEach((field) => {
     if (req.body[field] !== undefined) updateData[field] = req.body[field];
@@ -93,15 +90,35 @@ const updateUser = asyncHandler(async (req, res) => {
     updateData.avatar = newPic;
   }
 
+  if (updateData.govIdType !== undefined && !updateData.govId) {
+    delete updateData.govIdType;
+  }
+
+  if (updateData.govIdType) {
+    const validGovIdTypes = ['Aadhaar Card', 'PAN Card', 'Passport', 'Driving License'];
+    if (!validGovIdTypes.includes(updateData.govIdType)) {
+      return res.status(400).json({ success: false, message: "Invalid document type." });
+    }
+  }
+
   if (updateData.govId) {
     updateData.verificationStatus = "pending";
+    updateData.isVerified = false;
     updateData.verificationNote = "";
   }
 
+  if (updateData.mobile !== undefined) {
+    const trimmedMobile = updateData.mobile.trim();
+    if (trimmedMobile !== "" && !/^[6-9]\d{9}$/.test(trimmedMobile)) {
+      return res.status(400).json({ success: false, message: "Invalid mobile number. Must be a 10-digit Indian mobile number starting with 6-9." });
+    }
+    updateData.mobile = trimmedMobile;
+  }
+
   const updatedUser = await User.findByIdAndUpdate(
-    targetUserId,
-    { $set: updateData },
-    { new: true, runValidators: true }
+  targetUserId,
+  { $set: updateData },
+  { new: true, runValidators: true }
   ).select("-password");
 
   if (!updatedUser) {
@@ -111,11 +128,10 @@ const updateUser = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    user: updatedUser.toObject ? updatedUser.toObject() : updatedUser,
+    user: updatedUser.toObject ? updatedUser.toObject() : updatedUser
   });
 });
 
-// Delete user
 const deleteUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -123,7 +139,7 @@ const deleteUser = asyncHandler(async (req, res) => {
   if (currentUserId.toString() !== targetUserId.toString() && !req.user?.isAdmin) {
     return res.status(403).json({
       success: false,
-      message: "You are not authorized to delete this account",
+      message: "You are not authorized to delete this account"
     });
   }
 
@@ -135,13 +151,12 @@ const deleteUser = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "User deleted successfully" });
 });
 
-// Get user profile
 const getUser = asyncHandler(async (req, res) => {
-  const user = await User.findById(req.params.id)
-    .select("-password")
-    .populate("followers", "name username pic img avatar profilePic profilePicture userPic type isVerified rating")
-    .populate("following", "name username pic img avatar profilePic profilePicture userPic type isVerified rating")
-    .lean();
+  const user = await User.findById(req.params.id).
+  select("-password").
+  populate("followers", "name username pic img avatar profilePic profilePicture userPic type isVerified rating").
+  populate("following", "name username pic img avatar profilePic profilePicture userPic type isVerified rating").
+  lean();
 
   if (!user) {
     return res.status(404).json({ success: false, message: "User not found" });
@@ -158,7 +173,7 @@ const getUser = asyncHandler(async (req, res) => {
 
   let canViewContent = !user.privateAccount;
   const isFollower = currentUserId && user.followers?.some(
-    (follower) => (follower._id || follower).toString() === currentUserId.toString()
+  (follower) => (follower._id || follower).toString() === currentUserId.toString()
   );
 
   if (isOwner || isFollower || req.user?.isAdmin) {
@@ -170,13 +185,11 @@ const getUser = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, user });
 });
 
-// Get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find().select("name username pic img avatar profilePic profilePicture role type isVerified rating");
   res.status(200).json({ success: true, users });
 });
 
-// Search and filter users
 const searchUsers = asyncHandler(async (req, res) => {
   const keyword = req.query.search || req.query.q || "";
   const filterCity = req.query.city;
@@ -184,16 +197,16 @@ const searchUsers = asyncHandler(async (req, res) => {
   const currentUserId = req.user?._id || req.user?.id;
 
   let queryConditions = {
-    ...(currentUserId && { _id: { $ne: currentUserId } }),
+    ...(currentUserId && { _id: { $ne: currentUserId } })
   };
 
   if (keyword) {
     queryConditions.$or = [
-      { name: { $regex: keyword, $options: "i" } },
-      { username: { $regex: keyword, $options: "i" } },
-      { city: { $regex: keyword, $options: "i" } },
-      { state: { $regex: keyword, $options: "i" } },
-    ];
+    { name: { $regex: keyword, $options: "i" } },
+    { username: { $regex: keyword, $options: "i" } },
+    { city: { $regex: keyword, $options: "i" } },
+    { state: { $regex: keyword, $options: "i" } }];
+
   }
 
   if (filterCity) {
@@ -208,7 +221,6 @@ const searchUsers = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, users });
 });
 
-// Follow a user or send a follow request
 const followUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -218,19 +230,29 @@ const followUser = asyncHandler(async (req, res) => {
   }
 
   const [currentUser, targetUser] = await Promise.all([
-    User.findById(currentUserId),
-    User.findById(targetUserId),
-  ]);
+  User.findById(currentUserId),
+  User.findById(targetUserId)]
+  );
 
   if (!currentUser || !targetUser) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  if (currentUser.following.some(id => id.toString() === targetUserId.toString())) {
+  if (currentUser.following.some((id) => id.toString() === targetUserId.toString())) {
     return res.status(400).json({ success: false, message: "You already follow this traveler" });
   }
 
-  if (targetUser.followRequests?.some(id => id.toString() === currentUserId.toString())) {
+  if (targetUser.privacySettings?.connectionRequests === "mates_only") {
+    const isTargetFollowingCurrent = targetUser.following?.some((id) => id.toString() === currentUserId.toString());
+    if (!isTargetFollowingCurrent) {
+      return res.status(403).json({
+        success: false,
+        message: "This traveler only accepts connection requests from mutual mates."
+      });
+    }
+  }
+
+  if (targetUser.followRequests?.some((id) => id.toString() === currentUserId.toString())) {
     return res.status(400).json({ success: false, message: "Journey Mate request already sent" });
   }
 
@@ -238,46 +260,46 @@ const followUser = asyncHandler(async (req, res) => {
 
   if (targetUser.privateAccount) {
     const updatedTarget = await User.findByIdAndUpdate(
-      targetUserId,
-      { $addToSet: { followRequests: currentUserId } },
-      { new: true }
+    targetUserId,
+    { $addToSet: { followRequests: currentUserId } },
+    { new: true }
     );
 
     const notification = await Notification.create({
       sender: currentUserId,
       receiver: targetUserId,
       type: "follow_request",
-      message: `${currentUser.username || currentUser.name} sent you a Journey Mate request`,
+      message: `${currentUser.username || currentUser.name} sent you a Journey Mate request`
     });
 
     if (io) {
-      const populatedNotification = await Notification.findById(notification._id)
-        .populate("sender", "name username avatar profilePicture pic img")
-        .lean();
+      const populatedNotification = await Notification.findById(notification._id).
+      populate("sender", "name username avatar profilePicture pic img").
+      lean();
       io.to(targetUserId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
       io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_RECEIVED, {
         senderId: currentUserId.toString(),
-        followRequests: updatedTarget.followRequests,
+        followRequests: updatedTarget.followRequests
       });
     }
 
     return res.status(200).json({
       success: true,
       status: "requested",
-      message: "Journey Mate request sent successfully",
+      message: "Journey Mate request sent successfully"
     });
   }
 
   const [updatedCurrent, updatedTarget] = await Promise.all([
-    User.findByIdAndUpdate(currentUserId, { $addToSet: { following: targetUserId } }, { new: true }),
-    User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: currentUserId } }, { new: true })
-  ]);
+  User.findByIdAndUpdate(currentUserId, { $addToSet: { following: targetUserId } }, { new: true }),
+  User.findByIdAndUpdate(targetUserId, { $addToSet: { followers: currentUserId } }, { new: true })]
+  );
 
   if (Follow) {
     await Follow.findOneAndUpdate(
-      { follower: currentUserId, following: targetUserId },
-      { follower: currentUserId, following: targetUserId },
-      { upsert: true, new: true }
+    { follower: currentUserId, following: targetUserId },
+    { follower: currentUserId, following: targetUserId },
+    { upsert: true, new: true }
     );
   }
 
@@ -285,32 +307,31 @@ const followUser = asyncHandler(async (req, res) => {
     sender: currentUserId,
     receiver: targetUserId,
     type: "follow",
-    message: `${currentUser.username || currentUser.name} added you as a Journey Mate`,
+    message: `${currentUser.username || currentUser.name} added you as a Journey Mate`
   });
 
   if (io) {
-    const populatedNotification = await Notification.findById(notification._id)
-      .populate("sender", "name username avatar profilePicture pic img")
-      .lean();
+    const populatedNotification = await Notification.findById(notification._id).
+    populate("sender", "name username avatar profilePicture pic img").
+    lean();
     io.to(targetUserId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
     io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: targetUserId.toString(),
-      followersCount: updatedTarget.followers.length,
+      followersCount: updatedTarget.followers.length
     });
     io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
       targetId: currentUserId.toString(),
-      followingCount: updatedCurrent.following.length,
+      followingCount: updatedCurrent.following.length
     });
   }
 
   res.status(200).json({
     success: true,
     status: "following",
-    message: "Successfully added as Journey Mate",
+    message: "Successfully added as Journey Mate"
   });
 });
 
-// Unfollow a user or cancel a follow request
 const unfollowUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -321,7 +342,7 @@ const unfollowUser = asyncHandler(async (req, res) => {
   }
 
   const hasPendingRequest = targetUser.followRequests?.some(
-    (id) => id.toString() === currentUserId.toString()
+  (id) => id.toString() === currentUserId.toString()
   );
 
   const io = req.app.get("io");
@@ -337,14 +358,14 @@ const unfollowUser = asyncHandler(async (req, res) => {
     return res.status(200).json({
       success: true,
       status: "none",
-      message: "Journey Mate request cancelled successfully",
+      message: "Journey Mate request cancelled successfully"
     });
   }
 
   const [updatedCurrent, updatedTarget] = await Promise.all([
-    User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } }, { new: true }),
-    User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } }, { new: true })
-  ]);
+  User.findByIdAndUpdate(currentUserId, { $pull: { following: targetUserId } }, { new: true }),
+  User.findByIdAndUpdate(targetUserId, { $pull: { followers: currentUserId } }, { new: true })]
+  );
 
   if (Follow) {
     await Follow.deleteOne({ follower: currentUserId, following: targetUserId });
@@ -355,28 +376,56 @@ const unfollowUser = asyncHandler(async (req, res) => {
   if (io) {
     io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: targetUserId.toString(),
-      followersCount: updatedTarget.followers.length,
+      followersCount: updatedTarget.followers.length
     });
     io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
       targetId: currentUserId.toString(),
-      followingCount: updatedCurrent.following.length,
+      followingCount: updatedCurrent.following.length
     });
   }
 
   res.status(200).json({
     success: true,
     status: "none",
-    message: "Successfully removed Journey Mate",
+    message: "Successfully removed Journey Mate"
   });
 });
 
-// Rate a traveler after completing a trip
 const rateUser = asyncHandler(async (req, res) => {
+  const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
-  const { rating } = req.body;
+  const { rating, journeyId } = req.body;
+
+  if (currentUserId.toString() === targetUserId.toString()) {
+    return res.status(400).json({ success: false, message: "You cannot rate or review yourself" });
+  }
 
   if (!rating || rating < 1 || rating > 5) {
     return res.status(400).json({ success: false, message: "Rating must be between 1 and 5" });
+  }
+
+  const TravelGroup = require("../models/TravelGroup");
+  const now = new Date();
+
+  const query = {
+    $or: [{ status: "completed" }, { endDate: { $lt: now } }],
+    $and: [
+    { $or: [{ host: currentUserId }, { "members.user": currentUserId }] },
+    { $or: [{ host: targetUserId }, { "members.user": targetUserId }] }]
+
+  };
+
+  if (journeyId) {
+    query._id = journeyId;
+  }
+
+  const sharedJourney = await TravelGroup.findOne(query);
+
+  if (!sharedJourney) {
+    return res.status(403).json({
+      success: false,
+      message: "You can only rate travelers with whom you have completed a journey"
+    });
   }
 
   const targetUser = await User.findById(targetUserId);
@@ -397,11 +446,10 @@ const rateUser = asyncHandler(async (req, res) => {
     success: true,
     message: "Rating submitted successfully",
     rating: targetUser.rating,
-    reviewsCount: targetUser.reviewsCount,
+    reviewsCount: targetUser.reviewsCount
   });
 });
 
-// Block a user
 const blockUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -415,21 +463,26 @@ const blockUser = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  if (currentUser.blockedUsers.some(id => id.toString() === targetUserId.toString())) {
+  if (currentUser.blockedUsers.some((id) => id.toString() === targetUserId.toString())) {
     return res.status(400).json({ success: false, message: "User is already blocked" });
   }
 
-  await User.findByIdAndUpdate(currentUserId, { $addToSet: { blockedUsers: targetUserId } });
+  await User.findByIdAndUpdate(currentUserId, {
+    $addToSet: { blockedUsers: targetUserId },
+    $pull: { followers: targetUserId, following: targetUserId, followRequests: targetUserId }
+  });
+  await User.findByIdAndUpdate(targetUserId, {
+    $pull: { followers: currentUserId, following: currentUserId, followRequests: currentUserId }
+  });
   await Block.findOneAndUpdate(
-    { blocker: currentUserId, blocked: targetUserId },
-    { blocker: currentUserId, blocked: targetUserId },
-    { upsert: true, new: true }
+  { blocker: currentUserId, blocked: targetUserId },
+  { blocker: currentUserId, blocked: targetUserId },
+  { upsert: true, new: true }
   );
 
   res.status(200).json({ success: true, message: "User blocked successfully" });
 });
 
-// Unblock a user
 const unblockUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -440,7 +493,6 @@ const unblockUser = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "User unblocked successfully" });
 });
 
-// Report a user
 const reportUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
@@ -451,9 +503,9 @@ const reportUser = asyncHandler(async (req, res) => {
   }
 
   const targetUser = await User.findByIdAndUpdate(
-    targetUserId,
-    { $push: { reportedBy: { reporterId: currentUserId, reason } } },
-    { new: true }
+  targetUserId,
+  { $push: { reportedBy: { reporterId: currentUserId, reason } } },
+  { new: true }
   );
 
   if (!targetUser) {
@@ -464,87 +516,324 @@ const reportUser = asyncHandler(async (req, res) => {
     reporter: currentUserId,
     reportedUser: targetUserId,
     targetType: "user",
-    reason,
+    reason
   });
 
   res.status(200).json({ success: true, message: "User reported successfully" });
 });
 
-// Get traveler suggestions
 const getTravelerSuggestions = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
-  const currentUser = await User.findById(currentUserId).select("following city state");
+  const currentUser = await User.findById(currentUserId).
+  select("following city state interests preferredTravelStyle favoriteDestinations");
   const followingList = currentUser?.following || [];
 
-  const suggestionQuery = {
-    isAdmin: { $ne: true },
-    $or: [
-      { role: { $in: ["Traveler", "traveler"] } },
-      { type: { $in: ["Traveler", "traveler"] } },
-    ],
+  const queryDestination = req.query.destination?.trim().toLowerCase();
+  const queryStartDate = req.query.startDate ? new Date(req.query.startDate) : null;
+  const queryEndDate = req.query.endDate ? new Date(req.query.endDate) : null;
+  const queryCity = (req.query.from || req.query.city || req.query.departureCity)?.trim().toLowerCase();
+  const queryGroupId = req.query.groupId;
+
+  const userDestinations = new Set();
+  const userDates = [];
+
+  if (queryDestination) {
+    userDestinations.add(queryDestination);
+  }
+  if (queryStartDate) {
+    userDates.push({ startDate: queryStartDate, endDate: queryEndDate || queryStartDate });
+  }
+
+  const userBaseCity = queryCity || currentUser?.city?.trim().toLowerCase();
+  const userBaseState = currentUser?.state?.trim().toLowerCase();
+  const userInterests = new Set((currentUser?.interests || []).map((i) => i.toLowerCase()));
+  if (currentUser?.preferredTravelStyle) {
+    userInterests.add(currentUser.preferredTravelStyle.toLowerCase());
+  }
+
+  if (currentUser?.favoriteDestinations) {
+    currentUser.favoriteDestinations.forEach((dest) => {
+      if (dest) userDestinations.add(dest.trim().toLowerCase());
+    });
+  }
+
+  if (!queryDestination || !queryStartDate) {
+    const userJourneys = await Journey.find({
+      $or: [{ creator: currentUserId }, { "members.user": currentUserId }],
+      status: { $in: ["Planning", "Upcoming", "Ongoing"] }
+    }).select("destination startDate endDate");
+
+    const userGroups = await TravelGroup.find({
+      $or: [{ host: currentUserId }, { "members.user": currentUserId }],
+      status: "open"
+    }).select("destination startDate endDate");
+
+    userJourneys.forEach((j) => {
+      if (j.destination) userDestinations.add(j.destination.trim().toLowerCase());
+      if (j.startDate && j.endDate) {
+        userDates.push({ startDate: new Date(j.startDate), endDate: new Date(j.endDate) });
+      }
+    });
+
+    userGroups.forEach((g) => {
+      if (g.destination) userDestinations.add(g.destination.trim().toLowerCase());
+      if (g.startDate && g.endDate) {
+        userDates.push({ startDate: new Date(g.startDate), endDate: new Date(g.endDate) });
+      }
+    });
+  }
+
+  const activeJourneys = await Journey.find({
+    status: { $in: ["Planning", "Upcoming", "Ongoing"] }
+  }).select("creator members destination startDate endDate title").lean();
+
+  const activeGroups = await TravelGroup.find({
+    status: "open"
+  }).select("host members destination startDate endDate title from").lean();
+
+  const excludeUserIds = new Set();
+  excludeUserIds.add(currentUserId.toString());
+  if (queryGroupId) {
+    const targetGroup = activeGroups.find((g) => g._id.toString() === queryGroupId);
+    if (targetGroup) {
+      if (targetGroup.host) excludeUserIds.add(targetGroup.host.toString());
+      if (targetGroup.members) {
+        targetGroup.members.forEach((m) => {
+          if (m.user) excludeUserIds.add((m.user._id || m.user).toString());
+        });
+      }
+    }
+  }
+
+  const candidateTripsMap = {};
+  const addTripToMap = (userId, trip) => {
+    if (!userId) return;
+    const uid = userId.toString();
+    if (!candidateTripsMap[uid]) {
+      candidateTripsMap[uid] = [];
+    }
+    candidateTripsMap[uid].push(trip);
   };
+
+  activeJourneys.forEach((j) => {
+    const tripInfo = {
+      type: "journey",
+      destination: j.destination,
+      startDate: j.startDate,
+      endDate: j.endDate,
+      title: j.title
+    };
+    if (j.creator) addTripToMap(j.creator, tripInfo);
+    if (j.members) {
+      j.members.forEach((m) => {
+        if (m.user) addTripToMap(m.user, tripInfo);
+      });
+    }
+  });
+
+  activeGroups.forEach((g) => {
+    const tripInfo = {
+      type: "group",
+      destination: g.destination,
+      startDate: g.startDate,
+      endDate: g.endDate,
+      title: g.title,
+      from: g.from
+    };
+    if (g.host) addTripToMap(g.host, tripInfo);
+    if (g.members) {
+      g.members.forEach((m) => {
+        if (m.user) addTripToMap(m.user, tripInfo);
+      });
+    }
+  });
+
+  const candidateQuery = {
+    isAdmin: { $ne: true },
+    isDeleted: { $ne: true },
+    isSuspended: { $ne: true },
+    isDeactivated: { $ne: true },
+    _id: { $nin: Array.from(excludeUserIds).concat(followingList.map((id) => id.toString())) },
+    $or: [
+    { role: { $in: ["Traveler", "traveler"] } },
+    { type: { $in: ["Traveler", "traveler"] } }]
+
+  };
+
+  const candidates = await User.find(candidateQuery).
+  select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests preferredTravelStyle favoriteDestinations followers following followRequests privateAccount city state bio").
+  lean();
 
   const filterUsers = (users) => {
     const bannedNames = /^(test|admin|owner|seed|demo)/i;
     return users.filter(
-      (user) => !bannedNames.test(user.name || "") && !bannedNames.test(user.username || "")
+    (user) => !bannedNames.test(user.name || "") && !bannedNames.test(user.username || "")
     );
   };
 
-  const userCity = currentUser?.city?.trim().toLowerCase();
-  const userState = currentUser?.state?.trim().toLowerCase();
+  const filteredCandidates = filterUsers(candidates);
 
-  const getPriorityScore = (u) => {
+  const scoredSuggestions = filteredCandidates.map((c) => {
     let score = 0;
-    const uCity = u.city?.trim().toLowerCase();
-    const uState = u.state?.trim().toLowerCase();
+    let isSameCity = false;
+    let isNearbyCity = false;
+    let isSameDestination = false;
+    let matchedTrip = null;
 
-    if (userCity && uCity === userCity) {
-      score += 100;
+    const cId = c._id.toString();
+    const cCity = c.city?.trim().toLowerCase();
+    const cState = c.state?.trim().toLowerCase();
+    const cTrips = candidateTripsMap[cId] || [];
+
+    const cDestinations = new Set();
+    if (c.favoriteDestinations) {
+      c.favoriteDestinations.forEach((d) => {
+        if (d) cDestinations.add(d.trim().toLowerCase());
+      });
     }
-    if (userState && uState === userState) {
-      score += 10;
+    cTrips.forEach((t) => {
+      if (t.destination) cDestinations.add(t.destination.trim().toLowerCase());
+    });
+
+    let hasDestMatch = false;
+    for (const userDest of userDestinations) {
+      if (cDestinations.has(userDest)) {
+        hasDestMatch = true;
+        isSameDestination = true;
+        break;
+      }
     }
-    return score;
-  };
+    if (hasDestMatch) {
+      score += 1000;
+    }
 
-  let suggestions = await User.find({
-    ...suggestionQuery,
-    _id: { $ne: currentUserId, $nin: followingList },
-  })
-    .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
-    .limit(100)
-    .lean();
+    let hasDateMatch = false;
+    if (userDates.length > 0 && cTrips.length > 0) {
+      for (const uRange of userDates) {
+        for (const cTrip of cTrips) {
+          if (!cTrip.startDate) continue;
+          const uStart = uRange.startDate;
+          const uEnd = uRange.endDate || uStart;
+          const cStart = new Date(cTrip.startDate);
+          const cEnd = cTrip.endDate ? new Date(cTrip.endDate) : cStart;
 
-  suggestions = filterUsers(suggestions);
-  suggestions.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
-  suggestions = suggestions.slice(0, 12);
+          const overlap = cStart <= uEnd && cEnd >= uStart;
+          const diffDays = Math.abs(cStart - uStart) / (1000 * 60 * 60 * 24);
 
-  if (suggestions.length === 0) {
-    suggestions = await User.find({
-      ...suggestionQuery,
-      _id: { $ne: currentUserId },
-    })
-      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
-      .limit(100)
-      .lean();
+          if (overlap || diffDays <= 7) {
+            hasDateMatch = true;
+            matchedTrip = cTrip;
+            break;
+          }
+        }
+        if (hasDateMatch) break;
+      }
+    }
+    if (hasDateMatch) {
+      score += 500;
+    }
 
-    suggestions = filterUsers(suggestions);
-    suggestions.sort((a, b) => getPriorityScore(b) - getPriorityScore(a));
-    suggestions = suggestions.slice(0, 12);
-  }
+    if (userBaseCity && cCity === userBaseCity) {
+      score += 2000;
+      isSameCity = true;
+    }
 
-  if (suggestions.length === 0) {
-    suggestions = await User.find({ _id: { $ne: currentUserId } })
-      .select("name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests followers following followRequests privateAccount city state bio")
-      .limit(5)
-      .lean();
-  }
+    if (userBaseState && cState === userBaseState && cCity !== userBaseCity) {
+      score += 1500;
+      isNearbyCity = true;
+    }
 
-  res.status(200).json({ success: true, suggestions });
+    let interestMatchesCount = 0;
+    const cInterests = (c.interests || []).map((i) => i.toLowerCase());
+    if (c.preferredTravelStyle) {
+      cInterests.push(c.preferredTravelStyle.toLowerCase());
+    }
+    cInterests.forEach((ci) => {
+      if (userInterests.has(ci)) {
+        interestMatchesCount++;
+      }
+    });
+    score += interestMatchesCount * 50;
+
+    if (!matchedTrip && hasDestMatch && cTrips.length > 0) {
+      for (const t of cTrips) {
+        if (t.destination && userDestinations.has(t.destination.trim().toLowerCase())) {
+          matchedTrip = t;
+          break;
+        }
+      }
+    }
+
+    if (!matchedTrip && cTrips.length > 0) {
+      matchedTrip = cTrips[0];
+    }
+
+    let suggestionReasonType = "explore";
+    let suggestionReasonText = "Recommended Journey Mate";
+    let matchedDestText = c.favoriteDestinations && c.favoriteDestinations.length > 0 ? c.favoriteDestinations[0] : "";
+    let matchedDateText = "";
+
+    if (matchedTrip) {
+      matchedDestText = matchedTrip.title || matchedTrip.destination;
+      if (matchedTrip.startDate) {
+        const dObj = new Date(matchedTrip.startDate);
+        matchedDateText = `Leaving ${dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      }
+    }
+
+    if (isSameCity && c.city) {
+      suggestionReasonType = "starting";
+      suggestionReasonText = `📍 From ${c.city}`;
+    } else if (isNearbyCity && c.city) {
+      suggestionReasonType = "nearby";
+      const stateName = c.state ? c.state.charAt(0).toUpperCase() + c.state.slice(1) : c.city;
+      suggestionReasonText = `📍 From ${c.city}, ${stateName}`;
+    } else if (hasDestMatch && matchedDestText) {
+      suggestionReasonType = "heading";
+      const cleanDest = matchedDestText.split(":")[0].split(",")[0].trim();
+      const shortDest = cleanDest.length > 22 ? cleanDest.slice(0, 20) + "..." : cleanDest;
+      suggestionReasonText = `🏔 Heading to ${shortDest}`;
+    } else if (hasDateMatch && matchedDateText) {
+      suggestionReasonType = "dates";
+      suggestionReasonText = `📅 Traveling around ${matchedDateText.toLowerCase().replace("leaving ", "")}`;
+    } else if (interestMatchesCount > 0) {
+      suggestionReasonType = "interests";
+      suggestionReasonText = `🎒 Similar travel interests`;
+    }
+
+    return {
+      ...c,
+      score,
+      interestMatchesCount,
+      isSameCity,
+      isNearbyCity,
+      isSameDestination,
+      suggestionReasonType,
+      suggestionReasonText,
+      matchedDestination: matchedDestText,
+      matchedDates: matchedDateText,
+      matchedInterest: c.preferredTravelStyle || (c.interests && c.interests.length > 0 ? c.interests[0] : "Adventure"),
+      departureCity: c.city || ""
+    };
+  });
+
+  scoredSuggestions.sort((a, b) => b.score - a.score);
+
+  const LOCAL_SLOTS = 5;
+  const localPool = scoredSuggestions.filter((s) => s.isSameCity || s.isNearbyCity);
+  const otherPool = scoredSuggestions.filter((s) => !s.isSameCity && !s.isNearbyCity);
+
+  const guaranteedLocals = localPool.slice(0, LOCAL_SLOTS);
+  const localIds = new Set(guaranteedLocals.map((s) => s._id.toString()));
+  const remainingOthers = otherPool.
+  filter((s) => !localIds.has(s._id.toString())).
+  slice(0, 15 - guaranteedLocals.length);
+
+  const topSuggestions = [...guaranteedLocals, ...remainingOthers];
+
+  res.status(200).json({ success: true, suggestions: topSuggestions });
 });
 
-// Report a user, post, story, or travel group
 const reportItem = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const { targetId, targetType, reportedUserId, reason } = req.body;
@@ -552,7 +841,7 @@ const reportItem = asyncHandler(async (req, res) => {
   if (!targetId || !targetType || !reportedUserId || !reason?.trim()) {
     return res.status(400).json({
       success: false,
-      message: "targetId, targetType, reportedUserId and reason are required",
+      message: "targetId, targetType, reportedUserId and reason are required"
     });
   }
 
@@ -566,32 +855,31 @@ const reportItem = asyncHandler(async (req, res) => {
     reportedUser: reportedUserId,
     targetId,
     targetType,
-    reason,
+    reason
   });
 
   res.status(200).json({ success: true, message: "Report submitted successfully" });
 });
 
-// Accept a follow request
 const acceptFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
 
   const currentUser = await User.findById(currentUserId);
-  if (!currentUser || !currentUser.followRequests.some(id => id.toString() === requesterId.toString())) {
+  if (!currentUser || !currentUser.followRequests.some((id) => id.toString() === requesterId.toString())) {
     return res.status(400).json({ success: false, message: "No active Journey Mate request found" });
   }
 
   const [updatedCurrent, updatedRequester] = await Promise.all([
-    User.findByIdAndUpdate(currentUserId, { $pull: { followRequests: requesterId }, $addToSet: { followers: requesterId } }, { new: true }),
-    User.findByIdAndUpdate(requesterId, { $addToSet: { following: currentUserId } }, { new: true })
-  ]);
+  User.findByIdAndUpdate(currentUserId, { $pull: { followRequests: requesterId }, $addToSet: { followers: requesterId } }, { new: true }),
+  User.findByIdAndUpdate(requesterId, { $addToSet: { following: currentUserId } }, { new: true })]
+  );
 
   if (Follow) {
     await Follow.findOneAndUpdate(
-      { follower: requesterId, following: currentUserId },
-      { follower: requesterId, following: currentUserId },
-      { upsert: true, new: true }
+    { follower: requesterId, following: currentUserId },
+    { follower: requesterId, following: currentUserId },
+    { upsert: true, new: true }
     );
   }
 
@@ -599,26 +887,26 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     sender: currentUserId,
     receiver: requesterId,
     type: "follow_accept",
-    message: `${updatedCurrent.username || updatedCurrent.name} accepted your Journey Mate request`,
+    message: `${updatedCurrent.username || updatedCurrent.name} accepted your Journey Mate request`
   });
 
   await Notification.findOneAndDelete({ sender: requesterId, receiver: currentUserId, type: "follow_request" });
 
   const io = req.app.get("io");
   if (io) {
-    const populatedNotification = await Notification.findById(notification._id)
-      .populate("sender", "name username avatar profilePicture pic img")
-      .lean();
-    
+    const populatedNotification = await Notification.findById(notification._id).
+    populate("sender", "name username avatar profilePicture pic img").
+    lean();
+
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.NEW_NOTIFICATION, populatedNotification);
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, { userId: currentUserId.toString() });
     io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: currentUserId.toString(),
-      followersCount: updatedCurrent.followers.length,
+      followersCount: updatedCurrent.followers.length
     });
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOWING_UPDATED, {
       targetId: requesterId.toString(),
-      followingCount: updatedRequester.following.length,
+      followingCount: updatedRequester.following.length
     });
   }
 
@@ -627,11 +915,10 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     message: "Journey Mate request accepted successfully",
     followersCount: updatedCurrent.followers.length,
     followingCount: updatedCurrent.following.length,
-    requesterFollowingCount: updatedRequester.following.length,
+    requesterFollowingCount: updatedRequester.following.length
   });
 });
 
-// Reject a follow request
 const rejectFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
@@ -647,11 +934,10 @@ const rejectFollowRequest = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, message: "Journey Mate request rejected" });
 });
 
-// Get followers
 const getFollowers = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).populate(
-    "followers",
-    "name username pic img avatar profilePic profilePicture userPic type isVerified rating privateAccount"
+  "followers",
+  "name username pic img avatar profilePic profilePicture userPic type isVerified rating privateAccount"
   );
 
   if (!user) {
@@ -661,11 +947,10 @@ const getFollowers = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, followers: user.followers });
 });
 
-// Get following list
 const getFollowing = asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.id).populate(
-    "following",
-    "name username pic img avatar profilePic profilePicture userPic type isVerified rating privateAccount"
+  "following",
+  "name username pic img avatar profilePic profilePicture userPic type isVerified rating privateAccount"
   );
 
   if (!user) {
@@ -675,11 +960,10 @@ const getFollowing = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, following: user.following });
 });
 
-// Get blocked users
 const getBlockedUsers = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id || req.user.id).populate(
-    "blockedUsers",
-    "name username pic img avatar profilePic profilePicture userPic isVerified"
+  "blockedUsers",
+  "name username pic img avatar profilePic profilePicture userPic isVerified"
   );
 
   if (!user) {
@@ -689,24 +973,22 @@ const getBlockedUsers = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, blockedUsers: user.blockedUsers || [] });
 });
 
-// Get profile statistics
 const getProfileStats = asyncHandler(async (req, res) => {
   const userId = req.params.id || req.user._id || req.user.id;
 
   const [posts, trips, followers, following] = await Promise.all([
-    Post.countDocuments({ userId }),
-    TravelGroup.countDocuments({ host: userId }),
-    Follow.countDocuments({ following: userId }),
-    Follow.countDocuments({ follower: userId }),
-  ]);
+  Post.countDocuments({ userId }),
+  TravelGroup.countDocuments({ host: userId }),
+  Follow.countDocuments({ following: userId }),
+  Follow.countDocuments({ follower: userId })]
+  );
 
   res.status(200).json({
     success: true,
-    stats: { posts, trips, followers, following },
+    stats: { posts, trips, followers, following }
   });
 });
 
-// Get privacy settings
 const getPrivacySettings = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id || req.user.id);
   if (!user) {
@@ -720,11 +1002,14 @@ const getPrivacySettings = asyncHandler(async (req, res) => {
       allowStoryReplies: true,
       allowTravelGroupInvites: true,
       showOnlineStatus: true,
-    },
+      connectionRequests: "everyone",
+      journeyInvites: "everyone",
+      whoCanMessage: "everyone",
+      profileLocationVisibility: "mates_only"
+    }
   });
 });
 
-// Update privacy settings
 const updatePrivacySettings = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id || req.user.id);
   if (!user) {
@@ -737,10 +1022,23 @@ const updatePrivacySettings = asyncHandler(async (req, res) => {
       allowStoryReplies: true,
       allowTravelGroupInvites: true,
       showOnlineStatus: true,
+      connectionRequests: "everyone",
+      journeyInvites: "everyone",
+      whoCanMessage: "everyone",
+      profileLocationVisibility: "mates_only"
     };
   }
 
-  const { privateAccount, allowStoryReplies, allowTravelGroupInvites, showOnlineStatus } = req.body;
+  const {
+    privateAccount,
+    allowStoryReplies,
+    allowTravelGroupInvites,
+    showOnlineStatus,
+    connectionRequests,
+    journeyInvites,
+    whoCanMessage,
+    profileLocationVisibility
+  } = req.body;
 
   if (privateAccount !== undefined) {
     user.privateAccount = privateAccount;
@@ -750,12 +1048,33 @@ const updatePrivacySettings = asyncHandler(async (req, res) => {
   if (allowTravelGroupInvites !== undefined) user.privacySettings.allowTravelGroupInvites = allowTravelGroupInvites;
   if (showOnlineStatus !== undefined) user.privacySettings.showOnlineStatus = showOnlineStatus;
 
+  if (connectionRequests !== undefined) {
+    if (["everyone", "mates_only"].includes(connectionRequests)) {
+      user.privacySettings.connectionRequests = connectionRequests;
+    }
+  }
+  if (journeyInvites !== undefined) {
+    if (["everyone", "mates_only", "none"].includes(journeyInvites)) {
+      user.privacySettings.journeyInvites = journeyInvites;
+    }
+  }
+  if (whoCanMessage !== undefined) {
+    if (["everyone", "mates_only", "none"].includes(whoCanMessage)) {
+      user.privacySettings.whoCanMessage = whoCanMessage;
+    }
+  }
+  if (profileLocationVisibility !== undefined) {
+    if (["everyone", "mates_only", "none"].includes(profileLocationVisibility)) {
+      user.privacySettings.profileLocationVisibility = profileLocationVisibility;
+    }
+  }
+
   await user.save();
 
   res.status(200).json({
     success: true,
     message: "Privacy settings updated successfully",
-    privacySettings: user.privacySettings,
+    privacySettings: user.privacySettings
   });
 });
 
@@ -780,5 +1099,5 @@ module.exports = {
   searchUsers,
   getProfileStats,
   getPrivacySettings,
-  updatePrivacySettings,
+  updatePrivacySettings
 };

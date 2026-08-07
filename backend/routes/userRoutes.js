@@ -68,9 +68,9 @@ router.put("/:id", verifyUser, updateUser);
 router.delete("/:id", verifyUser, deleteUser);
 router.get("/:id", optionalVerifyToken, getUser);
 
-router.route("/")
-  .post(registerUser)
-  .get(protect, getAllUsers);
+router.route("/").
+post(registerUser).
+get(protect, getAllUsers);
 
 router.get("/admin/all", verifyAdmin, getAllUsers);
 router.post("/login", authUser);

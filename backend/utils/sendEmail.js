@@ -1,10 +1,10 @@
 const nodemailer = require("nodemailer");
 
 const sendEmail = async (options) => {
-  
+
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn(
-      "⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables.",
+    "⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables."
     );
     console.warn("Email Details:");
     console.warn(`To: ${options.to}`);
@@ -13,25 +13,24 @@ const sendEmail = async (options) => {
     return;
   }
 
-  // Create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    host: "smtp.office365.com", // You can change this to your preferred provider
+    host: "smtp.office365.com",
     port: 587,
-    secure: false, // true for 465, false for other ports
+    secure: false,
     auth: {
       user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
+      pass: process.env.EMAIL_PASS
     },
     tls: {
-      ciphers: "SSLv3",
-    },
+      ciphers: "SSLv3"
+    }
   });
 
   const message = {
     from: `${process.env.FROM_NAME || "Go Go YatriGo"} <${process.env.EMAIL_USER}>`,
     to: options.to,
     subject: options.subject,
-    text: options.text,
+    text: options.text
   };
 
   const info = await transporter.sendMail(message);

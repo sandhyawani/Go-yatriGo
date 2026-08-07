@@ -4,11 +4,12 @@ import {
   Calendar,
   MapPin,
   ShieldCheck,
+  ArrowRight,
   ArrowUpRight,
   Users,
-  User,
+  Image as ImageIcon,
+  Sparkles,
 } from "lucide-react";
-import JourneyStatusBadge from "./JourneyStatusBadge";
 import Avatar from "../common/Avatar";
 
 const JourneyCard = ({ journey, onCheckInClick }) => {
@@ -18,118 +19,159 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
     (journey.members?.length <= 1 && !journey.journeyType?.includes("Shared"));
 
   const getJourneyTypeBadge = () => {
-    if (isSolo) {
-      return "Solo Journey";
+    if (journey.isBuddyTrip || journey.sourceType === "explore") {
+      return "Explore Group";
     }
-    return "Shared Journey";
+    if (isSolo) {
+      return "Solo Expedition";
+    }
+    return "Friends Journey";
   };
 
   const defaultCover =
     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80";
 
+  const isCompleted =
+    journey.status === "Completed" || journey.lifecycleStatus === "completed";
+  const isOngoing =
+    journey.status === "Ongoing" || journey.status === "Active" || journey.lifecycleStatus === "active";
+
+  const getSignatureCode = () => {
+    const prefix = "GY";
+    const dest = journey.destination || journey.title || "UNK";
+    const titleCode = dest.replace(/[^A-Za-z]/g, "").substring(0, 3).toUpperCase() || "UNK";
+    const date = journey.startDate ? new Date(journey.startDate) : new Date();
+    const mm = String(date.getMonth() + 1).padStart(2, "0");
+    const dd = String(date.getDate()).padStart(2, "0");
+    return `${prefix} • ${titleCode} • ${mm}${dd}`;
+  };
+
+  const getCombinedBadge = () => {
+    const typeBadge = getJourneyTypeBadge();
+    const statusText = isCompleted ? "COMPLETED" : isOngoing ? "ACTIVE" : (journey.status || "UPCOMING").toUpperCase();
+    const typeText = typeBadge.toUpperCase();
+    const statusIcon = isCompleted ? "✓" : isOngoing ? "🟢" : "⏳";
+    const typeIcon = typeBadge === "Explore Group" ? "🌍" : isSolo ? "👤" : "👥";
+
+    return (
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-white/20 backdrop-blur-md text-[10px] font-bold text-white tracking-wider border border-white/30 shadow-sm">
+        <span>{statusIcon} {statusText}</span>
+        <span className="opacity-50">·</span>
+        <span>{typeIcon} {typeText}</span>
+      </div>
+    );
+  };
+
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-[#8B5CF6]/40 transition-all duration-300 flex flex-col justify-between overflow-hidden group">
-      {/* Compact Media Header */}
-      <div className="relative h-36 w-full overflow-hidden bg-slate-100">
+    <div className="bg-white dark:bg-slate-900 rounded-[24px] border border-slate-200/80 dark:border-slate-800 shadow-xs hover:shadow-md hover:border-[#7C3AED]/40 transition-all duration-300 flex flex-col justify-between overflow-hidden group h-full">
+      {/* Media Header */}
+      <div className="relative h-[170px] w-full overflow-hidden bg-slate-100 shrink-0">
         <img
           src={journey.coverImage || defaultCover}
           alt={journey.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/80" />
 
-        {/* Top Badges (Side-by-Side on Top Left) */}
-        <div className="absolute top-3 left-3 flex flex-wrap items-center gap-1.5 z-10 max-w-[90%]">
-          <div className="shrink-0">
-            <JourneyStatusBadge status={journey.status} />
-          </div>
-          <span className="shrink-0 whitespace-nowrap px-2.5 py-1 rounded-lg bg-white/95 dark:bg-slate-900/95 backdrop-blur-md text-[10px] font-black text-slate-800 dark:text-slate-200 shadow-sm border border-slate-200/50 dark:border-slate-700/50 flex items-center gap-1">
-            {isSolo ? (
-              <User className="w-3 h-3 text-[#8B5CF6] shrink-0" />
-            ) : (
-              <Users className="w-3 h-3 text-[#8B5CF6] shrink-0" />
-            )}
-            <span>{getJourneyTypeBadge()}</span>
-          </span>
+        {/* Top Badge */}
+        <div className="absolute top-3 left-3 right-3 flex items-start z-10">
+          {getCombinedBadge()}
         </div>
 
-        {/* Destination Specs */}
-        <div className="absolute bottom-3 left-3.5 right-3.5 text-white">
-          <div className="flex items-center gap-1 text-[10px] font-black tracking-wider text-[#e2dbff] uppercase truncate">
-            <MapPin className="w-3 h-3 text-[#FF5A7A] shrink-0 stroke-[2.5]" />{" "}
-            {journey.destination}
+        {/* Destination Specs & Title */}
+        <div className="absolute bottom-4 left-4 right-4 text-white">
+          <div className="flex items-center gap-1.5 text-[10px] font-black tracking-widest text-slate-300 uppercase mb-1 drop-shadow-md">
+            <MapPin className="w-3.5 h-3.5 text-[#FF5A7A] shrink-0" />
+            <div className="flex items-center truncate">
+              {journey.from ? `${journey.from} ` : ""}
+              {journey.from && <span className="text-white/40 mx-1.5">── ✈ ──</span>}
+              {journey.destination}
+            </div>
           </div>
-          <h3 className="text-base font-black leading-tight truncate text-white mt-0.5">
+          <h3
+            className="text-lg font-black leading-tight text-white line-clamp-2 drop-shadow-md"
+            title={journey.title}
+          >
             {journey.title}
           </h3>
         </div>
       </div>
 
-      {/* Compact Body Specs */}
-      <div className="p-4 space-y-3.5 flex-1 flex flex-col justify-between">
+      {/* Body Specs */}
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-5">
+        
         {/* Date & Duration */}
-        <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
-          <span className="flex items-center truncate">
-            <Calendar className="w-3.5 h-3.5 mr-1.5 text-[#8B5CF6] shrink-0" />
+        <div className="flex items-center justify-between text-xs font-bold text-slate-500 dark:text-slate-400">
+          <span className="flex items-center uppercase tracking-wider">
             {journey.startDate
               ? new Date(journey.startDate).toLocaleDateString("en-US", {
                   month: "short",
                   day: "numeric",
                 })
-              : "Date TBD"}
+              : "DATE TBD"}
           </span>
-          <span className="text-[#8B5CF6] bg-brand-50 dark:bg-brand-900/60 px-2.5 py-1 rounded-lg font-black text-[11px] border border-brand-100 dark:border-brand-800/50 shrink-0">
-            {journey.durationDays || 3} Days
+          <span className="uppercase tracking-wider">
+            {journey.durationDays || 3} DAYS
           </span>
         </div>
 
-        {/* Squad Members Row */}
-        <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-slate-800/80">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="flex items-center -space-x-1.5 shrink-0">
-              {journey.members?.slice(0, 3).map((m, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-200 shrink-0"
-                  title={m.user?.name || "Squad Member"}
-                >
-                  <Avatar
-                    user={m.user}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              ))}
+        {/* Summary (Members or Memories) & Signature */}
+        <div className="space-y-3">
+          {isCompleted && journey.stats && (journey.stats.photosCount > 0 || journey.stats.postsCount > 0 || journey.stats.checkInsCount > 0 || journey.stats.storiesCount > 0) ? (
+            <div className="flex items-center gap-4 text-xs font-bold text-slate-700 dark:text-slate-300">
+              <span className="flex items-center gap-1.5"><ImageIcon className="w-4 h-4 text-slate-400" /> {journey.stats.photosCount || 0} Photos</span>
+              <span className="flex items-center gap-1.5"><Sparkles className="w-4 h-4 text-amber-500" /> {(journey.stats.postsCount || 0) + (journey.stats.checkInsCount || 0) + (journey.stats.storiesCount || 0) || 0} Memories</span>
             </div>
-            <span className="text-xs font-extrabold text-slate-700 dark:text-slate-200 truncate">
-              {journey.members?.length || 1}{" "}
-              {(journey.members?.length || 1) === 1 ? "Member" : "Members"}
-            </span>
-          </div>
+          ) : (
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="flex items-center -space-x-2 shrink-0">
+                {journey.members?.slice(0, 4).map((m, i) => (
+                  <div
+                    key={i}
+                    className="w-7 h-7 rounded-full border-2 border-white dark:border-slate-900 overflow-hidden bg-slate-200 shrink-0"
+                    title={m.user?.name || "Squad Member"}
+                  >
+                    <Avatar
+                      user={m.user}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ))}
+              </div>
+              <span className="text-xs font-bold text-slate-700 dark:text-slate-300 truncate">
+                {isSolo ? "Solo Expedition" : `${journey.members?.length || 1} Explorers`}
+              </span>
+            </div>
+          )}
 
-          {journey.status === "Ongoing" && onCheckInClick && (
+          {/* Go YatriGo Signature */}
+          <div className="text-[10px] font-black text-slate-300 dark:text-slate-600 tracking-[0.2em] pt-1">
+            {getSignatureCode()}
+          </div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="pt-2 flex items-center gap-2">
+          <Link
+            to={journey.isBuddyTrip ? `/social/buddy/${journey._id}` : `/social/journeys/${journey._id}`}
+            className="flex-1 py-3 px-4 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/20 transition-all active:scale-[0.98] flex items-center justify-center gap-1.5 group/btn"
+          >
+            <span>OPEN JOURNEY</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-1" />
+          </Link>
+          {isOngoing && onCheckInClick && (
             <button
               onClick={() => onCheckInClick(journey)}
-              className="px-2.5 py-1 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-600 hover:text-white transition-all shadow-xs shrink-0 flex items-center gap-1 text-[11px] font-extrabold"
+              className="w-12 h-12 rounded-xl bg-emerald-50 hover:bg-emerald-100 dark:bg-emerald-900/20 dark:hover:bg-emerald-900/40 text-emerald-600 flex items-center justify-center shrink-0 transition-all shadow-sm"
               title="Safe Check-In"
             >
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Check-In</span>
+              <ShieldCheck className="w-5 h-5" />
             </button>
           )}
         </div>
-
-        {/* Prominent Full-Width Action Button */}
-        <Link
-          to={`/social/journeys/${journey._id}`}
-          className="w-full mt-1 py-2.5 px-4 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-extrabold shadow-md shadow-[#8B5CF6]/20 transition-all active:scale-95 flex items-center justify-center gap-1.5 group/btn"
-        >
-          <span>Open Journey</span>
-          <ArrowUpRight className="w-4 h-4 transition-transform group-hover/btn:translate-x-0.5 group-hover/btn:-translate-y-0.5" />
-        </Link>
       </div>
     </div>
   );
 };
 
 export default JourneyCard;
-

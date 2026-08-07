@@ -1,10 +1,5 @@
 let hasWarnedAboutFallback = false;
 
-/**
- * Retrieves the JWT signing secret from environment variables.
- * Falls back to a hardcoded string only in non-production environments.
- * @returns {string} The JWT secret key.
- */
 const getJwtSecret = () => {
   const secret = process.env.JWT_SECRET || process.env.JWT;
 
@@ -25,5 +20,5 @@ const getJwtSecret = () => {
 };
 
 module.exports = {
-  getJwtSecret,
+  getJwtSecret
 };

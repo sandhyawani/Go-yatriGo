@@ -2,15 +2,20 @@ import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import {
-  Home as HomeIcon,
-  Search,
-  Compass,
-  Navigation,
-  MessageSquare,
-  Bell,
-  PlusSquare,
-  User
-} from "lucide-react";
+Home as HomeIcon,
+Search,
+Compass,
+Navigation,
+MessageSquare,
+Bell,
+PlusSquare,
+User,
+Camera,
+Users,
+Video,
+MapPin,
+ArrowRight } from
+"lucide-react";
 import ProfileMenu from "../settings/ProfileMenu";
 
 export const SidebarHeader = ({
@@ -24,20 +29,20 @@ export const SidebarHeader = ({
   setIsCreatePostOpen
 }) => {
   const navItemClass = (isActive) =>
-    `relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group w-full select-none text-[14px] ${
-      isActive
-        ? "bg-brand-500/10 text-brand-500 font-semibold shadow-sm"
-        : "text-slate-600 hover:text-slate-800 hover:bg-slate-50 font-semibold hover:-translate-y-0.5"
-    }`;
+  `relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group w-full select-none text-[14px] ${
+  isActive ?
+  "bg-brand-500/10 text-brand-500 font-semibold shadow-sm" :
+  "text-slate-600 hover:text-slate-800 hover:bg-slate-50 font-semibold hover:-translate-y-0.5"
+  }`;
 
   const iconClass = (isActive) =>
-    `w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${
-      isActive ? "text-brand-500" : "text-slate-500 group-hover:text-brand-500"
-    }`;
+  `w-5 h-5 shrink-0 transition-transform duration-300 group-hover:scale-110 ${
+  isActive ? "text-brand-500" : "text-slate-500 group-hover:text-brand-500"
+  }`;
 
   return (
     <div className="flex flex-col gap-0.5">
-      {/* Logo */}
+      {}
       <Link to="/" className="flex items-center gap-2.5 px-3 py-2 mb-2 group">
         <div className="relative w-8 h-8 rounded-xl bg-gradient-to-br from-brand-600 to-brand-400 flex items-center justify-center shadow-lg shadow-brand-500/30 shrink-0 group-hover:-rotate-[8deg] group-hover:scale-105 transition-all duration-300 overflow-hidden">
           <div className="absolute top-[-2px] right-[-2px] w-5 h-5 bg-white/30 rounded-full blur-[3px]"></div>
@@ -46,14 +51,22 @@ export const SidebarHeader = ({
           </span>
         </div>
         <span className="text-[17px] font-semibold tracking-tight text-slate-900 truncate">
-          Go YatriGo<span className="text-brand-500">.</span>
+          Go YatriGo
         </span>
       </Link>
 
-      {/* Nav Links */}
+      {}
       <Link to="/" className={navItemClass(location.pathname === "/")}>
         <HomeIcon className={iconClass(location.pathname === "/")} />
         Home
+      </Link>
+
+      <Link
+      to="/social/buddy"
+      className={navItemClass(location.pathname.startsWith("/social/buddy"))}>
+
+        <Compass className={iconClass(location.pathname.startsWith("/social/buddy"))} />
+        Explore
       </Link>
 
       <button onClick={() => setIsSearchOpen(true)} className={navItemClass(false)}>
@@ -62,117 +75,135 @@ export const SidebarHeader = ({
       </button>
 
       <Link
-        to="/social/buddy"
-        className={navItemClass(location.pathname.startsWith("/social/buddy"))}
-      >
-        <Compass className={iconClass(location.pathname.startsWith("/social/buddy"))} />
-        Explore
-      </Link>
+      to="/social/journeys"
+      className={navItemClass(location.pathname.startsWith("/social/journeys"))}>
 
-      <Link
-        to="/social/journeys"
-        className={navItemClass(location.pathname.startsWith("/social/journeys"))}
-      >
         <Navigation className={iconClass(location.pathname.startsWith("/social/journeys"))} />
-        Journeys
+        Journey Hub
       </Link>
 
       <Link
-        to="/social/chat"
-        className={navItemClass(location.pathname.startsWith("/social/chat"))}
-      >
+      to="/social/chat"
+      className={navItemClass(location.pathname.startsWith("/social/chat"))}>
+
         <MessageSquare className={iconClass(location.pathname.startsWith("/social/chat"))} />
-        Messages
+        Chat
       </Link>
 
-      {/* Notifications trigger */}
+      {}
       <div className="relative w-full">
         <button
-          onClick={() => setShowNotifPanel((prev) => !prev)}
-          className={navItemClass(showNotifPanel)}
-        >
+        onClick={() => setShowNotifPanel((prev) => !prev)}
+        className={navItemClass(showNotifPanel)}>
+
           <Bell className={iconClass(showNotifPanel)} />
           <span className="flex-1 text-left">Notifications</span>
-          {unreadCount > 0 && (
-            <span className="w-4.5 h-4.5 min-w-[18px] bg-accent-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
+          {unreadCount > 0 &&
+          <span className="w-4.5 h-4.5 min-w-[18px] bg-accent-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
               {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
+            </span>}
+
         </button>
       </div>
 
-      {/* Create dropdown */}
+      {}
       <Menu as="div" className="relative w-full">
-        <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(108,77,246,0.25)] hover:shadow-[0_15px_40px_rgba(108,77,246,0.35)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
-          <PlusSquare className="w-4 h-4" />
+        <Menu.Button className="w-full flex items-center justify-center gap-2 px-3 py-3 my-4 rounded-xl bg-gradient-to-r from-[#6D3EF5] to-[#8B5CF6] text-white font-bold text-[13.5px] shadow-[0_10px_30px_rgba(109,62,245,0.3)] hover:shadow-[0_15px_40px_rgba(109,62,245,0.4)] hover:scale-[1.02] hover:brightness-110 active:scale-95 transition-all duration-300">
+          <span>✈️</span>
           Create
         </Menu.Button>
         <Transition
-          as={Fragment}
-          enter="transition ease-out duration-200"
-          enterFrom="opacity-0 scale-95 translate-y-4"
-          enterTo="opacity-100 scale-100 translate-y-0"
-          leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 scale-100 translate-y-0"
-          leaveTo="opacity-0 scale-95 translate-y-4"
-        >
-          <Menu.Items className="absolute left-[calc(100%+16px)] bottom-0 w-[240px] bg-white border border-slate-100 rounded-2xl shadow-[0_12px_40px_rgba(0,0,0,0.08)] z-50 focus:outline-none p-2 origin-bottom-left">
-            <div className="absolute -left-2 bottom-[14px] w-4 h-4 bg-white border-l border-b border-slate-100 transform rotate-45 rounded-sm" />
-            <div className="space-y-1 relative z-10">
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => setIsCreateStoryOpen(true)}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-500 shrink-0">
-                      <PlusSquare className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-extrabold text-slate-800">Create Story</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Share moments for 24h</p>
-                    </div>
-                  </button>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <button
-                    onClick={() => setIsCreatePostOpen(true)}
-                    className={`w-full text-left flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-brand-500/10 flex items-center justify-center text-brand-500 shrink-0">
-                      <PlusSquare className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-extrabold text-slate-800">Post a Memory</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Share travel photos</p>
-                    </div>
-                  </button>
-                )}
-              </Menu.Item>
-              <Menu.Item>
-                {({ active }) => (
-                  <Link
-                    to="/social/buddy/new"
-                    className={`flex items-center gap-3 px-3 py-3 rounded-xl transition-all duration-200 ${
-                      active ? "bg-brand-50 scale-[1.01]" : "bg-transparent"
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center text-amber-500 shrink-0">
-                      <Compass className="w-4.5 h-4.5" />
-                    </div>
-                    <div>
-                      <p className="text-[13px] font-extrabold text-slate-800">Create Trip Group</p>
-                      <p className="text-[10px] text-slate-500 font-medium">Host a travel squad</p>
-                    </div>
-                  </Link>
-                )}
-              </Menu.Item>
+        as={Fragment}
+        enter="transition ease-out duration-300"
+        enterFrom="opacity-0 scale-95 blur-sm translate-y-4"
+        enterTo="opacity-100 scale-100 blur-0 translate-y-0"
+        leave="transition ease-in duration-200"
+        leaveFrom="opacity-100 scale-100 blur-0 translate-y-0"
+        leaveTo="opacity-0 scale-95 blur-sm translate-y-4">
+
+          <Menu.Items className="absolute left-[calc(100%+16px)] bottom-0 w-[320px] bg-white/90 backdrop-blur-2xl border border-white/60 rounded-3xl shadow-[0_20px_60px_-15px_rgba(109,62,245,0.2)] z-50 focus:outline-none p-4 origin-bottom-left flex flex-col gap-3">
+            <div className="pb-3 border-b border-slate-200/50 mb-2">
+              <h3 className="text-xl font-extrabold text-slate-800 flex items-center gap-2">
+                <span>✈️</span> Create
+              </h3>
+              <p className="text-sm font-medium text-slate-500 mt-1">
+                Choose your next travel experience
+              </p>
+            </div>
+
+            <Menu.Item>
+              {({ active }) =>
+              <Link
+              to="/social/journeys"
+              className={`group relative w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 ${active ? 'bg-gradient-to-r from-[#6D3EF5]/10 to-transparent shadow-sm translate-y-[-4px]' : 'bg-white/50 hover:bg-gradient-to-r hover:from-[#6D3EF5]/10 hover:to-transparent hover:shadow-[0_8px_20px_rgba(109,62,245,0.12)] hover:-translate-y-1'}`}
+              style={{ border: '1px solid rgba(109,62,245,0.1)' }}>
+
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6D3EF5]/20 to-[#6D3EF5]/5 flex items-center justify-center text-[#6D3EF5] shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                    <Compass className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-slate-800 group-hover:text-[#6D3EF5] transition-colors">
+                      Start Journey
+                    </h4>
+                    <p className="text-[13px] text-slate-500 font-medium">
+                      Create a solo or group expedition
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#6D3EF5] group-hover:translate-x-1 transition-all duration-300" />
+                </Link>}
+
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) =>
+              <button
+              onClick={() => setIsCreatePostOpen(true)}
+              className={`group relative w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 ${active ? 'bg-gradient-to-r from-[#6D3EF5]/10 to-transparent shadow-sm translate-y-[-4px]' : 'bg-white/50 hover:bg-gradient-to-r hover:from-[#6D3EF5]/10 hover:to-transparent hover:shadow-[0_8px_20px_rgba(109,62,245,0.12)] hover:-translate-y-1'}`}
+              style={{ border: '1px solid rgba(109,62,245,0.1)' }}>
+
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6D3EF5]/20 to-[#6D3EF5]/5 flex items-center justify-center text-[#6D3EF5] shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                    <Camera className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-slate-800 group-hover:text-[#6D3EF5] transition-colors">
+                      Travel Memory
+                    </h4>
+                    <p className="text-[13px] text-slate-500 font-medium">
+                      Capture photos and memories
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#6D3EF5] group-hover:translate-x-1 transition-all duration-300" />
+                </button>}
+
+            </Menu.Item>
+
+            <Menu.Item>
+              {({ active }) =>
+              <Link
+              to="/social/buddy/new"
+              className={`group relative w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 ${active ? 'bg-gradient-to-r from-[#6D3EF5]/10 to-transparent shadow-sm translate-y-[-4px]' : 'bg-white/50 hover:bg-gradient-to-r hover:from-[#6D3EF5]/10 hover:to-transparent hover:shadow-[0_8px_20px_rgba(109,62,245,0.12)] hover:-translate-y-1'}`}
+              style={{ border: '1px solid rgba(109,62,245,0.1)' }}>
+
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6D3EF5]/20 to-[#6D3EF5]/5 flex items-center justify-center text-[#6D3EF5] shrink-0 group-hover:scale-110 transition-transform duration-300 shadow-inner">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="text-base font-bold text-slate-800 group-hover:text-[#6D3EF5] transition-colors">
+                      Travel Squad
+                    </h4>
+                    <p className="text-[13px] text-slate-500 font-medium">
+                      Create a travel group
+                    </p>
+                  </div>
+                  <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#6D3EF5] group-hover:translate-x-1 transition-all duration-300" />
+                </Link>}
+
+            </Menu.Item>
+
+            <div className="pt-3 border-t border-slate-200/50 mt-1 text-center">
+              <p className="text-[10px] font-bold text-[#6D3EF5] uppercase tracking-widest opacity-60">
+                Powered by Go YatriGo Explorer System
+              </p>
             </div>
           </Menu.Items>
         </Transition>
@@ -182,8 +213,7 @@ export const SidebarHeader = ({
         <User className={iconClass(location.pathname === "/profile")} />
         Profile
       </Link>
-    </div>
-  );
+    </div>);
+
 };
 export default SidebarHeader;
-

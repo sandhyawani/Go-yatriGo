@@ -6,29 +6,29 @@ import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
 import { SOCKET_EVENTS } from "../../constants/socketEvents";
 import {
-  MessageSquare,
-  Send,
-  Users,
-  Compass,
-  ArrowLeft,
-  Search,
-  Smile,
-  MoreVertical,
-  Paperclip,
-  Phone,
-  Video,
-  Mic,
-  X,
-  ChevronDown,
-  Square,
-  Trash2,
-  Home,
-} from "lucide-react";
+MessageSquare,
+Send,
+Users,
+Compass,
+ArrowLeft,
+Search,
+Smile,
+MoreVertical,
+Paperclip,
+Phone,
+Video,
+Mic,
+X,
+ChevronDown,
+Square,
+Trash2,
+Home } from
+"lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
 import EmojiPicker from "emoji-picker-react";
 import ChatBubble from "../../components/chat/ChatBubble";
-import StoryViewer from "../../components/story/StoryViewer";
+import DispatchViewer from "../../components/story/DispatchViewer";
 import ChatSidebar from "../../components/chat/ChatSidebar";
 import ChatHeader from "../../components/chat/ChatHeader";
 import ChatMessages from "../../components/chat/ChatMessages";
@@ -87,6 +87,7 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId } = useParams();
+  const isEmbedded = new URLSearchParams(location.search).get("embed") === "true";
 
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("chats");
@@ -105,7 +106,7 @@ const ChatRoom = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [activeMessageOptions, setActiveMessageOptions] = useState(null);
 
-  // Story Viewer States
+
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const [showHeaderOptions, setShowHeaderOptions] = useState(false);
@@ -155,7 +156,7 @@ const ChatRoom = () => {
   const isMyRequest = (r) => {
     if (!r || !r.requestedBy || !user) return false;
     const reqId =
-      typeof r.requestedBy === "object" ? r.requestedBy._id : r.requestedBy;
+    typeof r.requestedBy === "object" ? r.requestedBy._id : r.requestedBy;
     return reqId?.toString() === currentUserId?.toString();
   };
 
@@ -179,7 +180,7 @@ const ChatRoom = () => {
       window.removeEventListener("refresh_chats", handleRefresh);
       window.removeEventListener("message_sent", handleMessageSent);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [roomId, location.state]);
 
   const showScrollBottomRef = useRef(showScrollBottom);
@@ -191,17 +192,17 @@ const ChatRoom = () => {
     if (!socket) return;
     setSocketConnected(socket.connected);
 
-    // Capture userId at effect registration time using the stable primitive ID
+
     const userId = currentUserId;
 
     const onConnect = () => {
-      // [SOCKET RECEIVED] ChatRoom — connect or reconnect
-      // NOTE: go_online is NOT emitted here — SocketContext already does it.
+
+
       console.log("[SOCKET RECEIVED] ChatRoom — connect", {
         socketId: socket.id,
         userId,
         isReconnect: socket.recovered ?? false,
-        time: Date.now(),
+        time: Date.now()
       });
       setSocketConnected(true);
       const activeId = getRoomIdString(activeRoomRef.current?._id);
@@ -217,7 +218,7 @@ const ChatRoom = () => {
         socketId: socket.id,
         userId,
         reason,
-        time: Date.now(),
+        time: Date.now()
       });
       setSocketConnected(false);
     };
@@ -244,22 +245,22 @@ const ChatRoom = () => {
       console.log("[SOCKET RECEIVED] ChatRoom — receive_chat_message", {
         id: message._id,
         roomId: message.roomId,
-        time: Date.now(),
+        time: Date.now()
       });
 
-      const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+      const msgSenderId = typeof message.sender === "object" ? message.sender?._id || message.sender?.id : message.sender;
       const isSelf = msgSenderId?.toString() === currentUserId?.toString();
 
-      // Normalize both sides to strings to prevent ObjectId vs string type mismatch
+
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
-      // Normalize the incoming message _id to a string
+
       const incomingMsgId = message._id?.toString?.() ?? message._id;
 
       console.log("[SOCKET RECEIVED] ChatRoom — room guard", {
         incomingRoomId,
         activeRoomId,
-        matched: incomingRoomId === activeRoomId,
+        matched: incomingRoomId === activeRoomId
       });
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
@@ -273,7 +274,7 @@ const ChatRoom = () => {
           console.log("[SOCKET RECEIVED] ChatRoom — setMessages updater — previous count", prev.length);
           let updatedMessages = [...prev];
 
-          // 1. Reconcile optimistic message
+
           if (message.clientMsgId) {
             const idx = prev.findIndex((m) => m._id === message.clientMsgId);
             if (idx !== -1) {
@@ -287,20 +288,20 @@ const ChatRoom = () => {
             }
           }
 
-          // 2. Reaction message mapping
+
           const isReaction =
-            (message.text || "").startsWith("Reacted to your story:") ||
-            (message.content || "").startsWith("Reacted to your story:");
+          (message.text || "").startsWith("Reacted to your Dispatch:") ||
+          (message.content || "").startsWith("Reacted to your Dispatch:");
 
           if (isReaction && message.storyId) {
             const storyRef = getRoomIdString(message.storyId);
             const existingIdx = prev.findIndex((m) => {
-              const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
+              const mSenderId = typeof m.sender === "object" ? m.sender?._id || m.sender?.id : m.sender;
               const mStoryId = getRoomIdString(m.storyId);
               return mSenderId?.toString() === msgSenderId?.toString() &&
-                mStoryId === storyRef &&
-                ((m.text || "").startsWith("Reacted to your story:") ||
-                  (m.content || "").startsWith("Reacted to your story:"));
+              mStoryId === storyRef && (
+              (m.text || "").startsWith("Reacted to your Dispatch:") ||
+              (m.content || "").startsWith("Reacted to your Dispatch:"));
             });
             if (existingIdx !== -1) {
               updatedMessages.splice(existingIdx, 1);
@@ -309,11 +310,11 @@ const ChatRoom = () => {
             }
           }
 
-          // 3. Deduplicate by database _id — normalize to string on both sides
+
           const isDuplicate = prev.some((m) => m._id?.toString?.() === incomingMsgId);
           if (isDuplicate) {
             updatedMessages = prev.map((m) =>
-              m._id?.toString?.() === incomingMsgId ? { ...m, ...message, _id: incomingMsgId } : m
+            m._id?.toString?.() === incomingMsgId ? { ...m, ...message, _id: incomingMsgId } : m
             );
           } else {
             updatedMessages.push({ ...message, _id: incomingMsgId });
@@ -325,7 +326,7 @@ const ChatRoom = () => {
         console.warn("[SOCKET RECEIVED] ChatRoom — room guard REJECTED", {
           incomingRoomId,
           activeRoomId,
-          messageId: incomingMsgId,
+          messageId: incomingMsgId
         });
       }
 
@@ -343,33 +344,33 @@ const ChatRoom = () => {
               latestMessage: message,
               updatedAt: new Date().toISOString(),
               unreadCount:
-                getRoomIdString(r._id) !== activeRoomId && !isSelf
-                  ? (r.unreadCount || 0) + 1
-                  : r.unreadCount,
+              getRoomIdString(r._id) !== activeRoomId && !isSelf ?
+              (r.unreadCount || 0) + 1 :
+              r.unreadCount
             };
           }
           return r;
         });
 
-        // Reorder conversations list to push room with latest message to top
+
         return [...updatedRooms].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       });
 
-      // Receipt acknowledgment — emitted once here; the standalone mark_messages_read
-      // useEffect that was firing on every message render has been removed.
+
+
       if (socket && socket.connected && !isSelf) {
         if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
           console.log("[SOCKET RECEIVED] ChatRoom — emitting mark_messages_read for room:", incomingRoomId);
           socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
             roomId: message.roomId,
-            userId: currentUserId,
+            userId: currentUserId
           });
         } else {
           console.log("[SOCKET RECEIVED] ChatRoom — emitting message_delivered for:", message._id);
           socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
             roomId: message.roomId,
             messageId: message._id,
-            userId: currentUserId,
+            userId: currentUserId
           });
         }
       }
@@ -384,7 +385,7 @@ const ChatRoom = () => {
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         setMessages((prev) => {
           const idx = prev.findIndex(
-            (m) => m._id === clientMsgId || m._id?.toString?.() === normalizedMsgId
+          (m) => m._id === clientMsgId || m._id?.toString?.() === normalizedMsgId
           );
           let updated;
           if (idx !== -1) {
@@ -455,13 +456,13 @@ const ChatRoom = () => {
         setMessages((prev) => {
           const storyRef = getRoomIdString(message.storyId);
           const idx = prev.findIndex((m) => {
-            const mSenderId = typeof m.sender === "object" ? (m.sender?._id || m.sender?.id) : m.sender;
-            const msgSenderId = typeof message.sender === "object" ? (message.sender?._id || message.sender?.id) : message.sender;
+            const mSenderId = typeof m.sender === "object" ? m.sender?._id || m.sender?.id : m.sender;
+            const msgSenderId = typeof message.sender === "object" ? message.sender?._id || message.sender?.id : message.sender;
             const mStoryId = getRoomIdString(m.storyId);
             return m._id === message._id ||
-              (mSenderId?.toString() === msgSenderId?.toString() &&
-               mStoryId === storyRef &&
-               (m.text || "").startsWith("Reacted to your story:"));
+            mSenderId?.toString() === msgSenderId?.toString() &&
+            mStoryId === storyRef &&
+            (m.text || "").startsWith("Reacted to your Dispatch:");
           });
           const updated = [...prev];
           if (idx !== -1) {
@@ -494,7 +495,7 @@ const ChatRoom = () => {
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         setMessages((prev) =>
-          prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m))
+        prev.map((m) => m._id === messageId ? { ...m, isUnsent: true } : m)
         );
       }
     };
@@ -503,28 +504,38 @@ const ChatRoom = () => {
       roomId,
       requestStatus,
       room,
-      updatedBy,
+      updatedBy
     }) => {
       console.log("[SOCKET RECEIVED] ChatRoom — request_status_updated:", { roomId, requestStatus, updatedBy });
       setRooms((prev) =>
-        prev.map((r) =>
-          r._id === roomId ? { ...r, ...room, requestStatus } : r
-        )
+      prev.map((r) =>
+      r._id === roomId ? { ...r, ...room, requestStatus } : r
+      )
       );
       setActiveRoom((prev) =>
-        prev?._id === roomId ? { ...prev, ...room, requestStatus } : prev
+      prev?._id === roomId ? { ...prev, ...room, requestStatus } : prev
       );
       if (
-        updatedBy &&
-        userId &&
-        updatedBy?.toString() !== currentUserId?.toString() &&
-        requestStatus === "accepted"
-      ) {
+      updatedBy &&
+      userId &&
+      updatedBy?.toString() !== currentUserId?.toString() &&
+      requestStatus === "accepted")
+      {
         showToast.success("Your message request was accepted!");
       }
     };
 
-    // --- Register all listeners with SOCKET_EVENTS constants ---
+    const onRoomAccessRevoked = ({ roomId }) => {
+      console.log("[SOCKET RECEIVED] ChatRoom — room_access_revoked:", roomId);
+      const revokedId = getRoomIdString(roomId);
+      setRooms((prev) => prev.filter((r) => getRoomIdString(r._id) !== revokedId));
+      if (getRoomIdString(activeRoomRef.current?._id) === revokedId) {
+        setActiveRoom(null);
+        showToast.error("Your access to this Journey Group Chat has been revoked.");
+      }
+    };
+
+
     console.log("[SOCKET REGISTER] ChatRoom — registering all chat listeners", { socketId: socket.id, time: Date.now() });
     socket.on(SOCKET_EVENTS.CONNECT, onConnect);
     socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect);
@@ -541,6 +552,7 @@ const ChatRoom = () => {
     socket.on(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
     socket.on(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
     socket.on(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
+    socket.on("room_access_revoked", onRoomAccessRevoked);
 
     return () => {
       console.log("[SOCKET CLEANUP] ChatRoom — removing all chat listeners", { socketId: socket.id, time: Date.now() });
@@ -559,16 +571,17 @@ const ChatRoom = () => {
       socket.off(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
       socket.off(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
       socket.off(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
+      socket.off("room_access_revoked", onRoomAccessRevoked);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [socket, currentUserId]);
 
-  // REMOVED: The standalone mark_messages_read useEffect that previously fired
-  // on every messages/activeRoom change was removed because:
-  // 1. It caused duplicate mark_messages_read emits (also emitted inside onReceiveChatMessage)
-  // 2. It re-ran on every new message, producing redundant server calls
-  // Marking as read is now handled solely inside onReceiveChatMessage above.
-  // The unreadBy state is updated locally to keep the UI in sync without extra emits.
+
+
+
+
+
+
 
   const fetchChannels = async () => {
     try {
@@ -579,36 +592,36 @@ const ChatRoom = () => {
 
       if (targetUserId) {
         roomRes = await axios.post(
-          `/chat/room/direct/${targetUserId}`,
-          {},
-          { withCredentials: true },
+        `/chat/room/direct/${targetUserId}`,
+        {},
+        { withCredentials: true }
         );
         window.history.replaceState({}, document.title);
       }
 
       const res = await axios.get("/chat/rooms", { withCredentials: true });
       const notifRes = await axios.get("/notifications", {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         setRooms(res.data.rooms);
-        // Phase 4 fix: Only join the active/target room, NOT every room.
-        // Joining every room on load creates N redundant server-side socket room memberships.
-        // The server already handles routing messages to the correct user via their personal room.
-        // We join the active room explicitly in selectRoom() and on reconnect in onConnect().
+
+
+
+
         if (targetUserId && roomRes?.data?.room) {
           if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, roomRes.data.room._id);
           const matched = res.data.rooms.find(
-            (r) => r._id === roomRes.data.room._id,
+          (r) => r._id === roomRes.data.room._id
           );
           if (matched) selectRoom(matched);
         } else if (targetGroupId) {
           window.history.replaceState({}, document.title);
           const matched = res.data.rooms.find((r) => {
             const rGroupId =
-              typeof r.travelGroupId === "object"
-                ? r.travelGroupId?._id
-                : r.travelGroupId;
+            typeof r.travelGroupId === "object" ?
+            r.travelGroupId?._id :
+            r.travelGroupId;
             const rGroupIdStr = rGroupId ? rGroupId.toString() : "";
             const roomIdStr = r._id ? r._id.toString() : "";
             const targetGroupIdStr = targetGroupId ? targetGroupId.toString() : "";
@@ -631,7 +644,7 @@ const ChatRoom = () => {
     if (!room) return;
     try {
       const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         setMessages(res.data.messages || []);
@@ -651,9 +664,9 @@ const ChatRoom = () => {
     setHasMoreMessages(false);
     if (room.type === "direct") {
       setActiveTab(
-        room.requestStatus === "pending" && !isMyRequest(room)
-          ? "requests"
-          : "chats",
+      room.requestStatus === "pending" && !isMyRequest(room) ?
+      "requests" :
+      "chats"
       );
     } else {
       setActiveTab("groups");
@@ -662,7 +675,7 @@ const ChatRoom = () => {
       socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, room._id);
       setLoadingMessages(true);
       const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         setMessages(res.data.messages || []);
@@ -681,9 +694,9 @@ const ChatRoom = () => {
     try {
       setLoading(true);
       const res = await axios.post(
-        `/chat/room/direct/${targetUser._id}`,
-        {},
-        { withCredentials: true },
+      `/chat/room/direct/${targetUser._id}`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         const newRoom = res.data.room;
@@ -712,7 +725,7 @@ const ChatRoom = () => {
       try {
         setIsSearchingGlobal(true);
         const res = await axios.get(`/users/search?q=${searchQuery}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         if (res.data.success) {
           setGlobalUsers(res.data.users || []);
@@ -769,13 +782,13 @@ const ChatRoom = () => {
       senderPic: user.pic,
       text: textToSend,
       content: textToSend,
-      media: selectedFile ? URL.createObjectURL(selectedFile) : (audioBlob ? URL.createObjectURL(audioBlob) : null),
+      media: selectedFile ? URL.createObjectURL(selectedFile) : audioBlob ? URL.createObjectURL(audioBlob) : null,
       isAudio: !!audioBlob,
       isPending: true,
       createdAt: new Date().toISOString(),
-      unreadBy: activeRoom.members
-        .map(member => typeof member === "object" ? member._id : member)
-        .filter(id => id?.toString() !== currentUserId?.toString()),
+      unreadBy: activeRoom.members.
+      map((member) => typeof member === "object" ? member._id : member).
+      filter((id) => id?.toString() !== currentUserId?.toString()),
       seenBy: [currentUserId],
       replyTo: replyToMsg ? {
         _id: replyToMsg._id,
@@ -794,7 +807,7 @@ const ChatRoom = () => {
         const formData = new FormData();
         formData.append("image", selectedFile);
         const uploadRes = await axios.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" }
         });
         if (uploadRes.data.url) mediaUrl = uploadRes.data.url;
         setSelectedFile(null);
@@ -802,7 +815,7 @@ const ChatRoom = () => {
         const formData = new FormData();
         formData.append("image", audioBlob, "voice-message.webm");
         const uploadRes = await axios.post("/upload", formData, {
-          headers: { "Content-Type": "multipart/form-data" },
+          headers: { "Content-Type": "multipart/form-data" }
         });
         if (uploadRes.data.url) mediaUrl = uploadRes.data.url;
         setAudioBlob(null);
@@ -814,26 +827,26 @@ const ChatRoom = () => {
         payload.replyTo = {
           _id: replyToMsg._id,
           senderName:
-            replyToMsg.sender?.name || replyToMsg.senderName || "User",
-          text: replyToMsg.text,
+          replyToMsg.sender?.name || replyToMsg.senderName || "User",
+          text: replyToMsg.text
         };
       }
 
       const res = await axios.post(
-        `/chat/room/${activeRoom._id}/message`,
-        payload,
-        { withCredentials: true },
+      `/chat/room/${activeRoom._id}/message`,
+      payload,
+      { withCredentials: true }
       );
       if (res.data.success) {
         setMessages((prev) =>
-          prev.map((m) =>
-            m._id === clientMsgId
-              ? {
-                  ...res.data.message,
-                  replyTo: res.data.message.replyTo || m.replyTo
-                }
-              : m
-          )
+        prev.map((m) =>
+        m._id === clientMsgId ?
+        {
+          ...res.data.message,
+          replyTo: res.data.message.replyTo || m.replyTo
+        } :
+        m
+        )
         );
         setReplyToMsg(null);
       }
@@ -905,25 +918,25 @@ const ChatRoom = () => {
   };
 
   const handleReaction = async (messageId, emoji) => {
-    // Optimistic UI update
+
     setMessages((prev) =>
-      prev.map((m) => {
-        if (m._id === messageId) {
-          const existingReactions = m.reactions || [];
-          return {
-            ...m,
-            reactions: [...existingReactions, { emoji, userId: currentUserId }],
-          };
-        }
-        return m;
-      }),
+    prev.map((m) => {
+      if (m._id === messageId) {
+        const existingReactions = m.reactions || [];
+        return {
+          ...m,
+          reactions: [...existingReactions, { emoji, userId: currentUserId }]
+        };
+      }
+      return m;
+    })
     );
   };
 
-  const handleOpenStory = async (storyId) => {
+  const handleOpenStory = async (dispatchId) => {
     try {
-      const res = await axios.get(`/social/story/${storyId}`, {
-        withCredentials: true,
+      const res = await axios.get(`/social/story/${dispatchId}`, {
+        withCredentials: true
       });
       if (res.data.success && res.data.story) {
         const story = res.data.story;
@@ -931,11 +944,11 @@ const ChatRoom = () => {
           userId: story.userId._id,
           userName: story.userId.name || story.userName,
           userPic:
-            story.userId.avatar ||
-            story.userId.pic ||
-            story.userId.img ||
-            story.userPic,
-          stories: [story],
+          story.userId.avatar ||
+          story.userId.pic ||
+          story.userId.img ||
+          story.userPic,
+          stories: [story]
         };
         setActiveStoryGroup(group);
         setActiveStoryIndex(0);
@@ -952,8 +965,8 @@ const ChatRoom = () => {
       setLoadingMessages(true);
       const nextPage = messagesPage + 1;
       const res = await axios.get(
-        `/chat/room/${activeRoom._id}/messages?page=${nextPage}&limit=50`,
-        { withCredentials: true }
+      `/chat/room/${activeRoom._id}/messages?page=${nextPage}&limit=50`,
+      { withCredentials: true }
       );
 
       if (res.data.success) {
@@ -998,25 +1011,25 @@ const ChatRoom = () => {
     try {
       toast.loading(`Processing...`, { id: "req" });
       const res = await axios.put(
-        `/chat/room/${activeRoom._id}/${action}`,
-        {},
-        { withCredentials: true },
+      `/chat/room/${activeRoom._id}/${action}`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success(`Request ${action}ed!`, { id: "req" });
         setActiveRoom((prev) => ({
           ...prev,
-          requestStatus: res.data.room.requestStatus,
+          requestStatus: res.data.room.requestStatus
         }));
         setRooms((prev) =>
-          prev.map((r) =>
-            r._id === activeRoom._id
-              ? { ...r, requestStatus: res.data.room.requestStatus }
-              : r,
-          ),
+        prev.map((r) =>
+        r._id === activeRoom._id ?
+        { ...r, requestStatus: res.data.room.requestStatus } :
+        r
+        )
         );
-        if (action === "accept") setActiveTab("chats");
-        else setActiveRoom(null);
+        if (action === "accept") setActiveTab("chats");else
+        setActiveRoom(null);
       }
     } catch (err) {
       showToast.error(`Error: ${err.message}`, { id: "req" });
@@ -1027,14 +1040,14 @@ const ChatRoom = () => {
     e.stopPropagation();
     try {
       await axios.post(
-        `/users/${requesterId}/follow-request/accept`,
-        {},
-        { withCredentials: true },
+      `/users/${requesterId}/follow-request/accept`,
+      {},
+      { withCredentials: true }
       );
       setNotifications((prev) =>
-        prev.filter(
-          (n) => !(n.type === "follow_request" && n.sender._id === requesterId),
-        ),
+      prev.filter(
+      (n) => !(n.type === "follow_request" && n.sender._id === requesterId)
+      )
       );
       showToast.success("Follow request accepted");
     } catch (err) {
@@ -1046,14 +1059,14 @@ const ChatRoom = () => {
     e.stopPropagation();
     try {
       await axios.post(
-        `/users/${requesterId}/follow-request/reject`,
-        {},
-        { withCredentials: true },
+      `/users/${requesterId}/follow-request/reject`,
+      {},
+      { withCredentials: true }
       );
       setNotifications((prev) =>
-        prev.filter(
-          (n) => !(n.type === "follow_request" && n.sender._id === requesterId),
-        ),
+      prev.filter(
+      (n) => !(n.type === "follow_request" && n.sender._id === requesterId)
+      )
       );
     } catch (err) {
       console.error(err);
@@ -1063,8 +1076,8 @@ const ChatRoom = () => {
   const handleDeleteForMe = async (messageId) => {
     try {
       const res = await axios.delete(
-        `/chat/room/${activeRoom._id}/messages/${messageId}/delete-for-me`,
-        { withCredentials: true },
+      `/chat/room/${activeRoom._id}/messages/${messageId}/delete-for-me`,
+      { withCredentials: true }
       );
       if (res.data.success) {
         setMessages((prev) => prev.filter((m) => m._id !== messageId));
@@ -1077,12 +1090,12 @@ const ChatRoom = () => {
   const handleUnsend = async (messageId) => {
     try {
       const res = await axios.delete(
-        `/chat/room/${activeRoom._id}/messages/${messageId}/unsend`,
-        { withCredentials: true },
+      `/chat/room/${activeRoom._id}/messages/${messageId}/unsend`,
+      { withCredentials: true }
       );
       if (res.data.success) {
         setMessages((prev) =>
-          prev.map((m) => (m._id === messageId ? { ...m, isUnsent: true } : m)),
+        prev.map((m) => m._id === messageId ? { ...m, isUnsent: true } : m)
         );
       }
     } catch (err) {
@@ -1094,22 +1107,22 @@ const ChatRoom = () => {
     try {
       setShowHeaderOptions(false);
       const otherUser = activeRoom.members?.find(
-        (member) =>
-          (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) =>
+      (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
       toast.loading("Reporting user...", { id: "report" });
       const res = await axios.post(
-        `/users/report/${otherUser._id || otherUser}`,
-        { reason: "Inappropriate behavior in chat" },
-        { withCredentials: true },
+      `/users/report/${otherUser._id || otherUser}`,
+      { reason: "Inappropriate behavior in chat" },
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("User reported", { id: "report" });
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Error reporting user", {
-        id: "report",
+        id: "report"
       });
     }
   };
@@ -1118,8 +1131,8 @@ const ChatRoom = () => {
     try {
       setShowHeaderOptions(false);
       const otherUser = activeRoom.members?.find(
-        (member) =>
-          (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) =>
+      (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
 
@@ -1133,23 +1146,23 @@ const ChatRoom = () => {
 
       toast.loading("Unblocking user...", { id: "block" });
       const res = await axios.post(
-        `/users/unblock/${otherUserId}`,
-        {},
-        { withCredentials: true },
+      `/users/unblock/${otherUserId}`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
         const freshSelf = await axios.get(`/users/${currentUserId}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers }
         });
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Action failed", {
-        id: "block",
+        id: "block"
       });
     }
   };
@@ -1157,8 +1170,8 @@ const ChatRoom = () => {
   const confirmBlockUser = async () => {
     try {
       const otherUser = activeRoom.members?.find(
-        (member) =>
-          (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) =>
+      (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
 
@@ -1166,23 +1179,23 @@ const ChatRoom = () => {
       setShowBlockModal(false);
       toast.loading("Blocking user...", { id: "block" });
       const res = await axios.post(
-        `/users/block/${otherUserId}`,
-        {},
-        { withCredentials: true },
+      `/users/block/${otherUserId}`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success(res.data.message, { id: "block" });
         const freshSelf = await axios.get(`/users/${currentUserId}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.data.blockedUsers || freshSelf.data.user?.blockedUsers }
         });
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Action failed", {
-        id: "block",
+        id: "block"
       });
     }
   };
@@ -1192,7 +1205,7 @@ const ChatRoom = () => {
       setShowHeaderOptions(false);
       toast.loading("Clearing chat...", { id: "clear" });
       const res = await axios.delete(`/chat/room/${activeRoom._id}/clear`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         setMessages([]);
@@ -1200,35 +1213,79 @@ const ChatRoom = () => {
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Error clearing chat", {
-        id: "clear",
+        id: "clear"
       });
     }
   };
 
   const handleDeleteChat = async (roomToDelete = activeRoom, e) => {
-    if (e) {
-      e.stopPropagation();
-    }
-    if (!roomToDelete) return;
+    const isJourneyGroup = !!roomToDelete.journeyId;
+    let result;
 
-    const result = await Swal.fire({
-      title: "Delete chat?",
-      text: "Messages will be cleared and this conversation will be removed from your chat list.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#64748b",
-      confirmButtonText: "Yes, delete",
-    });
+    if (isJourneyGroup) {
+      result = await Swal.fire({
+        html: `
+          <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 rounded-full bg-[#F3E8FF] flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            </div>
+            <h2 class="text-slate-800 text-xl font-bold mb-2">Hide Journey Group?</h2>
+            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+              <span class="font-semibold text-slate-700">${roomToDelete.name}</span> will be hidden from your chat list. You'll remain a member of the Journey. You can reopen the group from the Journey anytime, and it will automatically reappear when a new message arrives.
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        showConfirmButton: true,
+        buttonsStyling: false,
+        width: "440px",
+        padding: "1.75rem",
+        customClass: {
+          popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
+          confirmButton: "bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
+        },
+        confirmButtonText: "Hide Group",
+        cancelButtonText: "Cancel"
+      });
+    } else {
+      result = await Swal.fire({
+        html: `
+          <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </div>
+            <h2 class="text-slate-800 text-xl font-bold mb-2">Delete chat?</h2>
+            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+              Messages will be cleared and this chat will be removed.
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        showConfirmButton: true,
+        buttonsStyling: false,
+        width: "440px",
+        padding: "1.75rem",
+        customClass: {
+          popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
+          confirmButton: "bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
+        },
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel"
+      });
+    }
 
     if (!result.isConfirmed) return;
 
     try {
       setShowHeaderOptions(false);
-      toast.loading("Deleting chat...", { id: "delete-chat" });
+      toast.loading(isJourneyGroup ? "Hiding chat..." : "Deleting chat...", { id: "delete-chat" });
       const res = await axios.delete(
-        `/chat/room/${roomToDelete._id}/delete-chat`,
-        { withCredentials: true },
+      `/chat/room/${roomToDelete._id}/delete-chat`,
+      { withCredentials: true }
       );
       if (res.data.success) {
         setRooms((prev) => prev.filter((r) => r._id !== roomToDelete._id));
@@ -1236,21 +1293,36 @@ const ChatRoom = () => {
           setActiveRoom(null);
           setMessages([]);
         }
-        showToast.success("Chat deleted", { id: "delete-chat" });
+        showToast.success(isJourneyGroup ? "Group hidden" : "Chat deleted", { id: "delete-chat" });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Error deleting chat", {
-        id: "delete-chat",
+      showToast.error(err.response?.data?.message || (isJourneyGroup ? "Error hiding group" : "Error deleting chat"), {
+        id: "delete-chat"
       });
     }
   };
 
   const handleToggleRoomSelection = (roomId) => {
     setSelectedRoomIds((prev) => {
+      const roomToToggle = rooms.find((r) => r._id === roomId);
+      if (!roomToToggle) return prev;
+
+      const isJourneyGroup = !!roomToToggle.journeyId;
+
       const next = new Set(prev);
       if (next.has(roomId)) {
         next.delete(roomId);
       } else {
+        if (next.size > 0) {
+          const firstSelectedId = next.values().next().value;
+          const firstSelectedRoom = rooms.find((r) => r._id === firstSelectedId);
+          const firstIsJourneyGroup = !!firstSelectedRoom?.journeyId;
+
+          if (isJourneyGroup !== firstIsJourneyGroup) {
+            showToast.error("Cannot select Journey Groups and normal chats together", { id: "mix-selection" });
+            return prev;
+          }
+        }
         next.add(roomId);
       }
       return next;
@@ -1260,28 +1332,87 @@ const ChatRoom = () => {
   const handleDeleteSelectedChats = async () => {
     if (selectedRoomIds.size === 0) return;
 
-    const result = await Swal.fire({
-      title: `Delete ${selectedRoomIds.size} chat${selectedRoomIds.size > 1 ? "s" : ""}?`,
-      text: "Messages will be cleared and selected conversations will be removed from your chat list.",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#ef4444",
-      cancelButtonColor: "#64748b",
-      confirmButtonText: "Yes, delete",
-    });
+    const selectedRooms = rooms.filter((r) => selectedRoomIds.has(r._id));
+    const isOnlyJourneyGroups = selectedRooms.length > 0 && selectedRooms.every((r) => r.journeyId);
+    const hasJourneyGroups = selectedRooms.some((r) => r.journeyId);
+
+    let result;
+
+    if (isOnlyJourneyGroups) {
+      result = await Swal.fire({
+        html: `
+          <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 rounded-full bg-[#F3E8FF] flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            </div>
+            <h2 class="text-slate-800 text-xl font-bold mb-2">Hide ${selectedRoomIds.size} Journey Group${selectedRoomIds.size > 1 ? "s" : ""}?</h2>
+            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+              The selected groups will be hidden from your chat list. You'll remain a member of their Journeys. You can access the groups again from each Journey, and they will automatically reappear when new messages arrive.
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        showConfirmButton: true,
+        buttonsStyling: false,
+        width: "440px",
+        padding: "1.75rem",
+        customClass: {
+          popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
+          confirmButton: "bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
+        },
+        confirmButtonText: `Hide ${selectedRoomIds.size} Group${selectedRoomIds.size > 1 ? "s" : ""}`,
+        cancelButtonText: "Cancel"
+      });
+    } else {
+      const title = hasJourneyGroups ?
+      `Delete / Hide ${selectedRoomIds.size} chat${selectedRoomIds.size > 1 ? "s" : ""}?` :
+      `Delete ${selectedRoomIds.size} chat${selectedRoomIds.size > 1 ? "s" : ""}?`;
+      const text = hasJourneyGroups ?
+      "Normal chats will be cleared. Journey groups will be hidden." :
+      "Messages will be cleared and chats will be removed.";
+
+      result = await Swal.fire({
+        html: `
+          <div class="flex flex-col items-center text-center">
+            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </div>
+            <h2 class="text-slate-800 text-xl font-bold mb-2">${title}</h2>
+            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+              ${text}
+            </p>
+          </div>
+        `,
+        showCancelButton: true,
+        showConfirmButton: true,
+        buttonsStyling: false,
+        width: "440px",
+        padding: "1.75rem",
+        customClass: {
+          popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
+          confirmButton: "bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
+        },
+        confirmButtonText: "Yes, delete",
+        cancelButtonText: "Cancel"
+      });
+    }
 
     if (!result.isConfirmed) return;
 
     try {
-      toast.loading("Deleting selected chats...", { id: "delete-selected-chats" });
+      toast.loading("Processing selected chats...", { id: "delete-selected-chats" });
       const deletePromises = Array.from(selectedRoomIds).map((roomId) =>
-        axios.delete(`/chat/room/${roomId}/delete-chat`, { withCredentials: true })
+      axios.delete(`/chat/room/${roomId}/delete-chat`, { withCredentials: true })
       );
-      
+
       await Promise.all(deletePromises);
 
       setRooms((prev) => prev.filter((r) => !selectedRoomIds.has(r._id)));
-      
+
       if (activeRoom && selectedRoomIds.has(activeRoom._id)) {
         setActiveRoom(null);
         setMessages([]);
@@ -1289,9 +1420,9 @@ const ChatRoom = () => {
 
       setIsDeleteSelectionMode(false);
       setSelectedRoomIds(new Set());
-      showToast.success("Selected chats deleted", { id: "delete-selected-chats" });
+      showToast.success("Action completed", { id: "delete-selected-chats" });
     } catch (err) {
-      showToast.error("Failed to delete some chats", { id: "delete-selected-chats" });
+      showToast.error("Failed to process some chats", { id: "delete-selected-chats" });
     }
   };
 
@@ -1316,20 +1447,20 @@ const ChatRoom = () => {
     const currentRoomId = activeRoom._id;
 
     if (currentRoomId !== prevActiveRoomId.current) {
-      // Room changed: instant scroll to bottom
+
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
       }, 50);
       setUnreadNewMessagesCount(0);
     } else if (
-      currentLength > prevMessagesLength.current ||
-      (currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
-    ) {
+    currentLength > prevMessagesLength.current ||
+    currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
+    {
       const lastMsg = messages[currentLength - 1];
-      const senderId = typeof lastMsg?.sender === "object" ? (lastMsg.sender?._id || lastMsg.sender?.id) : lastMsg?.sender;
+      const senderId = typeof lastMsg?.sender === "object" ? lastMsg.sender?._id || lastMsg.sender?.id : lastMsg?.sender;
       const isSelf = senderId?.toString() === currentUserId?.toString();
 
-      // If user sent it, or already at the bottom, scroll to bottom smoothly
+
       if (isSelf || !showScrollBottom) {
         setTimeout(scrollToBottom, 50);
       }
@@ -1343,9 +1474,9 @@ const ChatRoom = () => {
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
-        headerOptionsRef.current &&
-        !headerOptionsRef.current.contains(event.target)
-      ) {
+      headerOptionsRef.current &&
+      !headerOptionsRef.current.contains(event.target))
+      {
         setShowHeaderOptions(false);
       }
     };
@@ -1365,36 +1496,36 @@ const ChatRoom = () => {
   }, [showHeaderOptions]);
 
   const activeChats = rooms.filter(
-    (r) =>
-      r.type === "direct" &&
-      (r.requestStatus === "accepted" ||
-        (r.requestStatus === "pending" && isMyRequest(r))),
+  (r) =>
+  r.type === "direct" && (
+  r.requestStatus === "accepted" ||
+  r.requestStatus === "pending" && isMyRequest(r))
   );
   const requestChats = rooms.filter(
-    (r) =>
-      r.type === "direct" && r.requestStatus === "pending" && !isMyRequest(r),
+  (r) =>
+  r.type === "direct" && r.requestStatus === "pending" && !isMyRequest(r)
   );
   const followRequests = notifications.filter(
-    (n) => n.type === "follow_request",
+  (n) => n.type === "follow_request"
   );
   const groupChats = rooms.filter((r) => r.type === "group" || r.travelGroupId);
   const displayedRooms =
-    activeTab === "chats"
-      ? activeChats
-      : activeTab === "requests"
-        ? requestChats
-        : groupChats;
+  activeTab === "chats" ?
+  activeChats :
+  activeTab === "requests" ?
+  requestChats :
+  groupChats;
   const filteredRooms = displayedRooms.filter((r) =>
-    r.name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  r.name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatTime = (d) =>
-    d
-      ? new Date(d).toLocaleTimeString([], {
-          hour: "numeric",
-          minute: "2-digit",
-        })
-      : "";
+  d ?
+  new Date(d).toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
+  }) :
+  "";
 
   const formatDateLabel = (d) => {
     if (!d) return "";
@@ -1407,220 +1538,258 @@ const ChatRoom = () => {
     return date.toLocaleDateString([], {
       month: "short",
       day: "numeric",
-      year: "numeric",
+      year: "numeric"
     });
   };
 
   const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
 
   return (
-    <div className="h-[100dvh] w-full flex bg-white overflow-hidden">
+    <div className={`${isEmbedded ? "h-full" : "h-[100dvh]"} w-full flex bg-white overflow-hidden`}>
       <style>{`.cs::-webkit-scrollbar{width:4px}.cs::-webkit-scrollbar-track{background:transparent}.cs::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.08);border-radius:8px}`}</style>
 
-            <ChatSidebar
-        isDeleteSelectionMode={isDeleteSelectionMode}
-        selectedRoomIds={selectedRoomIds}
-        setIsDeleteSelectionMode={setIsDeleteSelectionMode}
-        setSelectedRoomIds={setSelectedRoomIds}
-        handleDeleteSelectedChats={handleDeleteSelectedChats}
-        socketConnected={socketConnected}
-        showListMoreOptions={showListMoreOptions}
-        setShowListMoreOptions={setShowListMoreOptions}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        requestChats={requestChats}
-        followRequests={followRequests}
-        loading={loading}
-        filteredRooms={filteredRooms}
-        activeRoom={activeRoom}
-        handleSelectRoom={selectRoom}
-        handleToggleRoomSelection={handleToggleRoomSelection}
-        currentUserId={currentUserId}
-        onlineUsers={onlineUsers}
-        getAvatar={getAvatar}
-        getLatestMessagePreview={getLatestMessagePreview}
-        formatTime={formatTime}
-        isSearchingGlobal={isSearchingGlobal}
-        globalUsers={globalUsers}
-        handleSelectGlobalUser={handleSelectGlobalUser}
-        handleAcceptFollowRequest={handleAcceptFollow}
-        handleDeclineFollowRequest={handleRejectFollow}
-      />
+      {!isEmbedded &&
+      <ChatSidebar
+      isDeleteSelectionMode={isDeleteSelectionMode}
+      selectedRoomIds={selectedRoomIds}
+      setIsDeleteSelectionMode={setIsDeleteSelectionMode}
+      setSelectedRoomIds={setSelectedRoomIds}
+      handleDeleteSelectedChats={handleDeleteSelectedChats}
+      socketConnected={socketConnected}
+      showListMoreOptions={showListMoreOptions}
+      setShowListMoreOptions={setShowListMoreOptions}
+      searchQuery={searchQuery}
+      setSearchQuery={setSearchQuery}
+      activeTab={activeTab}
+      setActiveTab={setActiveTab}
+      requestChats={requestChats}
+      followRequests={followRequests}
+      loading={loading}
+      filteredRooms={filteredRooms}
+      activeRoom={activeRoom}
+      handleSelectRoom={selectRoom}
+      handleToggleRoomSelection={handleToggleRoomSelection}
+      currentUserId={currentUserId}
+      onlineUsers={onlineUsers}
+      getAvatar={getAvatar}
+      getLatestMessagePreview={getLatestMessagePreview}
+      formatTime={formatTime}
+      isSearchingGlobal={isSearchingGlobal}
+      globalUsers={globalUsers}
+      handleSelectGlobalUser={handleSelectGlobalUser}
+      handleAcceptFollowRequest={handleAcceptFollow}
+      handleDeclineFollowRequest={handleRejectFollow} />}
 
-      {/* RIGHT PANE */}
+
+
+      {}
       <main
-        className={`flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden ${
-          activeRoom ? "flex" : "hidden lg:flex"
-        }`}
-      >
-        {activeRoom ? (
-          <>
+      className={`flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden ${
+      isEmbedded || activeRoom ? "flex" : "hidden lg:flex"
+      }`}>
+
+        {activeRoom ?
+        <>
                         <ChatHeader
-              activeRoom={activeRoom}
-              setActiveRoom={setActiveRoom}
-              currentUserId={currentUserId}
-              onlineUsers={onlineUsers}
-              user={user}
-              getAvatar={getAvatar}
-              showHeaderOptions={showHeaderOptions}
-              setShowHeaderOptions={setShowHeaderOptions}
-              headerOptionsRef={headerOptionsRef}
-              handleReportUser={handleReportUser}
-              handleBlockUser={handleBlockUser}
-              handleClearChat={handleClearChat}
-              handleDeleteChat={handleDeleteChat}
-            />
+          activeRoom={activeRoom}
+          setActiveRoom={setActiveRoom}
+          currentUserId={currentUserId}
+          onlineUsers={onlineUsers}
+          user={user}
+          getAvatar={getAvatar}
+          showHeaderOptions={showHeaderOptions}
+          setShowHeaderOptions={setShowHeaderOptions}
+          headerOptionsRef={headerOptionsRef}
+          handleReportUser={handleReportUser}
+          handleBlockUser={handleBlockUser}
+          handleClearChat={handleClearChat}
+          handleDeleteChat={handleDeleteChat} />
+
             
-                        {/* Messages */}
+                        {}
             <ChatMessages
-              messages={messages}
-              currentUserId={currentUserId}
-              user={user}
-              activeRoom={activeRoom}
-              chatContainerRef={chatContainerRef}
-              handleScroll={handleScroll}
-              formatDateLabel={formatDateLabel}
-              formatTime={formatTime}
-              getAvatar={getAvatar}
-              handleDeleteForMe={handleDeleteForMe}
-              handleUnsend={handleUnsend}
-              setReplyToMsg={setReplyToMsg}
-              handleReaction={handleReaction}
-              handleOpenStory={handleOpenStory}
-              activeMessageOptions={activeMessageOptions}
-              setActiveMessageOptions={setActiveMessageOptions}
-              typingUsers={typingUsers}
-              messagesEndRef={messagesEndRef}
-            />
+          messages={messages}
+          currentUserId={currentUserId}
+          user={user}
+          activeRoom={activeRoom}
+          chatContainerRef={chatContainerRef}
+          handleScroll={handleScroll}
+          formatDateLabel={formatDateLabel}
+          formatTime={formatTime}
+          getAvatar={getAvatar}
+          handleDeleteForMe={handleDeleteForMe}
+          handleUnsend={handleUnsend}
+          setReplyToMsg={setReplyToMsg}
+          handleReaction={handleReaction}
+          handleOpenStory={handleOpenStory}
+          activeMessageOptions={activeMessageOptions}
+          setActiveMessageOptions={setActiveMessageOptions}
+          typingUsers={typingUsers}
+          messagesEndRef={messagesEndRef}
+          loadingMessages={loadingMessages} />
+
             
-            {/* Input / Request Area */}
+            {}
             {activeRoom.type === "direct" &&
-            activeRoom.requestStatus === "pending" ? (
-              activeRoom.requestedBy?.toString() === currentUserId?.toString() ? (
-                <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
+          activeRoom.requestStatus === "pending" ?
+          activeRoom.requestedBy?.toString() === currentUserId?.toString() ?
+          <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
                   <p className="text-xs font-medium text-slate-400">
                     Waiting for {activeRoom.name} to accept your request.
                   </p>
-                </div>
-              ) : (
-                <div className="px-4 py-4 border-t border-slate-100 bg-white">
+                </div> :
+
+          <div className="px-4 py-4 border-t border-slate-100 bg-white">
                   <p className="text-sm font-semibold text-slate-600 mb-3 text-center">
                     {activeRoom.name} wants to connect with you.
                   </p>
                   <div className="flex justify-center gap-3">
                     <button
-                      onClick={() => handleRequestAction("accept")}
-                      className="px-5 py-2 bg-brand-600 text-white rounded-full text-sm font-bold hover:bg-brand-700 transition-all"
-                    >
+              onClick={() => handleRequestAction("accept")}
+              className="px-5 py-2 bg-brand-600 text-white rounded-full text-sm font-bold hover:bg-brand-700 transition-all">
+
                       Accept
                     </button>
                     <button
-                      onClick={() => handleRequestAction("decline")}
-                      className="px-5 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-all"
-                    >
+              onClick={() => handleRequestAction("decline")}
+              className="px-5 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-all">
+
                       Decline
                     </button>
                   </div>
-                </div>
-              )
-            ) : activeRoom.type === "direct" &&
-              (() => {
-                const otherUser = activeRoom.members?.find(
-                  (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                );
-                const isBlockedByMe =
-                  otherUser && user?.blockedUsers?.includes(otherUser._id || otherUser);
-                return (
-                  isBlockedByMe ||
-                  activeRoom.requestStatus === "declined" ||
-                  activeRoom.requestStatus === "blocked"
-                );
-              })() ? (
-              <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                </div> :
+
+          activeRoom.type === "direct" &&
+          (() => {
+            const otherUser = activeRoom.members?.find(
+            (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+            );
+            const isBlockedByMe =
+            otherUser && user?.blockedUsers?.includes(otherUser._id || otherUser);
+            return (
+              isBlockedByMe ||
+              activeRoom.requestStatus === "declined" ||
+              activeRoom.requestStatus === "blocked");
+
+          })() ?
+          <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
                 <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
                   🔒 You blocked this user.{" "}
                   <button
-                    onClick={handleBlockUser}
-                    className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors"
-                  >
+              onClick={handleBlockUser}
+              className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors">
+
                     Unblock
                   </button>
                 </div>
+              </div> :
+
+          <ChatInput
+          activeRoom={activeRoom}
+          user={user}
+          showScrollBottom={showScrollBottom}
+          scrollToBottom={scrollToBottom}
+          unreadNewMessagesCount={unreadNewMessagesCount}
+          replyToMsg={replyToMsg}
+          setReplyToMsg={setReplyToMsg}
+          selectedFile={selectedFile}
+          setSelectedFile={setSelectedFile}
+          isRecording={isRecording}
+          recordingTime={recordingTime}
+          stopVoiceRecording={stopVoiceRecording}
+          cancelVoiceRecording={cancelVoiceRecording}
+          audioBlob={audioBlob}
+          setAudioBlob={setAudioBlob}
+          showEmojiPicker={showEmojiPicker}
+          setShowEmojiPicker={setShowEmojiPicker}
+          handleEmojiClick={handleEmojiClick}
+          fileInputRef={fileInputRef}
+          handleFileChange={handleFileChange}
+          isSending={isSending}
+          inputText={inputText}
+          handleInputChange={handleInputChange}
+          handleKeyDown={handleKeyDown}
+          startVoiceRecording={startVoiceRecording}
+          handleSendMessage={handleSendMessage}
+          textareaRef={textareaRef} />}
+
+
+          </> :
+        loading ?
+        <div className="flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden animate-pulse">
+            <div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
+              <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
+              <div className="flex-1 space-y-2">
+                <div className="h-3.5 w-32 bg-slate-200 rounded"></div>
+                <div className="h-2.5 w-20 bg-slate-200 rounded"></div>
               </div>
-            ) : (
-              <ChatInput
-                activeRoom={activeRoom}
-                user={user}
-                showScrollBottom={showScrollBottom}
-                scrollToBottom={scrollToBottom}
-                unreadNewMessagesCount={unreadNewMessagesCount}
-                replyToMsg={replyToMsg}
-                setReplyToMsg={setReplyToMsg}
-                selectedFile={selectedFile}
-                setSelectedFile={setSelectedFile}
-                isRecording={isRecording}
-                recordingTime={recordingTime}
-                stopVoiceRecording={stopVoiceRecording}
-                cancelVoiceRecording={cancelVoiceRecording}
-                audioBlob={audioBlob}
-                setAudioBlob={setAudioBlob}
-                showEmojiPicker={showEmojiPicker}
-                setShowEmojiPicker={setShowEmojiPicker}
-                handleEmojiClick={handleEmojiClick}
-                fileInputRef={fileInputRef}
-                handleFileChange={handleFileChange}
-                isSending={isSending}
-                inputText={inputText}
-                handleInputChange={handleInputChange}
-                handleKeyDown={handleKeyDown}
-                startVoiceRecording={startVoiceRecording}
-                handleSendMessage={handleSendMessage}
-                textareaRef={textareaRef}
-              />
-            )}
-          </>
-        ) : (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 select-none">
-            {/* Empty state removed - now shows blank space until a conversation is selected */}
-          </div>
-        )}
+            </div>
+            <div className="flex-1 p-5 space-y-6 overflow-hidden">
+              <div className="flex justify-start items-end gap-2">
+                <div className="w-7 h-7 rounded-full bg-slate-200 shrink-0"></div>
+                <div className="h-10 w-48 bg-slate-200 rounded-2xl rounded-bl-sm"></div>
+              </div>
+              <div className="flex justify-end">
+                <div className="h-10 w-56 bg-slate-200 rounded-2xl rounded-br-sm"></div>
+              </div>
+              <div className="flex justify-start items-end gap-2">
+                <div className="w-7 h-7 rounded-full bg-slate-200 shrink-0"></div>
+                <div className="h-16 w-64 bg-slate-200 rounded-2xl rounded-bl-sm"></div>
+              </div>
+              <div className="flex justify-end">
+                <div className="h-10 w-40 bg-slate-200 rounded-2xl rounded-br-sm"></div>
+              </div>
+            </div>
+            <div className="bg-white p-4 border-t border-slate-100 shrink-0">
+               <div className="h-12 w-full bg-slate-100 rounded-2xl"></div>
+            </div>
+          </div> :
+
+        <div className="flex-1 flex flex-col items-center justify-center text-center p-8 select-none">
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+              <MessageSquare className="w-7 h-7 text-slate-300" />
+            </div>
+            <h3 className="text-base font-bold text-slate-600 mb-1.5">Select a conversation</h3>
+            <p className="text-[13px] text-slate-400 leading-relaxed max-w-[240px]">
+              Choose a traveler or group to start chatting.
+            </p>
+          </div>}
+
       </main>
 
       <AnimatePresence>
-        {showBlockModal && activeRoom && (
-          <div
-            className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-0"
-            onClick={() => setShowBlockModal(false)}
-          >
+        {showBlockModal && activeRoom &&
+        <div
+        className="fixed inset-0 z-[99999] flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4 sm:p-0"
+        onClick={() => setShowBlockModal(false)}>
+
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-              className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col items-center text-center p-6 mb-4 sm:mb-0"
-              onClick={(e) => e.stopPropagation()}
-            >
+          initial={{ opacity: 0, scale: 0.95, y: 20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 20 }}
+          transition={{ duration: 0.18, ease: "easeOut" }}
+          className="bg-white w-full max-w-sm rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.12)] overflow-hidden flex flex-col items-center text-center p-6 mb-4 sm:mb-0"
+          onClick={(e) => e.stopPropagation()}>
+
               {(() => {
-                const otherUser = activeRoom.members?.find(
-                  (member) => (member._id || member)?.toString() !== currentUserId?.toString()
-                );
-                return (
-                  <>
+              const otherUser = activeRoom.members?.find(
+              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+              );
+              return (
+                <>
                     <img
-                      src={getAvatar(otherUser, otherUser?.name)}
-                      alt=""
-                      className="w-[72px] h-[72px] rounded-full object-cover shadow-sm mb-3 border border-slate-100"
-                    />
+                  src={getAvatar(otherUser, otherUser?.name)}
+                  alt=""
+                  className="w-[72px] h-[72px] rounded-full object-cover shadow-sm mb-3 border border-slate-100" />
+
                     <h3 className="text-[18px] font-bold text-slate-900 leading-tight">
                       Block {otherUser?.name}?
                     </h3>
-                    {otherUser?.username && (
-                      <p className="text-[14px] font-medium text-slate-500 mb-5">
+                    {otherUser?.username &&
+                  <p className="text-[14px] font-medium text-slate-500 mb-5">
                         @{otherUser.username}
-                      </p>
-                    )}
+                      </p>}
+
                     {!otherUser?.username && <div className="h-5"></div>}
 
                     <div className="text-[13.5px] text-slate-600 mb-6 space-y-3 w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left">
@@ -1644,44 +1813,43 @@ const ChatRoom = () => {
 
                     <div className="w-full space-y-2">
                       <button
-                        onClick={confirmBlockUser}
-                        className="w-full py-3.5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-bold text-[15px] shadow-sm hover:shadow-md transition-all active:scale-[0.98]"
-                      >
+                    onClick={confirmBlockUser}
+                    className="w-full py-3.5 bg-gradient-to-r from-red-500 to-rose-500 text-white rounded-2xl font-bold text-[15px] shadow-sm hover:shadow-md transition-all active:scale-[0.98]">
+
                         Block User
                       </button>
                       <button
-                        onClick={() => setShowBlockModal(false)}
-                        className="w-full py-3.5 text-slate-700 bg-transparent rounded-2xl font-bold text-[15px] hover:bg-slate-100 transition-all active:scale-[0.98]"
-                      >
+                    onClick={() => setShowBlockModal(false)}
+                    className="w-full py-3.5 text-slate-700 bg-transparent rounded-2xl font-bold text-[15px] hover:bg-slate-100 transition-all active:scale-[0.98]">
+
                         Cancel
                       </button>
                     </div>
-                  </>
-                );
-              })()}
+                  </>);
+
+            })()}
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      <StoryViewer
-        activeStoryGroup={activeStoryGroup}
-        activeStoryIndex={activeStoryIndex}
-        setActiveStoryGroup={setActiveStoryGroup}
-        setActiveStoryIndex={setActiveStoryIndex}
-        myUserId={currentUserId}
-        user={user}
-        closeStoryViewer={() => setActiveStoryGroup(null)}
-        nextStory={() => setActiveStoryGroup(null)}
-        prevStory={() => setActiveStoryGroup(null)}
-        isStoryPaused={false}
-        setIsStoryPaused={() => {}}
-        isStoryMuted={true}
-        setIsStoryMuted={() => {}}
-      />
-    </div>
-  );
+      <DispatchViewer
+      activeStoryGroup={activeStoryGroup}
+      activeStoryIndex={activeStoryIndex}
+      setActiveStoryGroup={setActiveStoryGroup}
+      setActiveStoryIndex={setActiveStoryIndex}
+      myUserId={currentUserId}
+      user={user}
+      closeStoryViewer={() => setActiveStoryGroup(null)}
+      nextStory={() => setActiveStoryGroup(null)}
+      prevStory={() => setActiveStoryGroup(null)}
+      isStoryPaused={false}
+      setIsStoryPaused={() => {}}
+      isStoryMuted={true}
+      setIsStoryMuted={() => {}} />
+
+    </div>);
+
 };
 
 export default ChatRoom;
-

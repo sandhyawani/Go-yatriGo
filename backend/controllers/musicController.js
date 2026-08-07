@@ -1,10 +1,8 @@
 const axios = require("axios");
 
-// Cache API responses to avoid repeated iTunes requests
 const musicCache = new Map();
-const CACHE_TTL = 1000 * 60 * 60; // 1 hour
+const CACHE_TTL = 1000 * 60 * 60;
 
-// Travel mood based search queries
 const travelMoodQueries = {
   "Sunrise Trails": "acoustic sunrise morning indie",
   "Roadtrip Beats": "road trip driving highway songs",
@@ -12,10 +10,9 @@ const travelMoodQueries = {
   "Ocean Vibes": "summer beach tropical waves",
   "Night Explorer": "synthwave night drive midnight",
   "Campfire Sessions": "campfire acoustic guitar chill",
-  "Wanderlust": "travel adventure cinematic wanderlust",
+  "Wanderlust": "travel adventure cinematic wanderlust"
 };
 
-// Language based search queries for new movie hit songs
 const languageMoodQueries = {
   "Hindi": "bollywood",
   "Telugu": "telugu",
@@ -27,7 +24,7 @@ const languageMoodQueries = {
   "English": "pop hits",
   "K-Pop": "kpop",
   "Spanish": "reggaeton",
-  "Global Mix": "top hits",
+  "Global Mix": "top hits"
 };
 
 const getFlagForLanguage = (language) => {
@@ -44,11 +41,10 @@ const getFlagForLanguage = (language) => {
   return "🎬";
 };
 
-// Fetch songs from iTunes API and store results in cache
 const fetchItunesTracks = async (queryTerm, limit = 20) => {
   const cacheKey = `${queryTerm}_${limit}`;
 
-  
+
   if (musicCache.has(cacheKey)) {
     const cached = musicCache.get(cacheKey);
     if (Date.now() - cached.timestamp < CACHE_TTL) {
@@ -58,55 +54,52 @@ const fetchItunesTracks = async (queryTerm, limit = 20) => {
 
   const browserHeaders = {
     "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
   };
 
   const parseTracks = (results = []) => {
     if (!Array.isArray(results)) return [];
-    return results
-      .map((track) => ({
-        id: track.trackId || Math.random().toString(),
-        title: track.trackName || "Unknown Title",
-        artist: track.artistName || "Unknown Artist",
-        albumImage: track.artworkUrl100?.replace("100x100", "300x300") || null,
-        previewUrl: track.previewUrl || null,
-        spotifyUrl: track.trackViewUrl || null,
-        durationMs: track.trackTimeMillis || 30000,
-        vibe: queryTerm,
-      }))
-      .filter((track) => track.previewUrl !== null);
+    return results.
+    map((track) => ({
+      id: track.trackId || Math.random().toString(),
+      title: track.trackName || "Unknown Title",
+      artist: track.artistName || "Unknown Artist",
+      albumImage: track.artworkUrl100?.replace("100x100", "300x300") || null,
+      previewUrl: track.previewUrl || null,
+      spotifyUrl: track.trackViewUrl || null,
+      durationMs: track.trackTimeMillis || 30000,
+      vibe: queryTerm
+    })).
+    filter((track) => track.previewUrl !== null);
   };
 
   try {
-    // Query Indian catalog first (for Bollywood / Hindi songs)
     let response = await axios.get(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=IN`,
-      { timeout: 6000, headers: browserHeaders }
+    `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=IN`,
+    { timeout: 6000, headers: browserHeaders }
     );
 
     let tracks = parseTracks(response.data?.results);
 
-    
+
     if (tracks.length < 5) {
       response = await axios.get(
-        `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=US`,
-        { timeout: 6000, headers: browserHeaders }
+      `https://itunes.apple.com/search?term=${encodeURIComponent(queryTerm)}&entity=song&limit=${limit}&country=US`,
+      { timeout: 6000, headers: browserHeaders }
       );
       const usTracks = parseTracks(response.data?.results);
       tracks = [...tracks, ...usTracks];
     }
 
-    // Save response in cache
     musicCache.set(cacheKey, {
       timestamp: Date.now(),
-      data: tracks,
+      data: tracks
     });
 
     return tracks;
   } catch (error) {
     console.error(`iTunes API error for ${queryTerm}:`, error.message);
 
-    // Use cached data if API fails
     if (musicCache.has(cacheKey)) {
       return musicCache.get(cacheKey).data;
     }
@@ -115,7 +108,6 @@ const fetchItunesTracks = async (queryTerm, limit = 20) => {
   }
 };
 
-// Search music using user query
 exports.searchMusic = async (req, res) => {
   try {
     const { q } = req.query;
@@ -123,7 +115,7 @@ exports.searchMusic = async (req, res) => {
     if (!q) {
       return res.status(400).json({
         success: false,
-        message: 'Query parameter "q" is required',
+        message: 'Query parameter "q" is required'
       });
     }
 
@@ -133,29 +125,27 @@ exports.searchMusic = async (req, res) => {
       ...track,
       vibe: "Searched",
       language: "Global Mix",
-      flag: "🌍",
+      flag: "🌍"
     }));
 
     return res.status(200).json({
       success: true,
-      tracks,
+      tracks
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       message: "Music service unavailable",
-      error: error.message,
+      error: error.message
     });
   }
 };
 
-// Get trending music based on mood and language
 exports.getTrendingMusic = async (req, res) => {
   try {
     const { mood, language } = req.query;
     let allTracks = [];
 
-    // Apply mood and language filters
     if (mood || language) {
       if (language && !mood) {
         const safeLang = languageMoodQueries[language] ? language : "Global Mix";
@@ -168,7 +158,7 @@ exports.getTrendingMusic = async (req, res) => {
           ...track,
           vibe: "New Movie Hits",
           language: safeLang,
-          flag: getFlagForLanguage(safeLang),
+          flag: getFlagForLanguage(safeLang)
         }));
       } else if (mood && !language) {
         const safeMood = travelMoodQueries[mood] ? mood : "Wanderlust";
@@ -178,7 +168,7 @@ exports.getTrendingMusic = async (req, res) => {
           ...track,
           vibe: safeMood,
           language: "Global Mix",
-          flag: "🌍",
+          flag: "🌍"
         }));
       } else {
         const safeMood = travelMoodQueries[mood] ? mood : "Wanderlust";
@@ -206,29 +196,27 @@ exports.getTrendingMusic = async (req, res) => {
           ...track,
           vibe: safeMood,
           language: safeLang,
-          flag: getFlagForLanguage(safeLang),
+          flag: getFlagForLanguage(safeLang)
         }));
       }
     } else {
-      // Fetch trending songs from new movies across all popular languages
       const queries = [
-        "bollywood",
-        "telugu",
-        "tamil",
-        "punjabi",
-        "malayalam",
-        "marathi",
-        "kannada",
-        "pop hits",
-        "kpop",
-        "reggaeton",
-      ];
+      "bollywood",
+      "telugu",
+      "tamil",
+      "punjabi",
+      "malayalam",
+      "marathi",
+      "kannada",
+      "pop hits",
+      "kpop",
+      "reggaeton"];
+
 
       const results = await Promise.all(
-        queries.map((query) => fetchItunesTracks(query, 12))
+      queries.map((query) => fetchItunesTracks(query, 12))
       );
 
-      // Merge results round-robin to create a diverse multi-language playlist
       const maxLength = Math.max(...results.map((result) => result.length));
 
       for (let i = 0; i < maxLength; i++) {
@@ -243,13 +231,13 @@ exports.getTrendingMusic = async (req, res) => {
         ...track,
         vibe: "New Movie Hits",
         language: "All Popular Languages",
-        flag: "🔥",
+        flag: "🔥"
       }));
     }
 
     return res.status(200).json({
       success: true,
-      tracks: allTracks.slice(0, 50),
+      tracks: allTracks.slice(0, 50)
     });
   } catch (error) {
     console.error("Music Trending API Error:", error.message);
@@ -257,7 +245,7 @@ exports.getTrendingMusic = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Music service unavailable",
-      error: error.message,
+      error: error.message
     });
   }
 };

@@ -3,25 +3,25 @@ import { createPortal } from "react-dom";
 import axios from "../../api/axios";
 import Swal from "sweetalert2";
 import {
-  CheckCircle,
-  XCircle,
-  FileText,
-  AlertCircle,
-  Download,
-  X,
-  ZoomIn,
-  ZoomOut,
-  RotateCcw,
-  RotateCw,
-  Maximize,
-  User,
-  RefreshCw,
-  Loader2,
-  Calendar,
-  Mail,
-  Phone,
-  Fingerprint,
-} from "lucide-react";
+CheckCircle,
+XCircle,
+FileText,
+AlertCircle,
+Download,
+X,
+ZoomIn,
+ZoomOut,
+RotateCcw,
+RotateCw,
+Maximize,
+User,
+RefreshCw,
+Loader2,
+Calendar,
+Mail,
+Phone,
+Fingerprint } from
+"lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 
@@ -42,7 +42,7 @@ const VerificationRequests = () => {
     try {
       setLoading(true);
       const res = await axios.get("/admin/verifications", {
-        withCredentials: true,
+        withCredentials: true
       });
       setRequests(res.data);
     } catch (err) {
@@ -52,7 +52,7 @@ const VerificationRequests = () => {
         color: "#0f172a",
         title: "Error",
         text: "Could not fetch verification requests.",
-        icon: "error",
+        icon: "error"
       });
     } finally {
       setLoading(false);
@@ -63,12 +63,12 @@ const VerificationRequests = () => {
     fetchRequests();
   }, []);
 
-  // Close on ESC
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape") {
-        if (isRejecting) setIsRejecting(false);
-        else closeReviewModal();
+        if (isRejecting) setIsRejecting(false);else
+        closeReviewModal();
       }
     };
     window.addEventListener("keydown", handleKeyDown);
@@ -90,9 +90,9 @@ const VerificationRequests = () => {
     setActionLoading(true);
     try {
       await axios.put(
-        `/admin/users/${id}/verify/approve`,
-        {},
-        { withCredentials: true },
+      `/admin/users/${id}/verify/approve`,
+      {},
+      { withCredentials: true }
       );
       Swal.fire({
         background: "#ffffff",
@@ -101,7 +101,7 @@ const VerificationRequests = () => {
         text: "User has been verified successfully.",
         icon: "success",
         timer: 1500,
-        showConfirmButton: false,
+        showConfirmButton: false
       });
       closeReviewModal();
       fetchRequests();
@@ -112,7 +112,7 @@ const VerificationRequests = () => {
         color: "#0f172a",
         title: "Error",
         text: "Could not approve user.",
-        icon: "error",
+        icon: "error"
       });
     } finally {
       setActionLoading(false);
@@ -127,7 +127,7 @@ const VerificationRequests = () => {
         color: "#0f172a",
         title: "Error",
         text: "Please select or enter a rejection reason",
-        icon: "warning",
+        icon: "warning"
       });
       return;
     }
@@ -135,9 +135,9 @@ const VerificationRequests = () => {
     setActionLoading(true);
     try {
       await axios.put(
-        `/admin/users/${id}/verify/reject`,
-        { reason: finalReason },
-        { withCredentials: true },
+      `/admin/users/${id}/verify/reject`,
+      { reason: finalReason },
+      { withCredentials: true }
       );
       Swal.fire({
         background: "#ffffff",
@@ -146,7 +146,7 @@ const VerificationRequests = () => {
         text: "User verification rejected.",
         icon: "info",
         timer: 1500,
-        showConfirmButton: false,
+        showConfirmButton: false
       });
       closeReviewModal();
       fetchRequests();
@@ -157,7 +157,7 @@ const VerificationRequests = () => {
         color: "#0f172a",
         title: "Error",
         text: "Could not reject user.",
-        icon: "error",
+        icon: "error"
       });
     } finally {
       setActionLoading(false);
@@ -165,13 +165,13 @@ const VerificationRequests = () => {
   };
 
   const predefinedReasons = [
-    "Blurry document",
-    "Invalid document",
-    "Expired document",
-    "Information mismatch",
-    "Unsupported document",
-    "Custom",
-  ];
+  "Blurry document",
+  "Invalid document",
+  "Expired document",
+  "Information mismatch",
+  "Unsupported document",
+  "Custom"];
+
 
   const handleDownload = (url, name) => {
     const link = document.createElement("a");
@@ -203,23 +203,23 @@ const VerificationRequests = () => {
             </p>
           </div>
           <button
-            onClick={fetchRequests}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition text-sm font-medium text-slate-700 shadow-sm"
-          >
+          onClick={fetchRequests}
+          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition text-sm font-medium text-slate-700 shadow-sm">
+
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </button>
         </div>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-32">
+        {loading ?
+        <div className="flex items-center justify-center py-32">
             <div className="flex flex-col items-center gap-4">
               <Loader2 className="h-10 w-10 animate-spin text-brand-600" />
               <p className="text-slate-500 font-medium">Loading requests...</p>
             </div>
-          </div>
-        ) : requests.length === 0 ? (
-          <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center shadow-lg shadow-slate-200/50 max-w-2xl mx-auto mt-10">
+          </div> :
+        requests.length === 0 ?
+        <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center shadow-lg shadow-slate-200/50 max-w-2xl mx-auto mt-10">
             <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-50 text-brand-600 mb-6 border-8 border-cyan-50/50">
               <CheckCircle className="h-10 w-10" />
             </div>
@@ -231,32 +231,32 @@ const VerificationRequests = () => {
               keeping the platform safe.
             </p>
             <button
-              onClick={fetchRequests}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition font-bold shadow-lg shadow-brand-600/20"
-            >
+          onClick={fetchRequests}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition font-bold shadow-lg shadow-brand-600/20">
+
               <RefreshCw className="w-4 h-4 text-white" /> Check Again
             </button>
-          </div>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {requests.map((user) => (
-              <div
-                key={user._id}
-                className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col hover:border-brand-600/30 hover:shadow-brand-600/10 transition-all group"
-              >
+          </div> :
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {requests.map((user) =>
+          <div
+          key={user._id}
+          className="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col hover:border-brand-600/30 hover:shadow-brand-600/10 transition-all group">
+
                 <div className="p-5 flex items-start gap-4">
                   <img
-                    src={
-                      user.pic ||
-                      `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=f8fafc&color=0891b2`
-                    }
-                    alt={user.name}
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=f8fafc&color=0891b2`;
-                    }}
-                    className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-sm"
-                  />
+              src={
+              user.pic ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=f8fafc&color=0891b2`}
+
+              alt={user.name}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || "User")}&background=f8fafc&color=0891b2`;
+              }}
+              className="w-14 h-14 rounded-2xl object-cover border border-slate-200 shrink-0 shadow-sm" />
+
                   <div className="min-w-0 flex-1">
                     <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-brand-600 transition-colors">
                       {user.name}
@@ -291,57 +291,57 @@ const VerificationRequests = () => {
                     </div>
                   </div>
                   <button
-                    onClick={() => setSelectedUser(user)}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 border border-brand-600 text-white text-sm font-semibold transition-all shadow-md shadow-brand-600/20"
-                  >
+              onClick={() => setSelectedUser(user)}
+              className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand-600 hover:bg-brand-700 border border-brand-600 text-white text-sm font-semibold transition-all shadow-md shadow-brand-600/20">
+
                     <FileText className="w-4 h-4" />
                     Quick View
                   </button>
                 </div>
               </div>
-            ))}
-          </div>
-        )}
+          )}
+          </div>}
+
       </div>
 
-      {/* Review modal */}
+      {}
       {createPortal(
-        <AnimatePresence>
-          {selectedUser && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6"
-            >
-              {/* Backdrop */}
-              <div
-                className="absolute inset-0 bg-white/60 backdrop-blur-sm"
-                onClick={closeReviewModal}
-              ></div>
+      <AnimatePresence>
+          {selectedUser &&
+        <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6">
 
-              {/* Modal Container */}
+              {}
+              <div
+          className="absolute inset-0 bg-white/60 backdrop-blur-sm"
+          onClick={closeReviewModal}>
+          </div>
+
+              {}
               <motion.div
-                initial={{ scale: 0.95, opacity: 0, y: 20 }}
-                animate={{ scale: 1, opacity: 1, y: 0 }}
-                exit={{ scale: 0.95, opacity: 0, y: 20 }}
-                className={`relative ${isFullscreen ? "w-screen h-screen rounded-none" : "w-[90vw] h-[90vh] rounded-[24px] border border-slate-200"} bg-white shadow-2xl flex flex-col overflow-hidden transition-all duration-300`}
-              >
-                {/* Header */}
+          initial={{ scale: 0.95, opacity: 0, y: 20 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.95, opacity: 0, y: 20 }}
+          className={`relative ${isFullscreen ? "w-screen h-screen rounded-none" : "w-[90vw] h-[90vh] rounded-[24px] border border-slate-200"} bg-white shadow-2xl flex flex-col overflow-hidden transition-all duration-300`}>
+
+                {}
                 <div className="h-20 border-b border-slate-200 bg-white px-6 flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-4">
                     <img
-                      src={
-                        selectedUser.pic ||
-                        `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name || "User")}&background=f8fafc&color=0891b2`
-                      }
-                      alt="Avatar"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name || "User")}&background=f8fafc&color=0891b2`;
-                      }}
-                      className="w-12 h-12 rounded-full border border-slate-200 object-cover"
-                    />
+                src={
+                selectedUser.pic ||
+                `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name || "User")}&background=f8fafc&color=0891b2`}
+
+                alt="Avatar"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(selectedUser.name || "User")}&background=f8fafc&color=0891b2`;
+                }}
+                className="w-12 h-12 rounded-full border border-slate-200 object-cover" />
+
                     <div>
                       <h2 className="text-slate-900 font-bold text-lg flex items-center gap-3">
                         {selectedUser.name}
@@ -358,112 +358,112 @@ const VerificationRequests = () => {
                   </div>
                   <div className="flex items-center gap-3">
                     <button
-                      onClick={() =>
-                        handleDownload(selectedUser.govId, selectedUser.name)
-                      }
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition group tooltip-trigger"
-                    >
+                onClick={() =>
+                handleDownload(selectedUser.govId, selectedUser.name)}
+
+                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition group tooltip-trigger">
+
                       <Download className="w-5 h-5 group-hover:-translate-y-0.5 transition-transform" />
                     </button>
                     <button
-                      onClick={toggleFullscreen}
-                      className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition"
-                    >
+                onClick={toggleFullscreen}
+                className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300 transition">
+
                       <Maximize className="w-5 h-5" />
                     </button>
                     <div className="w-px h-8 bg-slate-200 mx-1"></div>
                     <button
-                      onClick={closeReviewModal}
-                      className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition border border-red-100 hover:border-red-200"
-                    >
+                onClick={closeReviewModal}
+                className="p-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition border border-red-100 hover:border-red-200">
+
                       <X className="w-5 h-5" />
                     </button>
                   </div>
                 </div>
 
-                {/* Main Content Area */}
+                {}
                 <div className="flex-1 flex flex-col lg:flex-row min-h-0 bg-slate-50">
-                  {/* Document Viewer */}
+                  {}
                   <div className="flex-1 relative flex flex-col min-h-0 border-r border-slate-200 overflow-hidden">
-                    {/* Toolbar - Hidden if PDF since iframe handles native tools */}
-                    {!isPdf && (
-                      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-lg">
+                    {}
+                    {!isPdf &&
+                <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200 shadow-lg">
                         <button
-                          onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
-                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                        >
+                  onClick={() => setZoom((z) => Math.min(z + 0.25, 3))}
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+
                           <ZoomIn className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
-                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                        >
+                  onClick={() => setZoom((z) => Math.max(z - 0.25, 0.5))}
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+
                           <ZoomOut className="w-4 h-4" />
                         </button>
                         <div className="w-px h-4 bg-slate-200 mx-1"></div>
                         <button
-                          onClick={() => setRotation((r) => r - 90)}
-                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                        >
+                  onClick={() => setRotation((r) => r - 90)}
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+
                           <RotateCcw className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => setRotation((r) => r + 90)}
-                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                        >
+                  onClick={() => setRotation((r) => r + 90)}
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">
+
                           <RotateCw className="w-4 h-4" />
                         </button>
                         <div className="w-px h-4 bg-slate-200 mx-1"></div>
                         <button
-                          onClick={() => {
-                            setZoom(1);
-                            setRotation(0);
-                          }}
-                          className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-bold tracking-wider px-3 transition"
-                        >
+                  onClick={() => {
+                    setZoom(1);
+                    setRotation(0);
+                  }}
+                  className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 text-xs font-bold tracking-wider px-3 transition">
+
                           RESET
                         </button>
-                      </div>
-                    )}
+                      </div>}
 
-                    {/* Image/PDF Area */}
+
+                    {}
                     <div className="flex-1 overflow-hidden flex items-center justify-center p-8 relative">
-                      {!imageLoaded && (
-                        <div className="absolute inset-0 flex items-center justify-center">
+                      {!imageLoaded &&
+                  <div className="absolute inset-0 flex items-center justify-center">
                           <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
-                        </div>
-                      )}
-                      {isPdf ? (
-                        <iframe
-                          src={selectedUser.govId}
-                          className="w-full h-full max-h-[75vh] rounded-xl border border-slate-200 bg-white shadow-xl"
-                          title="Document Preview"
-                          onLoad={() => setImageLoaded(true)}
-                        ></iframe>
-                      ) : (
-                        <motion.img
-                          src={selectedUser.govId}
-                          alt="Government ID"
-                          className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-xl transition-opacity duration-300 bg-white"
-                          style={{
-                            scale: zoom,
-                            rotate: rotation,
-                            opacity: imageLoaded ? 1 : 0,
-                          }}
-                          onLoad={() => setImageLoaded(true)}
-                          drag
-                          dragConstraints={{
-                            top: -200,
-                            left: -200,
-                            right: 200,
-                            bottom: 200,
-                          }}
-                        />
-                      )}
+                        </div>}
+
+                      {isPdf ?
+                  <iframe
+                  src={selectedUser.govId}
+                  className="w-full h-full max-h-[75vh] rounded-xl border border-slate-200 bg-white shadow-xl"
+                  title="Document Preview"
+                  onLoad={() => setImageLoaded(true)}>
+                  </iframe> :
+
+                  <motion.img
+                  src={selectedUser.govId}
+                  alt="Government ID"
+                  className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-xl transition-opacity duration-300 bg-white"
+                  style={{
+                    scale: zoom,
+                    rotate: rotation,
+                    opacity: imageLoaded ? 1 : 0
+                  }}
+                  onLoad={() => setImageLoaded(true)}
+                  drag
+                  dragConstraints={{
+                    top: -200,
+                    left: -200,
+                    right: 200,
+                    bottom: 200
+                  }} />}
+
+
                     </div>
                   </div>
 
-                  {/* Side Panel */}
+                  {}
                   <div className="hidden lg:flex w-full lg:w-96 bg-white flex-col shrink-0 overflow-y-auto">
                     <div className="p-6 space-y-6 flex-1">
                       <h3 className="text-slate-500 font-bold text-sm uppercase tracking-wider mb-4 border-b border-slate-100 pb-2">
@@ -543,8 +543,8 @@ const VerificationRequests = () => {
                             </p>
                             <p className="text-slate-800 text-sm font-medium">
                               {moment(selectedUser.updatedAt).format(
-                                "MMMM Do YYYY, h:mm a",
-                              )}
+                          "MMMM Do YYYY, h:mm a"
+                          )}
                             </p>
                           </div>
                         </div>
@@ -565,26 +565,26 @@ const VerificationRequests = () => {
                       </div>
                     </div>
 
-                    {/* Sidebar Footer Actions */}
+                    {}
                     <div className="p-6 border-t border-slate-100 bg-white/80 backdrop-blur-md sticky bottom-0">
                       <div className="flex flex-col gap-3">
                         <button
-                          disabled={actionLoading}
-                          onClick={() => handleApprove(selectedUser._id)}
-                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-brand-600/20 disabled:opacity-50"
-                        >
-                          {actionLoading ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-5 h-5" />
-                          )}
+                    disabled={actionLoading}
+                    onClick={() => handleApprove(selectedUser._id)}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-brand-600/20 disabled:opacity-50">
+
+                          {actionLoading ?
+                      <Loader2 className="w-5 h-5 animate-spin" /> :
+
+                      <CheckCircle className="w-5 h-5" />}
+
                           Approve
                         </button>
                         <button
-                          disabled={actionLoading}
-                          onClick={() => setIsRejecting(true)}
-                          className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white hover:bg-red-50 text-red-600 rounded-xl font-bold transition-all border border-red-200 hover:border-red-300 disabled:opacity-50 shadow-sm"
-                        >
+                    disabled={actionLoading}
+                    onClick={() => setIsRejecting(true)}
+                    className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-white hover:bg-red-50 text-red-600 rounded-xl font-bold transition-all border border-red-200 hover:border-red-300 disabled:opacity-50 shadow-sm">
+
                           Reject
                         </button>
                       </div>
@@ -592,15 +592,15 @@ const VerificationRequests = () => {
                   </div>
                 </div>
 
-                {/* Rejection Overlay Dialog */}
+                {}
                 <AnimatePresence>
-                  {isRejecting && (
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.95 }}
-                      className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-md p-6"
-                    >
+                  {isRejecting &&
+              <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="absolute inset-0 z-50 flex items-center justify-center bg-white/60 backdrop-blur-md p-6">
+
                       <div className="w-full max-w-lg bg-white border border-slate-200 shadow-2xl rounded-[24px] flex flex-col overflow-hidden">
                         <div className="p-6 border-b border-slate-200 flex justify-between items-center bg-slate-50">
                           <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
@@ -608,9 +608,9 @@ const VerificationRequests = () => {
                             Verification
                           </h3>
                           <button
-                            onClick={() => setIsRejecting(false)}
-                            className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-xl transition"
-                          >
+                    onClick={() => setIsRejecting(false)}
+                    className="p-2 text-slate-500 hover:text-slate-900 hover:bg-slate-200 bg-slate-100 rounded-xl transition">
+
                             <X className="w-5 h-5" />
                           </button>
                         </div>
@@ -622,75 +622,74 @@ const VerificationRequests = () => {
                           </p>
 
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-                            {predefinedReasons.map((reason) => (
-                              <button
-                                key={reason}
-                                onClick={() => setRejectReason(reason)}
-                                className={`p-4 rounded-xl border text-left transition-all ${rejectReason === reason ? "bg-red-50 border-red-300 text-red-700 font-bold shadow-sm" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"}`}
-                              >
+                            {predefinedReasons.map((reason) =>
+                      <button
+                      key={reason}
+                      onClick={() => setRejectReason(reason)}
+                      className={`p-4 rounded-xl border text-left transition-all ${rejectReason === reason ? "bg-red-50 border-red-300 text-red-700 font-bold shadow-sm" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300"}`}>
+
                                 {reason}
                               </button>
-                            ))}
+                      )}
                           </div>
 
                           <AnimatePresence>
-                            {rejectReason === "Custom" && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: "auto" }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="overflow-hidden"
-                              >
+                            {rejectReason === "Custom" &&
+                      <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden">
+
                                 <textarea
-                                  value={customReason}
-                                  onChange={(e) =>
-                                    setCustomReason(e.target.value)
-                                  }
-                                  placeholder="Type detailed rejection reason here..."
-                                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-900 placeholder:text-slate-500 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all shadow-inner"
-                                  rows={3}
-                                />
-                              </motion.div>
-                            )}
+                        value={customReason}
+                        onChange={(e) =>
+                        setCustomReason(e.target.value)}
+
+                        placeholder="Type detailed rejection reason here..."
+                        className="w-full bg-slate-50 border border-slate-300 rounded-xl p-4 text-slate-900 placeholder:text-slate-500 focus:border-brand-600 focus:ring-1 focus:ring-brand-600 outline-none transition-all shadow-inner"
+                        rows={3} />
+
+                              </motion.div>}
+
                           </AnimatePresence>
                         </div>
 
                         <div className="p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-3">
                           <button
-                            onClick={() => setIsRejecting(false)}
-                            className="px-6 py-3.5 text-slate-700 hover:text-slate-900 font-bold bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition shadow-sm"
-                          >
+                    onClick={() => setIsRejecting(false)}
+                    className="px-6 py-3.5 text-slate-700 hover:text-slate-900 font-bold bg-white border border-slate-300 hover:bg-slate-100 rounded-xl transition shadow-sm">
+
                             Cancel
                           </button>
                           <button
-                            disabled={
-                              actionLoading ||
-                              !rejectReason ||
-                              (rejectReason === "Custom" && !customReason)
-                            }
-                            onClick={() => handleReject(selectedUser._id)}
-                            className="flex items-center justify-center gap-2 px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 disabled:opacity-50"
-                          >
-                            {actionLoading ? (
-                              <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                              "Confirm Rejection"
-                            )}
+                    disabled={
+                    actionLoading ||
+                    !rejectReason ||
+                    rejectReason === "Custom" && !customReason}
+
+                    onClick={() => handleReject(selectedUser._id)}
+                    className="flex items-center justify-center gap-2 px-8 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition-all shadow-lg shadow-red-600/20 disabled:opacity-50">
+
+                            {actionLoading ?
+                      <Loader2 className="w-5 h-5 animate-spin" /> :
+
+                      "Confirm Rejection"}
+
                           </button>
                         </div>
                       </div>
-                    </motion.div>
-                  )}
+                    </motion.div>}
+
                 </AnimatePresence>
               </motion.div>
-            </motion.div>
-          )}
+            </motion.div>}
+
         </AnimatePresence>,
-        document.body,
+      document.body
       )}
-    </div>
-  );
+    </div>);
+
 };
 
 export default VerificationRequests;
-

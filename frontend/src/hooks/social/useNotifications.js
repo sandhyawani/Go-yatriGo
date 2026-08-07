@@ -33,11 +33,11 @@ export const useNotifications = (user) => {
   useEffect(() => {
     if (!socket) return;
     const handleNewNotification = (newNotif) => {
-            dispatch({ type: "ADD_NOTIFICATION", payload: newNotif });
+      dispatch({ type: "ADD_NOTIFICATION", payload: newNotif });
     };
-        socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
     return () => {
-            socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+      socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
     };
   }, [socket]);
 
@@ -55,8 +55,22 @@ export const useNotifications = (user) => {
     } catch (e) {}
   };
 
-  const removeJourneyInvitation = (invId) => {
-    dispatch({ type: "REMOVE_JOURNEY_INVITATION", payload: invId });
+  const deleteNotification = async (notificationId) => {
+    try {
+      await notificationService.deleteNotification(notificationId);
+      dispatch({ type: "REMOVE_NOTIFICATION_BY_ID", payload: notificationId });
+    } catch (e) {
+      console.error("Error deleting notification:", e);
+    }
+  };
+
+  const clearAllNotifications = async () => {
+    try {
+      await notificationService.clearAllNotifications();
+      dispatch({ type: "LOAD_NOTIFICATIONS", payload: [] });
+    } catch (e) {
+      console.error("Error clearing notifications:", e);
+    }
   };
 
   return {
@@ -65,9 +79,10 @@ export const useNotifications = (user) => {
     journeyInvitations,
     markAllRead,
     markAsRead,
+    deleteNotification,
+    clearAllNotifications,
     removeJourneyInvitation,
     dispatch
   };
 };
 export default useNotifications;
-

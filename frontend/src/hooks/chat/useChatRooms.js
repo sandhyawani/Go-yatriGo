@@ -17,7 +17,6 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
   const [showListMoreOptions, setShowListMoreOptions] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  // Helper to check if a pending room request was initiated by me
   const isMyRequest = (r) => {
     if (!r || !r.requestedBy) return false;
     const reqId = typeof r.requestedBy === "object" ? r.requestedBy._id : r.requestedBy;
@@ -87,9 +86,9 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
     dispatch({ type: "SET_ACTIVE_ROOM", payload: room });
     if (room.type === "direct") {
       setActiveTab(
-        room.requestStatus === "pending" && !isMyRequest(room)
-          ? "requests"
-          : "chats"
+      room.requestStatus === "pending" && !isMyRequest(room) ?
+      "requests" :
+      "chats"
       );
     } else {
       setActiveTab("groups");
@@ -147,7 +146,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#64748b",
-      confirmButtonText: "Yes, delete",
+      confirmButtonText: "Yes, delete"
     });
 
     if (!result.isConfirmed) return;
@@ -161,7 +160,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Error deleting chat", {
-        id: "delete-chat",
+        id: "delete-chat"
       });
     }
   };
@@ -188,7 +187,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
       cancelButtonColor: "#64748b",
-      confirmButtonText: "Yes, delete",
+      confirmButtonText: "Yes, delete"
     });
 
     if (!result.isConfirmed) return;
@@ -196,7 +195,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
     try {
       toast.loading("Deleting selected chats...", { id: "delete-selected-chats" });
       const deletePromises = Array.from(selectedRoomIds).map((roomId) =>
-        chatService.deleteChat(roomId)
+      chatService.deleteChat(roomId)
       );
 
       await Promise.all(deletePromises);
@@ -218,9 +217,9 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
     try {
       await notificationService.acceptFollowRequest(requesterId);
       setNotifications((prev) =>
-        prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
+      prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
       );
-      showToast.success("Journey Mate request accepted");
+      showToast.success("Trip Mate request accepted");
     } catch (err) {
       showToast.error("Failed to accept request");
     }
@@ -231,7 +230,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
     try {
       await notificationService.rejectFollowRequest(requesterId);
       setNotifications((prev) =>
-        prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
+      prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
       );
     } catch (err) {
       console.error(err);
@@ -272,4 +271,3 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
   };
 };
 export default useChatRooms;
-

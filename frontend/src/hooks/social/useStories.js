@@ -5,9 +5,9 @@ export const useStories = () => {
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
 
-  const viewStory = async (storyId) => {
+  const viewStory = async (dispatchId) => {
     try {
-      const res = await storyService.getStoryDetails(storyId);
+      const res = await storyService.getStoryDetails(dispatchId);
       return res;
     } catch (e) {
       console.error(e);
@@ -24,4 +24,3 @@ export const useStories = () => {
   };
 };
 export default useStories;
-

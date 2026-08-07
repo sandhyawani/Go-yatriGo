@@ -11,14 +11,14 @@ export const useSuggestedUsers = () => {
     try {
       if (isFollowing) {
         await axios.post(`/users/${targetUser._id}/unfollow`, {}, { withCredentials: true });
-        showToast.success(`Removed ${targetUser.name} from My Journey Mates`);
+        showToast.success(`Removed ${targetUser.name} from My Trip Mates`);
       } else {
         await axios.post(`/users/${targetUser._id}/follow`, {}, { withCredentials: true });
-        showToast.success(`Added ${targetUser.name} as Journey Mate`);
+        showToast.success(`Added ${targetUser.name} as Trip Mate`);
       }
       if (callback) callback();
     } catch (err) {
-      showToast.error("Failed to update Journey Mate status");
+      showToast.error("Failed to update Trip Mate status");
     } finally {
       setFollowLoadingMap((prev) => ({ ...prev, [targetUser._id]: false }));
     }
@@ -30,4 +30,3 @@ export const useSuggestedUsers = () => {
   };
 };
 export default useSuggestedUsers;
-

@@ -11,7 +11,6 @@ const ScrollToTop = () => {
       window.history.scrollRestoration = "manual";
     }
 
-    // Keep anchor links working.
     if (hash) return;
 
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -21,4 +20,3 @@ const ScrollToTop = () => {
 };
 
 export default ScrollToTop;
-

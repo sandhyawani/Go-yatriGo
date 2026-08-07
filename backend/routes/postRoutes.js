@@ -3,33 +3,21 @@ const router = express.Router();
 const Post = require("../models/Post");
 const User = require("../models/User");
 
-// Destructured imports - verify these match your exports in the middleware files!
-const { userMiddleware } = require("../middleware/authMiddleware");
-const { checkSuspended } = require("../middleware/verifyToken");
-
-// --- Safety Debugging Check ---
-if (!userMiddleware || !checkSuspended) {
-  console.error("❌ MIDDLEWARE IMPORT ERROR:");
-  console.error("userMiddleware status:", userMiddleware ? "Loaded ✅" : "UNDEFINED ❌");
-  console.error("checkSuspended status:", checkSuspended ? "Loaded ✅" : "UNDEFINED ❌");
-  console.error("Please ensure you are using 'module.exports = { ... }' in your middleware files.");
-}
-// GET /api/posts/feed
-// Returns posts created by users whom the current user is following, sorted by most recent.
-router.get("/feed", userMiddleware, async (req, res) => {
+const { verifyToken, checkSuspended } = require("../middleware/verifyToken");
+router.get("/feed", verifyToken, async (req, res) => {
   try {
     const currentUser = await User.findById(req.user);
     if (!currentUser) return res.status(404).json({ success: false, message: "User not found" });
 
     const followingIds = currentUser.following || [];
 
-    const posts = await Post.find({ userId: { $in: followingIds } })
-      .sort({ createdAt: -1 })
-      .populate("userId", "name username pic avatar")
-      .populate({
-        path: "comments",
-        populate: { path: "userId", select: "name pic avatar username" }
-      });
+    const posts = await Post.find({ userId: { $in: followingIds } }).
+    sort({ createdAt: -1 }).
+    populate("userId", "name username pic avatar").
+    populate({
+      path: "comments",
+      populate: { path: "userId", select: "name pic avatar username" }
+    });
 
     res.status(200).json({ success: true, posts });
   } catch (error) {
@@ -38,19 +26,17 @@ router.get("/feed", userMiddleware, async (req, res) => {
   }
 });
 
-// GET /api/posts/global
-// Returns posts created by users who are following the current user (followers), sorted by most recent.
-router.get("/global", userMiddleware, async (req, res) => {
+router.get("/global", verifyToken, async (req, res) => {
   try {
     const currentUser = await User.findById(req.user);
     if (!currentUser) return res.status(404).json({ success: false, message: "User not found" });
 
     const followerIds = currentUser.followers || [];
 
-    const posts = await Post.find({ userId: { $in: followerIds } })
-      .sort({ createdAt: -1 })
-      .populate("userId", "name username pic avatar")
-      .limit(50); // Optionally limit to recent 50 posts
+    const posts = await Post.find({ userId: { $in: followerIds } }).
+    sort({ createdAt: -1 }).
+    populate("userId", "name username pic avatar").
+    limit(50);
 
     res.status(200).json({ success: true, posts });
   } catch (error) {
@@ -59,17 +45,22 @@ router.get("/global", userMiddleware, async (req, res) => {
   }
 });
 
-// POST /api/posts/like/:id
-router.post("/like/:id", userMiddleware, checkSuspended, async (req, res) => {
+router.post("/like/:id", verifyToken, checkSuspended, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+
+    const { canInteractWithContent } = require("../utils/privacyHelper");
+    const isAllowed = await canInteractWithContent(post.userId, req.user);
+    if (!isAllowed) {
+      return res.status(403).json({ success: false, message: "Forbidden: You cannot interact with this post." });
+    }
 
     const userId = req.user._id.toString();
     const hasLiked = post.likes.includes(userId);
 
     if (hasLiked) {
-      post.likes = post.likes.filter(id => id.toString() !== userId);
+      post.likes = post.likes.filter((id) => id.toString() !== userId);
     } else {
       post.likes.push(userId);
     }
@@ -82,14 +73,19 @@ router.post("/like/:id", userMiddleware, checkSuspended, async (req, res) => {
   }
 });
 
-// POST /api/posts/comment/:id
-router.post("/comment/:id", userMiddleware, checkSuspended, async (req, res) => {
+router.post("/comment/:id", verifyToken, checkSuspended, async (req, res) => {
   try {
     const { text } = req.body;
     if (!text) return res.status(400).json({ success: false, message: "Comment text is required" });
 
     const post = await Post.findById(req.params.id);
     if (!post) return res.status(404).json({ success: false, message: "Post not found" });
+
+    const { canInteractWithContent } = require("../utils/privacyHelper");
+    const isAllowed = await canInteractWithContent(post.userId, req.user);
+    if (!isAllowed) {
+      return res.status(403).json({ success: false, message: "Forbidden: You cannot interact with this post." });
+    }
 
     const currentUser = await User.findById(req.user);
     if (!currentUser) return res.status(404).json({ success: false, message: "User not found" });
@@ -107,12 +103,12 @@ router.post("/comment/:id", userMiddleware, checkSuspended, async (req, res) => 
     post.comments.push(comment._id);
     await post.save();
 
-    res.status(200).json({ 
-      success: true, 
-      comment: { 
-        ...comment.toObject(), 
-        userId: { name: currentUser.name, pic: currentUser.pic || currentUser.avatar } 
-      } 
+    res.status(200).json({
+      success: true,
+      comment: {
+        ...comment.toObject(),
+        userId: { name: currentUser.name, pic: currentUser.pic || currentUser.avatar }
+      }
     });
   } catch (error) {
     console.error("Comment post error:", error);

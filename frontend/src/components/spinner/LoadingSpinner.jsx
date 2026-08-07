@@ -7,9 +7,8 @@ const LoadingSpinner = ({ className = "h-12 w-12 border-gray-900", containerClas
       <div className={`flex justify-center items-center ${containerClass}`}>
         <div className={`inline-block animate-spin rounded-full border-t-2 border-b-2 ${className}`}></div>
       </div>
-    </Fragment>
-  );
+    </Fragment>);
+
 };
 
 export default LoadingSpinner;
-

@@ -1,13 +1,11 @@
 const LegalContent = require("../models/LegalContent");
 
-// Get legal document by type
 exports.getLegalContent = async (req, res) => {
   try {
     const { type } = req.params;
 
     let content = await LegalContent.findOne({ type });
 
-    // Create default content if document does not exist
     if (!content) {
       const defaultContents = {
         "privacy-policy": {
@@ -32,24 +30,24 @@ exports.getLegalContent = async (req, res) => {
         content = await LegalContent.create({
           type,
           title: defaultContents[type].title,
-          content: defaultContents[type].content,
+          content: defaultContents[type].content
         });
       } else {
         return res.status(404).json({
           success: false,
-          message: "Legal document not found",
+          message: "Legal document not found"
         });
       }
     }
 
     return res.status(200).json({
       success: true,
-      data: content,
+      data: content
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Server error",
+      message: "Server error"
     });
   }
 };

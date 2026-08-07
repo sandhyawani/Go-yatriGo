@@ -1,4 +1,4 @@
-import { getAvatarUrl } from "../avatar"; // we saw getAvatarUrl is imported from "../../utils/avatar" in ChatRoom.jsx. So here it is "../avatar"
+import { getAvatarUrl } from "../avatar";
 
 export const getRoomIdString = (roomField) => {
   if (!roomField) return "";
@@ -48,7 +48,7 @@ export const getLatestMessagePreview = (msg, currentUserId) => {
 export const mergeMessagesById = (prevMessages, incomingMessages) => {
   const incomingIds = new Set(incomingMessages.map((m) => m._id));
   const stillPending = prevMessages.filter(
-    (m) => m.isPending && !incomingIds.has(m._id),
+  (m) => m.isPending && !incomingIds.has(m._id)
   );
   const merged = [...incomingMessages, ...stillPending];
   merged.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
@@ -62,12 +62,12 @@ export const mergeRoomsById = (prevRooms, incomingRooms) => {
 };
 
 export const formatTime = (d) =>
-  d
-    ? new Date(d).toLocaleTimeString([], {
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "";
+d ?
+new Date(d).toLocaleTimeString([], {
+  hour: "numeric",
+  minute: "2-digit"
+}) :
+"";
 
 export const formatDateLabel = (d) => {
   if (!d) return "";
@@ -80,9 +80,8 @@ export const formatDateLabel = (d) => {
   return date.toLocaleDateString([], {
     month: "short",
     day: "numeric",
-    year: "numeric",
+    year: "numeric"
   });
 };
 
 export const getAvatar = (objOrPic, name) => getAvatarUrl(objOrPic, null, name);
-

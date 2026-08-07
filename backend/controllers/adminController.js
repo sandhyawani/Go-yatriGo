@@ -33,7 +33,6 @@ const getTrendDays = () => {
   });
 };
 
-// Get social network moderation stats
 const getStats = async (req, res) => {
   try {
     const trendDays = getTrendDays();
@@ -43,97 +42,97 @@ const getStats = async (req, res) => {
     const userScope = { isDeleted: { $ne: true } };
 
     const [
-      totalUsers,
-      activeUserSessions,
-      postCount,
-      storyCount,
-      groupCount,
-      reportsPending,
-      suspendedUsers,
-      newPostsToday,
-      recentReports,
-      priorityReports,
-      postTrend,
-      reportTrend,
-      reportStatusDistribution
-    ] = await Promise.all([
-      User.countDocuments(userScope),
-      Session.aggregate([
-        { $match: { status: "active", lastActive: { $gte: activeSince } } },
-        { $group: { _id: "$user" } },
-        {
-          $lookup: {
-            from: User.collection.name,
-            localField: "_id",
-            foreignField: "_id",
-            as: "user"
+    totalUsers,
+    activeUserSessions,
+    postCount,
+    storyCount,
+    groupCount,
+    reportsPending,
+    suspendedUsers,
+    newPostsToday,
+    recentReports,
+    priorityReports,
+    postTrend,
+    reportTrend,
+    reportStatusDistribution] =
+    await Promise.all([
+    User.countDocuments(userScope),
+    Session.aggregate([
+    { $match: { status: "active", lastActive: { $gte: activeSince } } },
+    { $group: { _id: "$user" } },
+    {
+      $lookup: {
+        from: User.collection.name,
+        localField: "_id",
+        foreignField: "_id",
+        as: "user"
+      }
+    },
+    { $unwind: "$user" },
+    { $match: { "user.isDeleted": { $ne: true } } },
+    { $count: "value" }]
+    ),
+    Post.countDocuments(),
+    Story.countDocuments(),
+    TravelGroup.countDocuments(),
+    Report.countDocuments({ status: { $in: PENDING_REPORT_STATUSES } }),
+    User.countDocuments({ ...userScope, isSuspended: true }),
+    Post.countDocuments({ createdAt: { $gte: todayStart } }),
+    Report.find().
+    populate("reporter", "name username pic img").
+    populate("reportedUser", "name username pic img").
+    sort({ createdAt: -1 }).
+    limit(6),
+    Report.find({ status: { $in: PENDING_REPORT_STATUSES } }).
+    populate("reporter", "name username pic img").
+    populate("reportedUser", "name username pic img").
+    sort({ createdAt: -1 }).
+    limit(4),
+    Post.aggregate([
+    { $match: { createdAt: { $gte: trendStart } } },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$createdAt",
+            timezone: PLATFORM_TIME_ZONE
           }
         },
-        { $unwind: "$user" },
-        { $match: { "user.isDeleted": { $ne: true } } },
-        { $count: "value" }
-      ]),
-      Post.countDocuments(),
-      Story.countDocuments(),
-      TravelGroup.countDocuments(),
-      Report.countDocuments({ status: { $in: PENDING_REPORT_STATUSES } }),
-      User.countDocuments({ ...userScope, isSuspended: true }),
-      Post.countDocuments({ createdAt: { $gte: todayStart } }),
-      Report.find()
-        .populate("reporter", "name username pic img")
-        .populate("reportedUser", "name username pic img")
-        .sort({ createdAt: -1 })
-        .limit(6),
-      Report.find({ status: { $in: PENDING_REPORT_STATUSES } })
-        .populate("reporter", "name username pic img")
-        .populate("reportedUser", "name username pic img")
-        .sort({ createdAt: -1 })
-        .limit(4),
-      Post.aggregate([
-        { $match: { createdAt: { $gte: trendStart } } },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: "%Y-%m-%d",
-                date: "$createdAt",
-                timezone: PLATFORM_TIME_ZONE
-              }
-            },
-            value: { $sum: 1 }
+        value: { $sum: 1 }
+      }
+    }]
+    ),
+    Report.aggregate([
+    { $match: { createdAt: { $gte: trendStart } } },
+    {
+      $group: {
+        _id: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$createdAt",
+            timezone: PLATFORM_TIME_ZONE
           }
-        }
-      ]),
-      Report.aggregate([
-        { $match: { createdAt: { $gte: trendStart } } },
-        {
-          $group: {
-            _id: {
-              $dateToString: {
-                format: "%Y-%m-%d",
-                date: "$createdAt",
-                timezone: PLATFORM_TIME_ZONE
-              }
-            },
-            value: { $sum: 1 }
-          }
-        }
-      ]),
-      Report.aggregate([
-        {
-          $group: {
-            _id: { $toLower: "$status" },
-            value: { $sum: 1 }
-          }
-        }
-      ])
-    ]);
+        },
+        value: { $sum: 1 }
+      }
+    }]
+    ),
+    Report.aggregate([
+    {
+      $group: {
+        _id: { $toLower: "$status" },
+        value: { $sum: 1 }
+      }
+    }]
+    )]
+    );
 
     const indexByDay = (items) =>
-      items.reduce((lookup, item) => {
-        lookup[item._id] = item.value;
-        return lookup;
-      }, {});
+    items.reduce((lookup, item) => {
+      lookup[item._id] = item.value;
+      return lookup;
+    }, {});
 
     const postsByDay = indexByDay(postTrend);
     const reportsByDay = indexByDay(reportTrend);
@@ -160,11 +159,11 @@ const getStats = async (req, res) => {
         reports: reportsPending
       },
       distribution: [
-        { name: "Travelers", value: totalUsers },
-        { name: "Posts", value: postCount },
-        { name: "Stories", value: storyCount },
-        { name: "Groups", value: groupCount }
-      ],
+      { name: "Travelers", value: totalUsers },
+      { name: "Posts", value: postCount },
+      { name: "Stories", value: storyCount },
+      { name: "Groups", value: groupCount }],
+
       activityTrend,
       reportStatusDistribution: reportStatusDistribution.map((status) => ({
         name: status._id || "unknown",
@@ -183,13 +182,12 @@ const getStats = async (req, res) => {
   }
 };
 
-// Get all reports
 const getAllReports = async (req, res) => {
   try {
-    const reports = await Report.find()
-      .populate("reporter", "name username pic img")
-      .populate("reportedUser", "name username pic img")
-      .sort({ createdAt: -1 });
+    const reports = await Report.find().
+    populate("reporter", "name username pic img").
+    populate("reportedUser", "name username pic img").
+    sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, reports });
   } catch (error) {
@@ -197,7 +195,6 @@ const getAllReports = async (req, res) => {
   }
 };
 
-// Resolve a report
 const resolveReport = async (req, res) => {
   try {
     const reportId = req.params.id;
@@ -210,7 +207,7 @@ const resolveReport = async (req, res) => {
 
     if (status) report.status = status;
     if (adminNote) report.adminNote = adminNote;
-    
+
     await report.save();
 
     res.status(200).json({ success: true, message: `Report marked as ${status || report.status}`, report });
@@ -219,7 +216,6 @@ const resolveReport = async (req, res) => {
   }
 };
 
-// Moderation: Admin Delete Post
 const deleteReportedPost = async (req, res) => {
   try {
     const postId = req.params.postId;
@@ -230,7 +226,6 @@ const deleteReportedPost = async (req, res) => {
   }
 };
 
-// Moderation: Admin Delete Group
 const deleteReportedGroup = async (req, res) => {
   try {
     const groupId = req.params.groupId;
@@ -241,22 +236,20 @@ const deleteReportedGroup = async (req, res) => {
   }
 };
 
-// Moderation: Suspend User
 const suspendUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ message: "User not found" });
-    
+
     user.isSuspended = true;
     await user.save();
-    
+
     res.status(200).json({ success: true, message: "User suspended successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-// Moderation: Unsuspend User
 const unsuspendUser = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -264,26 +257,24 @@ const unsuspendUser = async (req, res) => {
 
     user.isSuspended = false;
     await user.save();
-    
+
     res.status(200).json({ success: true, message: "User unsuspended successfully" });
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-// Moderation: Get pending verifications
 const getPendingVerifications = async (req, res) => {
   try {
-    const pendingUsers = await User.find({ verificationStatus: "pending" })
-      .select("-password")
-      .sort({ updatedAt: -1 }); // Sorted by recent updates to reflect user changes faster
+    const pendingUsers = await User.find({ verificationStatus: "pending" }).
+    select("-password").
+    sort({ updatedAt: -1 });
     res.status(200).json(pendingUsers);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
-// Moderation: Approve Verification
 const approveVerification = async (req, res) => {
   try {
     const user = await User.findById(req.params.id);
@@ -293,14 +284,13 @@ const approveVerification = async (req, res) => {
     user.verificationStatus = 'verified';
     user.verificationNote = "";
     await user.save();
-    
-    // Create verification notification safely using optional fallback sender keys
+
     const adminSenderId = req.user?._id || req.user?.id || user._id;
 
     await Notification.create({
       sender: adminSenderId,
       receiver: user._id,
-      type: "admin_warning", 
+      type: "admin_warning",
       message: "Congratulations! Your Government ID has been approved and you are now a Verified Traveler."
     });
 
@@ -310,7 +300,6 @@ const approveVerification = async (req, res) => {
   }
 };
 
-// Moderation: Reject Verification
 const rejectVerification = async (req, res) => {
   try {
     const { reason } = req.body;
@@ -321,13 +310,13 @@ const rejectVerification = async (req, res) => {
     user.verificationStatus = 'rejected';
     user.verificationNote = reason || "Your ID could not be verified.";
     await user.save();
-    
+
     const adminSenderId = req.user?._id || req.user?.id || user._id;
 
     await Notification.create({
       sender: adminSenderId,
       receiver: user._id,
-      type: "admin_warning", 
+      type: "admin_warning",
       message: `Your Government ID verification was rejected. Reason: ${user.verificationNote}. You can upload a new ID in your profile settings.`
     });
 
@@ -337,14 +326,13 @@ const rejectVerification = async (req, res) => {
   }
 };
 
-// Moderation: Warn User
 const warnUser = async (req, res) => {
   try {
     const { message } = req.body;
     const targetUserId = req.params.id;
-    
+
     if (!message) return res.status(400).json({ message: "Warning message is required" });
-    
+
     const user = await User.findById(targetUserId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -374,5 +362,5 @@ module.exports = {
   warnUser,
   getPendingVerifications,
   approveVerification,
-  rejectVerification,
+  rejectVerification
 };

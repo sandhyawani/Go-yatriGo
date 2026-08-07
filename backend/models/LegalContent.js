@@ -4,7 +4,7 @@ const legalContentSchema = new mongoose.Schema({
   type: {
     type: String,
     required: true,
-    unique: true, // e.g. 'privacy-policy', 'terms', 'community-guidelines', 'safety-guidelines'
+    unique: true
   },
   title: {
     type: String,
@@ -12,7 +12,7 @@ const legalContentSchema = new mongoose.Schema({
   },
   content: {
     type: String,
-    required: true // can be markdown or rich HTML
+    required: true
   }
 }, { timestamps: true });
 

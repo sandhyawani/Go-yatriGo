@@ -13,7 +13,31 @@ const Story = require("../models/Story");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 
-// Helper: Compute & Synchronize Lifecycle Status
+const revokeSocketRoomAccess = (req, userId, roomId) => {
+  try {
+    const io = req.app.get("io");
+    const onlineUsers = req.app.get("onlineUsers");
+    if (io && onlineUsers && userId && roomId) {
+      const uStr = userId.toString();
+      const rStr = roomId.toString();
+      const socketIds = onlineUsers.get(uStr);
+      if (socketIds) {
+        const socketIdArray = socketIds instanceof Set ? Array.from(socketIds) : Array.isArray(socketIds) ? socketIds : [socketIds];
+        socketIdArray.forEach((socketId) => {
+          const sock = io.sockets.sockets.get(socketId);
+          if (sock) {
+            sock.leave(rStr);
+            console.log(`[SOCKET] Revoked room ${rStr} access for user ${uStr} on socket ${socketId}`);
+          }
+        });
+      }
+      io.to(uStr).emit("room_access_revoked", { roomId: rStr });
+    }
+  } catch (err) {
+    console.error("Error revoking socket room access:", err);
+  }
+};
+
 const syncJourneyStatus = async (journey) => {
   if (!journey || journey.status === "Cancelled") return journey;
 
@@ -40,32 +64,31 @@ const syncJourneyStatus = async (journey) => {
         journey.aiSummary = `Your ${journey.durationDays || 3}-day ${journey.destination} collaborative journey included ${memberCount} travelers, exploring local scenic highlights, sharing incredible memories, and building lifelong travel friendships.`;
       }
 
-      // Safe Atomic Upsert Guard to eliminate parallel race conditions
       await JourneyMemory.findOneAndUpdate(
-        { journeyId: journey._id },
-        {
-          $setOnInsert: {
-            journeyId: journey._id,
-            title: journey.title,
-            destination: journey.destination,
-            coverImage: journey.coverImage,
-            durationDays: journey.durationDays,
-            participantsCount: journey.members?.length || 1,
-            participants: journey.members?.map((m) => ({
-              userId: m.user?._id || m.user,
-              name: m.user?.name || "Traveler",
-              pic: m.user?.profilePic || "",
-              role: m.role,
-            })),
-            aiSummary: journey.aiSummary,
-            highlights: [
-              { title: "Journey Created", eventType: "journey_created", createdAt: journey.createdAt },
-              { title: "Journey Started", eventType: "journey_started", createdAt: journey.startDate },
-              { title: "Journey Completed Successfully", eventType: "journey_completed", createdAt: now },
-            ],
-          },
-        },
-        { upsert: true, new: true }
+      { journeyId: journey._id },
+      {
+        $setOnInsert: {
+          journeyId: journey._id,
+          title: journey.title,
+          destination: journey.destination,
+          coverImage: journey.coverImage,
+          durationDays: journey.durationDays,
+          participantsCount: journey.members?.length || 1,
+          participants: journey.members?.map((m) => ({
+            userId: m.user?._id || m.user,
+            name: m.user?.name || "Traveler",
+            pic: m.user?.profilePic || "",
+            role: m.role
+          })),
+          aiSummary: journey.aiSummary,
+          highlights: [
+          { title: "Journey Created", eventType: "journey_created", createdAt: journey.createdAt },
+          { title: "Journey Started", eventType: "journey_started", createdAt: journey.startDate },
+          { title: "Journey Completed Successfully", eventType: "journey_completed", createdAt: now }]
+
+        }
+      },
+      { upsert: true, new: true }
       );
 
       await JourneyTimeline.create({
@@ -74,7 +97,7 @@ const syncJourneyStatus = async (journey) => {
         userName: "System",
         eventType: "journey_completed",
         title: "Journey Completed",
-        description: `Congratulations on completing ${journey.title}!`,
+        description: `Congratulations on completing ${journey.title}!`
       });
     } else if (expectedStatus === "Ongoing" && oldStatus === "Upcoming") {
       await JourneyTimeline.create({
@@ -83,7 +106,7 @@ const syncJourneyStatus = async (journey) => {
         userName: "System",
         eventType: "journey_started",
         title: "Journey Started",
-        description: `The journey to ${journey.destination} has officially begun!`,
+        description: `The journey to ${journey.destination} has officially begun!`
       });
     }
     await journey.save();
@@ -91,7 +114,6 @@ const syncJourneyStatus = async (journey) => {
   return journey;
 };
 
-// 1. Create Journey (Atomic & Sanitized)
 exports.createJourney = async (req, res) => {
   const session = await mongoose.startSession();
   try {
@@ -102,6 +124,7 @@ exports.createJourney = async (req, res) => {
       description,
       coverImage,
       destination,
+      from,
       destinationCoordinates,
       startDate,
       endDate,
@@ -109,7 +132,7 @@ exports.createJourney = async (req, res) => {
       journeyType,
       sourceType,
       sourceId,
-      invitedUserIds,
+      invitedUserIds
     } = req.body;
 
     const userId = req.user._id || req.user.id;
@@ -128,7 +151,7 @@ exports.createJourney = async (req, res) => {
             membersList.push({
               user: m.user?._id || m.user,
               role: m.role === "cohost" ? "Co-Organizer" : "Member",
-              joinedAt: new Date(),
+              joinedAt: new Date()
             });
             chatMembers.push(m.user?._id || m.user);
           }
@@ -137,21 +160,24 @@ exports.createJourney = async (req, res) => {
     }
 
     const chatRoom = await ChatRoom.create([{
-      name: `${title.trim()} Squad`,
+      name: title.trim(),
       type: "group",
-      members: chatMembers,
+      members: chatMembers
     }], { session });
+    const chatRoomId = chatRoom[0]._id;
 
     const newJourney = await Journey.create([{
       title: title.trim(),
       description,
-      coverImage,
+      coverImage: coverImage?.trim() ||
+      "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1000&q=80",
       destination: destination.trim(),
+      from: from ? from.trim() : "",
       destinationCoordinates,
       startDate,
       endDate,
       privacy: privacy || "Public",
-      journeyType: membersList.length > 1 ? "Friends" : journeyType || "Solo",
+      journeyType: journeyType || (membersList.length > 1 ? "Friends" : "Solo"),
       status: "Planning",
       sourceType: finalSourceType,
       sourceId: sourceId || null,
@@ -159,19 +185,18 @@ exports.createJourney = async (req, res) => {
       creator: userId,
       members: membersList,
       memberCount: membersList.length,
-      chatRoomId: chatRoom[0]._id,
+      chatRoomId: chatRoomId
     }], { session });
 
-    chatRoom[0].journeyId = newJourney[0]._id;
-    await chatRoom[0].save({ session });
+    await ChatRoom.findByIdAndUpdate(chatRoomId, { journeyId: newJourney[0]._id }).session(session);
 
     await JourneyMember.create(
-      membersList.map((m) => ({
-        journeyId: newJourney[0]._id,
-        userId: m.user,
-        role: m.role,
-      })),
-      { session }
+    membersList.map((m) => ({
+      journeyId: newJourney[0]._id,
+      userId: m.user,
+      role: m.role
+    })),
+    { session }
     );
 
     await JourneyTimeline.create([{
@@ -181,37 +206,54 @@ exports.createJourney = async (req, res) => {
       userPic: user ? user.profilePic : "",
       eventType: "journey_created",
       title: "Journey Created",
-      description: `Organized a new travel workspace for ${destination}`,
+      description: `Organized a new travel workspace for ${destination}`
     }], { session });
 
     if (finalSourceType !== "explore" && Array.isArray(invitedUserIds) && invitedUserIds.length > 0) {
-      const validIds = invitedUserIds.filter((id) => id && id.toString() !== userId.toString());
+      let validIds = invitedUserIds.filter((id) => id && id.toString() !== userId.toString());
+
+      const filteredIds = [];
+      for (const invId of validIds) {
+        const targetUser = await User.findById(invId);
+        if (targetUser) {
+          const mode = targetUser.privacySettings?.journeyInvites || "everyone";
+          if (mode === "none") continue;
+          if (mode === "mates_only") {
+            const isMate = targetUser.following?.some((id) => id.toString() === userId.toString()) &&
+            targetUser.followers?.some((id) => id.toString() === userId.toString());
+            if (!isMate) continue;
+          }
+          filteredIds.push(invId);
+        }
+      }
+      validIds = filteredIds;
+
       if (validIds.length > 0) {
         await JourneyInvitation.create(
-          validIds.map((invId) => ({
-            journeyId: newJourney[0]._id,
-            inviterId: userId,
-            inviteeId: invId,
-            type: "invitation",
-            status: "pending",
-            role: "Member",
-            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          })),
-          { session }
+        validIds.map((invId) => ({
+          journeyId: newJourney[0]._id,
+          inviterId: userId,
+          inviteeId: invId,
+          type: "invitation",
+          status: "pending",
+          role: "Member",
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+        })),
+        { session }
         );
 
         newJourney[0].pendingInvitationCount = validIds.length;
         await newJourney[0].save({ session });
 
         await Notification.create(
-          validIds.map((invId) => ({
-            sender: userId,
-            receiver: invId,
-            type: "journey_invitation",
-            journey: newJourney[0]._id,
-            message: `${user?.name || "A traveler"} invited you to join "${title}"`,
-          })),
-          { session }
+        validIds.map((invId) => ({
+          sender: userId,
+          receiver: invId,
+          type: "journey_invitation",
+          journey: newJourney[0]._id,
+          message: `${user?.name || "A traveler"} invited you to join "${title}"`
+        })),
+        { session }
         );
       }
     }
@@ -222,7 +264,7 @@ exports.createJourney = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Journey created successfully",
-      journey: newJourney[0],
+      journey: newJourney[0]
     });
   } catch (error) {
     await session.abortTransaction();
@@ -232,34 +274,32 @@ exports.createJourney = async (req, res) => {
   }
 };
 
-// 2. Get My Journeys (Optimized Aggregation Strategy)
 exports.getMyJourneys = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
     const { status } = req.query;
 
     let filter = {
-      $or: [{ creator: userId }, { "members.user": userId }],
+      $or: [{ creator: userId }, { "members.user": userId }]
     };
 
     if (status && status !== "all") {
       filter.status = status;
     }
 
-    const journeys = await Journey.find(filter)
-      .populate("creator", "name profilePic")
-      .populate("members.user", "name profilePic")
-      .sort({ startDate: 1 });
+    const journeys = await Journey.find(filter).
+    populate("creator", "name profilePic pic img avatar bio").
+    populate("members.user", "name profilePic pic img avatar bio").
+    sort({ startDate: 1 });
 
     const syncedJourneys = await Promise.all(journeys.map((j) => syncJourneyStatus(j)));
     const finalJourneys = status && status !== "all" ? syncedJourneys.filter((j) => j.status === status) : syncedJourneys;
     const targetJourneyIds = finalJourneys.map((j) => j._id);
 
-    // Optimized Single-Pass Aggregation instead of repeated queries in a map
     const invitationCounts = await JourneyInvitation.aggregate([
-      { $match: { journeyId: { $in: targetJourneyIds }, status: { $in: ["pending", "accepted"] } } },
-      { $group: { _id: { journeyId: "$journeyId", status: "$status" }, count: { $sum: 1 } } }
-    ]);
+    { $match: { journeyId: { $in: targetJourneyIds }, status: { $in: ["pending", "accepted"] } } },
+    { $group: { _id: { journeyId: "$journeyId", status: "$status" }, count: { $sum: 1 } } }]
+    );
 
     const countMap = invitationCounts.reduce((acc, curr) => {
       const jId = curr._id.journeyId.toString();
@@ -279,7 +319,7 @@ exports.getMyJourneys = async (req, res) => {
     res.json({
       success: true,
       count: journeysWithCounts.length,
-      journeys: journeysWithCounts,
+      journeys: journeysWithCounts
     });
   } catch (error) {
     console.error("Error fetching my journeys:", error);
@@ -287,13 +327,12 @@ exports.getMyJourneys = async (req, res) => {
   }
 };
 
-// 3. Get Journey Details
 exports.getJourneyById = async (req, res) => {
   try {
     const { id } = req.params;
-    let journey = await Journey.findById(id)
-      .populate("creator", "name profilePic bio")
-      .populate("members.user", "name profilePic bio");
+    let journey = await Journey.findById(id).
+    populate("creator", "name profilePic pic img avatar bio").
+    populate("members.user", "name profilePic pic img avatar bio");
 
     if (!journey) {
       return res.status(404).json({ success: false, message: "Journey not found" });
@@ -302,10 +341,10 @@ exports.getJourneyById = async (req, res) => {
     journey = await syncJourneyStatus(journey);
 
     const [pendingCount, acceptedCount, timeline] = await Promise.all([
-      JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }),
-      JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }),
-      JourneyTimeline.find({ journeyId: journey._id }).sort({ createdAt: -1 }),
-    ]);
+    JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }),
+    JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }),
+    JourneyTimeline.find({ journeyId: journey._id }).sort({ createdAt: -1 })]
+    );
 
     const journeyObj = journey.toObject ? journey.toObject() : { ...journey._doc };
     journeyObj.pendingInvitationCount = pendingCount;
@@ -319,56 +358,84 @@ exports.getJourneyById = async (req, res) => {
   }
 };
 
-// 4. Update Journey
 exports.updateJourney = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
     const { id } = req.params;
     const userId = req.user._id || req.user.id;
 
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+    const journey = await Journey.findById(id).session(session);
+    if (!journey) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ success: false, message: "Journey not found" });
+    }
 
     const isOrg = journey.members.some(
-      (m) =>
-        (m.user?.toString() === userId.toString() || m.user?._id?.toString() === userId.toString()) &&
-        (m.role === "Organizer" || m.role === "Co-Organizer")
+    (m) =>
+    (m.user?.toString() === userId.toString() || m.user?._id?.toString() === userId.toString()) && (
+    m.role === "Organizer" || m.role === "Co-Organizer")
     );
     if (!isOrg && journey.creator.toString() !== userId.toString()) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(403).json({ success: false, message: "Not authorized to update this journey" });
     }
 
     const updatableFields = [
-      "title", "description", "coverImage", "destination", 
+      "title", "description", "coverImage", "destination", "from",
       "destinationCoordinates", "startDate", "endDate", "privacy", "journeyType"
     ];
 
+
+    let titleChanged = false;
+    let newTitle = "";
+
     updatableFields.forEach((field) => {
       if (req.body[field] !== undefined) {
-        journey[field] = typeof req.body[field] === "string" ? req.body[field].trim() : req.body[field];
+        const newValue = typeof req.body[field] === "string" ? req.body[field].trim() : req.body[field];
+        if (field === "title" && journey.title !== newValue) {
+          titleChanged = true;
+          newTitle = newValue;
+        }
+        journey[field] = newValue;
       }
     });
 
-    await journey.save();
+    await journey.save({ session });
 
-    const user = await User.findById(userId);
-    await JourneyTimeline.create({
+    if (titleChanged && journey.chatRoomId) {
+      const chatRoom = await ChatRoom.findById(journey.chatRoomId).session(session);
+      if (chatRoom && chatRoom.journeyId && chatRoom.journeyId.toString() === journey._id.toString()) {
+        chatRoom.name = newTitle;
+        await chatRoom.save({ session });
+      }
+    }
+
+    const user = await User.findById(userId).session(session);
+    await JourneyTimeline.create([{
       journeyId: journey._id,
       userId,
       userName: user?.name || "Organizer",
       userPic: user?.profilePic || "",
       eventType: "journey_updated",
       title: "Journey Updated",
-      description: `Updated travel details for ${journey.title}`,
-    });
+      description: `Updated travel details for ${journey.title}`
+    }], { session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     res.json({ success: true, message: "Journey updated successfully", journey });
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
     console.error("Error updating journey:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
-// 5. Cancel Journey
 exports.cancelJourney = async (req, res) => {
   try {
     const { id } = req.params;
@@ -393,22 +460,22 @@ exports.cancelJourney = async (req, res) => {
       userPic: user?.profilePic || "",
       eventType: "journey_cancelled",
       title: "Journey Cancelled",
-      description: `${journey.title} has been cancelled`,
+      description: `${journey.title} has been cancelled`
     });
 
-    const targetMembers = journey.members
-      .map((m) => m.user?._id || m.user)
-      .filter((memId) => memId.toString() !== userId.toString());
+    const targetMembers = journey.members.
+    map((m) => m.user?._id || m.user).
+    filter((memId) => memId.toString() !== userId.toString());
 
     if (targetMembers.length > 0) {
       await Notification.create(
-        targetMembers.map((memId) => ({
-          sender: userId,
-          receiver: memId,
-          type: "journey_cancelled",
-          journey: journey._id,
-          message: `The journey "${journey.title}" has been cancelled by the organizer.`,
-        }))
+      targetMembers.map((memId) => ({
+        sender: userId,
+        receiver: memId,
+        type: "journey_cancelled",
+        journey: journey._id,
+        message: `The journey "${journey.title}" has been cancelled by the organizer.`
+      }))
       );
     }
 
@@ -419,7 +486,6 @@ exports.cancelJourney = async (req, res) => {
   }
 };
 
-// 6. Delete Journey (Transactional Cleanup)
 exports.deleteJourney = async (req, res) => {
   const session = await mongoose.startSession();
   try {
@@ -462,7 +528,6 @@ exports.deleteJourney = async (req, res) => {
   }
 };
 
-// 7. Member Invitations & Join Management
 exports.inviteMembers = async (req, res) => {
   try {
     const { id } = req.params;
@@ -482,10 +547,25 @@ exports.inviteMembers = async (req, res) => {
     for (const targetId of userIds) {
       const existingMem = journey.members.some((m) => (m.user?._id || m.user).toString() === targetId.toString());
       if (!existingMem) {
+        const targetUser = await User.findById(targetId);
+        if (targetUser && targetUser.privacySettings) {
+          const mode = targetUser.privacySettings.journeyInvites || "everyone";
+          if (mode === "none") {
+            continue;
+          }
+          if (mode === "mates_only") {
+            const isMate = targetUser.following?.some((id) => id.toString() === userId.toString()) &&
+            targetUser.followers?.some((id) => id.toString() === userId.toString());
+            if (!isMate) {
+              continue;
+            }
+          }
+        }
+
         const invite = await JourneyInvitation.findOneAndUpdate(
-          { journeyId: id, inviteeId: targetId },
-          { inviterId: userId, type: "invitation", status: "pending", role: role || "Member" },
-          { upsert: true, new: true }
+        { journeyId: id, inviteeId: targetId },
+        { inviterId: userId, type: "invitation", status: "pending", role: role || "Member" },
+        { upsert: true, new: true }
         );
         createdInvites.push(invite);
 
@@ -494,7 +574,7 @@ exports.inviteMembers = async (req, res) => {
           receiver: targetId,
           type: "journey_invitation",
           journey: id,
-          message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`,
+          message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
         });
       }
     }
@@ -513,7 +593,7 @@ exports.acceptInvitation = async (req, res) => {
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const { invitationId } = req.params;
+    const invitationId = req.params.invitationId || req.params.id;
     const userId = req.user._id || req.user.id;
 
     const invitation = await JourneyInvitation.findById(invitationId).session(session);
@@ -525,26 +605,44 @@ exports.acceptInvitation = async (req, res) => {
       return res.status(403).json({ success: false, message: "Not authorized for this invitation" });
     }
 
-    invitation.status = "accepted";
-    await invitation.save({ session });
-
     const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
     const journey = await Journey.findById(invitation.journeyId).session(session);
+
+    if (!journey) {
+      return res.status(404).json({ success: false, message: "Journey not found" });
+    }
+
+    const now = new Date();
+
+    if (journey.startDate && new Date(journey.startDate) <= now) {
+      invitation.status = "expired";
+      await invitation.save({ session });
+      return res.status(400).json({ success: false, message: "Cannot accept invitation after the journey has started" });
+    }
+
+    if (journey.status === "Completed" || journey.status === "Cancelled") {
+      invitation.status = "expired";
+      await invitation.save({ session });
+      return res.status(400).json({ success: false, message: `This journey is already ${journey.status.toLowerCase()}` });
+    }
+
+    invitation.status = "accepted";
+    await invitation.save({ session });
 
     if (journey) {
       const alreadyIn = journey.members.some((m) => (m.user?._id || m.user).toString() === targetUserId.toString());
       if (!alreadyIn) {
         journey.members.push({ user: targetUserId, role: invitation.role, joinedAt: new Date() });
-        
+
         if (journey.journeyType === "Solo" && journey.members.length > 1) {
           journey.journeyType = "Friends";
         }
         journey.memberCount = journey.members.length;
 
         const [pCount, aCount] = await Promise.all([
-          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }).session(session),
-          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }).session(session),
-        ]);
+        JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }).session(session),
+        JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }).session(session)]
+        );
 
         journey.pendingInvitationCount = pCount;
         journey.acceptedInvitationCount = aCount;
@@ -564,18 +662,17 @@ exports.acceptInvitation = async (req, res) => {
           userPic: user?.profilePic || "",
           eventType: "member_joined",
           title: "Member Joined",
-          description: `${user?.name || "A traveler"} joined the squad!`,
+          description: `${user?.name || "A traveler"} joined the squad!`
         }], { session });
 
-        // Notify matching recipient boundary correctly
         await Notification.create([{
           sender: userId,
           receiver: invitation.type === "request" ? targetUserId : journey.creator,
           type: invitation.type === "request" ? "journey_request_approved" : "journey_invitation_accepted",
           journey: journey._id,
-          message: invitation.type === "request"
-            ? `Your request to join "${journey.title}" was approved!`
-            : `${user?.name || "A traveler"} accepted your invite to "${journey.title}".`,
+          message: invitation.type === "request" ?
+          `Your request to join "${journey.title}" was approved!` :
+          `${user?.name || "A traveler"} accepted your invite to "${journey.title}".`
         }], { session });
       }
     }
@@ -587,7 +684,7 @@ exports.acceptInvitation = async (req, res) => {
       success: true,
       message: "Joined journey successfully",
       journey,
-      redirectUrl: journey ? `/social/journeys/${journey._id}` : "/social/journeys",
+      redirectUrl: journey ? `/social/journeys/${journey._id}` : "/social/journeys"
     });
   } catch (error) {
     await session.abortTransaction();
@@ -599,7 +696,7 @@ exports.acceptInvitation = async (req, res) => {
 
 exports.rejectInvitation = async (req, res) => {
   try {
-    const { invitationId } = req.params;
+    const invitationId = req.params.invitationId || req.params.id;
     const inv = await JourneyInvitation.findByIdAndUpdate(invitationId, { status: "rejected" }, { new: true });
     if (inv && inv.journeyId) {
       const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
@@ -630,7 +727,7 @@ exports.leaveJourney = async (req, res) => {
     await journey.save({ session });
 
     await JourneyMember.findOneAndUpdate({ journeyId: id, userId }, { status: "left" }).session(session);
-    
+
     if (journey.chatRoomId) {
       await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $pull: { members: userId } }).session(session);
     }
@@ -643,11 +740,16 @@ exports.leaveJourney = async (req, res) => {
       userPic: user?.profilePic || "",
       eventType: "member_left",
       title: "Member Left",
-      description: `${user?.name || "A traveler"} left the journey.`,
+      description: `${user?.name || "A traveler"} left the journey.`
     }], { session });
 
     await session.commitTransaction();
     session.endSession();
+
+    if (journey.chatRoomId) {
+      revokeSocketRoomAccess(req, userId, journey.chatRoomId);
+    }
+
     res.json({ success: true, message: "Left journey successfully" });
   } catch (error) {
     await session.abortTransaction();
@@ -682,6 +784,11 @@ exports.removeMember = async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
+
+    if (journey.chatRoomId) {
+      revokeSocketRoomAccess(req, targetUserId, journey.chatRoomId);
+    }
+
     res.json({ success: true, message: "Member removed successfully", journey });
   } catch (error) {
     await session.abortTransaction();
@@ -690,7 +797,6 @@ exports.removeMember = async (req, res) => {
   }
 };
 
-// 8. Workspace Notes CRUD
 exports.getWorkspaceItems = async (req, res) => {
   try {
     const { id } = req.params;
@@ -722,7 +828,7 @@ exports.addWorkspaceItem = async (req, res) => {
       title: title ? title.trim() : "",
       content,
       items: items || [],
-      isPinned: Boolean(isPinned),
+      isPinned: Boolean(isPinned)
     });
 
     res.status(201).json({ success: true, note });
@@ -753,7 +859,6 @@ exports.deleteWorkspaceItem = async (req, res) => {
   }
 };
 
-// 9. Timeline & Safe Check-in
 exports.getTimeline = async (req, res) => {
   try {
     const { id } = req.params;
@@ -785,25 +890,25 @@ exports.safeCheckIn = async (req, res) => {
       eventType: "safe_checkin",
       title: entryTitle,
       description: desc,
-      checkInType,
+      checkInType
     });
 
     journey.stats.checkInsCount = (journey.stats.checkInsCount || 0) + 1;
     await journey.save();
 
-    const targetMembers = journey.members
-      .map((m) => m.user?._id || m.user)
-      .filter((memId) => memId.toString() !== userId.toString());
+    const targetMembers = journey.members.
+    map((m) => m.user?._id || m.user).
+    filter((memId) => memId.toString() !== userId.toString());
 
     if (targetMembers.length > 0) {
       await Notification.create(
-        targetMembers.map((memId) => ({
-          sender: userId,
-          receiver: memId,
-          type: "safe_checkin",
-          journey: id,
-          message: `${user?.name || "A travel buddy"} checked in safely: ${checkInType}`,
-        }))
+      targetMembers.map((memId) => ({
+        sender: userId,
+        receiver: memId,
+        type: "safe_checkin",
+        journey: id,
+        message: `${user?.name || "A travel buddy"} checked in safely: ${checkInType}`
+      }))
       );
     }
 
@@ -814,7 +919,6 @@ exports.safeCheckIn = async (req, res) => {
   }
 };
 
-// 10. Gallery & Memories
 exports.getGallery = async (req, res) => {
   try {
     const { id } = req.params;
@@ -840,13 +944,13 @@ exports.addGalleryItem = async (req, res) => {
       mediaUrl,
       mediaType: mediaType || "image",
       itemType: itemType || "photo",
-      caption,
+      caption
     });
 
     const journey = await Journey.findById(id);
     if (journey) {
-      if (mediaType === "video") journey.stats.videosCount = (journey.stats.videosCount || 0) + 1;
-      else journey.stats.photosCount = (journey.stats.photosCount || 0) + 1;
+      if (mediaType === "video") journey.stats.videosCount = (journey.stats.videosCount || 0) + 1;else
+      journey.stats.photosCount = (journey.stats.photosCount || 0) + 1;
       await journey.save();
     }
 
@@ -858,7 +962,7 @@ exports.addGalleryItem = async (req, res) => {
       eventType: "photo_uploaded",
       title: "Photo Uploaded",
       description: `Uploaded new memory capture`,
-      mediaUrl,
+      mediaUrl
     });
 
     res.status(201).json({ success: true, item });
@@ -870,14 +974,42 @@ exports.addGalleryItem = async (req, res) => {
 exports.getMemories = async (req, res) => {
   try {
     const { id } = req.params;
-    let mem = await JourneyMemory.findOne({ journeyId: id }).populate("participants.userId", "name profilePic");
-    if (!mem) {
-      const journey = await Journey.findById(id).populate("members.user", "name profilePic");
-      if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-      await syncJourneyStatus(journey);
-      mem = await JourneyMemory.findOne({ journeyId: id }).populate("participants.userId", "name profilePic");
+    const journey = await Journey.findById(id).populate("members.user", "name profilePic pic img avatar");
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    await syncJourneyStatus(journey);
+
+    if (journey.status !== "Completed") {
+      return res.json({
+        success: true,
+        unlocked: false,
+        journeyStatus: journey.status,
+        endDate: journey.endDate,
+        message: journey.status === "Cancelled" ?
+        "Scrapbook is unavailable because this journey was cancelled." :
+        "Your Scrapbook will unlock after the journey"
+      });
     }
-    res.json({ success: true, memory: mem });
+
+    let mem = await JourneyMemory.findOne({ journeyId: id }).populate("participants.userId", "name profilePic pic img avatar");
+    if (!mem) {
+      mem = await JourneyMemory.create({
+        journeyId: journey._id,
+        title: journey.title,
+        destination: journey.destination,
+        coverImage: journey.coverImage,
+        durationDays: journey.durationDays,
+        participantsCount: journey.members?.length || 1,
+        participants: journey.members?.map((m) => ({
+          userId: m.user?._id || m.user,
+          name: m.user?.name || "Traveler",
+          pic: m.user?.profilePic || "",
+          role: m.role
+        })),
+        aiSummary: journey.aiSummary
+      });
+    }
+    res.json({ success: true, unlocked: true, memory: mem });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
@@ -886,24 +1018,32 @@ exports.getMemories = async (req, res) => {
 exports.addMemoryComment = async (req, res) => {
   try {
     const { id } = req.params;
+    const journey = await Journey.findById(id);
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    await syncJourneyStatus(journey);
+    if (journey.status !== "Completed") {
+      return res.status(403).json({ success: false, message: "Scrapbook comments are locked until the journey is completed." });
+    }
+
     const { text } = req.body;
     const userId = req.user._id || req.user.id;
     const user = await User.findById(userId);
 
     const mem = await JourneyMemory.findOneAndUpdate(
-      { journeyId: id },
-      {
-        $push: {
-          comments: {
-            userId,
-            userName: user?.name || "Traveler",
-            userPic: user?.profilePic || "",
-            text,
-            createdAt: new Date(),
-          },
-        },
-      },
-      { new: true }
+    { journeyId: id },
+    {
+      $push: {
+        comments: {
+          userId,
+          userName: user?.name || "Traveler",
+          userPic: user?.profilePic || "",
+          text,
+          createdAt: new Date()
+        }
+      }
+    },
+    { new: true }
     );
 
     res.json({ success: true, memory: mem });
@@ -915,13 +1055,21 @@ exports.addMemoryComment = async (req, res) => {
 exports.reactToMemory = async (req, res) => {
   try {
     const { id } = req.params;
+    const journey = await Journey.findById(id);
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    await syncJourneyStatus(journey);
+    if (journey.status !== "Completed") {
+      return res.status(403).json({ success: false, message: "Scrapbook reactions are locked until the journey is completed." });
+    }
+
     const { emoji } = req.body;
     const userId = req.user._id || req.user.id;
 
     const mem = await JourneyMemory.findOneAndUpdate(
-      { journeyId: id },
-      { $push: { reactions: { userId, emoji, createdAt: new Date() } } },
-      { new: true }
+    { journeyId: id },
+    { $push: { reactions: { userId, emoji, createdAt: new Date() } } },
+    { new: true }
     );
 
     res.json({ success: true, memory: mem });
@@ -930,33 +1078,62 @@ exports.reactToMemory = async (req, res) => {
   }
 };
 
-// 11. Travel Passport Statistics & Badges
 exports.getUserStatistics = async (req, res) => {
   try {
-    const targetUserId = req.params.userId || req.user._id || req.user.id;
+    const targetUserId = req.params.id || req.params.userId || req.user._id || req.user.id;
 
-    const journeys = await Journey.find({
-      $or: [{ creator: targetUserId }, { "members.user": targetUserId }],
-    });
+    const [journeys, buddyTrips] = await Promise.all([
+    Journey.find({
+      $or: [{ creator: targetUserId }, { "members.user": targetUserId }]
+    }),
+    TravelGroup.find({
+      $or: [{ host: targetUserId }, { "members.user": targetUserId }]
+    })]
+    );
 
-    let total = journeys.length;
     let completed = 0;
     let upcoming = 0;
     let cancelled = 0;
     let travelDays = 0;
     let destMap = {};
+    const now = new Date();
 
     journeys.forEach((j) => {
       if (j.status === "Completed") {
         completed++;
         travelDays += j.durationDays || 1;
-      } else if (j.status === "Upcoming") upcoming++;
-      else if (j.status === "Cancelled") cancelled++;
+      } else if (j.status === "Upcoming") upcoming++;else
+      if (j.status === "Cancelled") cancelled++;
 
       if (j.destination) {
         destMap[j.destination] = (destMap[j.destination] || 0) + 1;
       }
     });
+
+    buddyTrips.forEach((trip) => {
+      const isCompleted = trip.status === "completed" || trip.endDate && new Date(trip.endDate) < now;
+      const isUpcoming = trip.status === "upcoming" || trip.startDate && new Date(trip.startDate) > now && trip.status !== "cancelled";
+      const isCancelled = trip.status === "cancelled";
+
+      if (isCompleted) {
+        completed++;
+        const start = new Date(trip.startDate);
+        const end = new Date(trip.endDate);
+        const diffTime = Math.abs(end - start);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+        travelDays += diffDays;
+      } else if (isUpcoming) {
+        upcoming++;
+      } else if (isCancelled) {
+        cancelled++;
+      }
+
+      if (trip.destination) {
+        destMap[trip.destination] = (destMap[trip.destination] || 0) + 1;
+      }
+    });
+
+    const total = journeys.length + buddyTrips.filter((t) => t.status !== "cancelled" && (!t.endDate || new Date(t.endDate) >= now || t.status === "completed")).length;
 
     let mostVisited = "None";
     let maxCount = 0;
@@ -968,9 +1145,9 @@ exports.getUserStatistics = async (req, res) => {
     });
 
     const [postsShared, storiesShared] = await Promise.all([
-      Post.countDocuments({ userId: targetUserId }),
-      Story.countDocuments({ userId: targetUserId })
-    ]);
+    Post.countDocuments({ userId: targetUserId }),
+    Story.countDocuments({ userId: targetUserId })]
+    );
 
     const badges = [];
     if (total >= 1) {
@@ -1007,8 +1184,8 @@ exports.getUserStatistics = async (req, res) => {
         storiesShared,
         postsShared,
         mostVisitedDestination: mostVisited,
-        achievements: badges,
-      },
+        achievements: badges
+      }
     });
   } catch (error) {
     console.error("Error fetching stats:", error);
@@ -1016,7 +1193,6 @@ exports.getUserStatistics = async (req, res) => {
   }
 };
 
-// 12. Get My Received Invitations (Notifications Center)
 exports.getMyInvitations = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -1027,10 +1203,10 @@ exports.getMyInvitations = async (req, res) => {
       filter.status = status;
     }
 
-    const invitations = await JourneyInvitation.find(filter)
-      .populate("journeyId", "title coverImage destination startDate endDate journeyType members creator status")
-      .populate("inviterId", "name profilePic")
-      .sort({ createdAt: -1 });
+    const invitations = await JourneyInvitation.find(filter).
+    populate("journeyId", "title coverImage destination startDate endDate journeyType members creator status").
+    populate("inviterId", "name profilePic pic img avatar").
+    sort({ createdAt: -1 });
 
     res.json({ success: true, count: invitations.length, invitations });
   } catch (error) {
@@ -1039,7 +1215,6 @@ exports.getMyInvitations = async (req, res) => {
   }
 };
 
-// 13. Get Previous Companions (Traveled With)
 exports.getPreviousCompanions = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
@@ -1048,11 +1223,11 @@ exports.getPreviousCompanions = async (req, res) => {
 
     const journeys = await Journey.find({
       $or: [{ creator: userId }, { "members.user": userId }],
-      status: { $ne: "Cancelled" },
-    })
-      .populate("members.user", "name username bio pic avatar profilePic isVerified verificationStatus")
-      .populate("creator", "name username bio pic avatar profilePic isVerified verificationStatus")
-      .sort({ startDate: -1, createdAt: -1 });
+      status: { $ne: "Cancelled" }
+    }).
+    populate("members.user", "name username bio pic avatar profilePic isVerified verificationStatus").
+    populate("creator", "name username bio pic avatar profilePic isVerified verificationStatus").
+    sort({ startDate: -1, createdAt: -1 });
 
     const companionMap = {};
     const groupedByJourney = [];
@@ -1084,10 +1259,10 @@ exports.getPreviousCompanions = async (req, res) => {
               lastJourney: {
                 title: j.title,
                 destination: j.destination,
-                date: j.startDate || j.createdAt,
+                date: j.startDate || j.createdAt
               },
               category: "Previous Companions",
-              pill: "Past Companion",
+              pill: "Past Companion"
             };
           }
           companionMap[uId].tripsCount += 1;
@@ -1100,7 +1275,7 @@ exports.getPreviousCompanions = async (req, res) => {
           title: j.title,
           destination: j.destination,
           startDate: j.startDate,
-          companions: journeyCompanions,
+          companions: journeyCompanions
         });
       }
     });
@@ -1110,7 +1285,7 @@ exports.getPreviousCompanions = async (req, res) => {
     if (search.trim()) {
       const kw = search.toLowerCase();
       companions = companions.filter(
-        (c) => (c.name && c.name.toLowerCase().includes(kw)) || (c.username && c.username.toLowerCase().includes(kw))
+      (c) => c.name && c.name.toLowerCase().includes(kw) || c.username && c.username.toLowerCase().includes(kw)
       );
     }
 
@@ -1128,7 +1303,7 @@ exports.getPreviousCompanions = async (req, res) => {
       totalCount,
       hasMore: totalCount > limit,
       companions: slicedCompanions,
-      groupedByJourney: groupedByJourney.slice(0, 10),
+      groupedByJourney: groupedByJourney.slice(0, 10)
     });
   } catch (error) {
     console.error("Error loading previous companions:", error);
@@ -1136,14 +1311,13 @@ exports.getPreviousCompanions = async (req, res) => {
   }
 };
 
-// 14. Get Sent Invitations for Journey (Organizer Roster)
 exports.getJourneyInvitations = async (req, res) => {
   try {
     const { id } = req.params;
-    const invitations = await JourneyInvitation.find({ journeyId: id })
-      .populate("inviteeId", "name profilePic email")
-      .populate("inviterId", "name profilePic")
-      .sort({ createdAt: -1 });
+    const invitations = await JourneyInvitation.find({ journeyId: id }).
+    populate("inviteeId", "name profilePic pic img avatar email").
+    populate("inviterId", "name profilePic pic img avatar").
+    sort({ createdAt: -1 });
 
     res.json({ success: true, count: invitations.length, invitations });
   } catch (error) {
@@ -1152,10 +1326,9 @@ exports.getJourneyInvitations = async (req, res) => {
   }
 };
 
-// 15. Resend Invitation
 exports.resendInvitation = async (req, res) => {
   try {
-    const { invitationId } = req.params;
+    const invitationId = req.params.invitationId || req.params.id;
     const inv = await JourneyInvitation.findById(invitationId).populate("journeyId", "title");
     if (!inv) return res.status(404).json({ success: false, message: "Invitation not found" });
 
@@ -1163,24 +1336,31 @@ exports.resendInvitation = async (req, res) => {
     inv.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     await inv.save();
 
-    await Notification.create({
-      sender: req.user._id || req.user.id,
-      receiver: inv.inviteeId,
-      type: "journey_invitation",
-      journey: inv.journeyId?._id || inv.journeyId,
-      message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`,
-    });
+    try {
+      const recipientId = inv.inviteeId?._id || inv.inviteeId;
+      if (recipientId) {
+        await Notification.create({
+          sender: req.user._id || req.user.id,
+          receiver: recipientId,
+          type: "journey_invitation",
+          journey: inv.journeyId?._id || inv.journeyId,
+          message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`
+        });
+      }
+    } catch (notifErr) {
+      console.error("Error creating resend notification:", notifErr);
+    }
 
     res.json({ success: true, message: "Invitation resent successfully", invitation: inv });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
+    console.error("Error resending invitation:", error);
+    res.status(500).json({ success: false, message: error.message || "Failed to resend invitation" });
   }
 };
 
-// 16. Cancel Invitation
 exports.cancelInvitation = async (req, res) => {
   try {
-    const { invitationId } = req.params;
+    const invitationId = req.params.invitationId || req.params.id;
     const inv = await JourneyInvitation.findById(invitationId);
     if (!inv) return res.status(404).json({ success: false, message: "Invitation not found" });
 
@@ -1196,7 +1376,6 @@ exports.cancelInvitation = async (req, res) => {
   }
 };
 
-// 17. Update Member Role (Promote / Transfer Ownership)
 exports.updateMemberRole = async (req, res) => {
   try {
     const { id, userId } = req.params;

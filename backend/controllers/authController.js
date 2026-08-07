@@ -7,26 +7,25 @@ const { getJwtSecret } = require("../config/jwt");
 const sendEmail = require("../utils/sendEmail");
 const { INDIAN_STATES_AND_CITIES } = require("../utils/locationData");
 
-// Register User
 const registerUser = async (req, res, next) => {
   try {
     const { email, password, name, img, username, acceptedPolicies, city, state } = req.body;
 
     if (!acceptedPolicies) {
       return res.status(400).json({
-        message: "Please accept Privacy Policy and Terms of Service",
+        message: "Please accept Privacy Policy and Terms of Service"
       });
     }
 
     if (!state || !state.trim()) {
       return res.status(400).json({
-        message: "State is required",
+        message: "State is required"
       });
     }
 
     if (!city || !city.trim()) {
       return res.status(400).json({
-        message: "City is required",
+        message: "City is required"
       });
     }
 
@@ -36,20 +35,20 @@ const registerUser = async (req, res, next) => {
     const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
     if (!validCities) {
       return res.status(400).json({
-        message: `Invalid state selected: ${trimmedState}`,
+        message: `Invalid state selected: ${trimmedState}`
       });
     }
 
     if (!validCities.includes(trimmedCity)) {
       return res.status(400).json({
-        message: `City ${trimmedCity} does not belong to ${trimmedState}`,
+        message: `City ${trimmedCity} does not belong to ${trimmedState}`
       });
     }
 
     const existingUser = await User.findOne({ email: email.toLowerCase().trim() });
     if (existingUser) {
       return res.status(409).json({
-        message: "Email already registered",
+        message: "Email already registered"
       });
     }
 
@@ -62,7 +61,7 @@ const registerUser = async (req, res, next) => {
     const usernameExists = await User.findOne({ username: finalUsername });
     if (usernameExists) {
       return res.status(409).json({
-        message: "Username already taken",
+        message: "Username already taken"
       });
     }
 
@@ -87,14 +86,13 @@ const registerUser = async (req, res, next) => {
     await user.save();
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully"
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Login User
 const loginUser = async (req, res, next) => {
   try {
     const { email, password } = req.body;
@@ -102,20 +100,20 @@ const loginUser = async (req, res, next) => {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        message: "Invalid email or password"
       });
     }
 
     if (user.isDeleted) {
       return res.status(403).json({
-        message: "Account has been deleted",
+        message: "Account has been deleted"
       });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({
-        message: "Invalid email or password",
+        message: "Invalid email or password"
       });
     }
 
@@ -125,41 +123,39 @@ const loginUser = async (req, res, next) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, isAdmin: user.isAdmin },
-      getJwtSecret(),
-      { expiresIn: "30d" }
+    { id: user._id, isAdmin: user.isAdmin },
+    getJwtSecret(),
+    { expiresIn: "30d" }
     );
 
     await Session.create({
       user: user._id,
       token,
       browser: req.headers["user-agent"],
-      ipAddress: req.ip,
+      ipAddress: req.ip
     });
 
-    // Clean serialization fix to secure document structure
     const userData = user.toObject();
     delete userData.password;
 
-    res
-      .cookie("access_token", token, {
-        httpOnly: true,
-        maxAge: 30 * 24 * 60 * 60 * 1000,
-        sameSite: "lax",
-        secure: process.env.NODE_ENV === "production"
-      })
-      .status(200)
-      .json({
-        details: userData,
-        isAdmin: user.isAdmin,
-        token,
-      });
+    res.
+    cookie("access_token", token, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    }).
+    status(200).
+    json({
+      details: userData,
+      isAdmin: user.isAdmin,
+      token
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// Logout User
 const logoutUser = async (req, res) => {
   try {
     const token = req.cookies.access_token || req.headers.authorization?.split(" ")[1];
@@ -174,14 +170,13 @@ const logoutUser = async (req, res) => {
       secure: process.env.NODE_ENV === "production"
     });
     res.status(200).json({
-      message: "Logged out successfully",
+      message: "Logged out successfully"
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 };
 
-// Request password reset OTP
 const resetpasswordrequest = async (req, res) => {
   const { email } = req.body;
 
@@ -189,80 +184,79 @@ const resetpasswordrequest = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (!user) {
       return res.status(404).json({
-        message: "There is no user with that email",
+        message: "There is no user with that email"
       });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    const resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(otp)
-      .digest("hex");
+    const resetPasswordToken = crypto.
+    createHash("sha256").
+    update(otp).
+    digest("hex");
     const resetPasswordExpire = Date.now() + 15 * 60 * 1000;
 
     await User.updateOne(
-      { _id: user._id },
-      { $set: { resetPasswordToken, resetPasswordExpire } }
+    { _id: user._id },
+    { $set: { resetPasswordToken, resetPasswordExpire } }
     );
 
     const resetUrl = `${process.env.CLIENT_URL || "http://localhost:3000"}/reset-password`;
     const message =
-      "You are receiving this email because a password reset was requested.\n\n" +
-      `Your OTP for password reset is: ${otp}\n\n` +
-      `Please enter this OTP on the password reset page: ${resetUrl}`;
+    "You are receiving this email because a password reset was requested.\n\n" +
+    `Your OTP for password reset is: ${otp}\n\n` +
+    `Please enter this OTP on the password reset page: ${resetUrl}`;
 
     try {
       await sendEmail({
         to: user.email,
         subject: "Password reset OTP",
-        text: message,
+        text: message
       });
 
       return res.status(200).json({
         success: true,
-        message: "OTP sent to email",
+        message: "OTP sent to email"
       });
     } catch (error) {
       console.error(error);
       await User.updateOne(
-        { _id: user._id },
-        { $unset: { resetPasswordToken: 1, resetPasswordExpire: 1 } }
+      { _id: user._id },
+      { $unset: { resetPasswordToken: 1, resetPasswordExpire: 1 } }
       );
 
       return res.status(500).json({
-        message: "Email could not be sent",
+        message: "Email could not be sent"
       });
     }
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error"
     });
   }
 };
 
-// Reset password with OTP
 const resetpassword = async (req, res) => {
   try {
-    const resetPasswordToken = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
+    const resetPasswordToken = crypto.
+    createHash("sha256").
+    update(req.params.token).
+    digest("hex");
 
     const user = await User.findOne({
       resetPasswordToken,
-      resetPasswordExpire: { $gt: Date.now() },
+      resetPasswordExpire: { $gt: Date.now() }
     });
 
     if (!user) {
       return res.status(400).json({
-        message: "Invalid or expired token",
+        message: "Invalid or expired token"
       });
     }
 
     if (!req.body.password || req.body.password.length < 6) {
       return res.status(400).json({
-        message: "Password must be at least 6 characters",
+        message: "Password must be at least 6 characters"
       });
     }
 
@@ -274,17 +268,16 @@ const resetpassword = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "Password reset successfully",
+      message: "Password reset successfully"
     });
   } catch (error) {
     console.error(error);
     return res.status(500).json({
-      message: "Internal server error",
+      message: "Internal server error"
     });
   }
 };
 
-// Check Email Availability
 const checkEmailExists = async (req, res, next) => {
   try {
     const { email } = req.query;
@@ -293,19 +286,18 @@ const checkEmailExists = async (req, res, next) => {
     const user = await User.findOne({ email: email.toLowerCase().trim() });
     if (user) {
       return res.status(409).json({
-        message: "Email already exists",
+        message: "Email already exists"
       });
     }
 
     res.status(200).json({
-      message: "Email is available",
+      message: "Email is available"
     });
   } catch (error) {
     next(error);
   }
 };
 
-// Change Password
 const changePassword = async (req, res, next) => {
   try {
     const { oldPassword, newPassword } = req.body;
@@ -314,14 +306,14 @@ const changePassword = async (req, res, next) => {
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({
-        message: "User not found",
+        message: "User not found"
       });
     }
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
     if (!isMatch) {
       return res.status(401).json({
-        message: "Incorrect old password",
+        message: "Incorrect old password"
       });
     }
 
@@ -330,7 +322,7 @@ const changePassword = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Password changed successfully",
+      message: "Password changed successfully"
     });
   } catch (error) {
     next(error);
@@ -344,5 +336,5 @@ module.exports = {
   resetpasswordrequest,
   resetpassword,
   checkEmailExists,
-  changePassword,
+  changePassword
 };

@@ -3,8 +3,8 @@ import { getAvatarUrl } from '../../utils/avatar';
 
 const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
   const [error, setError] = useState(false);
-  
-  // Extract final name and image URL from props or nested user object
+
+
   const finalName = name || user?.name || user?.username || "User";
   const finalPic = pic || profilePic || avatar || img || user?.profilePic || user?.pic || user?.avatar || user?.img || user?.profilePicture || user?.userPic;
   const finalImg = img || user?.img || user?.pic || user?.avatar || user?.profilePic;
@@ -16,7 +16,7 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
   const avatarUrl = getAvatarUrl(user || finalPic, finalImg, finalName);
   const isUiAvatar = !avatarUrl || avatarUrl.includes('ui-avatars.com') || avatarUrl.includes('no-image-icon');
   const showFallback = error || isUiAvatar;
-  
+
   const getInitials = (str) => {
     if (!str || typeof str !== 'string') return "EX";
     const parts = str.trim().split(" ").filter(Boolean);
@@ -26,41 +26,23 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
     return str.slice(0, 2).toUpperCase();
   };
 
-  // Generate a consistent, harmonious gradient based on the user's name
-  const getGradient = (str = "") => {
-    const gradients = [
-      "from-brand-500 to-brand-600",
-      "from-brand-500 to-brand-600",
-      "from-fuchsia-500 to-pink-600",
-      "from-brand-500 to-blue-600",
-      "from-rose-500 to-red-600",
-      "from-emerald-500 to-teal-600"
-    ];
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    return gradients[Math.abs(hash) % gradients.length];
-  };
-
   if (showFallback) {
     return (
-      <div className={`flex items-center justify-center bg-brand-600 text-white font-semibold select-none shrink-0 uppercase shadow-xs ${className}`}>
+      <div className={`flex items-center justify-center bg-[#7C3AED] text-white font-semibold select-none shrink-0 uppercase rounded-full border-2 border-white shadow-sm ${className}`}>
         {getInitials(finalName)}
-      </div>
-    );
+      </div>);
+
   }
 
   return (
-    <img 
-      loading="lazy"
-      src={avatarUrl} 
-      alt={finalName} 
-      className={className} 
-      onError={() => setError(true)}
-    />
-  );
+    <img
+    loading="lazy"
+    src={avatarUrl}
+    alt={finalName}
+    className={`rounded-full border-2 border-white shadow-sm object-cover ${className}`}
+    onError={() => setError(true)} />);
+
+
 };
 
 export default Avatar;
-

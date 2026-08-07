@@ -14,7 +14,6 @@ export const useChatMessages = (user) => {
   const [replyToMsg, setReplyToMsg] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // Delegate audio recording to useAudioRecorder
   const {
     isRecording,
     recordingTime,
@@ -92,25 +91,25 @@ export const useChatMessages = (user) => {
       senderPic: user.pic,
       text: textToSend,
       content: textToSend,
-      media: selectedFile
-        ? URL.createObjectURL(selectedFile)
-        : audioBlob
-        ? URL.createObjectURL(audioBlob)
-        : null,
+      media: selectedFile ?
+      URL.createObjectURL(selectedFile) :
+      audioBlob ?
+      URL.createObjectURL(audioBlob) :
+      null,
       isAudio: !!audioBlob,
       isPending: true,
       createdAt: new Date().toISOString(),
-      unreadBy: activeRoom.members
-        .map((member) => (typeof member === "object" ? member._id : member))
-        .filter((id) => id?.toString() !== currentUserId?.toString()),
+      unreadBy: activeRoom.members.
+      map((member) => typeof member === "object" ? member._id : member).
+      filter((id) => id?.toString() !== currentUserId?.toString()),
       seenBy: [currentUserId],
-      replyTo: replyToMsg
-        ? {
-            _id: replyToMsg._id,
-            senderName: replyToMsg.sender?.name || replyToMsg.senderName || "User",
-            text: replyToMsg.text
-          }
-        : undefined
+      replyTo: replyToMsg ?
+      {
+        _id: replyToMsg._id,
+        senderName: replyToMsg.sender?.name || replyToMsg.senderName || "User",
+        text: replyToMsg.text
+      } :
+      undefined
     };
 
     dispatch({
@@ -220,4 +219,3 @@ export const useChatMessages = (user) => {
   };
 };
 export default useChatMessages;
-

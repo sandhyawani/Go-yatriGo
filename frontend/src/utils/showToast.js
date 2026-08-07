@@ -14,7 +14,7 @@ export const showToast = {
       duration: 3000,
       style: {
         background: 'linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(99, 102, 241, 0.95) 100%)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(255, 255, 255, 0.2)'
       },
       ...options
     });
@@ -27,7 +27,7 @@ export const showToast = {
       style: {
         background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(185, 28, 28, 0.95) 100%)',
         borderColor: 'rgba(255, 255, 255, 0.2)',
-        animation: 'shake 0.5s',
+        animation: 'shake 0.5s'
       },
       ...options
     });
@@ -40,7 +40,7 @@ export const showToast = {
       duration: 4000,
       style: {
         background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(255, 255, 255, 0.2)'
       },
       ...options
     });
@@ -53,13 +53,12 @@ export const showToast = {
       duration: 4000,
       style: {
         background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.95) 0%, rgba(217, 119, 6, 0.95) 100%)',
-        borderColor: 'rgba(255, 255, 255, 0.2)',
+        borderColor: 'rgba(255, 255, 255, 0.2)'
       },
       ...options
     });
   },
 
-  // Generic custom toast for icons and avatars
   custom: (title, description, icon, options = {}) => {
     toast(title, {
       description,
@@ -69,4 +68,3 @@ export const showToast = {
     });
   }
 };
-

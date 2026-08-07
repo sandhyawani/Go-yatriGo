@@ -30,7 +30,7 @@ const BlockedUsers = () => {
     try {
       const res = await axios.post(`/users/unblock/${id}`, {}, { withCredentials: true });
       if (res.data.success) {
-        setUsers(prev => prev.filter(u => u._id !== id));
+        setUsers((prev) => prev.filter((u) => u._id !== id));
         showToast.success("User unblocked");
         const freshSelf = await axios.get(`/users/${user._id}`, { withCredentials: true });
         const selfData = freshSelf.data.user || freshSelf.data;
@@ -54,23 +54,23 @@ const BlockedUsers = () => {
         </div>
 
         <div className="bg-white rounded-3xl p-2 shadow-sm border border-slate-100">
-          {loading ? (
-            <div className="text-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-brand-500 mx-auto"></div></div>
-          ) : users.length === 0 ? (
-            <div className="text-center py-16">
+          {loading ?
+          <div className="text-center py-10"><div className="animate-spin rounded-full h-8 w-8 border-t-2 border-brand-500 mx-auto"></div></div> :
+          users.length === 0 ?
+          <div className="text-center py-16">
               <UserX className="w-12 h-12 text-slate-200 mx-auto mb-3" />
               <p className="text-slate-500 font-medium">No blocked users.</p>
-            </div>
-          ) : (
-            <div className="divide-y divide-slate-100">
-              {users.map(user => (
-                <div key={user._id} className="p-4 flex items-center justify-between">
+            </div> :
+
+          <div className="divide-y divide-slate-100">
+              {users.map((user) =>
+            <div key={user._id} className="p-4 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={user.pic || user.img || `https://ui-avatars.com/api/?name=${user.name}&background=eee`} 
-                      alt={user.name} 
-                      className="w-12 h-12 rounded-full object-cover border border-slate-200" 
-                    />
+                    <img
+                src={user.pic || user.img || `https://ui-avatars.com/api/?name=${user.name}&background=eee`}
+                alt={user.name}
+                className="w-12 h-12 rounded-full object-cover border border-slate-200" />
+
                     <div>
                       <h4 className="font-bold text-slate-800 text-sm">{user.name}</h4>
                       <p className="text-[10px] font-bold text-slate-400">@{user.username || user._id.toString().slice(-6)}</p>
@@ -80,15 +80,14 @@ const BlockedUsers = () => {
                     <Unlock className="w-3 h-3" /> Unblock
                   </button>
                 </div>
-              ))}
-            </div>
-          )}
+            )}
+            </div>}
+
         </div>
 
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default BlockedUsers;
-

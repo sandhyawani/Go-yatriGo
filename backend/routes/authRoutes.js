@@ -7,7 +7,7 @@ const {
   resetpasswordrequest,
   resetpassword,
   checkEmailExists,
-  changePassword,
+  changePassword
 } = require("../controllers/authController");
 const { verifyToken } = require("../middleware/verifyToken");
 

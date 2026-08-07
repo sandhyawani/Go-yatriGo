@@ -11,7 +11,7 @@ const {
   warnUser,
   getPendingVerifications,
   approveVerification,
-  rejectVerification,
+  rejectVerification
 } = require("../controllers/adminController");
 
 const { verifyAdmin } = require("../middleware/verifyToken");

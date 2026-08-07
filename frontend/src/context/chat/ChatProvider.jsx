@@ -8,8 +8,7 @@ export const ChatProvider = ({ children }) => {
   return (
     <ChatContext.Provider value={{ state, dispatch }}>
       {children}
-    </ChatContext.Provider>
-  );
+    </ChatContext.Provider>);
+
 };
 export default ChatProvider;
-

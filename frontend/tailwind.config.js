@@ -44,25 +44,29 @@ module.exports = {
           900: 'var(--secondary-900)',
         },
         accent: {
-          50: '#fff1f2',
-          100: '#ffe4e6',
-          200: '#fecdd3',
-          300: '#fda4af',
-          400: '#fb7185',
-          500: '#f43f5e', // Rose-500 (Coral/Rose Accent)
-          600: '#e11d48',
-          700: '#be123c',
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#a855f7', // Purple-500
+          600: '#9333ea',
+          700: '#7e22ce',
         },
+
         success: 'var(--success)',
         warning: 'var(--warning)',
         error: 'var(--danger)',
         danger: 'var(--danger)',
+        dark: 'var(--dark)',
         background: 'var(--background)',
         surface: 'var(--surface)',
         muted: 'var(--text-secondary)',
         border: 'var(--border-color)',
         // Kept for seamless backward compatibility
         brand: {
+          DEFAULT: 'var(--brand)',
+          light: 'var(--brand-light)',
           50: 'var(--primary-50)',
           100: 'var(--primary-100)',
           200: 'var(--primary-200)',
@@ -86,11 +90,12 @@ module.exports = {
         lg: "10px",
         xl: "12px",
         "2xl": "16px",
+        "3xl": "24px",
       },
       boxShadow: {
-        soft: "0 8px 24px rgba(15,23,42,.06)",
-        card: "0 10px 30px rgba(15,23,42,.08)",
-        hover: "0 18px 40px rgba(15,23,42,.12)",
+        soft: "0 4px 20px rgba(30, 41, 59, 0.03)",
+        card: "0 10px 30px rgba(15, 23, 42, 0.08)",
+        hover: "0 18px 40px rgba(15, 23, 42, 0.12)",
       },
       spacing: {
         18: "4.5rem",

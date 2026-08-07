@@ -1,24 +1,25 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Upload,
-  X,
-  Camera,
-  Film,
-  Sparkles,
-  Check,
-  FileText,
-} from "lucide-react";
+Upload,
+X,
+Camera,
+Film,
+Sparkles,
+Check,
+FileText,
+Play } from
+"lucide-react";
 import axiosInstance from "../../api/axios";
 
 const JourneyGalleryView = ({ journeyId }) => {
   const [gallery, setGallery] = useState([]);
-  const [filter, setFilter] = useState("all"); // all, photo, video
+  const [filter, setFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Upload modal state
+
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
-  const [detectedType, setDetectedType] = useState("image"); // 'image' or 'video'
+  const [detectedType, setDetectedType] = useState("image");
   const [caption, setCaption] = useState("");
   const [isDragging, setIsDragging] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,12 +31,12 @@ const JourneyGalleryView = ({ journeyId }) => {
 
   const fetchGallery = useCallback(() => {
     if (!journeyId) return;
-    axiosInstance
-      .get(`/journeys/${journeyId}/gallery`)
-      .then((res) => {
-        if (res.data?.success) setGallery(res.data.gallery);
-      })
-      .catch((err) => console.error("Error fetching gallery:", err));
+    axiosInstance.
+    get(`/journeys/${journeyId}/gallery`).
+    then((res) => {
+      if (res.data?.success) setGallery(res.data.gallery);
+    }).
+    catch((err) => console.error("Error fetching gallery:", err));
   }, [journeyId]);
 
   useEffect(() => {
@@ -62,22 +63,19 @@ const JourneyGalleryView = ({ journeyId }) => {
     }
 
     const isVideo =
-      file.type?.startsWith("video/") ||
-      file.name?.toLowerCase().match(/\.(mp4|mov|avi|mkv|webm|flv)$/i);
+    file.type?.startsWith("video/") ||
+    file.name?.toLowerCase().match(/\.(mp4|mov|avi|mkv|webm|flv)$/i);
     const type = isVideo ? "video" : "image";
 
     setSelectedFile(file);
     setDetectedType(type);
 
     if (isVideo) {
-      // Videos render fine with blob URLs since <video> doesn't rely on canvas decoding
       setPreviewUrl(URL.createObjectURL(file));
     } else {
-      // Use FileReader instead of createObjectURL — blob URLs for images can
-      // fail to decode/show on mobile browsers, leaving a blank preview
       const reader = new FileReader();
       reader.onload = (ev) => setPreviewUrl(ev.target.result);
-      reader.onerror = () => setPreviewUrl(URL.createObjectURL(file)); // fallback
+      reader.onerror = () => setPreviewUrl(URL.createObjectURL(file));
       reader.readAsDataURL(file);
     }
   };
@@ -106,11 +104,11 @@ const JourneyGalleryView = ({ journeyId }) => {
           onUploadProgress: (progressEvent) => {
             if (progressEvent.total) {
               const percent = Math.round(
-                (progressEvent.loaded * 70) / progressEvent.total,
+              progressEvent.loaded * 70 / progressEvent.total
               );
               setUploadProgress(percent);
             }
-          },
+          }
         });
         if (!uploadRes.data?.success) throw new Error("Video upload failed");
         uploadedUrl = uploadRes.data.url;
@@ -123,21 +121,21 @@ const JourneyGalleryView = ({ journeyId }) => {
         });
         setUploadProgress(40);
         const uploadRes = await axiosInstance.post(
-          "/upload/base64",
-          {
-            data: base64Data,
-            folder: "Go YatriGo_uploads",
-          },
-          {
-            onUploadProgress: (progressEvent) => {
-              if (progressEvent.total) {
-                const percent =
-                  40 +
-                  Math.round((progressEvent.loaded * 40) / progressEvent.total);
-                setUploadProgress(percent);
-              }
-            },
-          },
+        "/upload/base64",
+        {
+          data: base64Data,
+          folder: "Go YatriGo_uploads"
+        },
+        {
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percent =
+              40 +
+              Math.round(progressEvent.loaded * 40 / progressEvent.total);
+              setUploadProgress(percent);
+            }
+          }
+        }
         );
         if (!uploadRes.data?.success) throw new Error("Image upload failed");
         uploadedUrl = uploadRes.data.url;
@@ -149,7 +147,7 @@ const JourneyGalleryView = ({ journeyId }) => {
         mediaUrl: uploadedUrl,
         mediaType: detectedType,
         itemType: detectedType === "video" ? "video" : "photo",
-        caption: caption.trim(),
+        caption: caption.trim()
       });
 
       if (res.data?.success) {
@@ -165,7 +163,7 @@ const JourneyGalleryView = ({ journeyId }) => {
     } catch (err) {
       console.error("Upload error:", err);
       alert(
-        err.response?.data?.message || err.message || "Failed to upload memory",
+      err.response?.data?.message || err.message || "Failed to upload memory"
       );
       setLoading(false);
       setUploadProgress(0);
@@ -173,101 +171,129 @@ const JourneyGalleryView = ({ journeyId }) => {
   };
 
   const filteredItems =
-    filter === "all"
-      ? gallery
-      : gallery.filter(
-          (item) => item.itemType === filter || item.mediaType === filter,
-        );
+  filter === "all" ?
+  gallery :
+  gallery.filter(
+  (item) => item.itemType === filter || item.mediaType === filter
+  );
+
+  const filterLabels = {
+    all: `ALL MEDIA (${gallery.length})`,
+    photo: "PHOTOS",
+    video: "VIDEOS"
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Top Filter & Upload Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+      {}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs">
         <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 no-scrollbar">
-          {["all", "photo", "video"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setFilter(tab)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
-                filter === tab
-                  ? "bg-[#8B5CF6] text-white shadow-md shadow-[#8B5CF6]/30/20"
-                  : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
-              }`}
-            >
-              {tab === "all" ? `🖼️ All Media (${gallery.length})` : tab}
+          {["all", "photo", "video"].map((tab) =>
+          <button
+          key={tab}
+          onClick={() => setFilter(tab)}
+          className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
+          filter === tab ?
+          "bg-[#7C3AED] text-white shadow-md shadow-[#7C3AED]/30" :
+          "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200"
+          }`}>
+
+              {filterLabels[tab]}
             </button>
-          ))}
+          )}
         </div>
 
         <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#8B5CF6] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95 whitespace-nowrap"
-        >
-          <Upload className="w-4 h-4" /> Direct Memory Upload
+        onClick={() => setIsModalOpen(true)}
+        className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-2xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 whitespace-nowrap">
+
+          <Upload className="w-4 h-4" /> Upload Media
         </button>
       </div>
 
-      {/* Gallery Grid */}
+      {}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-        {filteredItems.length === 0 ? (
-          <div className="col-span-full py-20 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
-            <Camera className="w-12 h-12 mx-auto mb-3 text-slate-300 dark:text-slate-700" />
-            <h4 className="text-base font-bold text-slate-600 dark:text-slate-300">
-              No media captured yet
-            </h4>
-            <p className="text-xs text-slate-400 mt-1">
-              Photos and videos shared in this journey will appear here.
-            </p>
-          </div>
-        ) : (
-          filteredItems.map((item) => (
-            <div
-              key={item._id}
-              className="group relative aspect-square rounded-3xl overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl transition-all duration-300"
-            >
-              {item.mediaType === "video" ? (
-                <div className="w-full h-full relative flex items-center justify-center bg-[#7c3aed]">
-                  <video
-                    src={item.mediaUrl}
-                    className="w-full h-full object-cover opacity-80"
-                    muted
-                    playsInline
-                  />
-                  <Film className="w-8 h-8 text-white absolute" />
-                </div>
-              ) : (
-                <img
-                  src={item.mediaUrl}
-                  alt={item.caption || "Gallery item"}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
-              )}
-
-              {/* Hover Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
-                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-[#8B5CF6] text-white w-max mb-1.5">
-                  {item.itemType}
-                </span>
-                <p className="text-xs font-bold text-white line-clamp-2">
-                  {item.caption || "Shared Memory Capture"}
-                </p>
-                <div className="flex items-center justify-between text-[10px] text-slate-300 mt-2 pt-2 border-t border-white/10">
-                  <span>By {item.uploaderName}</span>
-                </div>
-              </div>
+        {filteredItems.length === 0 ?
+        <div className="col-span-full py-10 sm:py-12 px-6 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs max-w-xl mx-auto my-2">
+            <div className="w-14 h-14 rounded-2xl bg-brand-50 dark:bg-brand-950/40 border border-brand-100 dark:border-brand-900/50 flex items-center justify-center mx-auto mb-3 text-[#7C3AED]">
+              <Camera className="w-7 h-7 stroke-[2]" />
             </div>
-          ))
-        )}
+            <h4 className="text-base font-bold text-slate-800 dark:text-slate-200">
+              No journey memories yet
+            </h4>
+            <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
+              Photos and videos shared by your squad will appear here.
+            </p>
+            <button
+          onClick={() => setIsModalOpen(true)}
+          className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95">
+
+              <Upload className="w-4 h-4" /> Upload Photo or Video
+            </button>
+          </div> :
+
+        filteredItems.map((item) => {
+          const isVideo = item.mediaType === "video" || item.itemType === "video";
+          return (
+            <div
+            key={item._id}
+            className="group relative aspect-square rounded-3xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer">
+
+                {isVideo ?
+              <div className="w-full h-full relative flex items-center justify-center bg-slate-900">
+                    <video
+                src={item.mediaUrl}
+                className="w-full h-full object-cover opacity-85"
+                muted
+                playsInline
+                preload="metadata" />
+
+                    <div className="absolute w-10 h-10 rounded-full bg-black/50 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white shadow-lg pointer-events-none group-hover:scale-110 transition-transform">
+                      <Play className="w-5 h-5 fill-white ml-0.5" />
+                    </div>
+                    <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                      <Film className="w-3 h-3 text-amber-400" /> Video
+                    </span>
+                  </div> :
+
+              <div className="w-full h-full relative">
+                    <img
+                src={item.mediaUrl}
+                alt={item.caption || "Gallery item"}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+
+                    <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-[9px] font-bold text-white uppercase tracking-wider flex items-center gap-1">
+                      <Camera className="w-3 h-3 text-slate-300" /> Photo
+                    </span>
+                  </div>}
+
+
+                {}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
+                  <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-[#7C3AED] text-white w-max mb-1.5">
+                    {item.itemType}
+                  </span>
+                  <p className="text-xs font-bold text-white line-clamp-2">
+                    {item.caption || "Shared Memory Capture"}
+                  </p>
+                  <div className="flex items-center justify-between text-[10px] text-slate-300 mt-2 pt-2 border-t border-white/10">
+                    <span>By {item.uploaderName}</span>
+                  </div>
+                </div>
+              </div>);
+
+        })}
+
       </div>
 
-      {/* Sleek WOW Upload Modal */}
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+      {}
+      {isModalOpen &&
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-lg bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200/80 dark:border-slate-800 overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
-            {/* Header Banner */}
+            {}
             <div className="relative bg-brand-50 dark:bg-brand-900/40 p-5 border-b border-brand-100 dark:border-brand-900/50 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-2xl bg-[#8B5CF6] text-white flex items-center justify-center shadow-lg shadow-[#8B5CF6]/30">
+                <div className="w-10 h-10 rounded-2xl bg-[#7C3AED] text-white flex items-center justify-center shadow-lg shadow-[#7C3AED]/30">
                   <Sparkles className="w-5 h-5 animate-pulse" />
                 </div>
                 <div>
@@ -280,60 +306,60 @@ const JourneyGalleryView = ({ journeyId }) => {
                 </div>
               </div>
               <button
-                type="button"
-                onClick={() => {
-                  setIsModalOpen(false);
-                  resetForm();
-                }}
-                className="w-8 h-8 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-all shadow-xs"
-              >
+            type="button"
+            onClick={() => {
+              setIsModalOpen(false);
+              resetForm();
+            }}
+            className="w-8 h-8 rounded-full bg-white/80 dark:bg-slate-800/80 hover:bg-white dark:hover:bg-slate-700 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center justify-center transition-all shadow-xs">
+
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
 
             <form
-              onSubmit={handleUpload}
-              className="flex flex-col flex-1 overflow-hidden min-h-0"
-            >
+          onSubmit={handleUpload}
+          className="flex flex-col flex-1 overflow-hidden min-h-0">
+
               <div className="p-5 space-y-4 overflow-y-auto flex-1 no-scrollbar">
-                {/* Upload Zone / Live Preview */}
-                {!selectedFile ? (
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      setIsDragging(true);
-                    }}
-                    onDragLeave={() => setIsDragging(false)}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      setIsDragging(false);
-                      const droppedFile = e.dataTransfer.files?.[0];
-                      if (droppedFile) handleFileSelect(droppedFile);
-                    }}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`group relative w-full py-8 px-5 border-2 border-dashed rounded-2xl cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${
-                      isDragging
-                        ? "border-[#8B5CF6] bg-brand-50 dark:bg-brand-900/30 scale-[0.99]"
-                        : "border-slate-200 dark:border-slate-800 hover:border-[#8B5CF6]/60 hover:bg-brand-50/20 dark:hover:bg-slate-800/50"
-                    }`}
-                  >
+                {}
+                {!selectedFile ?
+              <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragging(true);
+              }}
+              onDragLeave={() => setIsDragging(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragging(false);
+                const droppedFile = e.dataTransfer.files?.[0];
+                if (droppedFile) handleFileSelect(droppedFile);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`group relative w-full py-8 px-5 border-2 border-dashed rounded-2xl cursor-pointer flex flex-col items-center justify-center text-center transition-all duration-300 ${
+              isDragging ?
+              "border-[#7C3AED] bg-brand-50 dark:bg-brand-900/30 scale-[0.99]" :
+              "border-slate-200 dark:border-slate-800 hover:border-[#7C3AED]/60 hover:bg-brand-50/20 dark:hover:bg-slate-800/50"
+              }`}>
+
                     <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*,video/*,.heic,.heif"
-                      onChange={(e) => handleFileSelect(e.target.files?.[0])}
-                      className="hidden"
-                    />
-                    {/* Camera input — direct camera capture on mobile */}
+                ref={fileInputRef}
+                type="file"
+                accept="image/*,video/*,.heic,.heif"
+                onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                className="hidden" />
+
+                    {}
                     <input
-                      ref={cameraInputRef}
-                      type="file"
-                      accept="image/*,video/*"
-                      capture="environment"
-                      onChange={(e) => handleFileSelect(e.target.files?.[0])}
-                      className="hidden"
-                    />
-                    <div className="w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-[#8B5CF6] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center mb-3 shadow-xs">
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*,video/*"
+                capture="environment"
+                onChange={(e) => handleFileSelect(e.target.files?.[0])}
+                className="hidden" />
+
+                    <div className="w-14 h-14 rounded-2xl bg-brand-100 dark:bg-brand-900/40 text-[#7C3AED] group-hover:scale-110 transition-transform duration-300 flex items-center justify-center mb-3 shadow-xs">
                       <Upload className="w-7 h-7" />
                     </div>
                     <h4 className="text-sm font-extrabold text-slate-800 dark:text-white mb-1">
@@ -341,7 +367,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-3.5">
                       Drag & Drop your media here or{" "}
-                      <span className="text-[#8B5CF6] font-bold underline decoration-dotted underline-offset-4">
+                      <span className="text-[#7C3AED] font-bold underline decoration-dotted underline-offset-4">
                         browse device
                       </span>
                     </p>
@@ -351,77 +377,77 @@ const JourneyGalleryView = ({ journeyId }) => {
                       <span>Max 25 MB</span>
                     </div>
 
-                    {/* Camera and Gallery buttons for mobile */}
+                    {}
                     <div className="mt-4 flex gap-3 w-full sm:hidden">
                       <button
-                        type="button"
-                        onClick={() => cameraInputRef.current?.click()}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-[#8B5CF6] border-2 border-[#8B5CF6]/30 bg-[#8B5CF6]/5 hover:bg-[#8B5CF6]/10 transition-all flex items-center justify-center gap-2"
-                      >
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-[#7C3AED] border-2 border-[#7C3AED]/30 bg-[#7C3AED]/5 hover:bg-[#7C3AED]/10 transition-all flex items-center justify-center gap-2">
+
                         📷 Camera
                       </button>
                       <button
-                        type="button"
-                        onClick={() => fileInputRef.current?.click()}
-                        className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all"
-                      >
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1 py-3 px-4 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all">
+
                         🖼️ Gallery
                       </button>
                     </div>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {/* Large Preview */}
+                  </div> :
+
+              <div className="space-y-3">
+                    {}
                     <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 border border-slate-200 dark:border-slate-700" style={{ minHeight: "220px" }}>
-                      {detectedType === "video" ? (
-                        <video
-                          key={previewUrl}
-                          src={previewUrl}
-                          controls
-                          autoPlay
-                          muted
-                          playsInline
-                          className="w-full max-h-[280px] object-contain bg-black"
-                          style={{ minHeight: "200px" }}
-                        />
-                      ) : (
-                        <img
-                          src={previewUrl}
-                          alt="Preview"
-                          className="w-full object-contain max-h-[280px] bg-slate-100"
-                          style={{ minHeight: "200px", display: "block" }}
-                        />
-                      )}
-                      {/* Remove button overlay */}
-                      {!loading && !uploadSuccess && (
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSelectedFile(null);
-                            setPreviewUrl("");
-                          }}
-                          className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-all"
-                          title="Remove file"
-                        >
+                      {detectedType === "video" ?
+                  <video
+                  key={previewUrl}
+                  src={previewUrl}
+                  controls
+                  autoPlay
+                  muted
+                  playsInline
+                  className="w-full max-h-[280px] object-contain bg-black"
+                  style={{ minHeight: "200px" }} /> :
+
+
+                  <img
+                  src={previewUrl}
+                  alt="Preview"
+                  className="w-full object-contain max-h-[280px] bg-slate-100"
+                  style={{ minHeight: "200px", display: "block" }} />}
+
+
+                      {}
+                      {!loading && !uploadSuccess &&
+                  <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedFile(null);
+                    setPreviewUrl("");
+                  }}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/60 hover:bg-red-600 text-white flex items-center justify-center transition-all"
+                  title="Remove file">
+
                           <X className="w-4 h-4" />
-                        </button>
-                      )}
+                        </button>}
+
                     </div>
 
-                    {/* File info row */}
+                    {}
                     <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700">
                       <span className="text-base">{detectedType === "video" ? "🎥" : "📷"}</span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-bold text-slate-800 dark:text-white truncate">{selectedFile.name}</p>
-                        <p className="text-[11px] text-[#8B5CF6] font-semibold">
+                        <p className="text-[11px] text-[#7C3AED] font-semibold">
                           {formatFileSize(selectedFile.size)} · {detectedType === "video" ? "Video Clip" : "Photo"}
                         </p>
                       </div>
                     </div>
-                  </div>
-                )}
+                  </div>}
 
-                {/* Caption Input */}
+
+                {}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label className="block text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -431,8 +457,8 @@ const JourneyGalleryView = ({ journeyId }) => {
                       </span>
                     </label>
                     <span
-                      className={`text-[11px] font-bold ${caption.length > 250 ? "text-amber-500" : "text-slate-400"}`}
-                    >
+                  className={`text-[11px] font-bold ${caption.length > 250 ? "text-amber-500" : "text-slate-400"}`}>
+
                       {caption.length} / 300
                     </span>
                   </div>
@@ -441,80 +467,79 @@ const JourneyGalleryView = ({ journeyId }) => {
                       <FileText className="w-4 h-4" />
                     </div>
                     <textarea
-                      rows={2}
-                      maxLength={300}
-                      disabled={loading || uploadSuccess}
-                      value={caption}
-                      onChange={(e) => setCaption(e.target.value)}
-                      placeholder="Share the story or feeling behind this memory..."
-                      className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#8B5CF6] focus:ring-2 focus:ring-[#8B5CF6]/20 transition-all resize-none"
-                    />
+                  rows={2}
+                  maxLength={300}
+                  disabled={loading || uploadSuccess}
+                  value={caption}
+                  onChange={(e) => setCaption(e.target.value)}
+                  placeholder="Share the story or feeling behind this memory..."
+                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/50 focus:bg-white dark:focus:bg-slate-900 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all resize-none" />
+
                   </div>
                 </div>
 
-                {/* Upload Progress */}
-                {loading && (
-                  <div className="p-4 bg-brand-50 dark:bg-brand-900/20 rounded-2xl border border-brand-200/50 dark:border-brand-800/30 space-y-2 animate-fade-in">
-                    <div className="flex items-center justify-between text-xs font-extrabold text-[#8B5CF6]">
+                {}
+                {loading &&
+              <div className="p-4 bg-brand-50 dark:bg-brand-900/20 rounded-2xl border border-brand-200/50 dark:border-brand-800/30 space-y-2 animate-fade-in">
+                    <div className="flex items-center justify-between text-xs font-extrabold text-[#7C3AED]">
                       <span>Uploading...</span>
                       <span>{uploadProgress}%</span>
                     </div>
                     <div className="w-full h-2 bg-brand-100 dark:bg-brand-900/50 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-[#8B5CF6] transition-all duration-300 rounded-full"
-                        style={{ width: `${uploadProgress}%` }}
-                      />
-                    </div>
-                  </div>
-                )}
+                  className="h-full bg-[#7C3AED] transition-all duration-300 rounded-full"
+                  style={{ width: `${uploadProgress}%` }} />
 
-                {/* Success State */}
-                {uploadSuccess && (
-                  <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center gap-2.5 text-emerald-600 dark:text-emerald-400 text-xs font-black animate-scale-in">
+                    </div>
+                  </div>}
+
+
+                {}
+                {uploadSuccess &&
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center gap-2.5 text-emerald-600 dark:text-emerald-400 text-xs font-black animate-scale-in">
                     <Check className="w-5 h-5 stroke-[3]" />
                     <span>✅ Memory uploaded successfully!</span>
-                  </div>
-                )}
+                  </div>}
+
               </div>
 
-              {/* Sticky Modal Actions Footer */}
+              {}
               <div className="p-4 px-5 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-slate-100 dark:border-slate-800 flex items-center justify-end gap-3 shrink-0">
                 <button
-                  type="button"
-                  disabled={loading || uploadSuccess}
-                  onClick={() => {
-                    setIsModalOpen(false);
-                    resetForm();
-                  }}
-                  className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors"
-                >
+              type="button"
+              disabled={loading || uploadSuccess}
+              onClick={() => {
+                setIsModalOpen(false);
+                resetForm();
+              }}
+              className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-600 dark:text-slate-400 hover:bg-slate-200/60 dark:hover:bg-slate-800 disabled:opacity-50 transition-colors">
+
                   Cancel
                 </button>
                 <button
-                  type="submit"
-                  disabled={!selectedFile || loading || uploadSuccess}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#8B5CF6] hover:bg-[#7c3aed] disabled:opacity-50 text-white text-xs font-extrabold shadow-md shadow-[#8B5CF6]/25 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-                >
-                  {loading ? (
-                    <>
+              type="submit"
+              disabled={!selectedFile || loading || uploadSuccess}
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#7c3aed] disabled:opacity-50 text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 cursor-pointer disabled:cursor-not-allowed">
+
+                  {loading ?
+                <>
                       <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                       <span>Uploading...</span>
-                    </>
-                  ) : (
-                    <>
+                    </> :
+
+                <>
                       <Upload className="w-4 h-4 stroke-[2.5]" />
                       <span>📤 Upload Memory</span>
-                    </>
-                  )}
+                    </>}
+
                 </button>
               </div>
             </form>
           </div>
-        </div>
-      )}
-    </div>
-  );
+        </div>}
+
+    </div>);
+
 };
 
 export default JourneyGalleryView;
-

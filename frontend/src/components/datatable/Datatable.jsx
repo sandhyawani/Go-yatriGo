@@ -3,18 +3,18 @@ import { DataGrid } from "@mui/x-data-grid";
 import CircularProgress from "@mui/material/CircularProgress";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  AlertTriangle,
-  Ban,
-  ChevronLeft,
-  ChevronRight,
-  Edit3,
-  Eye,
-  MoreHorizontal,
-  Search,
-  ShieldCheck,
-  Trash2,
-  FileText,
-} from "lucide-react";
+AlertTriangle,
+Ban,
+ChevronLeft,
+ChevronRight,
+Edit3,
+Eye,
+MoreHorizontal,
+Search,
+ShieldCheck,
+Trash2,
+FileText } from
+"lucide-react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -47,9 +47,9 @@ const getUserStatus = (user) => {
 
   const lastUpdated = new Date(user.updatedAt).getTime();
   const active = Number.isFinite(lastUpdated) && Date.now() - lastUpdated < ACTIVE_WINDOW_MS;
-  return active
-    ? { label: "Online", className: "status-online" }
-    : { label: "Offline", className: "status-offline" };
+  return active ?
+  { label: "Online", className: "status-online" } :
+  { label: "Offline", className: "status-offline" };
 };
 
 const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
@@ -65,21 +65,21 @@ const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
       if (!bounds) return;
       const menuHeight = user.isSuspended ? 216 : 216;
       const top =
-        bounds.bottom + 8 + menuHeight > window.innerHeight
-          ? Math.max(12, bounds.top - menuHeight - 8)
-          : bounds.bottom + 8;
+      bounds.bottom + 8 + menuHeight > window.innerHeight ?
+      Math.max(12, bounds.top - menuHeight - 8) :
+      bounds.bottom + 8;
 
       setPosition({
         top,
-        left: Math.max(12, bounds.right - 190),
+        left: Math.max(12, bounds.right - 190)
       });
     };
 
     const closeOnOutsideClick = (event) => {
       if (
-        !triggerRef.current?.contains(event.target) &&
-        !menuRef.current?.contains(event.target)
-      ) {
+      !triggerRef.current?.contains(event.target) &&
+      !menuRef.current?.contains(event.target))
+      {
         onToggle(false);
       }
     };
@@ -96,28 +96,28 @@ const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
     };
   }, [isOpen, onToggle, user.isSuspended]);
 
-  const menu = (
-    <AnimatePresence>
-      {isOpen && (
-        <motion.div
-          ref={menuRef}
-          initial={{ opacity: 0, scale: 0.96, y: -4 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.97, y: -4 }}
-          transition={{ duration: 0.14 }}
-          style={{ left: position.left, top: position.top }}
-          className="user-action-menu fixed z-[1200] w-[190px] rounded-xl p-1.5"
-          role="menu"
-          aria-label={`Actions for ${user.name}`}
-        >
+  const menu =
+  <AnimatePresence>
+      {isOpen &&
+    <motion.div
+    ref={menuRef}
+    initial={{ opacity: 0, scale: 0.96, y: -4 }}
+    animate={{ opacity: 1, scale: 1, y: 0 }}
+    exit={{ opacity: 0, scale: 0.97, y: -4 }}
+    transition={{ duration: 0.14 }}
+    style={{ left: position.left, top: position.top }}
+    className="user-action-menu fixed z-[1200] w-[190px] rounded-xl p-1.5"
+    role="menu"
+    aria-label={`Actions for ${user.name}`}>
+
           <button type="button" role="menuitem" onClick={() => onAction("view")}>
             <Eye /> View details
           </button>
-          {user.govId && (
-            <button type="button" role="menuitem" onClick={() => onAction("viewId")}>
+          {user.govId &&
+      <button type="button" role="menuitem" onClick={() => onAction("viewId")}>
               <FileText /> View Gov ID
-            </button>
-          )}
+            </button>}
+
           <button type="button" role="menuitem" onClick={() => onAction("verify")}>
             <ShieldCheck /> {user.isVerified ? "Unverify User" : "Verify Identity"}
           </button>
@@ -128,43 +128,43 @@ const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
             <AlertTriangle /> Warn user
           </button>
           <button
-            type="button"
-            role="menuitem"
-            className={user.isSuspended ? "success-action" : "danger-action"}
-            onClick={() => onAction("suspend")}
-          >
+      type="button"
+      role="menuitem"
+      className={user.isSuspended ? "success-action" : "danger-action"}
+      onClick={() => onAction("suspend")}>
+
             <Ban /> {user.isSuspended ? "Unsuspend" : "Suspend"}
           </button>
           <div className="my-1 border-t border-slate-100" />
           <button
-            type="button"
-            role="menuitem"
-            className="danger-action"
-            onClick={() => onAction("delete")}
-          >
+      type="button"
+      role="menuitem"
+      className="danger-action"
+      onClick={() => onAction("delete")}>
+
             <Trash2 /> Delete
           </button>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
+        </motion.div>}
+
+    </AnimatePresence>;
+
 
   return (
     <>
       <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => onToggle(!isOpen)}
-        disabled={isBusy}
-        aria-label={`Open actions for ${user.name}`}
-        aria-expanded={isOpen}
-        className="user-action-trigger"
-      >
+      ref={triggerRef}
+      type="button"
+      onClick={() => onToggle(!isOpen)}
+      disabled={isBusy}
+      aria-label={`Open actions for ${user.name}`}
+      aria-expanded={isOpen}
+      className="user-action-trigger">
+
         {isBusy ? <CircularProgress size={16} color="inherit" /> : <MoreHorizontal className="h-4 w-4" />}
       </button>
       {typeof document !== "undefined" && createPortal(menu, document.body)}
-    </>
-  );
+    </>);
+
 };
 
 const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
@@ -183,7 +183,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
   const { data, loading: dataLoading } = useFetch(`/${path}`);
 
   useEffect(() => {
-    setList(Array.isArray(data) ? data : (Array.isArray(data?.users) ? data.users : []));
+    setList(Array.isArray(data) ? data : Array.isArray(data?.users) ? data.users : []);
   }, [data]);
 
   const refreshParentMetrics = () => {
@@ -203,7 +203,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       cancelButtonText: "Cancel",
       confirmButtonColor: "#e11d48",
       reverseButtons: true,
-      customClass: { popup: "moderation-dialog" },
+      customClass: { popup: "moderation-dialog" }
     });
 
     if (!confirmResult.isConfirmed) return;
@@ -219,7 +219,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
         title: `${isUserDirectory ? "User" : "Entry"} deleted`,
         timer: 1300,
         showConfirmButton: false,
-        customClass: { popup: "moderation-dialog" },
+        customClass: { popup: "moderation-dialog" }
       });
     } catch (error) {
       Swal.fire("Error", `Could not delete the ${entityLabel}.`, "error");
@@ -234,7 +234,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       setIsLoading(true);
       await axios.put(`/${path}/approve/${id}`);
       setList((previous) =>
-        previous.map((item) => (item._id === id ? { ...item, status: "APPROVED" } : item))
+      previous.map((item) => item._id === id ? { ...item, status: "APPROVED" } : item)
       );
       showToast.success("Approved!", "The restaurant is now active.");
     } catch (error) {
@@ -261,8 +261,8 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
 
   const handleViewId = (user) => {
     if (!user.govId) {
-       Swal.fire("No Document", "This user has not uploaded a Government ID yet.", "info");
-       return;
+      Swal.fire("No Document", "This user has not uploaded a Government ID yet.", "info");
+      return;
     }
     Swal.fire({
       title: `${user.name}'s Government ID`,
@@ -281,14 +281,14 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     const actionLabel = user.isVerified ? "Unverify User" : "Verify Identity";
     const confirmResult = await Swal.fire({
       title: `${actionLabel} ${user.name}?`,
-      text: user.isVerified
-        ? "Their profile will no longer show the verified badge."
-        : "Their profile will show the verified badge.",
+      text: user.isVerified ?
+      "Their profile will no longer show the verified badge." :
+      "Their profile will show the verified badge.",
       icon: "question",
       showCancelButton: true,
       confirmButtonText: actionLabel,
       confirmButtonColor: "#9333ea",
-      customClass: { popup: "moderation-dialog" },
+      customClass: { popup: "moderation-dialog" }
     });
 
     if (!confirmResult.isConfirmed) return;
@@ -297,16 +297,16 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       setBusyUserId(user._id);
       await axios.put(`/admin/user/${user._id}/verify`);
       setList((previous) =>
-        previous.map((item) =>
-          item._id === user._id ? { ...item, isVerified: !user.isVerified } : item
-        )
+      previous.map((item) =>
+      item._id === user._id ? { ...item, isVerified: !user.isVerified } : item
+      )
       );
       Swal.fire({
         icon: "success",
         title: `User ${action === "verify" ? "verified" : "unverified"}`,
         timer: 1300,
         showConfirmButton: false,
-        customClass: { popup: "moderation-dialog" },
+        customClass: { popup: "moderation-dialog" }
       });
     } catch (error) {
       Swal.fire("Error", `Could not ${action} the user.`, "error");
@@ -320,14 +320,14 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     const actionLabel = user.isSuspended ? "Unsuspend" : "Suspend";
     const confirmResult = await Swal.fire({
       title: `${actionLabel} ${user.name}?`,
-      text: user.isSuspended
-        ? "Their platform access will be restored."
-        : "Their account will be restricted immediately.",
+      text: user.isSuspended ?
+      "Their platform access will be restored." :
+      "Their account will be restricted immediately.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: actionLabel,
       confirmButtonColor: user.isSuspended ? "#059669" : "#e11d48",
-      customClass: { popup: "moderation-dialog" },
+      customClass: { popup: "moderation-dialog" }
     });
 
     if (!confirmResult.isConfirmed) return;
@@ -336,9 +336,9 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       setBusyUserId(user._id);
       await axios.put(`/admin/user/${user._id}/${action}`);
       setList((previous) =>
-        previous.map((item) =>
-          item._id === user._id ? { ...item, isSuspended: !user.isSuspended } : item
-        )
+      previous.map((item) =>
+      item._id === user._id ? { ...item, isSuspended: !user.isSuspended } : item
+      )
       );
       refreshParentMetrics();
       Swal.fire({
@@ -346,7 +346,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
         title: `User ${action === "suspend" ? "suspended" : "restored"}`,
         timer: 1300,
         showConfirmButton: false,
-        customClass: { popup: "moderation-dialog" },
+        customClass: { popup: "moderation-dialog" }
       });
     } catch (error) {
       Swal.fire("Error", `Could not ${action} the user.`, "error");
@@ -366,7 +366,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       confirmButtonText: "Send warning",
       confirmButtonColor: "#7c3aed",
       customClass: { popup: "moderation-dialog" },
-      inputValidator: (value) => (!value?.trim() ? "A warning message is required." : undefined),
+      inputValidator: (value) => !value?.trim() ? "A warning message is required." : undefined
     });
 
     if (!message?.trim()) return;
@@ -386,12 +386,12 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     let baseList = Array.isArray(list) ? list : [];
 
     if (activeFilter === "admin") {
-      baseList = baseList.filter(item => item.isAdmin || item?.role?.toLowerCase() === "admin" || item?.type?.toLowerCase() === "admin");
+      baseList = baseList.filter((item) => item.isAdmin || item?.role?.toLowerCase() === "admin" || item?.type?.toLowerCase() === "admin");
     } else if (activeFilter === "suspended") {
-      baseList = baseList.filter(item => item.isSuspended);
+      baseList = baseList.filter((item) => item.isSuspended);
     } else if (activeFilter === "online") {
       const ACTIVE_WINDOW_MS = 30 * 60 * 1000;
-      baseList = baseList.filter(item => {
+      baseList = baseList.filter((item) => {
         const lastUpdated = new Date(item.updatedAt).getTime();
         return Number.isFinite(lastUpdated) && Date.now() - lastUpdated < ACTIVE_WINDOW_MS;
       });
@@ -409,11 +409,11 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     if (!query) return baseList;
 
     return baseList.filter((item) =>
-      [item.name, item.username, item.type, item.role, item.email, item.mobile, item.city, item.state, item.ownerName]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase()
-        .includes(query)
+    [item.name, item.username, item.type, item.role, item.email, item.mobile, item.city, item.state, item.ownerName].
+    filter(Boolean).
+    join(" ").
+    toLowerCase().
+    includes(query)
     );
   }, [list, searchQuery, currentUser, path, activeFilter]);
 
@@ -443,12 +443,12 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
 
     return (
       <motion.section
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.34, delay: 0.16 }}
-        aria-label="User directory"
-        className="premium-directory flex flex-col gap-2"
-      >
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.34, delay: 0.16 }}
+      aria-label="User directory"
+      className="premium-directory flex flex-col gap-2">
+
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
           <div>
             <h2 className="text-lg font-semibold text-slate-900">Directory</h2>
@@ -459,12 +459,12 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
           <label className="directory-search group relative w-full md:max-w-[470px]">
             <Search className="absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
             <input
-              type="search"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder="Search users, email, role or location..."
-              className="h-9 w-full rounded-lg border border-brand-100 bg-white/55 pl-10 pr-3 text-xs text-slate-700 outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-brand-300 focus:bg-white/90 focus:ring-4 focus:ring-brand-500/10"
-            />
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search users, email, role or location..."
+            className="h-9 w-full rounded-lg border border-brand-100 bg-white/55 pl-10 pr-3 text-xs text-slate-700 outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-brand-300 focus:bg-white/90 focus:ring-4 focus:ring-brand-500/10" />
+
           </label>
         </div>
 
@@ -482,39 +482,39 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
                 </tr>
               </thead>
               <tbody>
-                {dataLoading && !list.length
-                  ? Array.from({ length: 5 }, (_, index) => (
-                      <tr className="loading-row" key={`loading-${index}`}>
+                {dataLoading && !list.length ?
+                Array.from({ length: 5 }, (_, index) =>
+                <tr className="loading-row" key={`loading-${index}`}>
                         <td colSpan={6}>
                           <div className="h-10 animate-pulse rounded-lg bg-brand-50/80" />
                         </td>
                       </tr>
-                    ))
-                  : visibleUsers.map((user, index) => {
-                      const role = getRoleBadge(user);
-                      const status = getUserStatus(user);
-                      return (
-                        <motion.tr
-                          layout
-                          key={user._id}
-                          initial={{ opacity: 0, y: 7 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.2, delay: index * 0.025 }}
-                          className="premium-user-row"
-                        >
+                ) :
+                visibleUsers.map((user, index) => {
+                  const role = getRoleBadge(user);
+                  const status = getUserStatus(user);
+                  return (
+                    <motion.tr
+                    layout
+                    key={user._id}
+                    initial={{ opacity: 0, y: 7 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, delay: index * 0.025 }}
+                    className="premium-user-row">
+
                           <td>
                             <div className="flex items-center gap-3">
                               <img
-                                className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-100"
-                                src={
-                                  user.img ||
-                                  user.pic ||
-                                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
-                                    user.name || "User"
-                                  )}&background=ede9fe&color=6d28d9&bold=true`
-                                }
-                                alt=""
-                              />
+                          className="h-8 w-8 rounded-lg object-cover ring-1 ring-slate-100"
+                          src={
+                          user.img ||
+                          user.pic ||
+                          `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          user.name || "User"
+                          )}&background=ede9fe&color=6d28d9&bold=true`}
+
+                          alt="" />
+
                               <div className="min-w-0">
                                 <p className="truncate text-xs font-semibold text-slate-900">{user.name}</p>
                                 <p className="truncate text-[10px] text-slate-500">{user.email}</p>
@@ -536,24 +536,24 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
                           </td>
                           <td className="text-center">
                             <UserActionMenu
-                              user={user}
-                              isOpen={openMenuId === user._id}
-                              isBusy={busyUserId === user._id}
-                              onToggle={(open) => setOpenMenuId(open ? user._id : null)}
-                              onAction={(action) => handleUserAction(action, user)}
-                            />
+                        user={user}
+                        isOpen={openMenuId === user._id}
+                        isBusy={busyUserId === user._id}
+                        onToggle={(open) => setOpenMenuId(open ? user._id : null)}
+                        onAction={(action) => handleUserAction(action, user)} />
+
                           </td>
-                        </motion.tr>
-                      );
-                    })}
+                        </motion.tr>);
+
+                })}
               </tbody>
             </table>
-            {!dataLoading && !visibleUsers.length && (
-              <div className="my-4 rounded-xl border border-dashed border-brand-200 bg-white/50 p-6 text-center">
+            {!dataLoading && !visibleUsers.length &&
+            <div className="my-4 rounded-xl border border-dashed border-brand-200 bg-white/50 p-6 text-center">
                 <p className="text-xs font-medium text-slate-700">No users match your search.</p>
                 <p className="mt-1 text-[10px] text-slate-400">Try a name, email address, role, or location.</p>
-              </div>
-            )}
+              </div>}
+
           </div>
 
           <footer className="flex flex-col gap-2 border-t border-brand-100 px-2 pb-1 pt-2 text-[10px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
@@ -563,86 +563,86 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
             </p>
             <div className="flex items-center gap-2">
               <button
-                type="button"
-                className="directory-page-button"
-                disabled={page === 0}
-                onClick={() => setPage((previous) => Math.max(0, previous - 1))}
-                aria-label="Previous page"
-              >
+              type="button"
+              className="directory-page-button"
+              disabled={page === 0}
+              onClick={() => setPage((previous) => Math.max(0, previous - 1))}
+              aria-label="Previous page">
+
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <span className="min-w-[68px] text-center font-medium text-slate-600">
                 {page + 1} / {pageCount}
               </span>
               <button
-                type="button"
-                className="directory-page-button"
-                disabled={page >= pageCount - 1}
-                onClick={() => setPage((previous) => Math.min(pageCount - 1, previous + 1))}
-                aria-label="Next page"
-              >
+              type="button"
+              className="directory-page-button"
+              disabled={page >= pageCount - 1}
+              onClick={() => setPage((previous) => Math.min(pageCount - 1, previous + 1))}
+              aria-label="Next page">
+
                 <ChevronRight className="h-4 w-4" />
               </button>
             </div>
           </footer>
         </div>
-      </motion.section>
-    );
+      </motion.section>);
+
   }
 
   const actionColumn = [
-    {
-      field: "action",
-      headerName: "Actions",
-      width: 180,
-      renderCell: (params) => {
-        const rowUser = params.row.user || params.row.userId;
-        const rowUserId = typeof rowUser === "object" ? rowUser._id : rowUser;
-        const isOwner = rowUserId === currentUser?._id;
-        const canManage = currentUser?.isAdmin || isOwner;
+  {
+    field: "action",
+    headerName: "Actions",
+    width: 180,
+    renderCell: (params) => {
+      const rowUser = params.row.user || params.row.userId;
+      const rowUserId = typeof rowUser === "object" ? rowUser._id : rowUser;
+      const isOwner = rowUserId === currentUser?._id;
+      const canManage = currentUser?.isAdmin || isOwner;
 
-        return (
-          <div className="flex items-center space-x-2">
+      return (
+        <div className="flex items-center space-x-2">
             <button
-              title="View"
-              className="rounded-lg bg-slate-100 p-1.5 text-slate-600 shadow-sm transition-all hover:bg-slate-900 hover:text-white"
-              onClick={() => handleView(params.row._id)}
-            >
+          title="View"
+          className="rounded-lg bg-slate-100 p-1.5 text-slate-600 shadow-sm transition-all hover:bg-slate-900 hover:text-white"
+          onClick={() => handleView(params.row._id)}>
+
               <Eye className="h-3.5 w-3.5" />
             </button>
-            {currentUser?.isAdmin && path === "restaurant" && params.row.status === "PENDING" && (
-              <button
-                title="Approve"
-                onClick={() => handleApprove(params.row._id)}
-                className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white"
-              >
+            {currentUser?.isAdmin && path === "restaurant" && params.row.status === "PENDING" &&
+          <button
+          title="Approve"
+          onClick={() => handleApprove(params.row._id)}
+          className="rounded-lg bg-emerald-50 p-1.5 text-emerald-600 shadow-sm transition-all hover:bg-emerald-600 hover:text-white">
+
                 <ShieldCheck className="h-3.5 w-3.5" />
-              </button>
-            )}
-            {canManage && ["hotels", "train", "restaurant"].includes(path) && (
-              <Link to={`/${path}/update/${params.row._id}`}>
+              </button>}
+
+            {canManage && ["hotels", "train", "restaurant"].includes(path) &&
+          <Link to={`/${path}/update/${params.row._id}`}>
                 <button
-                  title="Edit"
-                  className="rounded-lg bg-blue-50 p-1.5 text-blue-600 shadow-sm transition-all hover:bg-blue-600 hover:text-white"
-                >
+            title="Edit"
+            className="rounded-lg bg-blue-50 p-1.5 text-blue-600 shadow-sm transition-all hover:bg-blue-600 hover:text-white">
+
                   <Edit3 className="h-3.5 w-3.5" />
                 </button>
-              </Link>
-            )}
-            {canManage && (
-              <button
-                title="Delete"
-                onClick={() => handleDelete(params.row._id)}
-                className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white"
-              >
+              </Link>}
+
+            {canManage &&
+          <button
+          title="Delete"
+          onClick={() => handleDelete(params.row._id)}
+          className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white">
+
                 <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            )}
-          </div>
-        );
-      },
-    },
-  ];
+              </button>}
+
+          </div>);
+
+    }
+  }];
+
 
   return (
     <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 pb-12 pt-0">
@@ -650,55 +650,54 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
         <label className="group relative w-full md:max-w-sm">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
           <input
-            className="w-full rounded-lg border border-brand-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
-            placeholder="Filter data..."
-            type="text"
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
+          className="w-full rounded-lg border border-brand-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+          placeholder="Filter data..."
+          type="text"
+          value={searchQuery}
+          onChange={(event) => setSearchQuery(event.target.value)} />
+
         </label>
       </div>
       <div className="overflow-hidden rounded-xl border border-brand-100 bg-white shadow-sm">
         <DataGrid
-          className="datagrid"
-          rows={filteredList}
-          columns={columns.concat(actionColumn)}
-          loading={isLoading}
-          getRowId={(row) => row._id}
-          pageSize={10}
-          rowsPerPageOptions={[10]}
-          checkboxSelection
-          disableSelectionOnClick
-          rowHeight={40}
-          headerHeight={36}
-          sx={{
-            border: "none",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: "#faf5ff",
-              color: "#7e22ce",
-              fontSize: "9px",
-              fontWeight: "800",
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              borderBottom: "1px solid #f3e8ff",
-            },
-            "& .MuiDataGrid-cell": {
-              borderBottom: "1px solid #faf5ff",
-              color: "#475569",
-              fontSize: "10px",
-              fontWeight: "500",
-            },
-            "& .MuiDataGrid-row:hover": { backgroundColor: "#faf5ff" },
-            "& .MuiDataGrid-footerContainer": {
-              borderTop: "1px solid #f3e8ff",
-              minHeight: "36px",
-            },
-          }}
-        />
+        className="datagrid"
+        rows={filteredList}
+        columns={columns.concat(actionColumn)}
+        loading={isLoading}
+        getRowId={(row) => row._id}
+        pageSize={10}
+        rowsPerPageOptions={[10]}
+        checkboxSelection
+        disableSelectionOnClick
+        rowHeight={40}
+        headerHeight={36}
+        sx={{
+          border: "none",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: "#faf5ff",
+            color: "#7e22ce",
+            fontSize: "9px",
+            fontWeight: "800",
+            textTransform: "uppercase",
+            letterSpacing: "0.05em",
+            borderBottom: "1px solid #f3e8ff"
+          },
+          "& .MuiDataGrid-cell": {
+            borderBottom: "1px solid #faf5ff",
+            color: "#475569",
+            fontSize: "10px",
+            fontWeight: "500"
+          },
+          "& .MuiDataGrid-row:hover": { backgroundColor: "#faf5ff" },
+          "& .MuiDataGrid-footerContainer": {
+            borderTop: "1px solid #f3e8ff",
+            minHeight: "36px"
+          }
+        }} />
+
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Datatable;
-

@@ -3,15 +3,15 @@ import { ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const rowClass = (danger, extra = "") =>
-  [
-    "w-full flex items-center justify-between p-4 rounded-2xl transition-colors text-left",
-    danger
-      ? "bg-white border border-rose-100 hover:bg-rose-50"
-      : "bg-slate-50 hover:bg-slate-100",
-    extra,
-  ]
-    .filter(Boolean)
-    .join(" ");
+[
+"w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 text-left",
+danger ?
+"bg-white border border-rose-100 hover:bg-rose-50/50" :
+"bg-slate-50/80 hover:bg-slate-100/80",
+extra].
+
+filter(Boolean).
+join(" ");
 
 const SettingsRow = ({
   icon: Icon,
@@ -20,19 +20,19 @@ const SettingsRow = ({
   to,
   onClick,
   showChevron,
-  colorClass = "text-slate-500 bg-slate-50",
-  danger = false,
+  colorClass = "text-[#7C3AED] bg-[#F3E8FF]",
+  danger = false
 }) => {
   if (process.env.NODE_ENV !== "production" && !Icon) {
     console.error(
-      "[SettingsRow] The `icon` prop is required but was not provided.",
+    "[SettingsRow] The `icon` prop is required but was not provided."
     );
   }
 
   if (process.env.NODE_ENV !== "production" && !to && !onClick) {
     console.warn(
-      `[SettingsRow] "${title}" has neither a \`to\` nor an \`onClick\` prop. ` +
-        "The row will render but will be non-interactive.",
+    `[SettingsRow] "${title}" has neither a \`to\` nor an \`onClick\` prop. ` +
+    "The row will render but will be non-interactive."
     );
   }
 
@@ -40,62 +40,61 @@ const SettingsRow = ({
 
   const ariaLabel = subtitle ? `${title}: ${subtitle}` : title;
 
-  const content = (
-    <>
+  const content =
+  <>
       <div className="flex items-center gap-3">
-        {Icon && (
-          <div className={`p-2 rounded-xl ${colorClass}`} aria-hidden="true">
+        {Icon &&
+      <div className={`p-2.5 rounded-xl ${colorClass} shrink-0`} aria-hidden="true">
             <Icon className="w-5 h-5" />
-          </div>
-        )}
+          </div>}
+
         <div>
           <span
-            className={`text-sm font-bold ${danger ? "text-rose-600" : "text-slate-700"}`}
-          >
+        className={`text-sm font-semibold block ${danger ? "text-rose-600" : "text-[#1E293B]"}`}>
+
             {title}
           </span>
-          {subtitle && (
-            <p
-              className={`text-xs ${danger ? "text-rose-400" : "text-slate-400"}`}
-            >
+          {subtitle &&
+        <p
+        className={`text-xs mt-0.5 ${danger ? "text-rose-400" : "text-[#64748B]"}`}>
+
               {subtitle}
-            </p>
-          )}
+            </p>}
+
         </div>
       </div>
 
-      {chevronVisible && (
-        <ChevronRight
-          className="w-5 h-5 text-slate-400 shrink-0"
-          aria-hidden="true"
-        />
-      )}
-    </>
-  );
+      {chevronVisible &&
+    <ChevronRight
+    className="w-5 h-5 text-slate-400 shrink-0"
+    aria-hidden="true" />}
+
+
+    </>;
+
 
   if (to) {
     return (
       <Link to={to} aria-label={ariaLabel} className={rowClass(danger)}>
         {content}
-      </Link>
-    );
+      </Link>);
+
   }
 
   return (
     <button
-      type="button"
-      onClick={onClick}
-      disabled={!onClick}
-      aria-label={ariaLabel}
-      className={rowClass(
-        danger,
-        !onClick ? "opacity-50 cursor-not-allowed" : "",
-      )}
-    >
+    type="button"
+    onClick={onClick}
+    disabled={!onClick}
+    aria-label={ariaLabel}
+    className={rowClass(
+    danger,
+    !onClick ? "opacity-50 cursor-not-allowed" : ""
+    )}>
+
       {content}
-    </button>
-  );
+    </button>);
+
 };
 
 export default SettingsRow;
-

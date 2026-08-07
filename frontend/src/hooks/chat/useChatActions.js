@@ -13,7 +13,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
   const handleBlockUser = async () => {
     try {
       const otherUser = activeRoom?.members?.find(
-        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) => (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
 
@@ -32,12 +32,12 @@ export const useChatActions = (currentUserId, activeRoom) => {
         const freshSelf = await chatService.getUserProfile(currentUserId);
         authDispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.blockedUsers || freshSelf.user?.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.blockedUsers || freshSelf.user?.blockedUsers }
         });
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Action failed", {
-        id: "block",
+        id: "block"
       });
     }
   };
@@ -45,7 +45,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
   const confirmBlockUser = async () => {
     try {
       const otherUser = activeRoom?.members?.find(
-        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) => (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
 
@@ -58,12 +58,12 @@ export const useChatActions = (currentUserId, activeRoom) => {
         const freshSelf = await chatService.getUserProfile(currentUserId);
         authDispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...user, blockedUsers: freshSelf.blockedUsers || freshSelf.user?.blockedUsers },
+          payload: { ...user, blockedUsers: freshSelf.blockedUsers || freshSelf.user?.blockedUsers }
         });
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Action failed", {
-        id: "block",
+        id: "block"
       });
     }
   };
@@ -71,7 +71,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
   const handleReportUser = async () => {
     try {
       const otherUser = activeRoom?.members?.find(
-        (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+      (member) => (member._id || member)?.toString() !== currentUserId?.toString()
       );
       if (!otherUser) return;
       toast.loading("Reporting user...", { id: "report" });
@@ -81,7 +81,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Error reporting user", {
-        id: "report",
+        id: "report"
       });
     }
   };
@@ -97,7 +97,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
       }
     } catch (err) {
       showToast.error(err.response?.data?.message || "Error clearing chat", {
-        id: "clear",
+        id: "clear"
       });
     }
   };
@@ -112,4 +112,3 @@ export const useChatActions = (currentUserId, activeRoom) => {
   };
 };
 export default useChatActions;
-

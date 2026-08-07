@@ -24,7 +24,6 @@ export const useChatSocket = (user, syncRoomMessages) => {
     socketConnectedRef.current = socketConnected;
   });
 
-  // Handle room switching (join new room, leave old room)
   useEffect(() => {
     if (!socket || !socket.connected) return;
 
@@ -32,30 +31,28 @@ export const useChatSocket = (user, syncRoomMessages) => {
     const newRoomId = getRoomIdString(activeRoom?._id);
 
     if (prevRoomId && prevRoomId !== newRoomId) {
-            socket.emit(SOCKET_EVENTS.EMIT_LEAVE_CHAT_ROOM, prevRoomId);
+      socket.emit(SOCKET_EVENTS.EMIT_LEAVE_CHAT_ROOM, prevRoomId);
     }
 
     if (newRoomId) {
-            socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoomId);
+      socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoomId);
     }
 
     prevActiveRoomRef.current = activeRoom;
   }, [activeRoom, socket, socketConnected]);
 
-  // Listeners registration
   useEffect(() => {
     if (!socket) return;
 
     setSocketConnected(socket.connected);
 
     const onConnect = () => {
-      
+
       setSocketConnected(true);
 
-      // Rejoin active room on reconnect
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (activeId) {
-                socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
+        socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
         if (syncRoomMessages) {
           syncRoomMessages(activeRoomRef.current);
         }
@@ -63,7 +60,7 @@ export const useChatSocket = (user, syncRoomMessages) => {
     };
 
     const onDisconnect = () => {
-            setSocketConnected(false);
+      setSocketConnected(false);
     };
 
     const onUserPresence = (data) => {
@@ -76,29 +73,27 @@ export const useChatSocket = (user, syncRoomMessages) => {
 
     const onReceiveChatMessage = (message) => {
       const currentUserId = userRef.current?._id || userRef.current?.id;
-      const msgSenderId = typeof message.sender === "object"
-        ? (message.sender?._id || message.sender?.id)
-        : message.sender;
+      const msgSenderId = typeof message.sender === "object" ?
+      message.sender?._id || message.sender?.id :
+      message.sender;
       const isSelf = msgSenderId?.toString() === currentUserId?.toString();
 
-      // Dispatch to state
       handleSocketEvent(dispatchRef.current, SOCKET_EVENTS.RECEIVE_CHAT_MESSAGE, message, currentUserId);
 
-      // Receipt acknowledgment
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
       if (!isSelf) {
         if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-                    socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
+          socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
             roomId: message.roomId,
-            userId: currentUserId,
+            userId: currentUserId
           });
         } else {
-                    socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
+          socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
             roomId: message.roomId,
             messageId: message._id,
-            userId: currentUserId,
+            userId: currentUserId
           });
         }
       }
@@ -144,7 +139,6 @@ export const useChatSocket = (user, syncRoomMessages) => {
       setSocketConnected(true);
     }
 
-    // Attach listeners
     socket.on(SOCKET_EVENTS.CONNECT, onConnect);
     socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect);
     socket.on(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
@@ -162,7 +156,6 @@ export const useChatSocket = (user, syncRoomMessages) => {
     socket.on(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
 
     return () => {
-      // Remove listeners on cleanup
       socket.off(SOCKET_EVENTS.CONNECT, onConnect);
       socket.off(SOCKET_EVENTS.DISCONNECT, onDisconnect);
       socket.off(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
@@ -184,4 +177,3 @@ export const useChatSocket = (user, syncRoomMessages) => {
   return socketConnected;
 };
 export default useChatSocket;
-

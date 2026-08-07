@@ -13,8 +13,8 @@ const CARD_ENTRANCE = {
   visible: (index) => ({
     opacity: 1,
     y: 0,
-    transition: { delay: 0.05 + index * 0.045, duration: 0.32, ease: "easeOut" },
-  }),
+    transition: { delay: 0.05 + index * 0.045, duration: 0.32, ease: "easeOut" }
+  })
 };
 
 const Userlist = ({ columns }) => {
@@ -27,63 +27,63 @@ const Userlist = ({ columns }) => {
     data: usersData,
     loading: usersLoading,
     error,
-    reFetch: refreshUsers,
+    reFetch: refreshUsers
   } = useFetch(`/${path}`);
   const {
     data: stats,
     loading: statsLoading,
-    reFetch: refreshStats,
+    reFetch: refreshStats
   } = useFetch("/admin/stats");
 
-  const users = Array.isArray(usersData)
-    ? usersData
-    : Array.isArray(usersData?.users)
-      ? usersData.users
-      : [];
+  const users = Array.isArray(usersData) ?
+  usersData :
+  Array.isArray(usersData?.users) ?
+  usersData.users :
+  [];
   const metrics = [
-    {
-      label: "Total Users",
-      value: usersLoading ? null : users.length,
-      detail: "Directory accounts",
-      icon: Users,
-      tone: "purple",
-      filterValue: "all"
-    },
-    {
-      label: "Active Users",
-      value: statsLoading ? null : stats?.activeUsers ?? 0,
-      detail: "Active in 30 minutes",
-      icon: Activity,
-      tone: "purple",
-      filterValue: "online"
-    },
-    {
-      label: "Admins",
-      value: usersLoading ? null : users.filter((user) => user.isAdmin || user?.role?.toLowerCase() === "admin" || user?.type?.toLowerCase() === "admin").length,
-      detail: "Privileged access",
-      icon: ShieldCheck,
-      tone: "purple",
-      filterValue: "admin"
-    },
-    {
-      label: "Suspended",
-      value: statsLoading
-        ? null
-        : stats?.suspendedUsers ?? users.filter((user) => user.isSuspended).length,
-      detail: "Restricted accounts",
-      icon: UserX,
-      tone: "purple",
-      filterValue: "suspended"
-    },
-    {
-      label: "Pending Reports",
-      value: statsLoading ? null : stats?.reports ?? stats?.metrics?.reportsPending ?? 0,
-      detail: "Awaiting review",
-      icon: Flag,
-      tone: "purple",
-      filterValue: "reports"
-    },
-  ];
+  {
+    label: "Total Users",
+    value: usersLoading ? null : users.length,
+    detail: "Directory accounts",
+    icon: Users,
+    tone: "purple",
+    filterValue: "all"
+  },
+  {
+    label: "Active Users",
+    value: statsLoading ? null : stats?.activeUsers ?? 0,
+    detail: "Active in 30 minutes",
+    icon: Activity,
+    tone: "purple",
+    filterValue: "online"
+  },
+  {
+    label: "Admins",
+    value: usersLoading ? null : users.filter((user) => user.isAdmin || user?.role?.toLowerCase() === "admin" || user?.type?.toLowerCase() === "admin").length,
+    detail: "Privileged access",
+    icon: ShieldCheck,
+    tone: "purple",
+    filterValue: "admin"
+  },
+  {
+    label: "Suspended",
+    value: statsLoading ?
+    null :
+    stats?.suspendedUsers ?? users.filter((user) => user.isSuspended).length,
+    detail: "Restricted accounts",
+    icon: UserX,
+    tone: "purple",
+    filterValue: "suspended"
+  },
+  {
+    label: "Pending Reports",
+    value: statsLoading ? null : stats?.reports ?? stats?.metrics?.reportsPending ?? 0,
+    detail: "Awaiting review",
+    icon: Flag,
+    tone: "purple",
+    filterValue: "reports"
+  }];
+
 
   const [activeFilter, setActiveFilter] = useState(initialFilter);
 
@@ -96,7 +96,7 @@ const Userlist = ({ columns }) => {
       navigate("/admin/reports");
     } else {
       setActiveFilter(filterValue);
-      // Optional: update URL
+
       navigate(`/users${filterValue === "all" ? "" : `?filter=${filterValue}`}`);
     }
   };
@@ -106,25 +106,25 @@ const Userlist = ({ columns }) => {
 
     const doc = new jsPDF();
     const tableColumn = [
-      "No",
-      "Name",
-      "Email",
-      "Mobile",
-      "Country",
-      "Type",
-      "Created At",
-      "Updated At",
-    ];
+    "No",
+    "Name",
+    "Email",
+    "Mobile",
+    "Country",
+    "Type",
+    "Created At",
+    "Updated At"];
+
     const tableRows = [...users].reverse().map((user, index) => [
-      index + 1,
-      user.name ?? "-",
-      user.email ?? "-",
-      user.mobile ?? "-",
-      user.country ?? "-",
-      user.type ?? "-",
-      moment(user.createdAt).format("MM/DD/YYYY h:mm A"),
-      moment(user.updatedAt).format("MM/DD/YYYY h:mm A"),
-    ]);
+    index + 1,
+    user.name ?? "-",
+    user.email ?? "-",
+    user.mobile ?? "-",
+    user.country ?? "-",
+    user.type ?? "-",
+    moment(user.createdAt).format("MM/DD/YYYY h:mm A"),
+    moment(user.updatedAt).format("MM/DD/YYYY h:mm A")]
+    );
     const dateStr = moment().format("MMM-DD-YYYY");
 
     doc.setFontSize(20).setTextColor(80, 53, 192);
@@ -140,7 +140,7 @@ const Userlist = ({ columns }) => {
       body: tableRows,
       styles: { fontSize: 7 },
       startY: 45,
-      headStyles: { fillColor: [80, 53, 192] },
+      headStyles: { fillColor: [80, 53, 192] }
     });
     doc.save(`User-Details-Report_${dateStr}.pdf`);
   };
@@ -157,11 +157,11 @@ const Userlist = ({ columns }) => {
 
       <div className="relative mx-auto max-w-[1450px] space-y-4">
         <motion.header
-          initial={{ opacity: 0, y: -8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.34 }}
-          className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end"
-        >
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.34 }}
+        className="flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
+
           <div>
             <div className="mb-1 flex items-center gap-1.5">
               <span className="h-1.5 w-1.5 rounded-full bg-brand-500 shadow-[0_0_10px_rgba(168,85,247,0.8)]" />
@@ -175,27 +175,27 @@ const Userlist = ({ columns }) => {
             <p className="mt-1 text-xs text-slate-600">
               Monitor identities, permissions, and moderation actions in one workspace.
             </p>
-            {error && (
-              <p className="mt-2 text-xs font-semibold text-rose-600">
+            {error &&
+            <p className="mt-2 text-xs font-semibold text-rose-600">
                 Failed to load users. Please refresh.
-              </p>
-            )}
+              </p>}
+
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              to="/adduser"
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-md active:translate-y-0"
-            >
+            to="/adduser"
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-xs font-medium text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-brand-500 hover:shadow-md active:translate-y-0">
+
               <UserPlus className="h-3.5 w-3.5" />
               Add Operator
             </Link>
             <button
-              type="button"
-              onClick={generatePDF}
-              disabled={usersLoading || !users.length}
-              className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-white/55 px-3.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50"
-            >
+            type="button"
+            onClick={generatePDF}
+            disabled={usersLoading || !users.length}
+            className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-white/55 px-3.5 text-xs font-medium text-slate-700 shadow-sm backdrop-blur-xl transition-all duration-200 hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 disabled:cursor-not-allowed disabled:opacity-50">
+
               <Download className="h-3.5 w-3.5" />
               {usersLoading ? "Loading..." : "Export Report"}
             </button>
@@ -203,49 +203,48 @@ const Userlist = ({ columns }) => {
         </motion.header>
 
         <section
-          aria-label="User moderation metrics"
-          className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5"
-        >
-          {metrics.map(({ label, value, detail, icon: Icon, tone, filterValue }, index) => (
-            <motion.article
-              key={label}
-              custom={index}
-              variants={CARD_ENTRANCE}
-              initial="hidden"
-              animate="visible"
-              onClick={() => handleMetricClick(filterValue)}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.98 }}
-              className={`group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-xl border bg-white p-3 transition-colors duration-300 hover:border-brand-300 hover:bg-brand-50 ${
-                activeFilter === filterValue ? "border-brand-400 bg-brand-50/50 shadow-sm" : "border-brand-200"
-              }`}
-            >
+        aria-label="User moderation metrics"
+        className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
+
+          {metrics.map(({ label, value, detail, icon: Icon, tone, filterValue }, index) =>
+          <motion.article
+          key={label}
+          custom={index}
+          variants={CARD_ENTRANCE}
+          initial="hidden"
+          animate="visible"
+          onClick={() => handleMetricClick(filterValue)}
+          whileHover={{ y: -2 }}
+          whileTap={{ scale: 0.98 }}
+          className={`group relative flex items-center gap-3 cursor-pointer overflow-hidden rounded-xl border bg-white p-3 transition-colors duration-300 hover:border-brand-300 hover:bg-brand-50 ${
+          activeFilter === filterValue ? "border-brand-400 bg-brand-50/50 shadow-sm" : "border-brand-200"
+          }`}>
+
               <div className="pointer-events-none absolute -right-10 -top-12 h-28 w-28 rounded-full bg-gradient-to-br from-brand-200 to-transparent blur-2xl transition-opacity duration-300 group-hover:opacity-80" />
               <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
-                activeFilter === filterValue ? "bg-brand-200 text-brand-800" : "bg-brand-100 text-brand-700 group-hover:bg-brand-200"
-              }`}>
+            activeFilter === filterValue ? "bg-brand-200 text-brand-800" : "bg-brand-100 text-brand-700 group-hover:bg-brand-200"
+            }`}>
                 <Icon className="h-5 w-5" />
               </span>
               <div className="relative min-w-0 flex-1">
                 <p className="text-lg font-bold tracking-tight text-slate-900 tabular-nums leading-tight">
-                  {value === null ? (
-                    <span className="inline-block h-5 w-10 animate-pulse rounded bg-slate-200/70" />
-                  ) : (
-                    value
-                  )}
+                  {value === null ?
+                <span className="inline-block h-5 w-10 animate-pulse rounded bg-slate-200/70" /> :
+
+                value}
+
                 </p>
                 <p className="truncate text-xs font-semibold text-slate-700">{label}</p>
                 <p className="truncate text-[10px] text-slate-500">{detail}</p>
               </div>
             </motion.article>
-          ))}
+          )}
         </section>
 
         <Datatable columns={columns} onDirectoryChange={refreshDirectoryMetrics} activeFilter={activeFilter} />
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Userlist;
-

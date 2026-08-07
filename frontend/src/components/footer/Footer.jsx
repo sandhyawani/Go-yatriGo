@@ -17,9 +17,8 @@ const Footer = () => {
           <span>© {new Date().getFullYear()} Go  YatriGo.</span>
         </div>
       </div>
-    </footer>
-  );
+    </footer>);
+
 };
 
 export default Footer;
-

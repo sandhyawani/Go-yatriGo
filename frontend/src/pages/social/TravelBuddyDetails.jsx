@@ -3,24 +3,25 @@ import axios from "../../api/axios";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Users,
-  MapPin,
-  Calendar,
-  ArrowLeft,
-  MessageSquare,
-  MoreVertical,
-  AlertTriangle,
-  UserCheck,
-  UserPlus,
-  ShieldCheck,
-  Clock,
-  Lock,
-  Globe,
-  Heart,
-  Award,
-  Star,
-  ShieldAlert,
-} from "lucide-react";
+Users,
+MapPin,
+Calendar,
+ArrowLeft,
+MessageSquare,
+MoreVertical,
+AlertTriangle,
+UserCheck,
+UserPlus,
+ShieldCheck,
+Clock,
+Lock,
+Globe,
+Heart,
+Award,
+Star,
+ShieldAlert,
+AlertCircle } from
+"lucide-react";
 import { showToast } from "../../utils/showToast";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -45,7 +46,7 @@ const TravelBuddyDetails = () => {
   const [showMembersModal, setShowMembersModal] = useState(false);
   const [showCancelJoinModal, setShowCancelJoinModal] = useState(false);
 
-  const [manageAction, setManageAction] = useState(null); // { type: 'remove'|'ban'|'promote'|'warn', memberId, memberName }
+  const [manageAction, setManageAction] = useState(null);
   const [warningMsg, setWarningMsg] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
 
@@ -56,7 +57,7 @@ const TravelBuddyDetails = () => {
   const fetchTripDetails = async () => {
     try {
       const res = await axios.get(`/social/buddy/${id}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       setTrip(res.data.trip);
     } catch (err) {
@@ -78,9 +79,9 @@ const TravelBuddyDetails = () => {
     setSubmittingRequest(true);
     try {
       const res = await axios.post(
-        `/social/buddy/join-request/${id}`,
-        { message: requestMessage },
-        { withCredentials: true },
+      `/social/buddy/join-request/${id}`,
+      { message: requestMessage },
+      { withCredentials: true }
       );
       setRequestMessage("");
       showToast.success(res.data.message || "Request submitted successfully!");
@@ -99,9 +100,9 @@ const TravelBuddyDetails = () => {
   const handleManageRequest = async (requestId, status) => {
     try {
       await axios.post(
-        `/social/buddy/manage-request/${id}`,
-        { requestId, status },
-        { withCredentials: true },
+      `/social/buddy/manage-request/${id}`,
+      { requestId, status },
+      { withCredentials: true }
       );
       showToast.success(`Request successfully ${status.toLowerCase()}`);
       await fetchTripDetails();
@@ -116,28 +117,28 @@ const TravelBuddyDetails = () => {
       const { type, memberId } = manageAction;
       if (type === "warn") {
         await axios.post(
-          `/social/buddy-trips/${id}/warn/${memberId}`,
-          { message: warningMsg },
-          { withCredentials: true },
+        `/social/buddy-trips/${id}/warn/${memberId}`,
+        { message: warningMsg },
+        { withCredentials: true }
         );
         showToast.success("Warning sent");
       } else if (type === "ban") {
         await axios.post(
-          `/social/buddy-trips/${id}/ban/${memberId}`,
-          {},
-          { withCredentials: true },
+        `/social/buddy-trips/${id}/ban/${memberId}`,
+        {},
+        { withCredentials: true }
         );
         showToast.success("User banned");
       } else if (type === "remove") {
         await axios.delete(`/social/buddy-trips/${id}/member/${memberId}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         showToast.success("Member removed");
       } else if (type === "promote") {
         await axios.post(
-          `/social/buddy-trips/${id}/promote/${memberId}`,
-          {},
-          { withCredentials: true },
+        `/social/buddy-trips/${id}/promote/${memberId}`,
+        {},
+        { withCredentials: true }
         );
         showToast.success("Role updated");
       }
@@ -152,9 +153,9 @@ const TravelBuddyDetails = () => {
   const handleLeaveTrip = async () => {
     try {
       await axios.post(
-        `/social/buddy/leave/${id}`,
-        {},
-        { withCredentials: true },
+      `/social/buddy/leave/${id}`,
+      {},
+      { withCredentials: true }
       );
       showToast.success("You left the group successfully");
       setShowLeaveModal(false);
@@ -167,15 +168,15 @@ const TravelBuddyDetails = () => {
   const handleCancelTrip = async () => {
     try {
       await axios.patch(
-        `/social/buddy/${id}/cancel`,
-        { cancellationReason },
-        { withCredentials: true },
+      `/social/buddy/${id}/cancel`,
+      { cancellationReason },
+      { withCredentials: true }
       );
       showToast.success("Travel group cancelled");
       setTrip((prev) => ({
         ...prev,
         status: "cancelled",
-        lifecycleStatus: "cancelled",
+        lifecycleStatus: "cancelled"
       }));
       setShowCancelModal(false);
     } catch (err) {
@@ -183,7 +184,7 @@ const TravelBuddyDetails = () => {
     }
   };
 
-  const handleLike = async () => {
+  const handleFelt = async () => {
     if (!user) {
       showToast.error("Please login to save groups");
       return;
@@ -191,23 +192,72 @@ const TravelBuddyDetails = () => {
 
     try {
       const res = await axios.post(
-        `/social/buddy/like/${id}`,
-        {},
-        { withCredentials: true },
+      `/social/buddy/like/${id}`,
+      {},
+      { withCredentials: true }
       );
       setTrip((prev) => ({
         ...prev,
-        likes: res.data.isLiked
-          ? [...(prev.likes || []), user._id]
-          : (prev.likes || []).filter(
-              (lid) => lid?.toString() !== user._id?.toString(),
-            ),
+        likes: res.data.isLiked ?
+        [...(prev.likes || []), user._id] :
+        (prev.likes || []).filter(
+        (lid) => lid?.toString() !== user._id?.toString()
+        )
       }));
       showToast.success(
-        res.data.isLiked ? "You felt this vibe!" : "Removed from Felt Vibes",
+      res.data.isLiked ? "You felt this vibe!" : "Removed from Felt Vibes"
       );
     } catch (err) {
       showToast.error("Action failed");
+    }
+  };
+
+  const handleOpenJourneyWorkspace = async (openChatDirectly = false) => {
+    try {
+      const res = await axios.get("/journeys/my", { withCredentials: true });
+      if (res.data?.success) {
+        const journeys = res.data.journeys || [];
+        const existing = journeys.find(
+        (j) => j.sourceType === "explore" && j.sourceId?.toString() === id.toString()
+        );
+        if (existing) {
+          if (openChatDirectly && existing.chatRoomId) {
+            navigate(`/social/chat/${existing.chatRoomId}`);
+          } else {
+            navigate(`/social/journeys/${existing._id}`);
+          }
+          return;
+        }
+      }
+    } catch (err) {
+      console.error("Error checking existing journey:", err);
+    }
+
+    try {
+      const payload = {
+        title: trip.title,
+        from: trip.from,
+        destination: trip.destination,
+        startDate: trip.startDate,
+        endDate: trip.endDate,
+        journeyType: "Friends",
+        privacy: "Private",
+        sourceType: "explore",
+        sourceId: trip._id,
+        description: trip.description,
+        invitedUserIds: []
+      };
+
+      const res = await axios.post("/journeys", payload, { withCredentials: true });
+      if (res.data?.success) {
+        if (openChatDirectly && res.data.journey.chatRoomId) {
+          navigate(`/social/chat/${res.data.journey.chatRoomId}`);
+        } else {
+          navigate(`/social/journeys/${res.data.journey._id}?welcome=true`);
+        }
+      }
+    } catch (err) {
+      showToast.error("Failed to unlock Journey Workspace");
     }
   };
 
@@ -215,102 +265,106 @@ const TravelBuddyDetails = () => {
     return (
       <div className="bg-[#FAFAFA] text-slate-800 flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-600"></div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!trip) return null;
 
   const currentUserId = (user?._id || user?.id || "").toString();
   const isHost =
-    user && (trip.userId?._id || trip.userId)?.toString() === currentUserId;
+  user && (trip.host?._id || trip.host)?.toString() === currentUserId;
   const myMemberObj = trip?.members?.find(
-    (m) => (m?.user?._id || m?.user)?.toString() === currentUserId,
+  (m) => (m?.user?._id || m?.user)?.toString() === currentUserId
   );
   const myRole = isHost ? "host" : myMemberObj?.role || "member";
   const isCompanion =
-    user &&
-    (trip.companions?.some(
-      (c) => (c?._id || c)?.toString() === currentUserId,
-    ) ||
-      trip.members?.some((m) => (m?._id || m)?.toString() === currentUserId));
+  user && (
+  trip.companions?.some(
+  (c) => (c?._id || c)?.toString() === currentUserId
+  ) ||
+  trip.members?.some((m) => (m?._id || m)?.toString() === currentUserId));
   const userRequest =
-    user &&
-    trip.joinRequests?.find(
-      (r) => (r?.userId?._id || r?.userId)?.toString() === currentUserId,
-    );
+  user &&
+  trip.joinRequests?.find(
+  (r) => (r?.userId?._id || r?.userId)?.toString() === currentUserId
+  );
   const isPending = userRequest && userRequest.status === "Pending";
   const isApproved = userRequest && userRequest.status === "Approved";
   const isRejected = userRequest && userRequest.status === "Rejected";
 
   const showChat = isHost || isCompanion || isApproved;
   const routeFrom = trip.from || trip.startLocation || "Anywhere";
-  const maxMembers = trip.maxMembers || trip.maxCompanions || 0;
-  const memberCount = (trip.companions?.length || 0) + 1;
+  const rawMax = trip.maxMembers || trip.maxCompanions || 8;
+  const maxMembers = rawMax > 20 ? 8 : rawMax;
+  const memberCount = Math.max(1, (trip.companions?.length || 0) + 1);
   const slotsOpen = Math.max(0, maxMembers - memberCount);
   const pendingRequests =
-    trip.joinRequests?.filter((r) => r.status === "Pending") || [];
+  trip.joinRequests?.filter((r) => r.status === "Pending") || [];
   const hasFelt = trip.likes?.some(
-    (likeId) => likeId?.toString() === currentUserId,
+  (likeId) => likeId?.toString() === currentUserId
   );
 
+  const startD = new Date(trip.startDate);
+  const endD = new Date(trip.endDate);
+  const diffDays = Math.round(Math.abs(endD - startD) / (1000 * 60 * 60 * 24));
+  const tripDuration = Math.max(1, diffDays + 1);
+
   const formattedDate =
-    new Date(trip.startDate).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      timeZone: "UTC",
-    }) +
-    " \u2013 " +
-    new Date(trip.endDate).toLocaleDateString(undefined, {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      timeZone: "UTC",
-    });
-  const tripDuration = Math.ceil(
-    (new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24),
-  );
+  startD.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    timeZone: "UTC"
+  }) +
+  " – " +
+  endD.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    timeZone: "UTC"
+  }) +
+  ` · ${tripDuration} ${tripDuration === 1 ? "day" : "days"}`;
 
   const getAvatar = (usr) => {
     return getAvatarUrl(usr?.pic, usr?.img, usr?.name);
   };
 
   return (
-    <div className="bg-[#FAFAFA] text-[#111827] pt-4 sm:pt-5 pb-20 px-4 sm:px-6 lg:px-8 font-sans antialiased">
+    <div className="bg-[#FAFAFA] text-[#1E293B] pt-4 sm:pt-5 pb-20 px-4 sm:px-6 lg:px-8 font-sans antialiased">
       <div className="max-w-6xl mx-auto">
-        {/* Back and Title Navigation */}
+        {}
         <div className="flex justify-between items-center gap-3 mb-4">
           <button
-            onClick={() => navigate("/social/buddy")}
-            className="inline-flex items-center gap-2 text-slate-500 hover:text-[#111827] font-black text-sm font-medium transition-colors"
-          >
+          onClick={() => navigate("/social/buddy")}
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-[#1E293B] font-black text-sm font-medium transition-colors">
+
             <ArrowLeft className="w-4 h-4" />{" "}
             <span
-              className="hidden sm:inline"
-              aria-label="Go back to groups list"
-            >
+            className="hidden sm:inline"
+            aria-label="Go back to groups list">
+
               Back to groups
             </span>
           </button>
 
           <div className="flex items-center gap-2">
-            {isHost && (
-              <button
-                onClick={() => setShowCancelModal(true)}
-                disabled={trip.status === "cancelled"}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-semibold text-xs transition-all rounded-xl ${trip.status === "cancelled" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"}`}
-              >
-                Cancel Group
-              </button>
-            )}
+            {isHost &&
             <button
-              onClick={handleLike}
-              aria-label={hasFelt ? "Remove Felt reaction" : "Felt This"}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-xl font-medium text-sm transition-all ${hasFelt ? "bg-[#FAFAFA] border-[#E5E7EB] text-[#111827] hover:bg-slate-50" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}
-            >
+            onClick={() => setShowCancelModal(true)}
+            disabled={trip.status === "cancelled"}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border font-semibold text-xs transition-all rounded-xl ${trip.status === "cancelled" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "border-rose-200 bg-rose-50 text-rose-600 hover:bg-rose-100"}`}>
+
+                Cancel Group
+              </button>}
+
+            <button
+            onClick={handleFelt}
+            aria-label={hasFelt ? "Remove Felt reaction" : "Felt This"}
+            className={`inline-flex items-center gap-1.5 px-3 py-1.5 border rounded-xl font-medium text-sm transition-all ${hasFelt ? "bg-[#FAFAFA] border-[#E5E7EB] text-[#1E293B] hover:bg-slate-50" : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"}`}>
+
               <span
-                className={`text-[14px] leading-none transition-all duration-300 ${hasFelt ? "drop-shadow-[0_0_6px_rgba(250,204,21,0.5)] scale-110 grayscale-0 opacity-100" : "grayscale opacity-80"}`}
-              >
+              className={`text-[14px] leading-none transition-all duration-300 ${hasFelt ? "drop-shadow-[0_0_6px_rgba(250,204,21,0.5)] scale-110 grayscale-0 opacity-100" : "grayscale opacity-80"}`}>
+
                 ✨
               </span>
               {hasFelt ? "Felt This!" : "Felt This"}
@@ -318,41 +372,41 @@ const TravelBuddyDetails = () => {
           </div>
         </div>
 
-        {/* 12-Column Responsive Grid Layout */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* LEFT 8 COLUMNS: Trip Parameters, Chat */}
+          {}
           <div className="lg:col-span-8 space-y-4">
-            {/* Trip Main Information & Hero Cover */}
+            {}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden"
-            >
-              {/* Hero Cover Image */}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+
+              {}
               <div className="w-full h-[220px] sm:h-64 bg-slate-200 relative">
-                {trip.coverImage ? (
-                  <>
-                    {!imgLoaded && !imgError && (
-                      <div className="absolute inset-0 bg-slate-200 animate-pulse" />
-                    )}
+                {trip.coverImage ?
+                <>
+                    {!imgLoaded && !imgError &&
+                  <div className="absolute inset-0 bg-slate-200 animate-pulse" />}
+
                     <img
-                      src={trip.coverImage}
-                      alt={`${trip.title} group cover photo`}
-                      onLoad={() => setImgLoaded(true)}
-                      onError={() => setImgError(true)}
-                      className={`w-full h-full object-cover transition-opacity ${imgLoaded ? "opacity-100" : "opacity-0"} ${imgError ? "hidden" : ""}`}
-                    />
-                    {imgError && (
-                      <div className="absolute inset-0 bg-[#EEEDFE] flex items-center justify-center">
+                  src={trip.coverImage}
+                  alt={`${trip.title} group cover photo`}
+                  onLoad={() => setImgLoaded(true)}
+                  onError={() => setImgError(true)}
+                  className={`w-full h-full object-cover transition-opacity ${imgLoaded ? "opacity-100" : "opacity-0"} ${imgError ? "hidden" : ""}`} />
+
+                    {imgError &&
+                  <div className="absolute inset-0 bg-[#EEEDFE] flex items-center justify-center">
                         <MapPin className="w-12 h-12 text-[#AFA9EC]" />
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="w-full h-full bg-[#8B5CF6]/20 flex items-center justify-center">
-                    <MapPin className="w-12 h-12 text-[#8B5CF6]/40" />
-                  </div>
-                )}
+                      </div>}
+
+                  </> :
+
+                <div className="w-full h-full bg-[#7C3AED]/20 flex items-center justify-center">
+                    <MapPin className="w-12 h-12 text-[#7C3AED]/40" />
+                  </div>}
+
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
                   <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight drop-shadow-md">
@@ -363,48 +417,48 @@ const TravelBuddyDetails = () => {
               <div className="p-4 sm:p-5">
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-1.5 flex-wrap">
-                    <span className="bg-[#8B5CF6]/10 border border-[#8B5CF6]/15 text-[#8B5CF6] text-[10px] font-black px-2.5 py-1 rounded-full">
+                    <span className="bg-[#7C3AED]/10 border border-[#7C3AED]/15 text-[#7C3AED] text-[10px] font-black px-2.5 py-1 rounded-full">
                       {trip.category}
                     </span>
-                    {trip.isPrivate ? (
-                      <span className="bg-slate-50 border border-slate-200 text-slate-500 text-[9px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                        <Lock className="w-3 h-3 text-[#FF5A7A]" /> Private
-                      </span>
-                    ) : (
-                      <span className="bg-slate-50 border border-slate-200 text-slate-500 text-[9px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                        <Globe className="w-3 h-3 text-[#8B5CF6]" /> Public
-                      </span>
-                    )}
-                    {trip.status === "cancelled" && (
-                      <span
-                        className="text-xs font-medium px-2.5 py-1 rounded-full bg-rose-100 text-rose-700"
-                        role="status"
-                      >
+                    {trip.isPrivate ?
+                    <span className="bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                        <ShieldCheck className="w-3 h-3 text-purple-600" /> Approval Required
+                      </span> :
+
+                    <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                        <Globe className="w-3 h-3 text-emerald-600" /> Open Group
+                      </span>}
+
+                    {trip.status === "cancelled" &&
+                    <span
+                    className="text-xs font-medium px-2.5 py-1 rounded-full bg-rose-100 text-rose-700"
+                    role="status">
+
                         Cancelled by host
-                      </span>
-                    )}
-                    {trip.lifecycleStatus && trip.status !== "cancelled" && (
-                      <span
-                        role="status"
-                        className={`text-xs font-medium capitalize px-2.5 py-1 rounded-full ${
-                          trip.lifecycleStatus === "active"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : trip.lifecycleStatus === "upcoming"
-                              ? "bg-blue-100 text-blue-700"
-                              : trip.lifecycleStatus === "completed"
-                                ? "bg-slate-100 text-slate-500"
-                                : "bg-rose-100 text-rose-700"
-                        }`}
-                      >
+                      </span>}
+
+                    {trip.lifecycleStatus && trip.status !== "cancelled" &&
+                    <span
+                    role="status"
+                    className={`text-xs font-medium capitalize px-2.5 py-1 rounded-full ${
+                    trip.lifecycleStatus === "active" ?
+                    "bg-emerald-100 text-emerald-700" :
+                    trip.lifecycleStatus === "upcoming" ?
+                    "bg-blue-100 text-blue-700" :
+                    trip.lifecycleStatus === "completed" ?
+                    "bg-slate-100 text-slate-500" :
+                    "bg-rose-100 text-rose-700"
+                    }`}>
+
                         {trip.lifecycleStatus}
-                      </span>
-                    )}
+                      </span>}
+
                   </div>
                   <span
-                    className="text-sm font-medium text-emerald-600"
-                    aria-live="polite"
-                  >
-                    {slotsOpen > 0 ? `${slotsOpen} slots open` : "Group full"}
+                  className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-xl"
+                  aria-live="polite">
+
+                    {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
                   </span>
                 </div>
 
@@ -416,7 +470,7 @@ const TravelBuddyDetails = () => {
                         Route
                       </span>
                       <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[#8B5CF6] truncate">
+                        <span className="text-[#7C3AED] truncate">
                           {routeFrom}
                         </span>
                         <span className="text-slate-400 text-[10px]">to</span>
@@ -427,7 +481,7 @@ const TravelBuddyDetails = () => {
                     </div>
                   </div>
                   <div className="flex items-start gap-2.5">
-                    <Calendar className="w-4 h-4 text-[#8B5CF6] mt-0.5 shrink-0" />
+                    <Calendar className="w-4 h-4 text-[#7C3AED] mt-0.5 shrink-0" />
                     <div>
                       <span className="text-[9px] font-black text-slate-500 block mb-0.5">
                         Dates
@@ -444,7 +498,7 @@ const TravelBuddyDetails = () => {
                         Members
                       </span>
                       <span className="text-xs font-bold text-slate-700">
-                        {memberCount} of {maxMembers || "many"} joined
+                        {memberCount} / {maxMembers} travelers
                       </span>
                     </div>
                   </div>
@@ -459,278 +513,287 @@ const TravelBuddyDetails = () => {
                   </p>
                 </div>
 
-                {/* Tags Display */}
-                {trip.tags && trip.tags.length > 0 && (
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {trip.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-[#EEEDFE] text-[#534AB7] rounded-full px-3 py-1 text-[13px] lowercase"
-                      >
+                {}
+                {trip.tags && trip.tags.length > 0 &&
+                <div className="mt-4 flex flex-wrap gap-2">
+                    {trip.tags?.map((tag) =>
+                  <span
+                  key={tag}
+                  className="bg-[#EEEDFE] text-[#534AB7] rounded-full px-3 py-1 text-[13px] lowercase">
+
                         #{tag}
                       </span>
-                    ))}
-                  </div>
-                )}
+                  )}
+                  </div>}
+
               </div>
             </motion.div>
 
-            {/* CHAT / DISCUSSION BOARD */}
+            {}
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4"
-            >
-              <h3 className="text-sm font-medium text-[#111827] flex items-center gap-2 border-b border-slate-100 pb-3">
-                <MessageSquare className="w-4 h-4 text-[#8B5CF6]" /> Group Chat
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4">
+
+              <h3 className="text-sm font-medium text-[#1E293B] flex items-center gap-2 border-b border-slate-100 pb-3">
+                <MessageSquare className="w-4 h-4 text-[#7C3AED]" /> Group Chat
               </h3>
 
-              {showChat ? (
-                <div className="bg-[#FAFAFA] p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {showChat ?
+              <div className="bg-[#FAFAFA] p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <h4 className="text-sm font-black text-[#111827]">
-                      You have access to this group chat.
+                    <h4 className="text-sm font-black text-emerald-600 flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4" /> You're in!
                     </h4>
                     <p className="text-xs text-slate-500 font-medium mt-1">
-                      Open messages to coordinate plans, meetups, and updates
-                      with the group.
+                      You have access to group chat. Coordinate plans, meetups, and updates.
                     </p>
                   </div>
                   <div className="shrink-0 flex items-center gap-2">
-                    {!isHost && (
-                      <button
-                        onClick={() => setShowLeaveModal(true)}
-                        className="px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-[10px] font-black transition-all border border-rose-200"
-                      >
+                    {!isHost &&
+                  <button
+                  onClick={() => setShowLeaveModal(true)}
+                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-[10px] font-black transition-all border border-rose-200">
+
                         Leave Group
-                      </button>
-                    )}
+                      </button>}
+
                     <button
-                      onClick={() =>
-                        navigate("/social/chat", {
-                          state: { groupId: trip._id },
-                        })
-                      }
-                      className="px-4 py-2 bg-[#8B5CF6] hover:bg-[#7c3aed] text-white rounded-xl text-[10px] font-black transition-all shadow-sm"
-                    >
-                      Open Chat
+                  onClick={() => handleOpenJourneyWorkspace(false)}
+                  className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-bold transition-all shadow-sm border border-indigo-200 flex items-center gap-1.5">
+
+                      <Globe className="w-3.5 h-3.5" /> Open Journey Hub
+                    </button>
+                    <button
+                  onClick={() => handleOpenJourneyWorkspace(true)}
+                  className="px-4 py-2 bg-[#7C3AED] hover:bg-[#7c3aed] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
+
+                      <MessageSquare className="w-3.5 h-3.5" /> Open Chat
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
-                  <Lock className="w-7 h-7 text-slate-400 mx-auto" />
-                  <h4 className="text-xs font-black text-[#111827]">
-                    Chat Access Locked
+                </div> :
+              isPending ?
+              <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
+                  <Clock className="w-7 h-7 text-amber-500 mx-auto" />
+                  <h4 className="text-sm font-black text-[#1E293B]">
+                    Request pending
                   </h4>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    Request to join this group and wait for host approval to
-                    enter the chat.
+                    You'll get access to group chat after approval.
                   </p>
-                </div>
-              )}
+                </div> :
 
-              {trip.status === "cancelled" && trip.cancellationReason && (
-                <div className="p-4 sm:p-5 bg-rose-50 border-t border-rose-100 text-rose-700 text-xs font-semibold">
+              <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
+                  <Lock className="w-7 h-7 text-slate-400 mx-auto" />
+                  <h4 className="text-sm font-black text-[#1E293B]">
+                    Group chat is private
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                    You'll get access after the host approves your join request.
+                  </p>
+                </div>}
+
+
+              {trip.status === "cancelled" && trip.cancellationReason &&
+              <div className="p-4 sm:p-5 bg-rose-50 border-t border-rose-100 text-rose-700 text-xs font-semibold">
                   <span className="font-black text-[10px] block mb-1">
                     Reason for Cancellation
                   </span>
                   "{trip.cancellationReason}"
-                </div>
-              )}
+                </div>}
+
             </motion.div>
           </div>
 
-          {/* RIGHT 4 COLUMNS: Sidebar Actions, Host Request Manager, Companion Profiles */}
+          {}
           <div className="lg:col-span-4 space-y-4">
-            {/* Host Profile Info Card */}
+            {}
             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
-              <h3 className="text-sm font-medium text-slate-500 border-b border-slate-100 pb-2 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-[#FF5A7A]" /> Host
+              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
+                <Award className="w-4 h-4 text-[#7C3AED]" /> Host
               </h3>
 
               <div className="flex items-center gap-3">
                 <img
-                  onClick={() => navigate(`/profile/${trip.userId?._id}`)}
-                  src={getAvatar(trip.userId)}
-                  alt={trip.userId?.name}
-                  className="w-11 h-11 rounded-xl object-cover border border-slate-100 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
-                />
-                <div className="min-w-0">
-                  <div className="flex items-center gap-1">
-                    <h4
-                      onClick={() => navigate(`/profile/${trip.userId?._id}`)}
-                      className="text-sm font-black text-[#111827] truncate cursor-pointer hover:text-[#8B5CF6] transition-colors"
-                    >
-                      {trip.userId?.name || "Traveler"}
-                    </h4>
-                  </div>
-                  <span className="text-[10px] font-semibold text-[#8B5CF6] capitalize">
-                    {trip.userId?.type || "Traveler"}
+                onClick={() => navigate(`/profile/${trip.host?._id}`)}
+                src={getAvatar(trip.host)}
+                alt={trip.host?.name}
+                className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm cursor-pointer hover:opacity-80 transition-opacity" />
+
+                <div className="min-w-0 flex-1">
+                  <h4
+                  onClick={() => navigate(`/profile/${trip.host?._id}`)}
+                  className="text-sm font-black text-[#1E293B] truncate cursor-pointer hover:text-[#7C3AED] transition-colors">
+
+                    {trip.host?.name || "Travel Host"}
+                  </h4>
+                  <span className="text-[10px] font-bold text-slate-400 capitalize block">
+                    {trip.host?.type || "Verified Member"}
                   </span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-center pt-2">
-                <div className="bg-[#FAFAFA] p-2.5 rounded-xl border border-slate-100">
-                  <span className="text-[8px] font-medium text-slate-400 block mb-0.5">
+              <div className="grid grid-cols-3 gap-1.5 text-center pt-1">
+                <div className="bg-[#FAFAFA] p-2 rounded-xl border border-slate-100">
+                  <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">
                     Rating
                   </span>
-                  <span className="text-xs font-bold text-slate-800 flex items-center justify-center gap-0.5 text-amber-500">
-                    <Star
-                      className="w-3.5 h-3.5 fill-amber-500"
-                      aria-hidden="true"
-                    />{" "}
-                    <span className="sr-only">Rating</span>{" "}
-                    {trip.userId?.rating || "4.6"}
+                  <span className="text-xs font-bold text-amber-500 flex items-center justify-center gap-0.5">
+                    <Star className="w-3 h-3 fill-amber-500" />
+                    {trip.host?.rating || "4.6"}
                   </span>
                 </div>
-                <div className="bg-[#FAFAFA] p-2.5 rounded-xl border border-slate-100">
-                  <span className="text-[8px] font-black text-slate-400 block mb-0.5">
-                    Trips
+                <div className="bg-[#FAFAFA] p-2 rounded-xl border border-slate-100">
+                  <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">
+                    Hosted
                   </span>
                   <span className="text-xs font-extrabold text-slate-800">
-                    {trip.userId?.completedTrips || 0} hosted
+                    {trip.host?.completedTrips || 3} trips
+                  </span>
+                </div>
+                <div className="bg-[#FAFAFA] p-2 rounded-xl border border-slate-100">
+                  <span className="text-[8px] font-black text-slate-400 uppercase block mb-0.5">
+                    Response
+                  </span>
+                  <span className="text-xs font-extrabold text-slate-800">
+                    {trip.host?.hostResponseRate || 100}%
                   </span>
                 </div>
               </div>
 
-              <div className="bg-[#FAFAFA] p-2.5 rounded-xl border border-slate-100 text-center mt-2">
-                <span className="text-[8px] font-black text-slate-400 block mb-0.5">
-                  Response Rate
-                </span>
-                <span className="text-xs font-extrabold text-slate-800">
-                  {trip.userId?.hostResponseRate || 100}%
-                </span>
-              </div>
+              <button
+              onClick={() => navigate(`/profile/${trip.host?._id}`)}
+              className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all border border-slate-200/60 flex items-center justify-center gap-1 mt-1">
 
-              {trip.userId?.interests && trip.userId.interests.length > 0 && (
-                <div className="pt-2">
-                  <span className="text-[8px] font-medium text-slate-400 block mb-1.5">
-                    Interests
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {trip.userId.interests?.map((interest) => (
-                      <span
-                        key={interest}
-                        className="bg-slate-50 border border-slate-200 px-2 py-0.5 rounded text-[8px] font-bold text-slate-500 shadow-sm"
-                      >
-                        {interest}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              )}
+                View Profile
+              </button>
             </div>
 
-            {/* Actions Panel / Booking Request Form */}
-            {!isHost && (
-              <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
-                <h3 className="text-sm font-medium text-slate-500 border-b border-slate-100 pb-2">
-                  Join group
-                </h3>
+            {}
+            {!isHost &&
+            <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                  <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                    Join this trip
+                  </h3>
+                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                    {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
+                  </span>
+                </div>
 
-                {isCompanion || isApproved ? (
-                  <div className="space-y-3">
-                    <button
-                      disabled
-                      className="w-full py-2.5 bg-[#8B5CF6]/10 text-[#8B5CF6] border border-[#8B5CF6]/20 rounded-xl font-black text-[10px] shadow-sm flex items-center justify-center gap-1.5 opacity-100 cursor-default"
-                    >
-                      <UserCheck className="w-4 h-4" /> Joined
-                    </button>
-                  </div>
-                ) : isPending ? (
-                  <div className="bg-amber-50 border border-amber-100 text-amber-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <Clock className="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Your join request is pending approval from the host.
+                {isCompanion || isApproved ?
+              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span className="text-xs font-bold text-slate-700">Member Status</span>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                      Joined ✓
                     </span>
-                  </div>
-                ) : trip.lifecycleStatus === "completed" ||
-                  trip.lifecycleStatus === "cancelled" ? (
-                  <div className="bg-slate-50 border border-slate-100 text-slate-500 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
+                  </div> :
+              isPending ?
+              <div className="bg-amber-50 border border-amber-100 text-amber-800 p-3 rounded-xl text-xs font-semibold space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
+                      <Clock className="w-4 h-4 text-amber-600" /> Request pending
+                    </div>
+                    <p className="text-[11px] text-amber-700">
+                      You'll get access to group chat after approval.
+                    </p>
+                  </div> :
+              trip.lifecycleStatus === "completed" ||
+              trip.lifecycleStatus === "cancelled" ?
+              <div className="bg-slate-50 border border-slate-100 text-slate-500 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
                     <Lock className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
                     <span>
                       This group is no longer active and cannot be joined.
                     </span>
-                  </div>
-                ) : trip.status === "full" ? (
-                  <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
+                  </div> :
+              trip.status === "full" || slotsOpen <= 0 ?
+              <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
                     <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
                     <span>
-                      This group is full and is no longer accepting new members.
+                      Group Full. This trip is no longer accepting new members.
                     </span>
-                  </div>
-                ) : isRejected ? (
-                  <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
+                  </div> :
+              trip.lifecycleStatus === "active" && trip.allowJoinAfterStart === false ?
+              <div className="bg-amber-50 border border-amber-100 text-amber-800 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <span>
+                      Joining Closed. The host has closed joining for this active trip.
+                    </span>
+                  </div> :
+              isRejected ?
+              <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
                     <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
                     <span>Your join request was declined by the host.</span>
-                  </div>
-                ) : trip.isPrivate ? (
-                  <form onSubmit={handleSendRequest} className="space-y-3">
-                    <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                      Submit a message to introduce yourself to the host:
-                    </p>
-                    <textarea
-                      placeholder="Describe your interests, why you want to join..."
-                      value={requestMessage}
-                      onChange={(e) => setRequestMessage(e.target.value)}
-                      className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all resize-none h-20 shadow-inner"
-                    />
-                    <button
-                      type="submit"
-                      disabled={submittingRequest}
-                      className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
-                    >
-                      <UserPlus className="w-4 h-4" />{" "}
-                      {submittingRequest ? "Submitting..." : "Request to Join"}
-                    </button>
-                  </form>
-                ) : (
-                  <form onSubmit={handleSendRequest} className="space-y-3">
-                    <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                      This is a public group. You can join instantly without
-                      approval.
-                    </p>
-                    <button
-                      type="submit"
-                      disabled={submittingRequest}
-                      className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-medium text-sm rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
-                    >
-                      <UserPlus className="w-4 h-4" />{" "}
-                      {submittingRequest ? "Joining..." : "Join Group"}
-                    </button>
-                  </form>
-                )}
-              </div>
-            )}
+                  </div> :
 
-            {/* Host Join Request Manager (Visible ONLY to the host) */}
-            {isHost && (
-              <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+              <form onSubmit={handleSendRequest} className="space-y-3">
+                    {trip.lifecycleStatus === "active" &&
+                <div className="bg-amber-50/80 border border-amber-200/80 p-3.5 rounded-xl text-amber-900 text-xs font-medium space-y-1">
+                        <div className="font-bold flex items-center gap-1.5 text-amber-900">
+                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                          Trip already in progress
+                        </div>
+                        <p className="text-amber-800 text-[11px] leading-relaxed">
+                          This journey has started. If approved, you'll be joining an active group.
+                        </p>
+                      </div>}
+
+                    <div className="space-y-1">
+                      <label className="text-xs font-bold text-slate-700 block">
+                        Introduce yourself:
+                      </label>
+                      <textarea
+                  placeholder="Describe your travel style, why you want to join..."
+                  value={requestMessage}
+                  onChange={(e) => setRequestMessage(e.target.value)}
+                  className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all resize-none h-20 shadow-inner" />
+
+                    </div>
+                    <button
+                type="submit"
+                disabled={submittingRequest}
+                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-sm">
+
+                      <UserPlus className="w-4 h-4" />{" "}
+                      {submittingRequest ?
+                  "Submitting..." :
+                  trip.lifecycleStatus === "active" ?
+                  "Request to Join Active Trip" :
+                  "Request to Join"}
+                    </button>
+                  </form>}
+
+              </div>}
+
+
+            {}
+            {isHost &&
+            <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
                 <h3 className="text-[10px] font-black text-slate-500 border-b border-slate-100 pb-2">
                   Pending Requests ({pendingRequests.length})
                 </h3>
 
                 <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar">
-                  {pendingRequests.length === 0 ? (
-                    <p className="text-xs text-slate-400 font-semibold py-3 text-center">
+                  {pendingRequests.length === 0 ?
+                <p className="text-xs text-slate-400 font-semibold py-3 text-center">
                       No pending requests.
-                    </p>
-                  ) : (
-                    pendingRequests.map((req) => (
-                      <div
-                        key={req._id}
-                        className="bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 space-y-2"
-                      >
+                    </p> :
+
+                pendingRequests.map((req) =>
+                <div
+                key={req._id}
+                className="bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 space-y-2">
+
                         <div className="flex items-center gap-2">
                           <img
-                            src={getAvatar(req.userId)}
-                            alt={req.userId?.name}
-                            className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm"
-                          />
+                    src={getAvatar(req.userId)}
+                    alt={req.userId?.name}
+                    className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm" />
+
                           <div className="min-w-0">
-                            <span className="text-xs font-black text-[#111827] block truncate">
+                            <span className="text-xs font-black text-[#1E293B] block truncate">
                               {req.userId?.name || "Traveler"}
                             </span>
                             <span className="text-[9px] text-slate-500 font-semibold">
@@ -738,79 +801,84 @@ const TravelBuddyDetails = () => {
                             </span>
                           </div>
                         </div>
-                        {req.message && (
-                          <p className="text-[11px] text-slate-500 italic bg-white border border-slate-100 p-2 rounded-lg leading-relaxed">
+                        {req.message &&
+                  <p className="text-[11px] text-slate-500 italic bg-white border border-slate-100 p-2 rounded-lg leading-relaxed">
                             "{req.message}"
-                          </p>
-                        )}
+                          </p>}
+
                         <div className="flex gap-1.5 pt-1">
                           <button
-                            onClick={() =>
-                              handleManageRequest(req._id, "Approved")
-                            }
-                            disabled={trip.status === "cancelled"}
-                            className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all ${trip.status === "cancelled" ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}
-                          >
+                    onClick={() =>
+                    handleManageRequest(req._id, "Approved")}
+
+                    disabled={trip.status === "cancelled"}
+                    className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all ${trip.status === "cancelled" ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}>
+
                             Approve
                           </button>
                           <button
-                            onClick={() =>
-                              handleManageRequest(req._id, "Rejected")
-                            }
-                            disabled={trip.status === "cancelled"}
-                            className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all border ${trip.status === "cancelled" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"}`}
-                          >
+                    onClick={() =>
+                    handleManageRequest(req._id, "Rejected")}
+
+                    disabled={trip.status === "cancelled"}
+                    className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all border ${trip.status === "cancelled" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"}`}>
+
                             Decline
                           </button>
                         </div>
                       </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
+                )}
 
-            {/* Group Members Panel */}
+                </div>
+              </div>}
+
+
+            {}
             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
-              <h3 className="text-sm font-medium text-slate-500 border-b border-slate-100 pb-2">
-                Members ({memberCount})
-              </h3>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                  Members ({memberCount})
+                </h3>
+                <span className="text-[10px] font-bold text-slate-400">
+                  {maxMembers - memberCount > 0 ? `${maxMembers - memberCount} spots left` : "Full"}
+                </span>
+              </div>
 
               <div className="space-y-3 max-h-[288px] overflow-y-auto custom-scrollbar pr-2 pb-2">
                 {trip.members?.map((memberObj) => {
                   const mUser = memberObj.user || {};
-                  if (!mUser._id) return null; // safety check
+                  if (!mUser._id) return null;
                   const mId = mUser._id.toString();
                   const isTargetHost = memberObj.role === "host";
                   const isMe = mId === currentUserId;
                   const canManage =
-                    (myRole === "host" || myRole === "cohost") &&
-                    !isMe &&
-                    !isTargetHost;
+                  (myRole === "host" || myRole === "cohost") &&
+                  !isMe &&
+                  !isTargetHost;
 
                   return (
                     <div
-                      key={mId}
-                      className="flex items-center justify-between bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 relative group"
-                    >
+                    key={mId}
+                    className="flex items-center justify-between bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 relative group">
+
                       <div className="flex items-center gap-3">
                         <img
-                          onClick={() => navigate(`/profile/${mId}`)}
-                          src={getAvatar(mUser)}
-                          alt={mUser.name}
-                          className="w-9 h-9 rounded-lg object-cover border border-slate-100 shadow-sm cursor-pointer"
-                        />
+                        onClick={() => navigate(`/profile/${mId}`)}
+                        src={getAvatar(mUser)}
+                        alt={mUser.name}
+                        className="w-9 h-9 rounded-lg object-cover border border-slate-100 shadow-sm cursor-pointer" />
+
                         <div className="min-w-0">
                           <div className="flex items-center gap-1">
                             <h4
-                              onClick={() => navigate(`/profile/${mId}`)}
-                              className="text-xs font-bold text-[#111827] leading-tight truncate cursor-pointer hover:text-brand-600"
-                            >
+                            onClick={() => navigate(`/profile/${mId}`)}
+                            className="text-xs font-bold text-[#1E293B] leading-tight truncate cursor-pointer hover:text-brand-600">
+
                               {mUser.name || "User"}
                             </h4>
                             <span
-                              className={`text-[8px] font-black px-1.5 py-0.5 rounded ${memberObj.role === "host" ? "bg-brand-50 text-brand-600" : memberObj.role === "cohost" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}`}
-                            >
+                            className={`text-[8px] font-black px-1.5 py-0.5 rounded ${memberObj.role === "host" ? "bg-brand-50 text-brand-600" : memberObj.role === "cohost" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}`}>
+
                               {memberObj.role}
                             </span>
                           </div>
@@ -820,85 +888,85 @@ const TravelBuddyDetails = () => {
                         </div>
                       </div>
 
-                      {canManage && (
-                        <div className="relative">
+                      {canManage &&
+                      <div className="relative">
                           <button
-                            onClick={() =>
-                              setOpenDropdownId(
-                                openDropdownId === mId ? null : mId,
-                              )
-                            }
-                            className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-200 transition-colors"
-                          >
+                        onClick={() =>
+                        setOpenDropdownId(
+                        openDropdownId === mId ? null : mId
+                        )}
+
+                        className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-200 transition-colors">
+
                             <MoreVertical className="w-4 h-4" />
                           </button>
 
-                          {openDropdownId === mId && (
-                            <div className="absolute right-0 top-full mt-1 w-40 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
+                          {openDropdownId === mId &&
+                        <div className="absolute right-0 top-full mt-1 w-40 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
                               <button
-                                onClick={() => {
-                                  setManageAction({
-                                    type: "warn",
-                                    memberId: mId,
-                                    memberName: mUser.name,
-                                  });
-                                  setOpenDropdownId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-600 hover:bg-slate-50"
-                              >
+                          onClick={() => {
+                            setManageAction({
+                              type: "warn",
+                              memberId: mId,
+                              memberName: mUser.name
+                            });
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-600 hover:bg-slate-50">
+
                                 Send Warning
                               </button>
-                              {myRole === "host" && (
-                                <button
-                                  onClick={() => {
-                                    setManageAction({
-                                      type: "promote",
-                                      memberId: mId,
-                                      memberName: mUser.name,
-                                    });
-                                    setOpenDropdownId(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-xs font-semibold text-brand-600 hover:bg-slate-50"
-                                >
-                                  {memberObj.role === "cohost"
-                                    ? "Demote to Member"
-                                    : "Make Co-host"}
-                                </button>
-                              )}
+                              {myRole === "host" &&
+                          <button
+                          onClick={() => {
+                            setManageAction({
+                              type: "promote",
+                              memberId: mId,
+                              memberName: mUser.name
+                            });
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs font-semibold text-brand-600 hover:bg-slate-50">
+
+                                  {memberObj.role === "cohost" ?
+                            "Demote to Member" :
+                            "Make Co-host"}
+                                </button>}
+
                               <button
-                                onClick={() => {
-                                  setManageAction({
-                                    type: "remove",
-                                    memberId: mId,
-                                    memberName: mUser.name,
-                                  });
-                                  setOpenDropdownId(null);
-                                }}
-                                className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-slate-50 border-t border-slate-100"
-                              >
+                          onClick={() => {
+                            setManageAction({
+                              type: "remove",
+                              memberId: mId,
+                              memberName: mUser.name
+                            });
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-slate-50 border-t border-slate-100">
+
                                 Remove Member
                               </button>
-                              {myRole === "host" && (
-                                <button
-                                  onClick={() => {
-                                    setManageAction({
-                                      type: "ban",
-                                      memberId: mId,
-                                      memberName: mUser.name,
-                                    });
-                                    setOpenDropdownId(null);
-                                  }}
-                                  className="w-full text-left px-4 py-2 text-xs font-black text-rose-600 hover:bg-rose-50"
-                                >
+                              {myRole === "host" &&
+                          <button
+                          onClick={() => {
+                            setManageAction({
+                              type: "ban",
+                              memberId: mId,
+                              memberName: mUser.name
+                            });
+                            setOpenDropdownId(null);
+                          }}
+                          className="w-full text-left px-4 py-2 text-xs font-black text-rose-600 hover:bg-rose-50">
+
                                   Ban User
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  );
+                                </button>}
+
+                            </div>}
+
+                        </div>}
+
+                    </div>);
+
                 })}
               </div>
             </div>
@@ -906,229 +974,227 @@ const TravelBuddyDetails = () => {
         </div>
       </div>
 
-      {/* Management Modals */}
-      {manageAction && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {}
+      {manageAction &&
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative"
-          >
-            <h3 className="text-xl font-black text-[#111827] mb-2 flex items-center gap-2">
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+
+            <h3 className="text-xl font-black text-[#1E293B] mb-2 flex items-center gap-2">
               <AlertTriangle
-                className={`w-5 h-5 ${manageAction.type === "remove" || manageAction.type === "ban" ? "text-rose-500" : "text-amber-500"}`}
-              />
-              {manageAction.type === "warn"
-                ? "Send Warning"
-                : manageAction.type === "ban"
-                  ? "Ban User"
-                  : manageAction.type === "remove"
-                    ? "Remove Member"
-                    : "Change Role"}
+            className={`w-5 h-5 ${manageAction.type === "remove" || manageAction.type === "ban" ? "text-rose-500" : "text-amber-500"}`} />
+
+              {manageAction.type === "warn" ?
+            "Send Warning" :
+            manageAction.type === "ban" ?
+            "Ban User" :
+            manageAction.type === "remove" ?
+            "Remove Member" :
+            "Change Role"}
             </h3>
 
             <p className="text-xs font-semibold text-slate-500 mb-4">
               {manageAction.type === "warn" &&
-                `Send a warning to ${manageAction.memberName}.`}
+            `Send a warning to ${manageAction.memberName}.`}
               {manageAction.type === "remove" &&
-                `Are you sure you want to remove ${manageAction.memberName}? They will lose access to the group chat.`}
+            `Are you sure you want to remove ${manageAction.memberName}? They will lose access to the group chat.`}
               {manageAction.type === "ban" &&
-                `Are you sure you want to permanently ban ${manageAction.memberName}? They will not be able to rejoin.`}
+            `Are you sure you want to permanently ban ${manageAction.memberName}? They will not be able to rejoin.`}
               {manageAction.type === "promote" &&
-                `Change the role of ${manageAction.memberName}.`}
+            `Change the role of ${manageAction.memberName}.`}
             </p>
 
-            {manageAction.type === "warn" && (
-              <textarea
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#111827] outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
-                placeholder="Warning message..."
-                value={warningMsg}
-                onChange={(e) => setWarningMsg(e.target.value)}
-              />
-            )}
+            {manageAction.type === "warn" &&
+          <textarea
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#1E293B] outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
+          placeholder="Warning message..."
+          value={warningMsg}
+          onChange={(e) => setWarningMsg(e.target.value)} />}
+
+
 
             <div className="flex justify-end gap-3 mt-4">
               <button
-                onClick={() => {
-                  setManageAction(null);
-                  setWarningMsg("");
-                }}
-                className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200"
-              >
+            onClick={() => {
+              setManageAction(null);
+              setWarningMsg("");
+            }}
+            className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200">
+
                 Cancel
               </button>
               <button
-                onClick={handleManageMember}
-                className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "warn" ? "bg-amber-500 hover:bg-amber-600" : manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-brand-600 hover:bg-brand-700"}`}
-              >
+            onClick={handleManageMember}
+            className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "warn" ? "bg-amber-500 hover:bg-amber-600" : manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-brand-600 hover:bg-brand-700"}`}>
+
                 Confirm
               </button>
             </div>
           </motion.div>
-        </div>
-      )}
+        </div>}
 
-      {showLeaveModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+      {showLeaveModal &&
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
-            <h3 className="text-xl font-black text-[#111827] mb-2 flex items-center gap-2">
+            <h3 className="text-lg font-extrabold text-[#1E293B] mb-2 flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-rose-500" />
-              Leave Group
+              Leave this trip?
             </h3>
-            <p className="text-xs font-semibold text-slate-500 mb-6">
-              Are you sure you want to leave this travel group? You will lose
-              access to group chat and trip updates.
+            <p className="text-xs font-semibold text-slate-500 leading-relaxed mb-6">
+              You'll lose access to the group chat and journey updates.
             </p>
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowLeaveModal(false)}
-                className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200 transition-colors"
-              >
+            onClick={() => setShowLeaveModal(false)}
+            className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors">
+
                 Cancel
               </button>
               <button
-                onClick={handleLeaveTrip}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95"
-              >
-                Leave Group
+            onClick={handleLeaveTrip}
+            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95">
+
+                Leave Trip
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
 
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+      {showCancelModal &&
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
-            <h3 className="text-xl font-black text-[#111827] mb-2">
+            <h3 className="text-xl font-black text-[#1E293B] mb-2">
               Cancel this trip?
             </h3>
             <p className="text-xs font-semibold text-slate-500 mb-4">
               This action cannot be undone. Joined members will be notified.
             </p>
             <textarea
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#111827] outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
-              placeholder="Reason for cancellation (optional)"
-              value={cancellationReason}
-              onChange={(e) => setCancellationReason(e.target.value)}
-            />
+          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#1E293B] outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
+          placeholder="Reason for cancellation (optional)"
+          value={cancellationReason}
+          onChange={(e) => setCancellationReason(e.target.value)} />
+
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setShowCancelModal(false)}
-                className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm"
-              >
+            onClick={() => setShowCancelModal(false)}
+            className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm">
+
                 Keep Group
               </button>
               <button
-                onClick={handleCancelTrip}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95"
-              >
+            onClick={handleCancelTrip}
+            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95">
+
                 Cancel Trip
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
 
-      {showCancelJoinModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+      {showCancelJoinModal &&
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
-            <h3 className="text-xl font-bold text-[#111827] mb-2">
+            <h3 className="text-xl font-bold text-[#1E293B] mb-2">
               Cancel your join request?
             </h3>
             <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setShowCancelJoinModal(false)}
-                className="px-4 py-2 bg-slate-100 text-slate-600 font-medium rounded-lg text-sm hover:bg-slate-200 transition-colors"
-              >
+            onClick={() => setShowCancelJoinModal(false)}
+            className="px-4 py-2 bg-slate-100 text-slate-600 font-medium rounded-lg text-sm hover:bg-slate-200 transition-colors">
+
                 Keep request
               </button>
               <button
-                onClick={async () => {
-                  try {
-                    await axios.post(
-                      `/social/buddy/manage-request/${id}`,
-                      { requestId: userRequest._id, status: "Cancelled" },
-                      { withCredentials: true },
-                    );
-                    fetchTripDetails();
-                    setShowCancelJoinModal(false);
-                  } catch (e) {
-                    setShowCancelJoinModal(false);
-                    fetchTripDetails();
-                  }
-                }}
-                className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg text-sm shadow-md transition-all active:scale-95"
-              >
+            onClick={async () => {
+              try {
+                await axios.post(
+                `/social/buddy/manage-request/${id}`,
+                { requestId: userRequest._id, status: "Cancelled" },
+                { withCredentials: true }
+                );
+                fetchTripDetails();
+                setShowCancelJoinModal(false);
+              } catch (e) {
+                setShowCancelJoinModal(false);
+                fetchTripDetails();
+              }
+            }}
+            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg text-sm shadow-md transition-all active:scale-95">
+
                 Cancel request
               </button>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
 
-      {showMembersModal && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-          onClick={() => setShowMembersModal(false)}
-        >
+
+      {showMembersModal &&
+      <div
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+      onClick={() => setShowMembersModal(false)}>
+
           <div
-            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative max-h-[80vh] overflow-y-auto"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold text-[#111827] mb-4">
+        className="bg-white rounded-3xl p-6 w-full max-w-md shadow-2xl relative max-h-[80vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}>
+
+            <h3 className="text-xl font-bold text-[#1E293B] mb-4">
               All Members
             </h3>
             <div className="space-y-4">
               {trip.members?.map((memberObj) => {
-                const mUser = memberObj.user || {};
-                if (!mUser._id) return null;
-                const mId = mUser._id.toString();
-                return (
-                  <div
-                    key={mId}
-                    className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors"
-                  >
+              const mUser = memberObj.user || {};
+              if (!mUser._id) return null;
+              const mId = mUser._id.toString();
+              return (
+                <div
+                key={mId}
+                className="flex items-center gap-3 p-2 hover:bg-slate-50 rounded-lg transition-colors">
+
                     <img
-                      src={getAvatar(mUser)}
-                      alt={mUser.name}
-                      className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm"
-                    />
+                  src={getAvatar(mUser)}
+                  alt={mUser.name}
+                  className="w-10 h-10 rounded-full object-cover border border-slate-100 shadow-sm" />
+
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <h4 className="text-sm font-semibold text-[#111827] truncate">
+                        <h4 className="text-sm font-semibold text-[#1E293B] truncate">
                           {mUser.name || "User"}
                         </h4>
-                        {memberObj.role === "host" && (
-                          <span className="bg-brand-50 text-brand-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        {memberObj.role === "host" &&
+                      <span className="bg-brand-50 text-brand-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                             Host
-                          </span>
-                        )}
+                          </span>}
+
                       </div>
                       <span className="text-xs text-slate-500">
                         Rating {mUser.rating || "4.5"} &middot; Joined recently
                       </span>
                     </div>
-                  </div>
-                );
-              })}
+                  </div>);
+
+            })}
             </div>
           </div>
-        </div>
-      )}
+        </div>}
 
-      {reportModal.isOpen && (
-        <ReportModal
-          isOpen={reportModal.isOpen}
-          onClose={() => setReportModal({ isOpen: false })}
-          targetId={trip._id}
-          targetType="group"
-          reportedUserId={trip.creator?._id || trip.creator}
-        />
-      )}
-    </div>
-  );
+
+      {reportModal.isOpen &&
+      <ReportModal
+      isOpen={reportModal.isOpen}
+      onClose={() => setReportModal({ isOpen: false })}
+      targetId={trip._id}
+      targetType="group"
+      reportedUserId={trip.creator?._id || trip.creator} />}
+
+
+    </div>);
+
 };
 
 export default TravelBuddyDetails;
-

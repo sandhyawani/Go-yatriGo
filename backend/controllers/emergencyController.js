@@ -2,19 +2,17 @@ const asyncHandler = require("express-async-handler");
 const EmergencyContact = require("../models/EmergencyContact");
 const User = require("../models/User");
 
-// Get all emergency contacts of logged-in user
 const getContacts = asyncHandler(async (req, res) => {
   const contacts = await EmergencyContact.find({
-    user: req.user._id,
+    user: req.user._id
   }).sort({ isPrimary: -1, createdAt: -1 });
 
   res.status(200).json({
     success: true,
-    contacts,
+    contacts
   });
 });
 
-// Add a new emergency contact
 const addContact = asyncHandler(async (req, res) => {
   const { name, relation, phone, email, isPrimary } = req.body;
 
@@ -23,11 +21,10 @@ const addContact = asyncHandler(async (req, res) => {
     throw new Error("Name and phone number are required.");
   }
 
-  // Handle primary isolation cleanly using a bulk write or sequential block before document instantiation
   if (isPrimary) {
     await EmergencyContact.updateMany(
-      { user: req.user._id },
-      { $set: { isPrimary: false } }
+    { user: req.user._id },
+    { $set: { isPrimary: false } }
     );
   }
 
@@ -37,18 +34,17 @@ const addContact = asyncHandler(async (req, res) => {
     relation: relation ? relation.trim() : undefined,
     phone: phone.trim(),
     email: email ? email.trim().toLowerCase() : undefined,
-    isPrimary: isPrimary || false,
+    isPrimary: isPrimary || false
   });
 
   await contact.save();
 
   res.status(201).json({
     success: true,
-    contact,
+    contact
   });
 });
 
-// Update an existing emergency contact
 const updateContact = asyncHandler(async (req, res) => {
   const { name, relation, phone, email, isPrimary } = req.body;
 
@@ -66,8 +62,8 @@ const updateContact = asyncHandler(async (req, res) => {
 
   if (isPrimary && !contact.isPrimary) {
     await EmergencyContact.updateMany(
-      { user: req.user._id, _id: { $ne: contact._id } },
-      { $set: { isPrimary: false } }
+    { user: req.user._id, _id: { $ne: contact._id } },
+    { $set: { isPrimary: false } }
     );
   }
 
@@ -81,11 +77,10 @@ const updateContact = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    contact,
+    contact
   });
 });
 
-// Delete an emergency contact
 const deleteContact = asyncHandler(async (req, res) => {
   const contact = await EmergencyContact.findById(req.params.id);
 
@@ -102,7 +97,6 @@ const deleteContact = asyncHandler(async (req, res) => {
   const wasPrimary = contact.isPrimary;
   await contact.deleteOne();
 
-  // Automatic Fallback Strategy: If primary contact is deleted, promote the next newest contact
   if (wasPrimary) {
     const nextContact = await EmergencyContact.findOne({ user: req.user._id }).sort({ createdAt: -1 });
     if (nextContact) {
@@ -113,11 +107,10 @@ const deleteContact = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message: "Contact removed",
+    message: "Contact removed"
   });
 });
 
-// Activate or deactivate SOS mode
 const toggleSOS = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
@@ -131,11 +124,27 @@ const toggleSOS = asyncHandler(async (req, res) => {
 
   let primaryContacts = [];
   if (user.sosActive) {
-    
-    primaryContacts = await EmergencyContact.find({ user: req.user._id }).sort({ isPrimary: -1 });
-    
-    
-    // e.g., await SMSNotificationEngine.dispatchSOS(primaryContacts, user);
+    const contactsColl = await EmergencyContact.find({ user: req.user._id }).sort({ isPrimary: -1 });
+    const contactsSub = user.emergencyContacts || [];
+
+    const merged = [...contactsColl];
+    contactsSub.forEach((sub) => {
+      const exists = merged.some((c) => c.phone === sub.phone || c.name === sub.name);
+      if (!exists) {
+        merged.push({
+          _id: sub._id,
+          user: req.user._id,
+          name: sub.name,
+          relation: sub.relation,
+          phone: sub.phone,
+          email: sub.email,
+          isPrimary: sub.isPrimary,
+          createdAt: sub.createdAt || new Date()
+        });
+      }
+    });
+
+    primaryContacts = merged.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
   }
 
   res.status(200).json({
@@ -150,5 +159,5 @@ module.exports = {
   addContact,
   updateContact,
   deleteContact,
-  toggleSOS,
+  toggleSOS
 };

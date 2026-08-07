@@ -1,37 +1,38 @@
 import { showToast } from "../utils/showToast";
-// src/pages/AdminContactRequests.jsx
+
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import axios from "../api/axios";
 import { motion } from "framer-motion";
 import {
-  AlertTriangle,
-  CheckCircle,
-  ChevronRight,
-  Clock,
-  FileText,
-  Filter,
-  Mail,
-  MessageCircle,
-  RefreshCw,
-  RotateCcw,
-  Search,
-  User,
-} from "lucide-react";
+AlertTriangle,
+CheckCircle,
+ChevronRight,
+Clock,
+FileText,
+Filter,
+Mail,
+MessageCircle,
+RefreshCw,
+RotateCcw,
+Search,
+User } from
+"lucide-react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/authContext";
+import CustomSelect from "../components/ui/CustomSelect";
 
 const STATUS = {
   ALL: "ALL",
   PENDING: "PENDING",
-  RESOLVED: "RESOLVED",
+  RESOLVED: "RESOLVED"
 };
 
 const ViewState = {
   LOADING: "loading",
   ERROR: "error",
   EMPTY: "empty",
-  SUCCESS: "success",
+  SUCCESS: "success"
 };
 
 function CardSkeleton() {
@@ -52,22 +53,22 @@ function CardSkeleton() {
           <div className="h-9 w-9 rounded-xl bg-brand-50" />
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function StatPill({ label, value, tone }) {
   const toneClass =
-    tone === "warning"
-      ? "bg-amber-50 text-amber-700 border-amber-200"
-      : "bg-emerald-50 text-emerald-700 border-emerald-200";
+  tone === "warning" ?
+  "bg-amber-50 text-amber-700 border-amber-200" :
+  "bg-emerald-50 text-emerald-700 border-emerald-200";
 
   return (
     <div className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold ${toneClass}`}>
       <span>{value}</span>
       <span>{label}</span>
-    </div>
-  );
+    </div>);
+
 }
 
 function SearchBox({ value, onChange }) {
@@ -75,33 +76,34 @@ function SearchBox({ value, onChange }) {
     <div className="relative w-full sm:w-72">
       <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
       <input
-        type="search"
-        value={value}
-        onChange={onChange}
-        placeholder="Search inquiries..."
-        aria-label="Search inquiries"
-        className="w-full rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-medium text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
-      />
-    </div>
-  );
+      type="search"
+      value={value}
+      onChange={onChange}
+      placeholder="Search inquiries..."
+      aria-label="Search inquiries"
+      className="w-full rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-medium text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+
+    </div>);
+
 }
 
 function StatusFilter({ value, onChange }) {
   return (
     <div className="relative w-full sm:w-48">
       <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-      <select
-        value={value}
-        onChange={onChange}
-        aria-label="Filter by status"
-        className="w-full appearance-none rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-bold text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
-      >
-        <option value={STATUS.ALL}>All Status</option>
-        <option value={STATUS.PENDING}>Pending</option>
-        <option value={STATUS.RESOLVED}>Resolved</option>
-      </select>
-    </div>
-  );
+      <CustomSelect
+      value={value}
+      onChange={onChange}
+      aria-label="Filter by status"
+      className="w-full appearance-none rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-bold text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
+      options={[
+        { label: "All Status", value: STATUS.ALL },
+        { label: "Pending", value: STATUS.PENDING },
+        { label: "Resolved", value: STATUS.RESOLVED }
+      ]}
+    />
+    </div>);
+
 }
 
 function ErrorState({ message, onRetry, retrying }) {
@@ -116,17 +118,17 @@ function ErrorState({ message, onRetry, retrying }) {
           <p className="mt-1 text-sm text-red-700">{message}</p>
         </div>
         <button
-          type="button"
-          onClick={onRetry}
-          disabled={retrying}
-          className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
+        type="button"
+        onClick={onRetry}
+        disabled={retrying}
+        className="inline-flex items-center justify-center gap-2 rounded-xl bg-red-600 px-4 py-2.5 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60">
+
           <RefreshCw className={`h-4 w-4 ${retrying ? "animate-spin" : ""}`} />
           Retry
         </button>
       </div>
-    </div>
-  );
+    </div>);
+
 }
 
 function EmptyState({ hasFilters }) {
@@ -137,12 +139,12 @@ function EmptyState({ hasFilters }) {
       </div>
       <h3 className="text-xl font-bold text-slate-900">No Inquiries Found</h3>
       <p className="mx-auto mt-2 max-w-md text-sm font-medium text-slate-500">
-        {hasFilters
-          ? "No contact requests match your current search or status filter."
-          : "There are no contact requests yet."}
+        {hasFilters ?
+        "No contact requests match your current search or status filter." :
+        "There are no contact requests yet."}
       </p>
-    </div>
-  );
+    </div>);
+
 }
 
 function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) {
@@ -150,23 +152,23 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
 
   return (
     <motion.article
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: Math.min(index * 0.04, 0.24) }}
-      className="group rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-brand-200 hover:shadow-md"
-    >
+    initial={{ opacity: 0, y: 16 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: Math.min(index * 0.04, 0.24) }}
+    className="group rounded-3xl border border-slate-100 bg-white p-5 shadow-sm transition hover:border-brand-200 hover:shadow-md">
+
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
         <div className="w-full shrink-0 lg:w-44">
           <div
-            className={`mb-3 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${
-              isPending ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
-            }`}
-          >
+          className={`mb-3 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold uppercase tracking-wider ${
+          isPending ? "bg-amber-50 text-amber-700 border border-amber-100" : "bg-emerald-50 text-emerald-700 border border-emerald-100"
+          }`}>
+
             <span
-              className={`h-1.5 w-1.5 rounded-full ${
-                isPending ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
-              }`}
-            />
+            className={`h-1.5 w-1.5 rounded-full ${
+            isPending ? "bg-amber-500 animate-pulse" : "bg-emerald-500"
+            }`} />
+
             {contact.status}
           </div>
 
@@ -185,9 +187,9 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
           <div className="mb-3 flex items-center gap-1.5 text-xs font-medium text-slate-500">
             <Mail className="h-3.5 w-3.5 shrink-0" />
             <a
-              href={`mailto:${contact.email}`}
-              className="truncate transition hover:text-brand-600"
-            >
+            href={`mailto:${contact.email}`}
+            className="truncate transition hover:text-brand-600">
+
               {contact.email}
             </a>
           </div>
@@ -207,32 +209,32 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
 
         <div className="flex shrink-0 gap-2">
           <button
-            type="button"
-            onClick={() => onRespond(contact)}
-            className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 shadow-sm"
-          >
+          type="button"
+          onClick={() => onRespond(contact)}
+          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 shadow-sm">
+
             Respond
             <ChevronRight className="h-3.5 w-3.5" />
           </button>
 
           <button
-            type="button"
-            onClick={() => onToggleStatus(contact)}
-            disabled={isUpdating}
-            title={isPending ? "Mark as Resolved" : "Mark as Pending"}
-            aria-label={isPending ? "Mark as Resolved" : "Mark as Pending"}
-            className={`flex h-10 w-10 items-center justify-center rounded-xl transition border disabled:cursor-not-allowed disabled:opacity-50 ${
-              isPending
-                ? "bg-brand-50 border-brand-100 text-brand-600 hover:bg-brand-600 hover:text-white hover:border-brand-600"
-                : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-500 hover:text-white hover:border-slate-500"
-            }`}
-          >
+          type="button"
+          onClick={() => onToggleStatus(contact)}
+          disabled={isUpdating}
+          title={isPending ? "Mark as Resolved" : "Mark as Pending"}
+          aria-label={isPending ? "Mark as Resolved" : "Mark as Pending"}
+          className={`flex h-10 w-10 items-center justify-center rounded-xl transition border disabled:cursor-not-allowed disabled:opacity-50 ${
+          isPending ?
+          "bg-brand-50 border-brand-100 text-brand-600 hover:bg-brand-600 hover:text-white hover:border-brand-600" :
+          "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-500 hover:text-white hover:border-slate-500"
+          }`}>
+
             {isPending ? <CheckCircle className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
           </button>
         </div>
       </div>
-    </motion.article>
-  );
+    </motion.article>);
+
 }
 
 const AdminContactRequests = () => {
@@ -288,14 +290,14 @@ const AdminContactRequests = () => {
       }
 
       const haystack = [
-        contact.name,
-        contact.email,
-        contact.subject,
-        contact.message,
-      ]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
+      contact.name,
+      contact.email,
+      contact.subject,
+      contact.message].
+
+      filter(Boolean).
+      join(" ").
+      toLowerCase();
 
       return matchesFilter && haystack.includes(normalizedTerm);
     });
@@ -323,15 +325,15 @@ const AdminContactRequests = () => {
   const updateStatus = async (contact) => {
     const id = contact._id;
     const nextStatus =
-      contact.status === STATUS.PENDING ? STATUS.RESOLVED : STATUS.PENDING;
+    contact.status === STATUS.PENDING ? STATUS.RESOLVED : STATUS.PENDING;
 
     if (pendingIds.has(id)) return;
 
     setPendingIds((prev) => new Set(prev).add(id));
     setContacts((prev) =>
-      prev.map((item) =>
-        item._id === id ? { ...item, status: nextStatus } : item
-      )
+    prev.map((item) =>
+    item._id === id ? { ...item, status: nextStatus } : item
+    )
     );
 
     try {
@@ -340,22 +342,22 @@ const AdminContactRequests = () => {
       await Swal.fire({
         icon: nextStatus === STATUS.RESOLVED ? "success" : "info",
         title:
-          nextStatus === STATUS.RESOLVED
-            ? "Inquiry Resolved"
-            : "Inquiry Reopened",
+        nextStatus === STATUS.RESOLVED ?
+        "Inquiry Resolved" :
+        "Inquiry Reopened",
         text:
-          nextStatus === STATUS.RESOLVED
-            ? "The request has been marked as completed."
-            : "The request has been marked as pending again.",
+        nextStatus === STATUS.RESOLVED ?
+        "The request has been marked as completed." :
+        "The request has been marked as pending again.",
         confirmButtonColor:
-          nextStatus === STATUS.RESOLVED ? "#10b981" : "#7c3aed",
-        customClass: { popup: "rounded-3xl" },
+        nextStatus === STATUS.RESOLVED ? "#10b981" : "#7c3aed",
+        customClass: { popup: "rounded-3xl" }
       });
     } catch (err) {
       setContacts((prev) =>
-        prev.map((item) =>
-          item._id === id ? { ...item, status: contact.status } : item
-        )
+      prev.map((item) =>
+      item._id === id ? { ...item, status: contact.status } : item
+      )
       );
 
       await showToast.error("Update Failed");
@@ -388,14 +390,14 @@ const AdminContactRequests = () => {
       inputValidator: (value) => {
         if (!value?.trim()) return "Reply cannot be empty.";
         return undefined;
-      },
+      }
     });
 
     if (!replyText?.trim()) return;
 
     try {
       await axios.post(`/contact/${contact._id}/reply`, {
-        message: replyText.trim(),
+        message: replyText.trim()
       });
 
       await showToast.success("Reply Sent");
@@ -426,63 +428,62 @@ const AdminContactRequests = () => {
               Contact Requests
             </h1>
 
-            {!loading && !error && (
-              <div className="mt-3 flex flex-wrap items-center gap-2">
+            {!loading && !error &&
+            <div className="mt-3 flex flex-wrap items-center gap-2">
                 <StatPill label="Pending" value={stats.pending} tone="warning" />
                 <StatPill label="Resolved" value={stats.resolved} tone="success" />
-              </div>
-            )}
+              </div>}
+
           </div>
 
           <div className="flex w-full flex-col gap-3 sm:flex-row xl:w-auto">
             <SearchBox
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)} />
+
             <StatusFilter
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-            />
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)} />
+
           </div>
         </div>
 
         <div className="space-y-4">
-          {viewState === ViewState.LOADING && (
-            <>
+          {viewState === ViewState.LOADING &&
+          <>
               <CardSkeleton />
               <CardSkeleton />
               <CardSkeleton />
-            </>
-          )}
+            </>}
 
-          {viewState === ViewState.ERROR && (
-            <ErrorState
-              message={error}
-              onRetry={() => fetchContacts({ isRetry: true })}
-              retrying={retrying}
-            />
-          )}
 
-          {viewState === ViewState.EMPTY && (
-            <EmptyState hasFilters={hasActiveFilters} />
-          )}
+          {viewState === ViewState.ERROR &&
+          <ErrorState
+          message={error}
+          onRetry={() => fetchContacts({ isRetry: true })}
+          retrying={retrying} />}
+
+
+
+          {viewState === ViewState.EMPTY &&
+          <EmptyState hasFilters={hasActiveFilters} />}
+
 
           {viewState === ViewState.SUCCESS &&
-            filteredContacts.map((contact, index) => (
-              <ContactCard
-                key={contact._id}
-                contact={contact}
-                index={index}
-                onRespond={handleRespond}
-                onToggleStatus={updateStatus}
-                isUpdating={pendingIds.has(contact._id)}
-              />
-            ))}
+          filteredContacts.map((contact, index) =>
+          <ContactCard
+          key={contact._id}
+          contact={contact}
+          index={index}
+          onRespond={handleRespond}
+          onToggleStatus={updateStatus}
+          isUpdating={pendingIds.has(contact._id)} />
+
+          )}
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default AdminContactRequests;
-

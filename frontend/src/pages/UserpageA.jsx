@@ -23,7 +23,7 @@ const UserpageA = () => {
       showCancelButton: true,
       confirmButtonText: "Yes, delete it",
       cancelButtonText: "No, cancel",
-      reverseButtons: true,
+      reverseButtons: true
     });
 
     if (confirmResult.isConfirmed) {
@@ -46,26 +46,26 @@ const UserpageA = () => {
     <div className="min-h-screen bg-slate-50/50 pb-12 pt-6">
       <div className="max-w-5xl mx-auto px-6">
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors"
-        >
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors">
+
           Back to Directory
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Left: Identity Card */}
+          {}
           <div className="lg:col-span-4">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
               <div className="relative inline-block mb-4">
                 <div className="w-24 h-24 rounded-2xl overflow-hidden border-4 border-slate-50 shadow-md">
                   <img
-                    className="w-full h-full object-cover"
-                    src={
-                      state.img ||
-                      `https://ui-avatars.com/api/?name=${state.name}&background=7c3aed&color=fff`
-                    }
-                    alt={state.name}
-                  />
+                  className="w-full h-full object-cover"
+                  src={
+                  state.img ||
+                  `https://ui-avatars.com/api/?name=${state.name}&background=7c3aed&color=fff`}
+
+                  alt={state.name} />
+
                 </div>
               </div>
               <h1 className="text-xl font-black text-slate-900 tracking-tight">
@@ -77,22 +77,22 @@ const UserpageA = () => {
 
               <div className="mt-6 flex flex-col gap-2">
                 <button
-                  className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-brand-600 transition-all active:scale-95 shadow-lg"
-                  onClick={getUser}
-                >
+                className="w-full bg-slate-900 text-white py-3 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-brand-600 transition-all active:scale-95 shadow-lg"
+                onClick={getUser}>
+
                   Update Details
                 </button>
                 <button
-                  onClick={handleDelete}
-                  className="w-full bg-rose-50 text-rose-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border border-rose-100 hover:bg-rose-600 hover:text-white transition-all active:scale-95"
-                >
+                onClick={handleDelete}
+                className="w-full bg-rose-50 text-rose-600 py-3 rounded-xl font-black text-[10px] uppercase tracking-widest border border-rose-100 hover:bg-rose-600 hover:text-white transition-all active:scale-95">
+
                   Terminate User
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Right: Technical Details */}
+          {}
           <div className="lg:col-span-8">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm h-full">
               <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-6 border-b border-slate-50 pb-4">
@@ -153,9 +153,8 @@ const UserpageA = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default UserpageA;
-

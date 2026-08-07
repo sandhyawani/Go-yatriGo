@@ -1,11 +1,11 @@
 import axios from "../api/axios";
 import {
-  createContext,
-  useContext,
-  useEffect,
-  useReducer,
-  useCallback,
-} from "react";
+createContext,
+useContext,
+useEffect,
+useReducer,
+useCallback } from
+"react";
 
 const STORAGE_KEY = "user";
 
@@ -16,7 +16,7 @@ const getStoredUser = () => {
 
     const parsed = JSON.parse(raw);
 
-    // Older sessions may include an expiry timestamp.
+
     if (parsed?.tokenExpiry && Date.now() > parsed.tokenExpiry) {
       localStorage.removeItem(STORAGE_KEY);
       return null;
@@ -30,9 +30,9 @@ const getStoredUser = () => {
 };
 
 const extractErrorMessage = (err) =>
-  err?.response?.data?.message ??
-  err?.message ??
-  "An unexpected error occurred";
+err?.response?.data?.message ??
+err?.message ??
+"An unexpected error occurred";
 
 const authReducer = (state, action) => {
   switch (action.type) {
@@ -51,7 +51,7 @@ const authReducer = (state, action) => {
     case "UPDATE_USER":
       return {
         ...state,
-        user: state.user ? { ...state.user, ...action.payload } : null,
+        user: state.user ? { ...state.user, ...action.payload } : null
       };
 
     default:
@@ -65,7 +65,7 @@ export const AuthContextProvider = ({ children }) => {
   const initAuth = () => ({
     user: getStoredUser(),
     loading: false,
-    error: null,
+    error: null
   });
 
   const [state, dispatch] = useReducer(authReducer, null, initAuth);
@@ -82,12 +82,12 @@ export const AuthContextProvider = ({ children }) => {
     dispatch({ type: "LOGIN_START" });
     try {
       const { data } = await axios.post("/auth/login", credentials, {
-        withCredentials: true,
+        withCredentials: true
       });
       const flattenedUser = {
         ...data.details,
         isAdmin: data.isAdmin,
-        token: data.token,
+        token: data.token
       };
       dispatch({ type: "LOGIN_SUCCESS", payload: flattenedUser });
       return { success: true };
@@ -102,9 +102,9 @@ export const AuthContextProvider = ({ children }) => {
     try {
       await axios.post("/auth/logout", {}, { withCredentials: true });
     } catch {
-      // Clear the local session even if the server is unavailable.
+
       console.warn(
-        "[AuthContext] Server logout failed; clearing local session.",
+      "[AuthContext] Server logout failed; clearing local session."
       );
     }
 
@@ -119,19 +119,19 @@ export const AuthContextProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{
-        user: state?.user,
-        loading: state?.loading,
-        error: state?.error,
-        dispatch,
-        login,
-        logout,
-        updateUser,
-      }}
-    >
+    value={{
+      user: state?.user,
+      loading: state?.loading,
+      error: state?.error,
+      dispatch,
+      login,
+      logout,
+      updateUser
+    }}>
+
       {children}
-    </AuthContext.Provider>
-  );
+    </AuthContext.Provider>);
+
 };
 
 export const useAuth = () => {
@@ -141,4 +141,3 @@ export const useAuth = () => {
   }
   return ctx;
 };
-

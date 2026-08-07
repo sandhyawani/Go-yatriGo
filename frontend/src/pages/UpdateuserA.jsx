@@ -8,28 +8,29 @@ import moment from "moment";
 import Swal from "sweetalert2";
 import Spinner from "../components/spinner/LoadingSpinner";
 import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
+import CustomSelect from "../components/ui/CustomSelect";
 
-const CLOUD_NAME   = process.env.REACT_APP_CLOUDINARY_CLOUD || "dpgelkpd4";
+const CLOUD_NAME = process.env.REACT_APP_CLOUDINARY_CLOUD || "dpgelkpd4";
 const UPLOAD_PRESET = process.env.REACT_APP_CLOUDINARY_PRESET || "upload";
 const MAX_FILE_SIZE_MB = 2;
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const UpdateuserA = () => {
   const { state } = useLocation();
-  const navigate   = useNavigate();
+  const navigate = useNavigate();
 
   const [loading2, setLoading2] = useState(false);
-  const [file, setFile]         = useState(null);
-  const [preview, setPreview]   = useState("");
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState("");
 
-  const [name,    setName]    = useState(state?.name    ?? "");
-  const [city,    setCity]    = useState(state?.city    ?? "");
+  const [name, setName] = useState(state?.name ?? "");
+  const [city, setCity] = useState(state?.city ?? "");
   const [stateVal, setStateVal] = useState(state?.state ?? "");
   const [isAdmin, setIsAdmin] = useState(state?.isAdmin ?? false);
-  const [mobile,  setMobile]  = useState(state?.mobile  ?? "");
-  const [type,    setType]    = useState(state?.type    ?? "traveler");
+  const [mobile, setMobile] = useState(state?.mobile ?? "");
+  const [type, setType] = useState(state?.type ?? "traveler");
 
-  const isMounted    = useRef(true);
+  const isMounted = useRef(true);
   const previewUrlRef = useRef(null);
 
   useEffect(() => {
@@ -40,7 +41,7 @@ const UpdateuserA = () => {
     };
   }, []);
 
-  // Guard: no state = navigated here directly
+
   useEffect(() => {
     if (!state?._id) navigate("/users", { replace: true });
   }, [state, navigate]);
@@ -93,7 +94,7 @@ const UpdateuserA = () => {
       showCancelButton: true,
       confirmButtonText: "Yes, update",
       cancelButtonText: "Cancel",
-      reverseButtons: true,
+      reverseButtons: true
     });
 
     if (!confirmResult.isConfirmed) return;
@@ -111,8 +112,8 @@ const UpdateuserA = () => {
         data.append("upload_preset", UPLOAD_PRESET);
 
         const uploadRes = await fetch(
-          `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
-          { method: "POST", body: data }
+        `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`,
+        { method: "POST", body: data }
         ).then((r) => r.json());
 
         if (!uploadRes.secure_url) {
@@ -131,7 +132,7 @@ const UpdateuserA = () => {
         mobile,
         img: imgUrl,
         pic: imgUrl,
-        avatar: imgUrl,
+        avatar: imgUrl
       });
 
       if (!isMounted.current) return;
@@ -153,16 +154,16 @@ const UpdateuserA = () => {
     <div className="min-h-screen bg-slate-50/50 pb-12 pt-6">
       <div className="max-w-4xl mx-auto px-6">
         <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors"
-        >
+        onClick={() => navigate(-1)}
+        className="flex items-center gap-2 text-slate-400 font-black text-[10px] uppercase tracking-widest mb-6 hover:text-brand-600 transition-colors">
+
           Cancel Changes
         </button>
 
         <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
           <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row">
 
-            {/* Left: avatar */}
+            {}
             <div className="lg:w-1/3 bg-brand-50/50 border-r border-brand-100 p-8 text-slate-800 flex flex-col items-center justify-center text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-100/40 to-transparent pointer-events-none" />
 
@@ -170,29 +171,29 @@ const UpdateuserA = () => {
                 <div className="relative inline-block group">
                   <div className="w-28 h-28 rounded-2xl overflow-hidden border-4 border-white shadow-xl group-hover:border-brand-200 transition-all duration-300">
                     <img
-                      className="w-full h-full object-cover"
-                      src={
-                        preview ||
-                        getAvatarUrl(state.pic, state.img, state.avatar, state.name)
-                      }
-                      alt={state.name}
-                    />
+                    className="w-full h-full object-cover"
+                    src={
+                    preview ||
+                    getAvatarUrl(state.pic, state.img, state.avatar, state.name)}
+
+                    alt={state.name} />
+
                   </div>
                   <label
-                    htmlFor="file"
-                    className="absolute -bottom-2 -right-2 p-3 bg-brand-600 text-white rounded-xl shadow-lg cursor-pointer hover:bg-brand-700 transition-all active:scale-90"
-                    aria-label="Upload new photo"
-                  >
+                  htmlFor="file"
+                  className="absolute -bottom-2 -right-2 p-3 bg-brand-600 text-white rounded-xl shadow-lg cursor-pointer hover:bg-brand-700 transition-all active:scale-90"
+                  aria-label="Upload new photo">
+
                     <DriveFolderUploadOutlinedIcon className="w-4 h-4" />
                   </label>
                   <input
-                    type="file"
-                    id="file"
-                    name="file"
-                    className="hidden"
-                    accept="image/*,.heic,.heif"
-                    onChange={handleFileChange}
-                  />
+                  type="file"
+                  id="file"
+                  name="file"
+                  className="hidden"
+                  accept="image/*,.heic,.heif"
+                  onChange={handleFileChange} />
+
                 </div>
               </div>
 
@@ -201,27 +202,27 @@ const UpdateuserA = () => {
                 <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
                   Update profile and system access levels.
                 </p>
-                {createdatnew && (
-                  <p className="text-[9px] text-brand-600/80 font-bold mt-3">
+                {createdatnew &&
+                <p className="text-[9px] text-brand-600/80 font-bold mt-3">
                     Created {createdatnew}
-                  </p>
-                )}
-                {updatedatnew && (
-                  <p className="text-[9px] text-brand-600/80 font-bold">
+                  </p>}
+
+                {updatedatnew &&
+                <p className="text-[9px] text-brand-600/80 font-bold">
                     Updated {updatedatnew}
-                  </p>
-                )}
+                  </p>}
+
               </div>
 
-              {loading2 && (
-                <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
+              {loading2 &&
+              <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex flex-col items-center justify-center z-50">
                   <Spinner />
                   <p className="text-[10px] font-black uppercase tracking-widest mt-4 animate-pulse text-brand-700">Saving…</p>
-                </div>
-              )}
+                </div>}
+
             </div>
 
-            {/* Right: fields */}
+            {}
             <div className="lg:w-2/3 p-8">
               <div className="flex items-center justify-between mb-8 border-b border-slate-50 pb-4">
                 <h2 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em]">Profile Parameters</h2>
@@ -236,15 +237,15 @@ const UpdateuserA = () => {
                     Full Legal Name
                   </label>
                   <input
-                    id="u-name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
-                    required
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
-                    placeholder="Enter full name"
-                  />
+                  id="u-name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  autoComplete="name"
+                  required
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  placeholder="Enter full name" />
+
                 </div>
 
                 <div>
@@ -252,102 +253,93 @@ const UpdateuserA = () => {
                     Primary Contact
                   </label>
                   <input
-                    id="u-mobile"
-                    type="tel"
-                    inputMode="tel"
-                    autoComplete="tel"
-                    value={mobile}
-                    onChange={(e) => setMobile(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
-                    placeholder="+91 XXXXX XXXXX"
-                  />
+                  id="u-mobile"
+                  type="tel"
+                  inputMode="tel"
+                  autoComplete="tel"
+                  value={mobile}
+                  onChange={(e) => setMobile(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  placeholder="+91 XXXXX XXXXX" />
+
                 </div>
 
                 <div>
                   <label htmlFor="u-state" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
                     State 
                   </label>
-                  <select
-                    id="u-state"
-                    value={stateVal}
-                    onChange={(e) => {
-                      setStateVal(e.target.value);
-                      setCity("");
-                    }}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
-                  >
-                    <option value="" disabled>
-                      Select State
-                    </option>
-                    {Object.keys(INDIAN_STATES_AND_CITIES).map((s) => (
-                      <option key={s} value={s}>
-                        {s}
-                      </option>
-                    ))}
-                  </select>
+                  <CustomSelect
+                  id="u-state"
+                  value={stateVal}
+                  onChange={(e) => {
+                    setStateVal(e.target.value);
+                    setCity("");
+                  }}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  placeholder="Select State"
+                  options={Object.keys(INDIAN_STATES_AND_CITIES).map((s) => ({ label: s, value: s }))}
+                  />
+
                 </div>
 
                 <div>
                   <label htmlFor="u-city" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
                     City
                   </label>
-                  <select
-                    id="u-city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    disabled={!stateVal}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
-                  >
-                    <option value="" disabled>
-                      {stateVal ? "Select City" : "Select State first"}
-                    </option>
-                    {stateVal &&
-                      INDIAN_STATES_AND_CITIES[stateVal].map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
-                  </select>
+                  <CustomSelect
+                  id="u-city"
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  disabled={!stateVal}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all"
+                  placeholder={stateVal ? "Select City" : "Select State first"}
+                  options={stateVal ? INDIAN_STATES_AND_CITIES[stateVal].map((c) => ({ label: c, value: c })) : []}
+                  />
+
                 </div>
 
                 <div>
                   <label htmlFor="u-admin" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
                     Access Authorization
                   </label>
-                  <select
-                    id="u-admin"
-                    value={String(isAdmin)}
-                    onChange={(e) => setIsAdmin(e.target.value === "true")}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
-                  >
-                    <option value="false">Standard Access</option>
-                    <option value="true">Super Administrator</option>
-                  </select>
+                  <CustomSelect
+                  id="u-admin"
+                  value={String(isAdmin)}
+                  onChange={(e) => setIsAdmin(e.target.value === "true")}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
+                  options={[
+                    { label: "Standard Access", value: "false" },
+                    { label: "Super Administrator", value: "true" }
+                  ]}
+                  />
+
                 </div>
 
                 <div>
                   <label htmlFor="u-type" className="text-[9px] font-black text-slate-400 uppercase tracking-widest block mb-1.5">
                     Account Classification
                   </label>
-                  <select
-                    id="u-type"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
-                  >
-                    <option value="traveler">Traveler</option>
-                    <option value="financeManager">Finance Manager</option>
-                    <option value="admin">Admin</option>
-                  </select>
+                  <CustomSelect
+                  id="u-type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-slate-50 border border-brand-100 rounded-xl text-xs font-bold text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all cursor-pointer"
+                  options={[
+                    { label: "Traveler", value: "traveler" },
+                    { label: "Finance Manager", value: "financeManager" },
+                    { label: "Admin", value: "admin" }
+                  ]}
+                  />
+
                 </div>
               </div>
 
               <div className="mt-10 pt-6 border-t border-slate-50">
                 <button
-                  type="submit"
-                  disabled={loading2}
-                  className="w-full bg-brand-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-700 transition-all active:scale-[0.98] shadow-xl shadow-brand-600/20 disabled:opacity-60 disabled:cursor-not-allowed"
-                >
+                type="submit"
+                disabled={loading2}
+                className="w-full bg-brand-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-brand-700 transition-all active:scale-[0.98] shadow-xl shadow-brand-600/20 disabled:opacity-60 disabled:cursor-not-allowed">
+
                   {loading2 ? "Saving…" : "Commit Changes"}
                 </button>
               </div>
@@ -355,9 +347,8 @@ const UpdateuserA = () => {
           </form>
         </div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default UpdateuserA;
-

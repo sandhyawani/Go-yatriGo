@@ -31,6 +31,7 @@ import PrivacySettings from "../pages/social/settings/PrivacySettings";
 import SecuritySettings from "../pages/social/settings/SecuritySettings";
 import SafetySettings from "../pages/social/settings/SafetySettings";
 import TravelSafetyGuidelines from "../pages/social/settings/TravelSafetyGuidelines";
+import CommunityGuidelines from "../pages/social/settings/CommunityGuidelines";
 import NotificationsSettings from "../pages/social/settings/NotificationsSettings";
 import LegalSettings from "../pages/social/settings/LegalSettings";
 import FeltVibes from "../pages/social/FeltVibes";
@@ -67,342 +68,350 @@ const RouteTour = () => {
       <Route path="/terms" element={<Terms />} />
 
       <Route
-        path="/"
-        element={
-          <ProtectedRoute>
+      path="/"
+      element={
+      <ProtectedRoute>
             <Home />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <Admin />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/contacts"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/contacts"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <AdminContactRequests />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/reports"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/reports"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <AdminReports />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/verifications"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/verifications"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <VerificationRequests />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/profile"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/profile"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <AdminProfile />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/profile/edit"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/profile/edit"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <Profileupdate />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/admin/settings/security"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/admin/settings/security"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <SecuritySettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/users"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/users"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <Userlist columns={userColumns} />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/userpage"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/userpage"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <UserpageA />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/update"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/update"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <UpdateuserA />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
+      path="/profile"
+      element={
+      <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/profile/:id"
-        element={
-          <ProtectedRoute>
+      path="/profile/:id"
+      element={
+      <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/updateProfile"
-        element={
-          <ProtectedRoute>
+      path="/updateProfile"
+      element={
+      <ProtectedRoute>
             <Profileupdate />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/adduser"
-        element={
-          <ProtectedRoute allowedRoles={["admin"]}>
+      path="/adduser"
+      element={
+      <ProtectedRoute allowedRoles={["admin"]}>
             <Adduser />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/contactus"
-        element={
-          <ProtectedRoute>
+      path="/contactus"
+      element={
+      <ProtectedRoute>
             <ContactUs />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/contact"
-        element={
-          <ProtectedRoute>
+      path="/contact"
+      element={
+      <ProtectedRoute>
             <ContactUs />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/report"
-        element={
-          <ProtectedRoute>
+      path="/report"
+      element={
+      <ProtectedRoute>
             <ReportProblem />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/saved"
-        element={
-          <ProtectedRoute>
+      path="/saved"
+      element={
+      <ProtectedRoute>
             <Profile />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/buddy"
-        element={
-          <ProtectedRoute>
+      path="/social/buddy"
+      element={
+      <ProtectedRoute>
             <TravelBuddyHub />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/buddy/new"
-        element={
-          <ProtectedRoute>
+      path="/social/buddy/new"
+      element={
+      <ProtectedRoute>
             <CreateBuddyTrip />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/buddy/:id"
-        element={
-          <ProtectedRoute>
+      path="/social/buddy/:id"
+      element={
+      <ProtectedRoute>
             <TravelBuddyDetails />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/journeys"
-        element={
-          <ProtectedRoute>
+      path="/social/journeys"
+      element={
+      <ProtectedRoute>
             <MyJourneys />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/journeys/:id"
-        element={
-          <ProtectedRoute>
+      path="/social/journeys/:id"
+      element={
+      <ProtectedRoute>
             <JourneyDetailsPage />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/chat"
-        element={
-          <ProtectedRoute>
+      path="/social/chat"
+      element={
+      <ProtectedRoute>
             <ChatRoom />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/social/chat/:roomId"
-        element={
-          <ProtectedRoute>
+      path="/social/chat/:roomId"
+      element={
+      <ProtectedRoute>
             <ChatRoom />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
+      path="/settings"
+      element={
+      <ProtectedRoute>
             <Settings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/privacy"
-        element={
-          <ProtectedRoute>
+      path="/settings/privacy"
+      element={
+      <ProtectedRoute>
             <PrivacySettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/security"
-        element={
-          <ProtectedRoute>
+      path="/settings/security"
+      element={
+      <ProtectedRoute>
             <SecuritySettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/safety"
-        element={
-          <ProtectedRoute>
+      path="/settings/safety"
+      element={
+      <ProtectedRoute>
             <SafetySettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/safety-guidelines"
-        element={
-          <ProtectedRoute>
+      path="/settings/safety-guidelines"
+      element={
+      <ProtectedRoute>
             <TravelSafetyGuidelines />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/notifications"
-        element={
-          <ProtectedRoute>
+      path="/settings/community-guidelines"
+      element={
+      <ProtectedRoute>
+            <CommunityGuidelines />
+          </ProtectedRoute>} />
+
+
+
+      <Route
+      path="/settings/notifications"
+      element={
+      <ProtectedRoute>
             <NotificationsSettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/settings/legal/:type"
-        element={
-          <ProtectedRoute>
+      path="/settings/legal/:type"
+      element={
+      <ProtectedRoute>
             <LegalSettings />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/felt-vibes"
-        element={
-          <ProtectedRoute>
+      path="/felt-vibes"
+      element={
+      <ProtectedRoute>
             <FeltVibes />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/blocked-users"
-        element={
-          <ProtectedRoute>
+      path="/blocked-users"
+      element={
+      <ProtectedRoute>
             <BlockedUsers />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/emergency-contacts"
-        element={
-          <ProtectedRoute>
+      path="/emergency-contacts"
+      element={
+      <ProtectedRoute>
             <EmergencyContacts />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
+
+
 
       <Route
-        path="/help-support"
-        element={
-          <ProtectedRoute>
+      path="/help-support"
+      element={
+      <ProtectedRoute>
             <HelpSupport />
-          </ProtectedRoute>
-        }
-      />
+          </ProtectedRoute>} />
 
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
-  );
+
+
+      <Route path="*" element={<Navigate to="/social/buddy" replace />} />
+    </Routes>);
+
 };
 
 export default RouteTour;
-

@@ -3,51 +3,52 @@ import { useNavigate, Link, useParams, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 import { SocketContext } from "../context/SocketContext";
 import { SOCKET_EVENTS } from "../constants/socketEvents";
+import CustomSelect from "../components/ui/CustomSelect";
 import {
-  User,
-  Mail,
-  Phone,
-  Globe,
-  Calendar,
-  Clock,
-  Settings,
-  History,
-  PlusCircle,
-  LayoutDashboard,
-  LogOut,
-  Edit,
-  Activity,
-  UserPlus,
-  UserMinus,
-  Ban,
-  ShieldAlert,
-  Star,
-  ShieldCheck,
-  Compass,
-  Heart,
-  Grid,
-  MapPin,
-  MessageSquare,
-  Sparkles,
-  ChevronRight,
-  MessageCircle,
-  Plus,
-  Home as HomeIcon,
-  User as UserIcon,
-  X,
-  Award,
-  Search,
-  MoreVertical,
-  Bookmark,
-  Music,
-  Play,
-  Pause,
-  Clapperboard,
-  Users,
-  FileText,
-  Video,
-  XCircle,
-} from "lucide-react";
+User,
+Mail,
+Phone,
+Globe,
+Calendar,
+Clock,
+Settings,
+History,
+PlusCircle,
+LayoutDashboard,
+LogOut,
+Edit,
+Activity,
+UserPlus,
+UserMinus,
+Ban,
+ShieldAlert,
+Star,
+ShieldCheck,
+Compass,
+Heart,
+Grid,
+MapPin,
+MessageSquare,
+Sparkles,
+ChevronRight,
+MessageCircle,
+Plus,
+Home as HomeIcon,
+User as UserIcon,
+X,
+Award,
+Search,
+MoreVertical,
+Bookmark,
+Music,
+Play,
+Pause,
+Clapperboard,
+Users,
+FileText,
+Video,
+XCircle } from
+"lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
@@ -56,12 +57,12 @@ import AudioManager from "../utils/AudioManager";
 import { getAvatarUrl } from "../utils/avatar";
 import LazyImage from "../components/common/LazyImage";
 import ReportModal from "../components/modals/ReportModal";
-import StoryViewer from "../components/story/StoryViewer";
+import DispatchViewer from "../components/story/DispatchViewer";
 import JourneyStatistics from "../components/journey/JourneyStatistics";
 import ProfileHeader from "../components/profile/ProfileHeader";
 import ProfileTabs from "../components/profile/ProfileTabs";
-import CreatePostModal from "../components/modals/CreatePostModal";
-import CreateStoryModal from "../components/modals/CreateStoryModal";
+import CreateTravelMemoryModal from "../components/modals/CreateTravelMemoryModal";
+import CreateDispatchModal from "../components/modals/CreateDispatchModal";
 import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 
 const Profile = () => {
@@ -81,37 +82,40 @@ const Profile = () => {
 
   const location = useLocation();
   const isOwnProfile =
-    !id ||
-    id === currentUser?._id ||
-    id === currentUser?.id ||
-    id?.toString() === (currentUser?._id || currentUser?.id)?.toString();
+  !id ||
+  id === currentUser?._id ||
+  id === currentUser?.id ||
+  id?.toString() === (currentUser?._id || currentUser?.id)?.toString();
 
   const getInitialTab = () => {
     if (
-      location.pathname === "/saved" ||
-      new URLSearchParams(location.search).get("tab") === "saved"
-    ) {
+    location.pathname === "/saved" ||
+    new URLSearchParams(location.search).get("tab") === "saved")
+    {
       return "saved";
     }
     return isOwnProfile ? "posts" : "trips";
   };
 
-  // Profile tabs: "posts", "trips", "reviews", "saved"
+
   const [activeTab, setActiveTab] = useState(getInitialTab);
 
-  // Update tab when navigating between own profile and others or route changes
+
   useEffect(() => {
+    const params = new URLSearchParams(location.search);
     if (
-      location.pathname === "/saved" ||
-      new URLSearchParams(location.search).get("tab") === "saved"
-    ) {
+    location.pathname === "/saved" ||
+    params.get("tab") === "saved")
+    {
       setActiveTab("saved");
+    } else if (params.get("postId")) {
+      setActiveTab("posts");
     } else {
       setActiveTab(isOwnProfile ? "posts" : "trips");
     }
   }, [isOwnProfile, location.pathname, location.search]);
 
-  // Dynamic user data lists
+
   const [userMemories, setUserMemories] = useState([]);
   const [userTrips, setUserTrips] = useState([]);
   const [joinedTrips, setJoinedTrips] = useState([]);
@@ -140,7 +144,7 @@ const Profile = () => {
   const [showCreatePostModal, setShowCreatePostModal] = useState(false);
   const [showCreateStoryModal, setShowCreateStoryModal] = useState(false);
 
-  // Story Viewer State
+
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const [isStoryMuted, setIsStoryMuted] = useState(true);
@@ -155,7 +159,7 @@ const Profile = () => {
       userId: profileUser._id,
       userName: profileUser.name,
       userPic: profileUser.pic,
-      stories: userStories,
+      stories: userStories
     });
     setActiveStoryIndex(index);
   };
@@ -175,7 +179,7 @@ const Profile = () => {
       setActiveStoryGroup(null);
     }
   };
-  // Selected memory modal
+
   const [selectedMemory, setSelectedMemory] = useState(null);
   const [likeAnimation, setLikeAnimation] = useState(false);
   const audioRef = useRef(null);
@@ -184,20 +188,20 @@ const Profile = () => {
   const handleLikeMemory = async (postId) => {
     try {
       const res = await axios.post(
-        `/social/memory/like/${postId}`,
-        {},
-        { withCredentials: true },
+      `/social/memory/like/${postId}`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         setUserMemories((prev) =>
-          prev.map((m) =>
-            m._id === postId ? { ...m, likes: res.data.memory.likes } : m,
-          ),
+        prev.map((m) =>
+        m._id === postId ? { ...m, likes: res.data.memory.likes } : m
+        )
         );
         if (selectedMemory && selectedMemory._id === postId) {
           setSelectedMemory((prev) => ({
             ...prev,
-            likes: res.data.memory.likes,
+            likes: res.data.memory.likes
           }));
         }
       }
@@ -213,7 +217,7 @@ const Profile = () => {
           AudioManager.stopAll();
           audioRef.current.src = selectedMemory.music.preview;
           AudioManager.play(selectedMemory._id, audioRef.current, {
-            source: "profile",
+            source: "profile"
           });
           setIsPlayingAudio(true);
         }
@@ -239,7 +243,7 @@ const Profile = () => {
       setIsPlayingAudio(false);
     } else {
       AudioManager.play(selectedMemory?._id, audioRef.current, {
-        source: "profile",
+        source: "profile"
       });
       setIsPlayingAudio(true);
     }
@@ -250,10 +254,10 @@ const Profile = () => {
     const now = Date.now();
     if (now - lastTapTime.current < 300) {
       if (selectedMemory) {
-        const hasLiked = selectedMemory.likes?.some(
-          (id) => (id?._id || id)?.toString() === currentUser?._id,
+        const hasFelt = selectedMemory.likes?.some(
+        (id) => (id?._id || id)?.toString() === currentUser?._id
         );
-        if (!hasLiked) {
+        if (!hasFelt) {
           handleLikeMemory(selectedMemory._id);
         }
         setLikeAnimation(true);
@@ -263,8 +267,8 @@ const Profile = () => {
     lastTapTime.current = now;
   };
 
- const [showRelationsModal, setShowRelationsModal] = useState(false);
-  const [relationsModalType, setRelationsModalType] = useState("followers"); // "followers" or "following"
+  const [showRelationsModal, setShowRelationsModal] = useState(false);
+  const [relationsModalType, setRelationsModalType] = useState("followers");
   const [relationsSearch, setRelationsSearch] = useState("");
   const [relationsList, setRelationsList] = useState([]);
   const [relationsLoading, setRelationsLoading] = useState(false);
@@ -284,7 +288,7 @@ const Profile = () => {
 
     try {
       const res = await axios.get(`/users/${targetId}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       const userData = res.data.user || res.data;
       if (isOwnProfile) userData.canViewContent = true;
@@ -296,7 +300,7 @@ const Profile = () => {
         } else {
           try {
             const selfRes = await axios.get(`/users/${currentUser._id}`, {
-              withCredentials: true,
+              withCredentials: true
             });
             setCurrentUserData(selfRes.data.user || selfRes.data);
           } catch (selfErr) {
@@ -314,7 +318,7 @@ const Profile = () => {
     } catch (err) {
       console.error("fetchProfile error:", err);
       showToast.error(
-        err.response?.data?.message || "Failed to load user profile",
+      err.response?.data?.message || "Failed to load user profile"
       );
       navigate("/social/buddy");
     } finally {
@@ -329,12 +333,59 @@ const Profile = () => {
     }
   }, [activeTab]);
 
+  useEffect(() => {
+    const handleDeepLink = async () => {
+
+      if (location.state?.selectedMemory) {
+        setSelectedMemory(location.state.selectedMemory);
+        setActiveTab("posts");
+
+        navigate(location.pathname, { replace: true });
+        return;
+      }
+
+
+      const params = new URLSearchParams(location.search);
+      const postId = params.get("postId");
+      if (postId) {
+        setActiveTab("posts");
+
+
+        const matched = userMemories.find((m) => m._id === postId) ||
+        savedPosts.find((m) => m._id === postId) ||
+        feltPosts.find((m) => m._id === postId);
+
+        if (matched) {
+          setSelectedMemory(matched);
+          navigate(location.pathname, { replace: true });
+        } else {
+
+          try {
+            const res = await axios.get(`/social/memory/${postId}`, {
+              withCredentials: true
+            });
+            if (res.data?.success && res.data.memory) {
+              setSelectedMemory(res.data.memory);
+            }
+          } catch (err) {
+            console.error("Error fetching single memory for deep link:", err);
+          } finally {
+
+            navigate(location.pathname, { replace: true });
+          }
+        }
+      }
+    };
+
+    handleDeepLink();
+  }, [location.state, location.search, userMemories, savedPosts, feltPosts, navigate]);
+
   const fetchProfileSilent = async () => {
     const targetId = isOwnProfile ? currentUser?._id || currentUser?.id : id;
     if (!targetId) return;
     try {
       const res = await axios.get(`/users/${targetId}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       const userData = res.data.user || res.data;
       if (isOwnProfile) userData.canViewContent = true;
@@ -349,13 +400,13 @@ const Profile = () => {
               ...currentUser,
               followRequests: userData.followRequests,
               followers: userData.followers,
-              following: userData.following,
-            },
+              following: userData.following
+            }
           });
         } else {
           try {
             const selfRes = await axios.get(`/users/${currentUser._id}`, {
-              withCredentials: true,
+              withCredentials: true
             });
             const selfData = selfRes.data.user || selfRes.data;
             setCurrentUserData(selfData);
@@ -365,8 +416,8 @@ const Profile = () => {
                 ...currentUser,
                 followRequests: selfData.followRequests,
                 followers: selfData.followers,
-                following: selfData.following,
-              },
+                following: selfData.following
+              }
             });
           } catch (selfErr) {
             console.warn("Failed to load own relations", selfErr);
@@ -401,14 +452,14 @@ const Profile = () => {
   }, [socket, id, currentUser]);
 
   const fetchTabData = async (tab, targetId, force = false) => {
-    if (!force && fetchedTabs[tab]) return; // Cache hit
+    if (!force && fetchedTabs[tab]) return;
 
     try {
       if (tab === "posts") {
         setPostsLoading(true);
         const memRes = await axios.get(
-          `/social/memory?userId=${targetId}&limit=30&page=1`,
-          { withCredentials: true },
+        `/social/memory?userId=${targetId}&limit=30&page=1`,
+        { withCredentials: true }
         );
         if (memRes.data.success) {
           setUserMemories(memRes.data.memories || []);
@@ -418,43 +469,43 @@ const Profile = () => {
       } else if (tab === "trips") {
         setTripsLoading(true);
         const tripRes = await axios.get(
-          `/social/buddy?userId=${targetId}&limit=50`,
-          { withCredentials: true },
+        `/social/buddy?userId=${targetId}&limit=50`,
+        { withCredentials: true }
         );
         if (tripRes.data.success) {
           const trips = tripRes.data.trips || [];
           setUserTrips(
-            trips.filter(
-              (t) =>
-                t.userId?._id === targetId ||
-                t.userId === targetId ||
-                t.host?._id === targetId ||
-                t.host === targetId,
-            ),
+          trips.filter(
+          (t) =>
+          t.userId?._id === targetId ||
+          t.userId === targetId ||
+          t.host?._id === targetId ||
+          t.host === targetId
+          )
           );
           setJoinedTrips(
-            trips.filter((t) =>
-              t.companions?.some(
-                (c) => (c.userId?._id || c.userId || c._id || c) === targetId,
-              ),
-            ),
+          trips.filter((t) =>
+          t.companions?.some(
+          (c) => (c.userId?._id || c.userId || c._id || c) === targetId
+          )
+          )
           );
         }
       } else if (tab === "stories" && isOwnProfile) {
         setStoriesLoading(true);
         const storiesRes = await axios.get("/social/story", {
-          withCredentials: true,
+          withCredentials: true
         });
         if (storiesRes.data.success) {
           const myStoriesGroup = storiesRes.data.stories.find(
-            (g) => g.userId === targetId,
+          (g) => g.userId === targetId
           );
           setUserStories(myStoriesGroup ? myStoriesGroup.stories : []);
         }
       } else if (tab === "saved" && isOwnProfile) {
         setSavedLoading(true);
         const savedRes = await axios.get("/social/memory/save", {
-          withCredentials: true,
+          withCredentials: true
         });
         if (savedRes.data.success) {
           setSavedPosts(savedRes.data.posts || []);
@@ -462,7 +513,7 @@ const Profile = () => {
       } else if (tab === "felt") {
         setFeltLoading(true);
         const feltRes = await axios.get(`/social/memory/felt/${targetId}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         if (feltRes.data.success) {
           setFeltPosts(feltRes.data.memories || []);
@@ -487,8 +538,8 @@ const Profile = () => {
       const targetId = isOwnProfile ? currentUser?._id || currentUser?.id : id;
       const nextPage = postsPage + 1;
       const memRes = await axios.get(
-        `/social/memory?userId=${targetId}&limit=30&page=${nextPage}`,
-        { withCredentials: true },
+      `/social/memory?userId=${targetId}&limit=30&page=${nextPage}`,
+      { withCredentials: true }
       );
       if (memRes.data.success) {
         setUserMemories((prev) => [...prev, ...(memRes.data.memories || [])]);
@@ -507,16 +558,16 @@ const Profile = () => {
     setFollowLoading(true);
     try {
       const isFollowing = profileUser.followers?.some(
-        (f) => f._id === currentUser?._id || f === currentUser?._id,
+      (f) => f._id === currentUser?._id || f === currentUser?._id
       );
       const isRequested = profileUser.followRequests?.some(
-        (f) =>
-          (f._id || f) === currentUser?._id || (f._id || f) === currentUser?.id,
+      (f) =>
+      (f._id || f) === currentUser?._id || (f._id || f) === currentUser?.id
       );
       const endpoint =
-        isFollowing || isRequested
-          ? `/users/${profileUser._id}/unfollow`
-          : `/users/${profileUser._id}/follow`;
+      isFollowing || isRequested ?
+      `/users/${profileUser._id}/unfollow` :
+      `/users/${profileUser._id}/follow`;
 
       const res = await axios.post(endpoint, {}, { withCredentials: true });
       if (res.data.success) {
@@ -525,7 +576,7 @@ const Profile = () => {
       }
     } catch (err) {
       showToast.error(
-        err.response?.data?.message || "Failed to complete action",
+      err.response?.data?.message || "Failed to complete action"
       );
     } finally {
       setFollowLoading(false);
@@ -535,17 +586,17 @@ const Profile = () => {
   const handleAcceptRequest = async () => {
     try {
       const res = await axios.post(
-        `/users/${profileUser._id}/follow-request/accept`,
-        {},
-        { withCredentials: true },
+      `/users/${profileUser._id}/follow-request/accept`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("Follow request accepted");
 
-        // Update logged-in user's Redux state immediately so hasPendingRequestForMe
-        // flips to false and the Accept/Decline buttons disappear without a flash
+
+
         const freshSelf = await axios.get(`/users/${currentUser._id}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         const selfData = freshSelf.data.user || freshSelf.data;
         dispatch({
@@ -554,11 +605,11 @@ const Profile = () => {
             ...currentUser,
             followRequests: selfData.followRequests,
             followers: selfData.followers,
-            following: selfData.following,
-          },
+            following: selfData.following
+          }
         });
 
-        // Re-fetch the viewed profile from the DB to get the real, updated counts
+
         fetchProfile();
       }
     } catch (err) {
@@ -569,18 +620,18 @@ const Profile = () => {
   const handleDeclineRequest = async () => {
     try {
       const res = await axios.post(
-        `/users/${profileUser._id}/follow-request/reject`,
-        {},
-        { withCredentials: true },
+      `/users/${profileUser._id}/follow-request/reject`,
+      {},
+      { withCredentials: true }
       );
       if (res.data.success) {
         const freshSelf = await axios.get(`/users/${currentUser._id}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         const selfData = freshSelf.data.user || freshSelf.data;
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...currentUser, followRequests: selfData.followRequests },
+          payload: { ...currentUser, followRequests: selfData.followRequests }
         });
         fetchProfile();
       }
@@ -595,16 +646,16 @@ const Profile = () => {
     try {
       const targetId = targetUser._id;
       const isFollowing = currentUserData?.following?.some(
-        (f) => (f._id || f) === targetId,
+      (f) => (f._id || f) === targetId
       );
       const isRequested = targetUser.followRequests?.some(
-        (f) =>
-          (f._id || f) === currentUser?._id || (f._id || f) === currentUser?.id,
+      (f) =>
+      (f._id || f) === currentUser?._id || (f._id || f) === currentUser?.id
       );
       const endpoint =
-        isFollowing || isRequested
-          ? `/users/${targetId}/unfollow`
-          : `/users/${targetId}/follow`;
+      isFollowing || isRequested ?
+      `/users/${targetId}/unfollow` :
+      `/users/${targetId}/follow`;
 
       const res = await axios.post(endpoint, {}, { withCredentials: true });
       if (res.data.success) {
@@ -613,7 +664,7 @@ const Profile = () => {
       }
     } catch (err) {
       showToast.error(
-        err.response?.data?.message || "Failed to complete action",
+      err.response?.data?.message || "Failed to complete action"
       );
     } finally {
       setLoadingRelationId(null);
@@ -628,10 +679,15 @@ const Profile = () => {
     try {
       const targetId = isOwnProfile ? currentUser?._id || currentUser?.id : id;
       const res = await axios.get(`/users/${targetId}/${type}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
-        setRelationsList(res.data[type] || []);
+        const dataList = res.data[type] || [];
+        const uniqueMap = new Map();
+        dataList.forEach(item => {
+          if (item && item._id) uniqueMap.set(item._id.toString(), item);
+        });
+        setRelationsList(Array.from(uniqueMap.values()));
       }
     } catch (err) {
       console.error(err);
@@ -643,9 +699,9 @@ const Profile = () => {
   const handleRateUser = async () => {
     try {
       const res = await axios.post(
-        `/users/rate/${profileUser._id}`,
-        { rating: ratingVal },
-        { withCredentials: true },
+      `/users/rate/${profileUser._id}`,
+      { rating: ratingVal },
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("Thank you for rating this traveler!");
@@ -659,20 +715,20 @@ const Profile = () => {
   const handleBlockUser = async () => {
     try {
       const isBlocked = currentUser.blockedUsers?.includes(profileUser._id);
-      const endpoint = isBlocked
-        ? `/users/unblock/${profileUser._id}`
-        : `/users/block/${profileUser._id}`;
+      const endpoint = isBlocked ?
+      `/users/unblock/${profileUser._id}` :
+      `/users/block/${profileUser._id}`;
       const res = await axios.post(endpoint, {}, { withCredentials: true });
       if (res.data.success) {
         showToast.success(res.data.message);
-        // Refresh local auth context user
+
         const freshSelf = await axios.get(`/users/${currentUser._id}`, {
-          withCredentials: true,
+          withCredentials: true
         });
         const selfData = freshSelf.data.user || freshSelf.data;
         dispatch({
           type: "LOGIN_SUCCESS",
-          payload: { ...currentUser, blockedUsers: selfData.blockedUsers },
+          payload: { ...currentUser, blockedUsers: selfData.blockedUsers }
         });
       }
     } catch (err) {
@@ -688,13 +744,13 @@ const Profile = () => {
     }
     try {
       const res = await axios.post(
-        `/users/report/${profileUser._id}`,
-        { reason: reportReason },
-        { withCredentials: true },
+      `/users/report/${profileUser._id}`,
+      { reason: reportReason },
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success(
-          "User reported successfully. Safety is our priority.",
+        "User reported successfully. Safety is our priority."
         );
         setShowReportModal(false);
         setReportReason("");
@@ -709,18 +765,18 @@ const Profile = () => {
     setIsSaving(true);
     try {
       const res = await axios.put(
-        `/social/memory/${editPostData._id}`,
-        {
-          caption: editPostData.caption,
-          location: editPostData.location,
-          tags: editPostData.tags,
-        },
-        { withCredentials: true },
+      `/social/memory/${editPostData._id}`,
+      {
+        caption: editPostData.caption,
+        location: editPostData.location,
+        tags: editPostData.tags
+      },
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("Post updated!");
         setUserMemories((prev) =>
-          prev.map((p) => (p._id === editPostData._id ? res.data.post : p)),
+        prev.map((p) => p._id === editPostData._id ? res.data.post : p)
         );
         setShowEditPostModal(false);
       }
@@ -735,12 +791,12 @@ const Profile = () => {
     setIsSaving(true);
     try {
       const res = await axios.delete(`/social/memory/${postToDelete._id}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         showToast.success("Post deleted!");
         setUserMemories((prev) =>
-          prev.filter((p) => p._id !== postToDelete._id),
+        prev.filter((p) => p._id !== postToDelete._id)
         );
         setShowDeletePostModal(false);
       }
@@ -756,19 +812,19 @@ const Profile = () => {
     setIsSaving(true);
     try {
       const res = await axios.put(
-        `/social/story/${editStoryData._id}`,
-        {
-          caption: editStoryData.caption,
-          captionPosition: editStoryData.captionPosition,
-          captionColor: editStoryData.captionColor,
-          song: editStoryData.song,
-        },
-        { withCredentials: true },
+      `/social/story/${editStoryData._id}`,
+      {
+        caption: editStoryData.caption,
+        captionPosition: editStoryData.captionPosition,
+        captionColor: editStoryData.captionColor,
+        song: editStoryData.song
+      },
+      { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("Story updated!");
         setUserStories((prev) =>
-          prev.map((s) => (s._id === editStoryData._id ? res.data.story : s)),
+        prev.map((s) => s._id === editStoryData._id ? res.data.story : s)
         );
         setShowEditStoryModal(false);
       }
@@ -779,18 +835,26 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteStory = async () => {
+  const handleDeleteStory = async (storyIdOrEvent) => {
+    if (typeof storyIdOrEvent === "string") {
+      setUserStories((prev) => prev.filter((s) => s._id !== storyIdOrEvent));
+      setActiveStoryGroup(null);
+      return;
+    }
+
+    if (!storyToDelete) return;
     setIsSaving(true);
     try {
       const res = await axios.delete(`/social/story/${storyToDelete._id}`, {
-        withCredentials: true,
+        withCredentials: true
       });
       if (res.data.success) {
         showToast.success("Story deleted!");
         setUserStories((prev) =>
-          prev.filter((s) => s._id !== storyToDelete._id),
+        prev.filter((s) => s._id !== storyToDelete._id)
         );
         setShowDeleteStoryModal(false);
+        setStoryToDelete(null);
       }
     } catch (err) {
       showToast.error("Failed to delete story");
@@ -801,80 +865,94 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] text-[#111827] flex items-center justify-center">
+      <div className="min-h-screen bg-[#FAFAFA] text-[#1E293B] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-      </div>
-    );
+      </div>);
+
   }
 
   if (!profileUser) {
     return (
-      <div className="min-h-screen bg-[#FAFAFA] text-[#111827] flex items-center justify-center pt-24 pb-24">
+      <div className="min-h-screen bg-[#FAFAFA] text-[#1E293B] flex items-center justify-center pt-24 pb-24">
         <div className="text-center">
           <h2 className="text-2xl font-black mb-4">Profile Not Found</h2>
           <p className="text-slate-500 mb-6">
             We couldn't find the profile data.
           </p>
           <button
-            onClick={() => navigate("/social/buddy")}
-            className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold"
-          >
+          onClick={() => navigate("/social/buddy")}
+          className="bg-primary-600 text-white px-6 py-2 rounded-xl font-bold">
+
             Go to Explore
           </button>
         </div>
-      </div>
-    );
+      </div>);
+
   }
 
   const isFollowing = profileUser?.followers?.some(
-    (f) => f._id === currentUser?._id || f === currentUser?._id,
+  (f) => f._id === currentUser?._id || f === currentUser?._id
   );
   const isRequested = profileUser?.followRequests?.some(
-    (f) => f === currentUser?._id || f._id === currentUser?._id,
+  (f) => f === currentUser?._id || f._id === currentUser?._id
   );
   const isBlockedByMe = currentUser?.blockedUsers?.includes(profileUser?._id);
   const hasPendingRequestForMe = currentUser?.followRequests?.some(
-    (f) => f === profileUser?._id || f._id === profileUser?._id,
+  (f) => f === profileUser?._id || f._id === profileUser?._id
   );
 
-  const createdatnew = profileUser?.createdAt
-    ? moment(profileUser.createdAt).format("MMMM YYYY")
-    : "Recently";
+  const canWriteReview = (() => {
+    if (isOwnProfile || !currentUser || !profileUser) return false;
+    const currentUserIdStr = (currentUser._id || currentUser.id)?.toString();
+    const allTrips = [...(userTrips || []), ...(joinedTrips || [])];
+    return allTrips.some((trip) => {
+      const isCompleted = trip.status === "completed" || trip.lifecycleStatus === "completed";
+      if (!isCompleted) return false;
+      const isHostOrMember =
+      (trip.host?._id || trip.host || trip.userId?._id || trip.userId)?.toString() === currentUserIdStr ||
+      trip.members?.some((m) => (m.user?._id || m.user || m)?.toString() === currentUserIdStr);
+      return isHostOrMember;
+    });
+  })();
+
+  const createdatnew = profileUser?.createdAt ?
+  moment(profileUser.createdAt).format("MMMM YYYY") :
+  "Recently";
 
   return (
     <div className="w-full min-h-[100dvh] overflow-x-hidden pb-20 lg:pb-12 font-sans antialiased relative bg-[#FAFAFA] pt-2 sm:pt-4">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-6">
         <ProfileHeader
-          profileUser={profileUser}
-          currentUser={currentUser}
-          isOwnProfile={isOwnProfile}
-          isFollowing={isFollowing}
-          isRequested={isRequested}
-          hasPendingRequestForMe={hasPendingRequestForMe}
-          followLoading={followLoading}
-          isBlockedByMe={isBlockedByMe}
-          showProfileMenu={showProfileMenu}
-          setShowProfileMenu={setShowProfileMenu}
-          handleFollowToggle={handleFollowToggle}
-          handleAcceptRequest={handleAcceptRequest}
-          handleDeclineRequest={handleDeclineRequest}
-          setShowReportModal={setShowReportModal}
-          setShowBlockModal={setShowBlockModal}
-          setShowRateModal={setShowRateModal}
-          navigate={navigate}
-          userMemories={userMemories}
-          userTrips={userTrips}
-          openRelationsModal={openRelationsModal}
-          setActiveTab={setActiveTab}
-          userStories={userStories}
-          handleOpenStory={handleOpenStory}
-        />
+        profileUser={profileUser}
+        currentUser={currentUser}
+        isOwnProfile={isOwnProfile}
+        isFollowing={isFollowing}
+        isRequested={isRequested}
+        hasPendingRequestForMe={hasPendingRequestForMe}
+        followLoading={followLoading}
+        isBlockedByMe={isBlockedByMe}
+        showProfileMenu={showProfileMenu}
+        setShowProfileMenu={setShowProfileMenu}
+        handleFollowToggle={handleFollowToggle}
+        handleAcceptRequest={handleAcceptRequest}
+        handleDeclineRequest={handleDeclineRequest}
+        setShowReportModal={setShowReportModal}
+        setShowBlockModal={setShowBlockModal}
+        setShowRateModal={setShowRateModal}
+        navigate={navigate}
+        userMemories={userMemories}
+        userTrips={userTrips}
+        openRelationsModal={openRelationsModal}
+        canWriteReview={canWriteReview}
+        userStories={userStories}
+        handleOpenStory={handleOpenStory} />
 
-        {/* Rate Traveler removed to modal */}
 
-        {/* PROFILE FEED TABS NAVIGATION */}
-        {!isOwnProfile && profileUser?.canViewContent === false ? (
-          <div className="bg-white/50 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-16 text-center select-none shadow-sm mt-8">
+        {}
+
+        {}
+        {!isOwnProfile && profileUser?.canViewContent === false ?
+        <div className="bg-white/50 backdrop-blur-sm border border-slate-200/60 rounded-3xl p-16 text-center select-none shadow-sm mt-8">
             <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 relative">
               <div className="absolute inset-0 bg-slate-300/20 rounded-full blur-xl"></div>
               <ShieldCheck className="w-8 h-8 text-slate-400 relative z-10" />
@@ -885,15 +963,15 @@ const Profile = () => {
             <p className="text-[13px] text-slate-500 font-medium">
               Follow this account to see their photos and trips.
             </p>
-          </div>
-        ) : (
-          <div className="space-y-6">
+          </div> :
+
+        <div className="space-y-6">
             {isOwnProfile &&
-             userMemories?.length === 0 &&
-             (profileUser?.postsCount || 0) === 0 &&
-             (profileUser?.following?.length || 0) === 0 &&
-             (profileUser?.followers?.length || 0) === 0 && (
-              <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100/80 rounded-3xl p-6 shadow-sm">
+          userMemories?.length === 0 &&
+          (profileUser?.postsCount || 0) === 0 &&
+          (profileUser?.following?.length || 0) === 0 &&
+          (profileUser?.followers?.length || 0) === 0 &&
+          <div className="bg-gradient-to-r from-brand-50 to-indigo-50 border border-brand-100/80 rounded-3xl p-6 shadow-sm">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 select-none">
                   <div>
                     <h3 className="text-base font-black text-slate-800 flex items-center gap-2">
@@ -905,196 +983,194 @@ const Profile = () => {
                   </div>
                   <span className="text-xs font-black bg-brand-600 text-white px-3 py-1 rounded-full shadow-sm self-start sm:self-center">
                     {
-                      [
-                        !!profileUser?.city,
-                        !!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")),
-                        userMemories?.length > 0,
-                        (profileUser?.following?.length || 0) >= 5,
-                        joinedTrips?.length > 0
-                      ].filter(Boolean).length
-                    }/5 Completed
+                [
+                !!profileUser?.city,
+                !!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")),
+                userMemories?.length > 0,
+                (profileUser?.following?.length || 0) >= 5,
+                joinedTrips?.length > 0].
+                filter(Boolean).length}
+                /5 Completed
                   </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                  {/* Task 1: Add your city */}
-                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {}
+                  <div className="flex items-center justify-between bg-white border border-[#E5E7EB] p-4 rounded-xl shadow-soft">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
-                        {profileUser?.city ? (
-                          <span className="text-emerald-500 text-lg">âœ…</span>
-                        ) : (
-                          <span className="text-slate-300 text-lg">â¬œ</span>
-                        )}
+                        {profileUser?.city ?
+                    <span className="text-emerald-500 text-lg">✅</span> :
+
+                    <span className="text-slate-300 text-lg">⬜</span>}
+
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${profileUser?.city ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                        <p className={`text-xs font-semibold ${profileUser?.city ? 'text-[#64748B] line-through' : 'text-[#1E293B]'}`}>
                           Add your city & state
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">To connect with nearby travelers.</p>
+                        <p className="text-[10px] text-[#64748B] font-medium">To connect with nearby travelers.</p>
                       </div>
                     </div>
-                    {!profileUser?.city && (
-                      <button
-                        onClick={() => navigate("/updateProfile", { state: profileUser })}
-                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
-                      >
+                    {!profileUser?.city &&
+                <button
+                onClick={() => navigate("/updateProfile", { state: profileUser })}
+                className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 shadow-soft">
+
                         Add
-                      </button>
-                    )}
+                      </button>}
+
                   </div>
 
-                  {/* Task 2: Upload profile picture */}
-                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                  {}
+                  <div className="flex items-center justify-between bg-white border border-[#E5E7EB] p-4 rounded-xl shadow-soft">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
-                        {profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? (
-                          <span className="text-emerald-500 text-lg">âœ…</span>
-                        ) : (
-                          <span className="text-slate-300 text-lg">â¬œ</span>
-                        )}
+                        {profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ?
+                    <span className="text-emerald-500 text-lg">✅</span> :
+
+                    <span className="text-slate-300 text-lg">⬜</span>}
+
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                        <p className={`text-xs font-semibold ${profileUser?.pic && !profileUser?.pic.includes("no-image-icon") ? 'text-[#64748B] line-through' : 'text-[#1E293B]'}`}>
                           Upload profile picture
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">Let other explorers recognize you.</p>
+                        <p className="text-[10px] text-[#64748B] font-medium">Let other explorers recognize you.</p>
                       </div>
                     </div>
-                    {!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")) && (
-                      <button
-                        onClick={() => navigate("/updateProfile", { state: profileUser })}
-                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
-                      >
+                    {!(profileUser?.pic && !profileUser?.pic.includes("no-image-icon")) &&
+                <button
+                onClick={() => navigate("/updateProfile", { state: profileUser })}
+                className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 shadow-soft">
+
                         Upload
-                      </button>
-                    )}
+                      </button>}
+
                   </div>
 
-                  {/* Task 3: Share your first memory */}
-                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                  {}
+                  <div className="flex items-center justify-between bg-white border border-[#E5E7EB] p-4 rounded-xl shadow-soft">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
-                        {userMemories?.length > 0 ? (
-                          <span className="text-emerald-500 text-lg">âœ…</span>
-                        ) : (
-                          <span className="text-slate-300 text-lg">â¬œ</span>
-                        )}
+                        {userMemories?.length > 0 ?
+                    <span className="text-emerald-500 text-lg">✅</span> :
+
+                    <span className="text-slate-300 text-lg">⬜</span>}
+
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${userMemories?.length > 0 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                        <p className={`text-xs font-semibold ${userMemories?.length > 0 ? 'text-[#64748B] line-through' : 'text-[#1E293B]'}`}>
                           Share your first memory
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">Publish a photo of your travels.</p>
+                        <p className="text-[10px] text-[#64748B] font-medium">Publish a photo of your travels.</p>
                       </div>
                     </div>
-                    {userMemories?.length === 0 && (
-                      <button
-                        onClick={() => setShowCreatePostModal(true)}
-                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
-                      >
-                        Post
-                      </button>
-                    )}
+                    {userMemories?.length === 0 &&
+                <button
+                onClick={() => setShowCreatePostModal(true)}
+                className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 shadow-soft">
+                  Travel Memories</button>}
+
                   </div>
 
-                  {/* Task 4: Follow 5 travelers */}
-                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm">
+                  {}
+                  <div className="flex items-center justify-between bg-white border border-[#E5E7EB] p-4 rounded-xl shadow-soft">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
-                        {(profileUser?.following?.length || 0) >= 5 ? (
-                          <span className="text-emerald-500 text-lg">âœ…</span>
-                        ) : (
-                          <span className="text-slate-300 text-lg">â¬œ</span>
-                        )}
+                        {(profileUser?.following?.length || 0) >= 5 ?
+                    <span className="text-emerald-500 text-lg">✅</span> :
+
+                    <span className="text-slate-300 text-lg">⬜</span>}
+
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${(profileUser?.following?.length || 0) >= 5 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
-                          Follow 5 travelers ({(profileUser?.following?.length || 0)}/5)
+                        <p className={`text-xs font-semibold ${(profileUser?.following?.length || 0) >= 5 ? 'text-[#64748B] line-through' : 'text-[#1E293B]'}`}>
+                          Follow 5 travelers ({profileUser?.following?.length || 0}/5)
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">Build your social travel feed.</p>
+                        <p className="text-[10px] text-[#64748B] font-medium">Build your social travel feed.</p>
                       </div>
                     </div>
-                    {(profileUser?.following?.length || 0) < 5 && (
-                      <button
-                        onClick={() => navigate("/")}
-                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
-                      >
+                    {(profileUser?.following?.length || 0) < 5 &&
+                <button
+                onClick={() => navigate("/")}
+                className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 shadow-soft">
+
                         Explore
-                      </button>
-                    )}
+                      </button>}
+
                   </div>
 
-                  {/* Task 5: Join a travel group */}
-                  <div className="flex items-center justify-between bg-white/70 backdrop-blur-sm border border-slate-100 p-3.5 rounded-2xl shadow-sm col-span-1 md:col-span-2">
+                  {}
+                  <div className="flex items-center justify-between bg-white border border-[#E5E7EB] p-4 rounded-xl shadow-soft col-span-1 md:col-span-2">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center justify-center">
-                        {joinedTrips?.length > 0 ? (
-                          <span className="text-emerald-500 text-lg">âœ…</span>
-                        ) : (
-                          <span className="text-slate-300 text-lg">â¬œ</span>
-                        )}
+                        {joinedTrips?.length > 0 ?
+                    <span className="text-emerald-500 text-lg">✅</span> :
+
+                    <span className="text-slate-300 text-lg">⬜</span>}
+
                       </div>
                       <div>
-                        <p className={`text-xs font-bold ${joinedTrips?.length > 0 ? 'text-slate-400 line-through' : 'text-slate-700'}`}>
+                        <p className={`text-xs font-semibold ${joinedTrips?.length > 0 ? 'text-[#64748B] line-through' : 'text-[#1E293B]'}`}>
                           Join a travel group (squad)
                         </p>
-                        <p className="text-[10px] text-slate-400 font-medium">Find squad buddies to travel together.</p>
+                        <p className="text-[10px] text-[#64748B] font-medium">Find squad buddies to travel together.</p>
                       </div>
                     </div>
-                    {joinedTrips?.length === 0 && (
-                      <button
-                        onClick={() => navigate("/social/buddy")}
-                        className="bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-3 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors shadow-sm"
-                      >
+                    {joinedTrips?.length === 0 &&
+                <button
+                onClick={() => navigate("/social/buddy")}
+                className="bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-3 py-1.5 text-[10px] font-semibold uppercase tracking-wider transition-all duration-200 shadow-soft">
+
                         Join
-                      </button>
-                    )}
+                      </button>}
+
                   </div>
                 </div>
-              </div>
-            )}
+              </div>}
+
 
             <ProfileTabs
-              activeTab={activeTab}
-              setActiveTab={setActiveTab}
-              isOwnProfile={isOwnProfile}
-            />
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          isOwnProfile={isOwnProfile} />
 
-            {activeTab === "trips" && (
-              <div className="flex gap-2 justify-center mb-2 select-none">
+
+            {activeTab === "trips" &&
+          <div className="flex gap-2 justify-center mb-2 select-none">
                 <button
-                  onClick={() => setGroupFilter("hosted")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${groupFilter === "hosted" ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-                >
+            onClick={() => setGroupFilter("hosted")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${groupFilter === "hosted" ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+
                   Hosted
                 </button>
                 <button
-                  onClick={() => setGroupFilter("joined")}
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${groupFilter === "joined" ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-                >
+            onClick={() => setGroupFilter("joined")}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${groupFilter === "joined" ? "bg-slate-900 text-white shadow-md" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}>
+
                   Joined
                 </button>
-              </div>
-            )}
-            {/* TAB LAYOUTS */}
+              </div>}
+
+            {}
             <div className="min-h-[200px]">
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                {activeTab === "posts" &&
-                  (postsLoading && userMemories.length === 0 ? (
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div
-                          key={i}
-                          className="aspect-square bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700"
-                        ></div>
-                      ))}
-                    </div>
-                  ) : userMemories.length === 0 ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}>
+
+                {activeTab === "posts" && (
+              postsLoading && userMemories.length === 0 ?
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      {[1, 2, 3, 4, 5, 6].map((i) =>
+                <div
+                key={i}
+                className="aspect-square bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                </div>
+                )}
+                    </div> :
+              userMemories.length === 0 ?
+              <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-brand-500/5 rounded-full blur-xl animate-pulse"></div>
                         <Globe className="w-10 h-10 text-brand-500 relative z-10" />
@@ -1103,58 +1179,58 @@ const Profile = () => {
                         {isOwnProfile ? <><Globe className="w-5 h-5 text-brand-500" /> Welcome to Go YatriGo!</> : "No Travel Memories"}
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
-                        {isOwnProfile 
-                          ? "Share your first travel memory to inspire other travelers." 
-                          : "This traveler has not posted any travel photo updates yet."}
+                        {isOwnProfile ?
+                  "Share your first travel memory to inspire other travelers." :
+                  "This traveler has not posted any travel photo updates yet."}
                       </p>
-                      {isOwnProfile && (
-                        <button
-                          onClick={() => setShowCreatePostModal(true)}
-                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
-                        >
+                      {isOwnProfile &&
+                <button
+                onClick={() => setShowCreatePostModal(true)}
+                className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2">
+
                           <Plus className="w-4 h-4" /> Create Your First Memory
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <>
+                        </button>}
+
+                    </div> :
+
+              <>
                       <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                        {userMemories?.map((post) => (
-                          <div key={post._id} className="relative group">
+                        {userMemories?.map((post) =>
+                  <div key={post._id} className="relative group">
                             <div
-                              className="aspect-square bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm cursor-pointer"
-                              onClick={() => setSelectedMemory(post)}
-                            >
+                    className="aspect-square bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm cursor-pointer"
+                    onClick={() => setSelectedMemory(post)}>
+
                               {post.mediaType === "video" ||
-                              (
-                                post.image ||
-                                post.mediaUrl ||
-                                post.mediaUrls?.[0] ||
-                                ""
-                              ).match(/\.(mp4|webm|mov)$/i) ? (
-                                <video
-                                  src={`${
-                                    post.image ||
-                                    post.mediaUrl ||
-                                    post.mediaUrls?.[0]
-                                  }#t=0.1`}
-                                  muted
-                                  loop
-                                  playsInline
-                                  preload="metadata"
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                              ) : (
-                                <img
-                                  src={
-                                    post.image ||
-                                    post.mediaUrl ||
-                                    post.mediaUrls?.[0]
-                                  }
-                                  alt={post.title}
-                                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                />
-                              )}
+                      (
+                      post.image ||
+                      post.mediaUrl ||
+                      post.mediaUrls?.[0] ||
+                      "").
+                      match(/\.(mp4|webm|mov)$/i) ?
+                      <video
+                      src={`${
+                      post.image ||
+                      post.mediaUrl ||
+                      post.mediaUrls?.[0]
+                      }#t=0.1`}
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" /> :
+
+
+                      <img
+                      src={
+                      post.image ||
+                      post.mediaUrl ||
+                      post.mediaUrls?.[0]}
+
+                      alt={post.title}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />}
+
+
                               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                                 <span className="flex items-center gap-1.5 font-bold">
                                   <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />{" "}
@@ -1166,73 +1242,73 @@ const Profile = () => {
                                 </span>
                               </div>
                             </div>
-                            {isOwnProfile && (
-                              <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity dropdown-container z-50">
+                            {isOwnProfile &&
+                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity dropdown-container z-50">
                                 <button
-                                  className="p-2 bg-black/40 backdrop-blur-md text-white rounded-full hover:bg-black/60 shadow-sm transition-colors"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    const el =
-                                      e.currentTarget.nextElementSibling;
-                                    el.classList.toggle("hidden");
-                                  }}
-                                >
+                      className="p-2 bg-black/40 backdrop-blur-md text-white rounded-full hover:bg-black/60 shadow-sm transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const el =
+                        e.currentTarget.nextElementSibling;
+                        el.classList.toggle("hidden");
+                      }}>
+
                                   <MoreVertical className="w-4 h-4" />
                                 </button>
                                 <div className="hidden absolute right-0 mt-2 w-28 bg-white/90 backdrop-blur-xl rounded-xl shadow-lg border border-slate-100/50 py-1.5 z-50 text-xs font-semibold text-slate-700">
                                   <button
-                                    className="w-full text-left px-4 py-2 hover:bg-slate-100/50"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      e.currentTarget.parentElement.classList.add(
-                                        "hidden",
-                                      );
-                                      setEditPostData(post);
-                                      setShowEditPostModal(true);
-                                    }}
-                                  >
+                        className="w-full text-left px-4 py-2 hover:bg-slate-100/50"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.currentTarget.parentElement.classList.add(
+                          "hidden"
+                          );
+                          setEditPostData(post);
+                          setShowEditPostModal(true);
+                        }}>
+
                                     Edit
                                   </button>
                                   <button
-                                    className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-500"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      e.currentTarget.parentElement.classList.add(
-                                        "hidden",
-                                      );
-                                      setPostToDelete(post);
-                                      setShowDeletePostModal(true);
-                                    }}
-                                  >
+                        className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-500"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.currentTarget.parentElement.classList.add(
+                          "hidden"
+                          );
+                          setPostToDelete(post);
+                          setShowDeletePostModal(true);
+                        }}>
+
                                     Delete
                                   </button>
                                 </div>
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      {hasMorePosts && userMemories.length >= 30 && (
-                        <div className="mt-8 flex justify-center w-full col-span-3">
-                          <button
-                            onClick={loadMorePosts}
-                            disabled={postsLoading}
-                            className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-semibold text-sm transition-colors flex items-center gap-2"
-                          >
-                            {postsLoading ? (
-                              <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              "Load More"
-                            )}
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  ))}
+                              </div>}
 
-                {activeTab === "stories" &&
-                  (userStories.length === 0 ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
+                          </div>
+                  )}
+                      </div>
+                      {hasMorePosts && userMemories.length >= 30 &&
+                <div className="mt-8 flex justify-center w-full col-span-3">
+                          <button
+                  onClick={loadMorePosts}
+                  disabled={postsLoading}
+                  className="px-6 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-full font-semibold text-sm transition-colors flex items-center gap-2">
+
+                            {postsLoading ?
+                    <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div> :
+
+                    "Load More"}
+
+                          </button>
+                        </div>}
+
+                    </>)}
+
+
+                {activeTab === "stories" && (
+              userStories.length === 0 ?
+              <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-pink-500/5 rounded-full blur-xl animate-pulse"></div>
                         <Activity className="w-10 h-10 text-brand-500 relative z-10" />
@@ -1241,102 +1317,102 @@ const Profile = () => {
                         {isOwnProfile ? "No stories yet." : "No Stories"}
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
-                        {isOwnProfile 
-                          ? "Capture your first journey!" 
-                          : "This traveler has not posted any active stories."}
+                        {isOwnProfile ?
+                  "Capture your first journey!" :
+                  "This traveler has not posted any active stories."}
                       </p>
-                      {isOwnProfile && (
-                        <button
-                          onClick={() => setShowCreateStoryModal(true)}
-                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
-                        >
+                      {isOwnProfile &&
+                <button
+                onClick={() => setShowCreateStoryModal(true)}
+                className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2">
+
                           <Plus className="w-4 h-4" /> Share a Story
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      {userStories?.map((story, index) => (
-                        <div
-                          key={story._id}
-                          className="relative group cursor-pointer"
-                          onClick={() => handleOpenStory(index)}
-                        >
+                        </button>}
+
+                    </div> :
+
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      {userStories?.map((story, index) =>
+                <div
+                key={story._id}
+                className="relative group cursor-pointer"
+                onClick={() => handleOpenStory(index)}>
+
                           <div className="aspect-[9/16] bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm">
-                            {story.mediaType === "video" ? (
-                              <video
-                                src={`${story.media}#t=0.1`}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                                muted
-                                playsInline
-                                preload="metadata"
-                              />
-                            ) : (
-                              <img
-                                src={story.media}
-                                alt="Story"
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            )}
+                            {story.mediaType === "video" ?
+                    <video
+                    src={`${story.media}#t=0.1`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    muted
+                    playsInline
+                    preload="metadata" /> :
+
+
+                    <img
+                    src={story.media}
+                    alt="Dispatch"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />}
+
+
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
                                 <Sparkles className="w-5 h-5 text-amber-400 fill-amber-400" />{" "}
                                 {story.reactions?.length ||
-                                  story.storyReactions?.length ||
-                                  0}
+                        story.storyReactions?.length ||
+                        0}
                               </span>
                             </div>
                           </div>
-                          {isOwnProfile && (
-                            <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity dropdown-container z-50">
+                          {isOwnProfile &&
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity dropdown-container z-50">
                               <button
-                                className="p-2 bg-black/40 backdrop-blur-md text-white rounded-full hover:bg-black/60 shadow-sm transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  const el = e.currentTarget.nextElementSibling;
-                                  el.classList.toggle("hidden");
-                                }}
-                              >
+                    className="p-2 bg-black/40 backdrop-blur-md text-white rounded-full hover:bg-black/60 shadow-sm transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const el = e.currentTarget.nextElementSibling;
+                      el.classList.toggle("hidden");
+                    }}>
+
                                 <MoreVertical className="w-4 h-4" />
                               </button>
                               <div className="hidden absolute right-0 mt-2 w-28 bg-white/90 backdrop-blur-xl rounded-xl shadow-lg border border-slate-100/50 py-1.5 z-50 text-xs font-semibold text-slate-700">
                                 <button
-                                  className="w-full text-left px-4 py-2 hover:bg-slate-100/50"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.currentTarget.parentElement.classList.add(
-                                      "hidden",
-                                    );
-                                    setEditStoryData(story);
-                                    setShowEditStoryModal(true);
-                                  }}
-                                >
+                      className="w-full text-left px-4 py-2 hover:bg-slate-100/50"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.currentTarget.parentElement.classList.add(
+                        "hidden"
+                        );
+                        setEditStoryData(story);
+                        setShowEditStoryModal(true);
+                      }}>
+
                                   Edit
                                 </button>
                                 <button
-                                  className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-500"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    e.currentTarget.parentElement.classList.add(
-                                      "hidden",
-                                    );
-                                    setStoryToDelete(story);
-                                    setShowDeleteStoryModal(true);
-                                  }}
-                                >
+                      className="w-full text-left px-4 py-2 hover:bg-rose-50 text-rose-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        e.currentTarget.parentElement.classList.add(
+                        "hidden"
+                        );
+                        setStoryToDelete(story);
+                        setShowDeleteStoryModal(true);
+                      }}>
+
                                   Delete
                                 </button>
                               </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
+                            </div>}
 
-                {activeTab === "felt" &&
-                  (feltPosts.length === 0 ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
+                        </div>
+                )}
+                    </div>)}
+
+
+                {activeTab === "felt" && (
+              feltPosts.length === 0 ?
+              <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl animate-pulse"></div>
                         <Star className="w-10 h-10 text-amber-200 fill-amber-100 relative z-10" />
@@ -1347,87 +1423,87 @@ const Profile = () => {
                       <p className="text-[13px] text-slate-500 font-medium">
                         No travel memories have been felt yet.
                       </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-6">
+                    </div> :
+
+              <div className="space-y-6">
                       <div className="grid grid-cols-3 gap-2 sm:gap-4">
                         {feltPosts.slice(0, 3).map((post) => {
-                          let badgeInfo = {
-                            icon: <MapPin className="w-3 h-3" />,
-                            label: "Travel Memory",
-                            bg: "text-rose-600",
-                          };
-                          if (post.postType === "story")
-                            badgeInfo = {
-                              icon: <Clapperboard className="w-3 h-3" />,
-                              label: "Story",
-                              bg: "text-brand-600",
-                            };
-                          else if (post.postType === "group")
-                            badgeInfo = {
-                              icon: <Users className="w-3 h-3" />,
-                              label: "Travel Group",
-                              bg: "text-blue-600",
-                            };
-                          else if (post.postType === "document")
-                            badgeInfo = {
-                              icon: <FileText className="w-3 h-3" />,
-                              label: "Document",
-                              bg: "text-amber-600",
-                            };
-                          else if (post.postType === "profile_update")
-                            badgeInfo = {
-                              icon: <User className="w-3 h-3" />,
-                              label: "Profile Update",
-                              bg: "text-emerald-600",
-                            };
-                          else if (post.postType === "travel_video")
-                            badgeInfo = {
-                              icon: <Video className="w-3 h-3" />,
-                              label: "Travel Video",
-                              bg: "text-brand-600",
-                            };
+                    let badgeInfo = {
+                      icon: <MapPin className="w-3 h-3" />,
+                      label: "Travel Memory",
+                      bg: "text-rose-600"
+                    };
+                    if (post.postType === "story")
+                    badgeInfo = {
+                      icon: <Clapperboard className="w-3 h-3" />,
+                      label: "Dispatch",
+                      bg: "text-brand-600"
+                    };else
+                    if (post.postType === "group")
+                    badgeInfo = {
+                      icon: <Users className="w-3 h-3" />,
+                      label: "Travel Group",
+                      bg: "text-blue-600"
+                    };else
+                    if (post.postType === "document")
+                    badgeInfo = {
+                      icon: <FileText className="w-3 h-3" />,
+                      label: "Document",
+                      bg: "text-amber-600"
+                    };else
+                    if (post.postType === "profile_update")
+                    badgeInfo = {
+                      icon: <User className="w-3 h-3" />,
+                      label: "Profile Update",
+                      bg: "text-emerald-600"
+                    };else
+                    if (post.postType === "travel_video")
+                    badgeInfo = {
+                      icon: <Video className="w-3 h-3" />,
+                      label: "Travel Video",
+                      bg: "text-brand-600"
+                    };
 
-                          return (
-                            <div
-                              key={post._id}
-                              onClick={() => setSelectedMemory(post)}
-                              className="aspect-[3/4] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1 transition-all duration-300"
-                            >
+                    return (
+                      <div
+                      key={post._id}
+                      onClick={() => setSelectedMemory(post)}
+                      className="aspect-[3/4] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1 transition-all duration-300">
+
                               {post.mediaType === "video" ||
-                              (
-                                post.image ||
-                                post.mediaUrl ||
-                                post.mediaUrls?.[0] ||
-                                ""
-                              ).match(/\.(mp4|webm|mov)$/i) ? (
-                                <video
-                                  src={`${
-                                    post.image ||
-                                    post.mediaUrl ||
-                                    post.mediaUrls?.[0]
-                                  }#t=0.1`}
-                                  muted
-                                  loop
-                                  playsInline
-                                  preload="metadata"
-                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                              ) : (
-                                <img
-                                  src={
-                                    post.image ||
-                                    post.mediaUrl ||
-                                    post.mediaUrls?.[0]
-                                  }
-                                  alt={post.title}
-                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                              )}
+                        (
+                        post.image ||
+                        post.mediaUrl ||
+                        post.mediaUrls?.[0] ||
+                        "").
+                        match(/\.(mp4|webm|mov)$/i) ?
+                        <video
+                        src={`${
+                        post.image ||
+                        post.mediaUrl ||
+                        post.mediaUrls?.[0]
+                        }#t=0.1`}
+                        muted
+                        loop
+                        playsInline
+                        preload="metadata"
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" /> :
+
+
+                        <img
+                        src={
+                        post.image ||
+                        post.mediaUrl ||
+                        post.mediaUrls?.[0]}
+
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+
+
                               <div className="absolute top-2 left-2 z-10">
                                 <div
-                                  className={`flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-md ${badgeInfo.bg} text-[9px] sm:text-[10px] font-bold shadow-sm`}
-                                >
+                          className={`flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-md ${badgeInfo.bg} text-[9px] sm:text-[10px] font-bold shadow-sm`}>
+
                                   {badgeInfo.icon}
                                   <span className="hidden sm:inline">
                                     {badgeInfo.label}
@@ -1440,89 +1516,89 @@ const Profile = () => {
                                     <div className="flex items-center gap-1">
                                       <Sparkles className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />{" "}
                                       {post.likes?.length ||
-                                        post.likesCount ||
-                                        0}
+                                post.likesCount ||
+                                0}
                                     </div>
                                     <div className="flex items-center gap-1">
                                       <MessageCircle className="w-3 h-3" />{" "}
                                       {post.comments?.length ||
-                                        post.commentsCount ||
-                                        0}
+                                post.commentsCount ||
+                                0}
                                     </div>
                                   </div>
                                 </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            </div>);
+
+                  })}
                       </div>
-                      {feltPosts.length > 3 && (
-                        <button
-                          onClick={() => navigate("/felt-vibes")}
-                          className="w-full py-4 bg-white/80 backdrop-blur-xl hover:bg-brand-50 text-brand-700 text-sm font-extrabold rounded-3xl transition-all duration-300 border border-brand-100 shadow-[0_4px_20px_rgba(124,58,237,0.05)] hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] flex items-center justify-center gap-2 group"
-                        >
+                      {feltPosts.length > 3 &&
+                <button
+                onClick={() => navigate("/felt-vibes")}
+                className="w-full py-4 bg-white/80 backdrop-blur-xl hover:bg-brand-50 text-brand-700 text-sm font-extrabold rounded-3xl transition-all duration-300 border border-brand-100 shadow-[0_4px_20px_rgba(124,58,237,0.05)] hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] flex items-center justify-center gap-2 group">
+
                           View All Felt Vibes
                           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
+                        </button>}
 
-                {activeTab === "trips" &&
-                  ((groupFilter === "hosted" ? userTrips : joinedTrips)
-                    .length === 0 ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
+                    </div>)}
+
+
+                {activeTab === "trips" && (
+              (groupFilter === "hosted" ? userTrips : joinedTrips).
+              length === 0 ?
+              <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-brand-500/5 rounded-full blur-xl animate-pulse"></div>
                         <Compass className="w-10 h-10 text-brand-500 relative z-10" />
                       </div>
                       <h3 className="text-base font-black text-slate-900 mb-1">
-                        {isOwnProfile && groupFilter === "joined"
-                          ? "You haven't joined any travel groups yet."
-                          : groupFilter === "hosted"
-                            ? "No Squads Hosted"
-                            : "No Squads Joined"}
+                        {isOwnProfile && groupFilter === "joined" ?
+                  "You haven't joined any travel groups yet." :
+                  groupFilter === "hosted" ?
+                  "No Squads Hosted" :
+                  "No Squads Joined"}
                       </h3>
                       <p className="text-[13px] text-slate-500 font-medium max-w-sm mx-auto mb-6">
-                        {isOwnProfile && groupFilter === "joined"
-                          ? "Explore active travel squads and join other travelers on their journeys!"
-                          : groupFilter === "hosted"
-                            ? "This traveler has not hosted any short-term squad trips yet."
-                            : "This traveler has not joined any short-term squad trips yet."}
+                        {isOwnProfile && groupFilter === "joined" ?
+                  "Explore active travel squads and join other travelers on their journeys!" :
+                  groupFilter === "hosted" ?
+                  "This traveler has not hosted any short-term squad trips yet." :
+                  "This traveler has not joined any short-term squad trips yet."}
                       </p>
-                      {isOwnProfile && groupFilter === "joined" && (
-                        <button
-                          onClick={() => navigate("/social/buddy")}
-                          className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2"
-                        >
+                      {isOwnProfile && groupFilter === "joined" &&
+                <button
+                onClick={() => navigate("/social/buddy")}
+                className="bg-brand-600 hover:bg-brand-700 text-white rounded-2xl px-6 py-2.5 font-bold text-sm transition-colors shadow-sm inline-flex items-center gap-2">
+
                           <Compass className="w-4 h-4" /> Find Travel Groups
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {(groupFilter === "hosted"
-                        ? userTrips
-                        : joinedTrips
-                      )?.map((trip) => {
-                        const dateFormatted = new Date(
-                          trip.startDate,
-                        ).toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        });
-                        const slots = Math.max(
-                          0,
-                          trip.maxCompanions - (trip.companions?.length || 0),
-                        );
-                        return (
-                          <div
-                            key={trip._id}
-                            onClick={() =>
-                              navigate(`/social/buddy/${trip._id}`)
-                            }
-                            className="bg-white border border-slate-100/80 p-5 rounded-3xl hover:shadow-md transition-all duration-300 cursor-pointer space-y-3 shadow-sm hover:-translate-y-1"
-                          >
+                        </button>}
+
+                    </div> :
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {(groupFilter === "hosted" ?
+                userTrips :
+                joinedTrips)?.
+                map((trip) => {
+                  const dateFormatted = new Date(
+                  trip.startDate
+                  ).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric"
+                  });
+                  const slots = Math.max(
+                  0,
+                  trip.maxCompanions - (trip.companions?.length || 0)
+                  );
+                  return (
+                    <div
+                    key={trip._id}
+                    onClick={() =>
+                    navigate(`/social/buddy/${trip._id}`)}
+
+                    className="bg-white border border-slate-100/80 p-5 rounded-3xl hover:shadow-md transition-all duration-300 cursor-pointer space-y-3 shadow-sm hover:-translate-y-1">
+
                             <div className="flex justify-between items-center select-none">
                               <span className="bg-brand-50 text-brand-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
                                 {trip.category}
@@ -1543,28 +1619,28 @@ const Profile = () => {
                                 <Calendar className="w-4 h-4" /> {dateFormatted}
                               </span>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  ))}
+                          </div>);
 
-                {activeTab === "journeys" && (
-                  <JourneyStatistics userId={profileUser?._id || id} />
+                })}
+                    </div>)}
+
+
+                {activeTab === "journeys" &&
+              <JourneyStatistics userId={profileUser?._id || id} />}
+
+
+                {activeTab === "saved" && (
+              savedLoading && savedPosts.length === 0 ?
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      {[1, 2, 3, 4, 5, 6].map((i) =>
+                <div
+                key={i}
+                className="aspect-square bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700">
+                </div>
                 )}
-
-                {activeTab === "saved" &&
-                  (savedLoading && savedPosts.length === 0 ? (
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      {[1, 2, 3, 4, 5, 6].map((i) => (
-                        <div
-                          key={i}
-                          className="aspect-square bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700"
-                        ></div>
-                      ))}
-                    </div>
-                  ) : savedPosts.length === 0 ? (
-                    <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
+                    </div> :
+              savedPosts.length === 0 ?
+              <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
                       <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
                         <div className="absolute inset-0 bg-primary-600/5 rounded-full blur-xl animate-pulse"></div>
                         <Bookmark className="w-10 h-10 text-slate-300 relative z-10" />
@@ -1576,45 +1652,45 @@ const Profile = () => {
                         When you bookmark memories on the explore feed, they
                         will appear here.
                       </p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
-                      {savedPosts.map((post) => (
-                        <div key={post._id} className="relative group">
+                    </div> :
+
+              <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      {savedPosts.map((post) =>
+                <div key={post._id} className="relative group">
                           <div
-                            className="aspect-square bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm cursor-pointer"
-                            onClick={() => setSelectedMemory(post)}
-                          >
+                  className="aspect-square bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm cursor-pointer"
+                  onClick={() => setSelectedMemory(post)}>
+
                             {post.mediaType === "video" ||
-                            (
-                              post.image ||
-                              post.mediaUrl ||
-                              post.mediaUrls?.[0] ||
-                              ""
-                            ).match(/\.(mp4|webm|mov)$/i) ? (
-                              <video
-                                src={`${
-                                  post.image ||
-                                  post.mediaUrl ||
-                                  post.mediaUrls?.[0]
-                                }#t=0.1`}
-                                muted
-                                loop
-                                playsInline
-                                preload="metadata"
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            ) : (
-                              <img
-                                src={
-                                  post.image ||
-                                  post.mediaUrl ||
-                                  post.mediaUrls?.[0]
-                                }
-                                alt={post.title || "Saved memory"}
-                                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                              />
-                            )}
+                    (
+                    post.image ||
+                    post.mediaUrl ||
+                    post.mediaUrls?.[0] ||
+                    "").
+                    match(/\.(mp4|webm|mov)$/i) ?
+                    <video
+                    src={`${
+                    post.image ||
+                    post.mediaUrl ||
+                    post.mediaUrls?.[0]
+                    }#t=0.1`}
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" /> :
+
+
+                    <img
+                    src={
+                    post.image ||
+                    post.mediaUrl ||
+                    post.mediaUrls?.[0]}
+
+                    alt={post.title || "Saved memory"}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />}
+
+
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-6 text-white text-sm select-none pointer-events-none backdrop-blur-[2px]">
                               <span className="flex items-center gap-1.5 font-bold">
                                 <Sparkles className="w-4 h-4 text-amber-400 fill-amber-400" />{" "}
@@ -1627,83 +1703,83 @@ const Profile = () => {
                             </div>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  ))}
+                )}
+                    </div>)}
+
               </motion.div>
             </div>
-          </div>
-        )}
+          </div>}
+
       </div>
 
-      {/* EDIT POST MODAL */}
+      {}
       <AnimatePresence>
-        {showEditPostModal && editPostData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showEditPostModal && editPostData &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
-            >
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10">
+
               <h3 className="text-sm font-black mb-4">Edit Post</h3>
               <form onSubmit={handleEditPost} className="space-y-3">
                 <input
-                  type="text"
-                  placeholder="Location"
-                  value={editPostData.location || ""}
-                  onChange={(e) =>
-                    setEditPostData({
-                      ...editPostData,
-                      location: e.target.value,
-                    })
-                  }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600"
-                />
+              type="text"
+              placeholder="Location"
+              value={editPostData.location || ""}
+              onChange={(e) =>
+              setEditPostData({
+                ...editPostData,
+                location: e.target.value
+              })}
+
+              className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600" />
+
                 <textarea
-                  placeholder="Caption"
-                  value={editPostData.caption || ""}
-                  onChange={(e) =>
-                    setEditPostData({
-                      ...editPostData,
-                      caption: e.target.value,
-                    })
-                  }
-                  rows="3"
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
-                />
+              placeholder="Caption"
+              value={editPostData.caption || ""}
+              onChange={(e) =>
+              setEditPostData({
+                ...editPostData,
+                caption: e.target.value
+              })}
+
+              rows="3"
+              className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none" />
+
                 <div className="flex gap-2 justify-end pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowEditPostModal(false)}
-                    className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold"
-                  >
+                type="button"
+                onClick={() => setShowEditPostModal(false)}
+                className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold">
+
                     Cancel
                   </button>
                   <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold"
-                  >
+                type="submit"
+                disabled={isSaving}
+                className="px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold">
+
                     {isSaving ? "Saving..." : "Save"}
                   </button>
                 </div>
               </form>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* DELETE POST MODAL */}
+      {}
       <AnimatePresence>
-        {showDeletePostModal && postToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showDeletePostModal && postToDelete &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
-            >
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center">
+
               <h3 className="text-sm font-black mb-2 text-rose-600">
                 Delete Post?
               </h3>
@@ -1713,110 +1789,110 @@ const Profile = () => {
               </p>
               <div className="flex gap-2 justify-center">
                 <button
-                  type="button"
-                  onClick={() => setShowDeletePostModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={() => setShowDeletePostModal(false)}
+              className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold">
+
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={handleDeletePost}
-                  disabled={isSaving}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={handleDeletePost}
+              disabled={isSaving}
+              className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">
+
                   {isSaving ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* EDIT STORY MODAL */}
+      {}
       <AnimatePresence>
-        {showEditStoryModal && editStoryData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showEditStoryModal && editStoryData &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
-            >
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10">
+
               <h3 className="text-sm font-black mb-4">Edit Story</h3>
               <form onSubmit={handleEditStory} className="space-y-3">
                 <textarea
-                  placeholder="Caption"
-                  value={editStoryData.caption || ""}
-                  onChange={(e) =>
-                    setEditStoryData({
-                      ...editStoryData,
-                      caption: e.target.value,
-                    })
-                  }
-                  rows="2"
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
+              placeholder="Caption"
+              value={editStoryData.caption || ""}
+              onChange={(e) =>
+              setEditStoryData({
+                ...editStoryData,
+                caption: e.target.value
+              })}
+
+              rows="2"
+              className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none" />
+
+                <CustomSelect
+              value={editStoryData.captionPosition || "center"}
+              onChange={(e) =>
+              setEditStoryData({
+                ...editStoryData,
+                captionPosition: e.target.value
+              })}
+              className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600"
+              options={[
+                { label: "Top", value: "top" },
+                { label: "Center", value: "center" },
+                { label: "Bottom", value: "bottom" }
+              ]}
                 />
-                <select
-                  value={editStoryData.captionPosition || "center"}
-                  onChange={(e) =>
-                    setEditStoryData({
-                      ...editStoryData,
-                      captionPosition: e.target.value,
-                    })
-                  }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600"
-                >
-                  <option value="top">Top</option>
-                  <option value="center">Center</option>
-                  <option value="bottom">Bottom</option>
-                </select>
-                <select
-                  value={editStoryData.captionColor || "white"}
-                  onChange={(e) =>
-                    setEditStoryData({
-                      ...editStoryData,
-                      captionColor: e.target.value,
-                    })
-                  }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600"
-                >
-                  <option value="white">White</option>
-                  <option value="black">Black</option>
-                  <option value="purple">Purple</option>
-                </select>
+                <CustomSelect
+              value={editStoryData.captionColor || "white"}
+              onChange={(e) =>
+              setEditStoryData({
+                ...editStoryData,
+                captionColor: e.target.value
+              })}
+              className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-primary-600"
+              options={[
+                { label: "White", value: "white" },
+                { label: "Black", value: "black" },
+                { label: "Purple", value: "purple" }
+              ]}
+                />
                 <div className="flex gap-2 justify-end pt-2">
                   <button
-                    type="button"
-                    onClick={() => setShowEditStoryModal(false)}
-                    className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold"
-                  >
+                type="button"
+                onClick={() => setShowEditStoryModal(false)}
+                className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold">
+
                     Cancel
                   </button>
                   <button
-                    type="submit"
-                    disabled={isSaving}
-                    className="px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold"
-                  >
+                type="submit"
+                disabled={isSaving}
+                className="px-4 py-2 bg-primary-600 text-white rounded-xl text-xs font-bold">
+
                     {isSaving ? "Saving..." : "Save"}
                   </button>
                 </div>
               </form>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* DELETE STORY MODAL */}
+      {}
       <AnimatePresence>
-        {showDeleteStoryModal && storyToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showDeleteStoryModal && storyToDelete &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
-            >
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center">
+
               <h3 className="text-sm font-black mb-2 text-rose-600">
                 Delete Story?
               </h3>
@@ -1826,79 +1902,79 @@ const Profile = () => {
               </p>
               <div className="flex gap-2 justify-center">
                 <button
-                  type="button"
-                  onClick={() => setShowDeleteStoryModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={() => setShowDeleteStoryModal(false)}
+              className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold">
+
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={handleDeleteStory}
-                  disabled={isSaving}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={handleDeleteStory}
+              disabled={isSaving}
+              className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">
+
                   {isSaving ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* BLOCK CONFIRMATION MODAL */}
+      {}
       <AnimatePresence>
-        {showBlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showBlockModal &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
-            >
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center">
+
               <h3 className="text-sm font-black mb-2 text-rose-600">
                 {isBlockedByMe ? "Unblock User?" : "Block User?"}
               </h3>
               <p className="text-xs text-slate-500 mb-6">
-                {isBlockedByMe
-                  ? "They will be able to see your profile and interact with you again."
-                  : "They won't be able to find your profile, posts, or story on Go YatriGo. They won't be notified that you blocked them."}
+                {isBlockedByMe ?
+              "They will be able to see your profile and interact with you again." :
+              "They won't be able to find your profile, posts, or story on Go YatriGo. They won't be notified that you blocked them."}
               </p>
               <div className="flex gap-2 justify-center">
                 <button
-                  type="button"
-                  onClick={() => setShowBlockModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={() => setShowBlockModal(false)}
+              className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold">
+
                   Cancel
                 </button>
                 <button
-                  type="button"
-                  onClick={() => {
-                    handleBlockUser();
-                    setShowBlockModal(false);
-                  }}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
-                >
+              type="button"
+              onClick={() => {
+                handleBlockUser();
+                setShowBlockModal(false);
+              }}
+              className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold">
+
                   {isBlockedByMe ? "Unblock" : "Block"}
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* RATE USER MODAL */}
+      {}
       <AnimatePresence>
-        {showRateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showRateModal &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-slate-100 p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
-            >
-              <h3 className="text-xs font-black text-[#111827] flex items-center gap-2 mb-2 uppercase tracking-wider">
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white border border-slate-100 p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10">
+
+              <h3 className="text-xs font-black text-[#1E293B] flex items-center gap-2 mb-2 uppercase tracking-wider">
                 <Star className="w-5 h-5 text-amber-500 fill-amber-500" /> Rate
                 Companion
               </h3>
@@ -1908,144 +1984,144 @@ const Profile = () => {
               </p>
 
               <div className="flex items-center justify-center gap-2 mb-6">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setRatingVal(star)}
-                    className="transition-transform active:scale-90"
-                  >
+                {[1, 2, 3, 4, 5].map((star) =>
+              <button
+              key={star}
+              type="button"
+              onClick={() => setRatingVal(star)}
+              className="transition-transform active:scale-90">
+
                     <Star
-                      className={`w-8 h-8 ${
-                        star <= ratingVal
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-slate-200"
-                      }`}
-                    />
+                className={`w-8 h-8 ${
+                star <= ratingVal ?
+                "fill-amber-400 text-amber-400" :
+                "text-slate-200"
+                }`} />
+
                   </button>
-                ))}
+              )}
               </div>
 
               <div className="flex gap-2.5 justify-end pt-2 border-t border-slate-50">
                 <button
-                  type="button"
-                  onClick={() => setShowRateModal(false)}
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-100 hover:bg-slate-100 rounded-xl text-slate-500 font-extrabold text-[9px] uppercase tracking-widest transition-colors"
-                >
+              type="button"
+              onClick={() => setShowRateModal(false)}
+              className="px-4 py-2.5 bg-slate-50 border border-slate-100 hover:bg-slate-100 rounded-xl text-slate-500 font-extrabold text-[9px] uppercase tracking-widest transition-colors">
+
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
-                    handleRateUser();
-                    setShowRateModal(false);
-                  }}
-                  className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-extrabold text-[9px] uppercase tracking-widest transition-colors shadow-sm active:scale-95"
-                >
+              onClick={() => {
+                handleRateUser();
+                setShowRateModal(false);
+              }}
+              className="px-5 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-extrabold text-[9px] uppercase tracking-widest transition-colors shadow-sm active:scale-95">
+
                   Submit Rating
                 </button>
               </div>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* REPORT SAFETY DIALOG MODAL */}
+      {}
       <AnimatePresence>
-        {showReportModal && (
-          <ReportModal
-            isOpen={showReportModal}
-            onClose={() => setShowReportModal(false)}
-            targetId={profileUser?._id}
-            targetType="user"
-            reportedUserId={profileUser?._id}
-          />
-        )}
+        {showReportModal &&
+        <ReportModal
+        isOpen={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        targetId={profileUser?._id}
+        targetType="user"
+        reportedUserId={profileUser?._id} />}
+
+
       </AnimatePresence>
 
-      {/* SELECTED POST DETAIL OVERLAY MODAL */}
+      {}
       <AnimatePresence>
-        {selectedMemory && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md select-none">
+        {selectedMemory &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-md select-none">
             <button
-              onClick={() => setSelectedMemory(null)}
-              className="absolute top-6 right-6 p-2 text-white/70 hover:text-white transition-colors z-50 bg-black/20 rounded-full cursor-pointer"
-            >
+          onClick={() => setSelectedMemory(null)}
+          className="absolute top-6 right-6 p-2 text-white/70 hover:text-white transition-colors z-50 bg-black/20 rounded-full cursor-pointer">
+
               <X className="w-8 h-8" />
             </button>
 
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="relative max-w-4xl max-h-[85vh] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl cursor-pointer"
-              onClick={handleImageClick}
-            >
+          initial={{ scale: 0.9, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.9, opacity: 0 }}
+          className="relative max-w-4xl max-h-[85vh] flex items-center justify-center rounded-2xl overflow-hidden shadow-2xl cursor-pointer"
+          onClick={handleImageClick}>
+
               {selectedMemory.mediaType === "video" ||
-              (
-                selectedMemory.image ||
-                selectedMemory.mediaUrl ||
-                selectedMemory.mediaUrls?.[0] ||
-                ""
-              ).match(/\.(mp4|webm|mov)$/i) ? (
-                <video
-                  src={
-                    selectedMemory.image ||
-                    selectedMemory.mediaUrl ||
-                    selectedMemory.mediaUrls?.[0]
-                  }
-                  controls
-                  autoPlay
-                  loop
-                  playsInline
-                  className="max-w-full max-h-[85vh] object-contain rounded-2xl"
-                />
-              ) : (
-                <img
-                  src={
-                    selectedMemory.image ||
-                    selectedMemory.mediaUrl ||
-                    selectedMemory.mediaUrls?.[0]
-                  }
-                  alt={selectedMemory.title}
-                  className="max-w-full max-h-[85vh] object-contain rounded-2xl"
-                />
-              )}
+            (
+            selectedMemory.image ||
+            selectedMemory.mediaUrl ||
+            selectedMemory.mediaUrls?.[0] ||
+            "").
+            match(/\.(mp4|webm|mov)$/i) ?
+            <video
+            src={
+            selectedMemory.image ||
+            selectedMemory.mediaUrl ||
+            selectedMemory.mediaUrls?.[0]}
+
+            controls
+            autoPlay
+            loop
+            playsInline
+            className="max-w-full max-h-[85vh] object-contain rounded-2xl" /> :
+
+
+            <img
+            src={
+            selectedMemory.image ||
+            selectedMemory.mediaUrl ||
+            selectedMemory.mediaUrls?.[0]}
+
+            alt={selectedMemory.title}
+            className="max-w-full max-h-[85vh] object-contain rounded-2xl" />}
+
+
 
               <AnimatePresence>
-                {likeAnimation && (
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50"
-                  >
+                {likeAnimation &&
+              <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-50">
+
                     <Sparkles className="w-16 h-16 text-amber-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.6)]" />
                     <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.1 }}
-                      className="mt-3 bg-black/50 backdrop-blur-xl border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.1)]"
-                    >
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+                className="mt-3 bg-black/50 backdrop-blur-xl border border-white/10 text-white text-[10px] font-black uppercase tracking-[0.2em] px-4 py-1.5 rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.1)]">
+
                       Journey Felt
                     </motion.div>
-                  </motion.div>
-                )}
+                  </motion.div>}
+
               </AnimatePresence>
 
               <div className="absolute top-4 left-4 right-16">
-                {selectedMemory.music && selectedMemory.music.title && (
-                  <div
-                    className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/40 p-2 pr-4 backdrop-blur-md shadow-sm max-w-sm cursor-pointer hover:bg-black/50 transition-colors"
-                    onClick={toggleAudio}
-                  >
+                {selectedMemory.music && selectedMemory.music.title &&
+              <div
+              className="flex items-center gap-3 rounded-2xl border border-white/20 bg-black/40 p-2 pr-4 backdrop-blur-md shadow-sm max-w-sm cursor-pointer hover:bg-black/50 transition-colors"
+              onClick={toggleAudio}>
+
                     <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl">
                       <img
-                        loading="lazy"
-                        src={selectedMemory.music.cover}
-                        alt={selectedMemory.music.title}
-                        className={`h-full w-full object-cover ${isPlayingAudio ? "animate-[spin_4s_linear_infinite]" : ""}`}
-                      />
+                  loading="lazy"
+                  src={selectedMemory.music.cover}
+                  alt={selectedMemory.music.title}
+                  className={`h-full w-full object-cover ${isPlayingAudio ? "animate-[spin_4s_linear_infinite]" : ""}`} />
+
                       <div className="absolute inset-0 flex items-center justify-center bg-black/20">
                         <Music className="h-4 w-4 text-white drop-shadow-md" />
                       </div>
@@ -2053,126 +2129,126 @@ const Profile = () => {
                     <div className="flex flex-col overflow-hidden text-white flex-1 min-w-0">
                       <span className="truncate text-xs font-extrabold flex items-center gap-2">
                         {selectedMemory.music.title}
-                        {isPlayingAudio && (
-                          <div className="music-bars text-white scale-[0.6] transform origin-left">
+                        {isPlayingAudio &&
+                    <div className="music-bars text-white scale-[0.6] transform origin-left">
                             <span></span>
                             <span></span>
                             <span></span>
-                          </div>
-                        )}
+                          </div>}
+
                       </span>
                       <span className="truncate text-[10px] font-semibold text-white/70">
                         {selectedMemory.music.artist}
                       </span>
                     </div>
-                    {selectedMemory.music.preview && (
-                      <button
-                        onClick={toggleAudio}
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-md transition-all hover:scale-105 active:scale-95"
-                      >
-                        {isPlayingAudio ? (
-                          <Pause className="h-4 w-4 fill-current" />
-                        ) : (
-                          <Play className="h-4 w-4 fill-current ml-0.5" />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                )}
+                    {selectedMemory.music.preview &&
+                <button
+                onClick={toggleAudio}
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-black shadow-md transition-all hover:scale-105 active:scale-95">
+
+                        {isPlayingAudio ?
+                  <Pause className="h-4 w-4 fill-current" /> :
+
+                  <Play className="h-4 w-4 fill-current ml-0.5" />}
+
+                      </button>}
+
+                  </div>}
+
               </div>
 
               <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLikeMemory(selectedMemory._id);
-                  setLikeAnimation(true);
-                  setTimeout(() => setLikeAnimation(false), 1150);
-                }}
-                className="absolute bottom-4 left-4 bg-black/60 hover:bg-black/80 transition-all backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-white shadow-sm border border-white/20 cursor-pointer active:scale-95"
-              >
+            onClick={(e) => {
+              e.stopPropagation();
+              handleLikeMemory(selectedMemory._id);
+              setLikeAnimation(true);
+              setTimeout(() => setLikeAnimation(false), 1150);
+            }}
+            className="absolute bottom-4 left-4 bg-black/60 hover:bg-black/80 transition-all backdrop-blur-md px-4 py-2 rounded-full flex items-center gap-2 text-white shadow-sm border border-white/20 cursor-pointer active:scale-95">
+
                 <Sparkles className="w-5 h-5 text-amber-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.8)] scale-110 transition-transform" />
                 <span className="text-sm font-bold bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent">
                   {selectedMemory.likes?.length || 0} Felt This
                 </span>
               </button>
               <audio
-                ref={audioRef}
-                onEnded={() => setIsPlayingAudio(false)}
-                className="hidden"
-              />
+            ref={audioRef}
+            onEnded={() => setIsPlayingAudio(false)}
+            className="hidden" />
+
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* FOLLOWERS / FOLLOWING RELATIONS MODAL */}
+      {}
       <AnimatePresence>
-        {showRelationsModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+        {showRelationsModal &&
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
             <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-slate-100 rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col h-[70vh] max-h-[500px]"
-            >
-              {/* Header */}
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white border border-slate-100 rounded-3xl w-full max-w-md shadow-2xl relative overflow-hidden flex flex-col h-[70vh] max-h-[500px]">
+
+              {}
               <div className="flex justify-between items-center px-6 py-4 border-b border-slate-50">
-                <h3 className="text-xs font-black text-[#111827] uppercase tracking-wider">
-                  {relationsModalType === "followers"
-                    ? "Journey Mates"
-                    : "My Journey Mates"}
+                <h3 className="text-xs font-black text-[#1E293B] uppercase tracking-wider">
+                  {relationsModalType === "followers" ?
+                "Trip Mates" :
+                "Trip Mates"}
                 </h3>
                 <button
-                  onClick={() => {
-                    setShowRelationsModal(false);
-                    setRelationsSearch("");
-                  }}
-                  className="p-1 hover:bg-slate-50 rounded-full transition-colors text-slate-400 hover:text-[#111827]"
-                >
+              onClick={() => {
+                setShowRelationsModal(false);
+                setRelationsSearch("");
+              }}
+              className="p-1 hover:bg-slate-50 rounded-full transition-colors text-slate-400 hover:text-[#1E293B]">
+
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Search Bar */}
+              {}
               <div className="px-6 py-3 border-b border-slate-50">
                 <div className="relative flex items-center">
                   <Search className="absolute left-3 w-4 h-4 text-slate-400" />
                   <input
-                    type="text"
-                    placeholder="Search traveler..."
-                    value={relationsSearch}
-                    onChange={(e) => setRelationsSearch(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-150 rounded-xl pl-9 pr-4 py-2 text-slate-855 text-xs outline-none focus:border-primary-600 focus:bg-white transition-all shadow-inner font-bold"
-                  />
+                type="text"
+                placeholder="Search traveler..."
+                value={relationsSearch}
+                onChange={(e) => setRelationsSearch(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-150 rounded-xl pl-9 pr-4 py-2 text-slate-855 text-xs outline-none focus:border-primary-600 focus:bg-white transition-all shadow-inner font-bold" />
+
                 </div>
               </div>
 
-              {/* List Area */}
+              {}
               <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
                 {(() => {
-                  if (relationsLoading) {
-                    return (
-                      <div className="flex justify-center items-center py-12">
+                if (relationsLoading) {
+                  return (
+                    <div className="flex justify-center items-center py-12">
                         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary-600"></div>
-                      </div>
-                    );
-                  }
+                      </div>);
 
-                  const list = relationsList;
+                }
 
-                  const filteredList = list.filter(
-                    (u) =>
-                      (u.name || "")
-                        .toLowerCase()
-                        .includes(relationsSearch.toLowerCase()) ||
-                      (u.username || "")
-                        .toLowerCase()
-                        .includes(relationsSearch.toLowerCase()),
-                  );
+                const list = relationsList;
 
-                  if (filteredList.length === 0) {
-                    return (
-                      <div className="text-center py-12">
+                const filteredList = list.filter(
+                (u) =>
+                (u.name || "").
+                toLowerCase().
+                includes(relationsSearch.toLowerCase()) ||
+                (u.username || "").
+                toLowerCase().
+                includes(relationsSearch.toLowerCase())
+                );
+
+                if (filteredList.length === 0) {
+                  return (
+                    <div className="text-center py-12">
                         <UserIcon className="w-10 h-10 text-slate-350 mx-auto mb-2" />
                         <p className="text-xs font-black text-slate-400 uppercase tracking-wider">
                           No Travelers Found
@@ -2180,40 +2256,40 @@ const Profile = () => {
                         <p className="text-[10px] text-slate-550 mt-1 font-bold">
                           Try adjusting your search query.
                         </p>
-                      </div>
-                    );
-                  }
+                      </div>);
 
-                  return filteredList?.map((u) => {
-                    const isSelf = u._id === currentUser?._id;
-                    const isFollowedByMe = currentUserData?.following?.some(
-                      (f) => (f._id || f) === u._id,
-                    );
+                }
 
-                    return (
-                      <div
-                        key={u._id}
-                        className="flex items-center justify-between gap-4"
-                      >
+                return filteredList?.map((u) => {
+                  const isSelf = u._id === currentUser?._id;
+                  const isFollowedByMe = currentUserData?.following?.some(
+                  (f) => (f._id || f) === u._id
+                  );
+
+                  return (
+                    <div
+                    key={u._id}
+                    className="flex items-center justify-between gap-4">
+
                         <Link
-                          to={`/profile/${u._id}`}
-                          onClick={() => {
-                            setShowRelationsModal(false);
-                            setRelationsSearch("");
-                          }}
-                          className="flex items-center gap-3 min-w-0 flex-1 group"
-                        >
+                      to={`/profile/${u._id}`}
+                      onClick={() => {
+                        setShowRelationsModal(false);
+                        setRelationsSearch("");
+                      }}
+                      className="flex items-center gap-3 min-w-0 flex-1 group">
+
                           <img
-                            src={getAvatarUrl(u, u.img, u.name)}
-                            alt={u.name || "Traveler"}
-                            className="w-9 h-9 rounded-full object-cover border border-slate-100 group-hover:scale-102 transition-transform shadow-sm"
-                            onError={(e) => {
-                              e.target.onerror = null;
-                              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
-                            }}
-                          />
+                        src={getAvatarUrl(u, u.img, u.name)}
+                        alt={u.name || "Traveler"}
+                        className="w-9 h-9 rounded-full object-cover border border-slate-100 group-hover:scale-102 transition-transform shadow-sm"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(u.name || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
+                        }} />
+
                           <div className="min-w-0">
-                            <span className="text-[11px] font-black text-[#111827] block leading-none truncate group-hover:text-primary-600 transition-colors flex items-center gap-1">
+                            <span className="text-[11px] font-black text-[#1E293B] block leading-none truncate group-hover:text-primary-600 transition-colors flex items-center gap-1">
                               {u.name || "Explorer"}
                             </span>
                             <span className="text-[9px] text-slate-400 font-bold block mt-1 tracking-wider">
@@ -2222,88 +2298,87 @@ const Profile = () => {
                           </div>
                         </Link>
 
-                        {!isSelf && (
-                          <button
-                            onClick={() => handleFollowToggleForUser(u)}
-                            disabled={loadingRelationId === u._id}
-                            className={`group px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 select-none ${
-                              loadingRelationId === u._id
-                                ? "opacity-50 cursor-not-allowed"
-                                : ""
-                            } ${
-                              isFollowedByMe
-                                ? "border border-primary-600 text-primary-600 bg-transparent hover:bg-rose-50 hover:text-rose-600 hover:border-rose-600"
-                                : "bg-primary-600 hover:bg-primary-700 text-white"
-                            }`}
-                          >
-                            {loadingRelationId === u._id ? (
-                              "..."
-                            ) : isFollowedByMe ? (
-                              <>
-                                <span className="group-hover:hidden">My Journey Mate</span>
+                        {!isSelf &&
+                      <button
+                      onClick={() => handleFollowToggleForUser(u)}
+                      disabled={loadingRelationId === u._id}
+                      className={`group px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 select-none ${
+                      loadingRelationId === u._id ?
+                      "opacity-50 cursor-not-allowed" :
+                      ""
+                      } ${
+                      isFollowedByMe ?
+                      "border border-primary-600 text-primary-600 bg-transparent hover:bg-rose-50 hover:text-rose-600 hover:border-rose-600" :
+                      "bg-primary-600 hover:bg-primary-700 text-white"
+                      }`}>
+
+                            {loadingRelationId === u._id ?
+                        "..." :
+                        isFollowedByMe ?
+                        <>
+                                <span className="group-hover:hidden">Trip Mates</span>
                                 <span className="hidden group-hover:inline">Remove Mate</span>
-                              </>
-                            ) : (
-                              "Add Journey Mate"
-                            )}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  });
-                })()}
+                              </> :
+
+                        "Add Trip Mate"}
+
+                          </button>}
+
+                      </div>);
+
+                });
+              })()}
               </div>
             </motion.div>
-          </div>
-        )}
+          </div>}
+
       </AnimatePresence>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR removed because global Navbar handles it */}
+      {}
 
-      {/* STORY VIEWER */}
+      {}
       <AnimatePresence>
-        {activeStoryGroup && (
-          <StoryViewer
-            activeStoryGroup={activeStoryGroup}
-            activeStoryIndex={activeStoryIndex}
-            myUserId={currentUser?._id}
-            isStoryMuted={isStoryMuted}
-            setIsStoryMuted={setIsStoryMuted}
-            handleDeleteStory={handleDeleteStory}
-            setShowViewersList={setShowViewersList}
-            isStoryPaused={isStoryPaused}
-            setIsStoryPaused={setIsStoryPaused}
-            closeStoryViewer={() => setActiveStoryGroup(null)}
-            nextStory={nextStory}
-            prevStory={prevStory}
-            stories={[activeStoryGroup]}
-            fetchFeedData={() => {}}
-          />
-        )}
+        {activeStoryGroup &&
+        <DispatchViewer
+        activeStoryGroup={activeStoryGroup}
+        activeStoryIndex={activeStoryIndex}
+        myUserId={currentUser?._id}
+        isStoryMuted={isStoryMuted}
+        setIsStoryMuted={setIsStoryMuted}
+        handleDeleteStory={handleDeleteStory}
+        setShowViewersList={setShowViewersList}
+        isStoryPaused={isStoryPaused}
+        setIsStoryPaused={setIsStoryPaused}
+        closeStoryViewer={() => setActiveStoryGroup(null)}
+        nextStory={nextStory}
+        prevStory={prevStory}
+        dispatches={[activeStoryGroup]}
+        fetchFeedData={() => {}} />}
+
+
       </AnimatePresence>
 
-      <CreatePostModal
-        isOpen={showCreatePostModal}
-        onClose={() => setShowCreatePostModal(false)}
-        onSuccess={() => {
-          setShowCreatePostModal(false);
-          fetchProfile();
-        }}
-        user={currentUser}
-      />
+      <CreateTravelMemoryModal
+      isOpen={showCreatePostModal}
+      onClose={() => setShowCreatePostModal(false)}
+      onSuccess={() => {
+        setShowCreatePostModal(false);
+        fetchProfile();
+      }}
+      user={currentUser} />
 
-      <CreateStoryModal
-        isOpen={showCreateStoryModal}
-        onClose={() => setShowCreateStoryModal(false)}
-        onSuccess={() => {
-          setShowCreateStoryModal(false);
-          fetchProfile();
-        }}
-      />
 
-    </div>
-  );
+      <CreateDispatchModal
+      isOpen={showCreateStoryModal}
+      onClose={() => setShowCreateStoryModal(false)}
+      onSuccess={() => {
+        setShowCreateStoryModal(false);
+        fetchProfile();
+      }} />
+
+
+    </div>);
+
 };
 
 export default Profile;
-

@@ -7,7 +7,6 @@ const userSettingsSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  // Privacy
   accountPrivacy: {
     type: String,
     enum: ['public', 'private'],
@@ -27,17 +26,15 @@ const userSettingsSchema = new mongoose.Schema({
     type: Boolean,
     default: true
   },
-  
-  // Security
+
   twoFactorEnabled: {
     type: Boolean,
     default: false
   },
 
-  // Safety & Emergency
   sosEnabled: {
     type: Boolean,
-    default: false
+    default: true
   },
   emergencyLocationSharing: {
     type: Boolean,
@@ -45,10 +42,13 @@ const userSettingsSchema = new mongoose.Schema({
   },
   tripLocationSharing: {
     type: Boolean,
+    default: false
+  },
+  safetyCheckinReminders: {
+    type: Boolean,
     default: true
   },
 
-  // Notifications
   pushNotifications: {
     type: Boolean,
     default: true
@@ -66,6 +66,26 @@ const userSettingsSchema = new mongoose.Schema({
     default: true
   },
   followActivityNotifications: {
+    type: Boolean,
+    default: true
+  },
+  connectionRequestNotifications: {
+    type: Boolean,
+    default: true
+  },
+  journeyInviteNotifications: {
+    type: Boolean,
+    default: true
+  },
+  journeyUpdateNotifications: {
+    type: Boolean,
+    default: true
+  },
+  safetyReminderNotifications: {
+    type: Boolean,
+    default: true
+  },
+  likesCommentsNotifications: {
     type: Boolean,
     default: true
   }

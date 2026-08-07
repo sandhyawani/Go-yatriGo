@@ -13,9 +13,9 @@ export const useMessageStatus = (user, socketConnected, setUnreadNewMessagesCoun
     if (activeRoom && user && socketConnected && socket) {
       const unread = messages.filter((m) => m.unreadBy?.includes(currentUserId));
       if (unread.length > 0) {
-                socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
+        socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
           roomId: activeRoom._id,
-          userId: currentUserId,
+          userId: currentUserId
         });
 
         dispatch({
@@ -31,4 +31,3 @@ export const useMessageStatus = (user, socketConnected, setUnreadNewMessagesCoun
   }, [messages, activeRoom, user, socketConnected, socket, currentUserId, dispatch, setUnreadNewMessagesCount]);
 };
 export default useMessageStatus;
-

@@ -30,15 +30,13 @@ export const useScrollManager = ({
     if (!chatContainerRef.current) return;
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
 
-    // Trigger pagination when reaching top
     if (scrollTop === 0 && hasMoreMessages && !loadingMessages) {
       const prevScrollHeight = scrollHeight;
       loadMoreMessages().then(() => {
-        // Restore scroll position
         setTimeout(() => {
           if (chatContainerRef.current) {
             chatContainerRef.current.scrollTop =
-              chatContainerRef.current.scrollHeight - prevScrollHeight;
+            chatContainerRef.current.scrollHeight - prevScrollHeight;
           }
         }, 50);
       });
@@ -51,7 +49,6 @@ export const useScrollManager = ({
     }
   };
 
-  // Scroll effect on new messages / room change
   useEffect(() => {
     if (!activeRoom) {
       prevMessagesLength.current = 0;
@@ -63,16 +60,15 @@ export const useScrollManager = ({
     const currentRoomId = activeRoom._id;
 
     if (currentRoomId !== prevActiveRoomId.current) {
-      // Room changed: snap scroll to bottom
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "auto" });
       }, 50);
       setUnreadNewMessagesCount(0);
     } else if (currentLength > prevMessagesLength.current) {
       const lastMsg = messages[currentLength - 1];
-      const senderId = typeof lastMsg?.sender === "object"
-        ? (lastMsg.sender?._id || lastMsg.sender?.id)
-        : lastMsg?.sender;
+      const senderId = typeof lastMsg?.sender === "object" ?
+      lastMsg.sender?._id || lastMsg.sender?.id :
+      lastMsg?.sender;
       const isSelf = senderId?.toString() === currentUserId?.toString();
 
       if (isSelf) {
@@ -100,4 +96,3 @@ export const useScrollManager = ({
   };
 };
 export default useScrollManager;
-

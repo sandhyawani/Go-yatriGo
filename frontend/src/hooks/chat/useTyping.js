@@ -9,11 +9,11 @@ export const useTyping = (socketConnected) => {
   const sendTypingIndicator = (roomId, userName) => {
     if (socketConnected && socket && roomId) {
       socket.emit(SOCKET_EVENTS.EMIT_TYPING, { roomId, userName });
-      
+
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
-      
+
       typingTimeoutRef.current = setTimeout(() => {
         socket.emit(SOCKET_EVENTS.EMIT_STOP_TYPING, { roomId });
       }, 2000);
@@ -23,4 +23,3 @@ export const useTyping = (socketConnected) => {
   return { sendTypingIndicator };
 };
 export default useTyping;
-

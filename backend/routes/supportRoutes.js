@@ -7,18 +7,16 @@ const {
   getFAQs,
   submitContactForm,
   replyTicket,
-  reportProblem,
+  reportProblem
 } = require("../controllers/supportController");
 
-// Public routes
 router.get("/faqs", getFAQs);
 
-// Protected routes
 router.use(protect);
 
-router.route("/tickets")
-  .get(getMyTickets)
-  .post(createTicket);
+router.route("/tickets").
+get(getMyTickets).
+post(createTicket);
 
 router.post("/contact", submitContactForm);
 router.post("/tickets/:ticketId/reply", replyTicket);

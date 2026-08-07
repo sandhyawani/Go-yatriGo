@@ -1,106 +1,95 @@
 const mongoose = require("mongoose");
 
-// Schema for customer support tickets
 const supportTicketSchema = new mongoose.Schema(
+{
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true
+  },
+
+  issueType: {
+    type: String,
+    required: true,
+    trim: true,
+    enum: [
+    "Bug",
+    "Safety",
+    "Account",
+    "Payment",
+    "Travel",
+    "Other"]
+
+  },
+
+  subject: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 150
+  },
+
+  description: {
+    type: String,
+    required: true,
+    trim: true,
+    maxlength: 3000
+  },
+
+  status: {
+    type: String,
+    enum: ["Open", "In Progress", "Resolved", "Closed"],
+    default: "Open",
+    index: true
+  },
+
+  priority: {
+    type: String,
+    enum: ["Low", "Medium", "High", "Critical"],
+    default: "Medium"
+  },
+
+  attachments: [
   {
-    // User who created the ticket
-    user: {
+    type: String,
+    trim: true
+  }],
+
+
+  trackingId: {
+    type: String,
+    unique: true,
+    index: true
+  },
+
+  replies: [
+  {
+    sender: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true,
+      required: true
     },
 
-    // Category of the issue
-    issueType: {
+    message: {
       type: String,
       required: true,
       trim: true,
-      enum: [
-        "Bug",
-        "Safety",
-        "Account",
-        "Payment",
-        "Travel",
-        "Other",
-      ],
+      maxlength: 2000
     },
 
-    // Ticket subject
-    subject: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 150,
-    },
+    createdAt: {
+      type: Date,
+      default: Date.now
+    }
+  }]
 
-    // Detailed issue description
-    description: {
-      type: String,
-      required: true,
-      trim: true,
-      maxlength: 3000,
-    },
-
-    // Current ticket status
-    status: {
-      type: String,
-      enum: ["Open", "In Progress", "Resolved", "Closed"],
-      default: "Open",
-      index: true,
-    },
-
-    // Priority level
-    priority: {
-      type: String,
-      enum: ["Low", "Medium", "High", "Critical"],
-      default: "Medium",
-    },
-
-    // Uploaded screenshots or documents
-    attachments: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-
-    // Unique tracking number
-    trackingId: {
-      type: String,
-      unique: true,
-      index: true,
-    },
-
-    // Conversation between user and support team
-    replies: [
-      {
-        sender: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-
-        message: {
-          type: String,
-          required: true,
-          trim: true,
-          maxlength: 2000,
-        },
-
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-  },
-  {
-    timestamps: true,
-  }
+},
+{
+  timestamps: true
+}
 );
 
-// Generate tracking ID
 supportTicketSchema.pre("save", function (next) {
   if (!this.trackingId) {
     const random = Math.random().toString(36).substring(2, 8).toUpperCase();
@@ -110,7 +99,6 @@ supportTicketSchema.pre("save", function (next) {
   next();
 });
 
-// Database Indexes
 supportTicketSchema.index({ user: 1, createdAt: -1 });
 supportTicketSchema.index({ status: 1 });
 supportTicketSchema.index({ priority: 1 });

@@ -1,7 +1,7 @@
 import { SOCKET_EVENTS } from "../constants/socketEvents";
 
 export const handleSocketEvent = (dispatch, eventType, payload, currentUserId) => {
-  
+
   switch (eventType) {
     case SOCKET_EVENTS.RECEIVE_CHAT_MESSAGE:
       dispatch({
@@ -44,19 +44,19 @@ export const handleSocketEvent = (dispatch, eventType, payload, currentUserId) =
       });
       break;
 
-    case SOCKET_EVENTS.MESSAGES_READ: {
-      const targetUserId = payload.userId || payload.readByUserId;
-      if (targetUserId) {
-        dispatch({
-          type: "MESSAGES_SEEN",
-          payload: {
-            roomId: payload.roomId,
-            userId: targetUserId
-          }
-        });
+    case SOCKET_EVENTS.MESSAGES_READ:{
+        const targetUserId = payload.userId || payload.readByUserId;
+        if (targetUserId) {
+          dispatch({
+            type: "MESSAGES_SEEN",
+            payload: {
+              roomId: payload.roomId,
+              userId: targetUserId
+            }
+          });
+        }
+        break;
       }
-      break;
-    }
 
     case SOCKET_EVENTS.STORY_REACTION_MESSAGE_UPDATED:
       dispatch({
@@ -125,4 +125,3 @@ export const handleSocketEvent = (dispatch, eventType, payload, currentUserId) =
   }
 };
 export default handleSocketEvent;
-

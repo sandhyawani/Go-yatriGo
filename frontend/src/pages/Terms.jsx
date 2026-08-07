@@ -12,10 +12,10 @@ const Terms = () => {
           Back to Home
         </Link>
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-sm"
-        >
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white/5 border border-white/10 rounded-3xl p-8 md:p-12 shadow-2xl backdrop-blur-sm">
+
           <div className="flex items-center gap-4 mb-8">
             <div className="p-3 bg-brand-500/20 rounded-xl">
               <FileText className="w-8 h-8 text-brand-400" />
@@ -67,9 +67,8 @@ const Terms = () => {
           </div>
         </motion.div>
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default Terms;
-

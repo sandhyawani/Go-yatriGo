@@ -8,10 +8,10 @@ const {
   toggle2FA,
   getPreferences,
   updatePreferences,
-  deleteAccount,
+  deleteAccount
 } = require("../controllers/securityController");
 
-router.use(protect); // All security routes are private
+router.use(protect);
 
 router.get("/sessions", getSessions);
 router.delete("/sessions/all-others", revokeAllOtherSessions);
@@ -19,9 +19,9 @@ router.delete("/sessions/:id", revokeSession);
 
 router.put("/2fa", toggle2FA);
 
-router.route("/preferences")
-  .get(getPreferences)
-  .put(updatePreferences);
+router.route("/preferences").
+get(getPreferences).
+put(updatePreferences);
 
 router.delete("/account", deleteAccount);
 

@@ -4,7 +4,6 @@ class AudioManager {
     this.currentAudioNode = null;
     this.isLockedState = false;
 
-    // Stop audio on tab hidden
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         this.stopAll();
@@ -38,9 +37,14 @@ class AudioManager {
 
     this.currentAudioId = audioId;
     this.currentAudioNode = audioNode;
-    
-    // Play the new audio
-    audioNode.play().catch(e => console.warn('Audio play failed:', e));
+
+    const playPromise = audioNode.play();
+    if (playPromise !== undefined) {
+      playPromise.catch((e) => {
+        console.warn('Audio play failed:', e);
+      });
+    }
+    return playPromise;
   }
 
   pause(audioId) {
@@ -71,4 +75,3 @@ class AudioManager {
 
 const audioManagerInstance = new AudioManager();
 export default audioManagerInstance;
-

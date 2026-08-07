@@ -1,158 +1,139 @@
 const mongoose = require("mongoose");
 
-// Schema for chat messages
 const messageSchema = new mongoose.Schema(
-  {
-    // Chat room where the message belongs
-    roomId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "ChatRoom",
-      required: true,
-      index: true,
-    },
+{
+  roomId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "ChatRoom",
+    required: true,
+    index: true
+  },
 
-    // User who sent the message
-    sender: {
+  sender: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+    index: true
+  },
+
+  senderName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+
+  senderPic: {
+    type: String,
+    default: ""
+  },
+
+  text: {
+    type: String,
+    trim: true,
+    default: ""
+  },
+
+  content: {
+    type: String,
+    trim: true,
+    default: ""
+  },
+
+  media: {
+    type: String,
+    default: ""
+  },
+
+  storyId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Story",
+    default: null
+  },
+
+  unreadBy: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+
+
+  seenBy: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+
+
+  deliveredTo: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+
+
+  deliveredAt: {
+    type: Date,
+    default: null
+  },
+
+  seenAt: {
+    type: Date,
+    default: null
+  },
+
+  reactions: [
+  {
+    user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
-      index: true,
+      required: true
     },
+    emoji: {
+      type: String,
+      required: true,
+      trim: true
+    }
+  }],
 
-    // Sender information (stored for faster retrieval)
+
+  deletedFor: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }],
+
+
+  isUnsent: {
+    type: Boolean,
+    default: false
+  },
+
+  unsentAt: {
+    type: Date,
+    default: null
+  },
+
+  replyTo: {
+    _id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Message",
+      default: null
+    },
     senderName: {
       type: String,
-      required: true,
-      trim: true,
+      default: ""
     },
-
-    senderPic: {
-      type: String,
-      default: "",
-    },
-
-    // Legacy text field (kept for backward compatibility)
     text: {
       type: String,
-      trim: true,
-      default: "",
-    },
-
-    // Preferred message content field
-    content: {
-      type: String,
-      trim: true,
-      default: "",
-    },
-
-    // Media attachment (Cloudinary URL)
-    media: {
-      type: String,
-      default: "",
-    },
-
-    // Story reference for story replies
-    storyId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Story",
-      default: null,
-    },
-
-    // Users who haven't read the message yet
-    unreadBy: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    // Users who have seen the message
-    seenBy: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    // Users to whom the message has been delivered
-    deliveredTo: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    // Timestamp when the message was first delivered to any recipient
-    deliveredAt: {
-      type: Date,
-      default: null,
-    },
-
-    // Timestamp when the message was first read/seen by any recipient
-    seenAt: {
-      type: Date,
-      default: null,
-    },
-
-    // Emoji reactions
-    reactions: [
-      {
-        user: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        emoji: {
-          type: String,
-          required: true,
-          trim: true,
-        },
-      },
-    ],
-
-    // Users who deleted the message from their chat
-    deletedFor: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
-      },
-    ],
-
-    // Indicates whether the sender unsent the message
-    isUnsent: {
-      type: Boolean,
-      default: false,
-    },
-
-    // Time when the message was unsent
-    unsentAt: {
-      type: Date,
-      default: null,
-    },
-
-    // Reference to the message being replied to
-    replyTo: {
-      _id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Message",
-        default: null,
-      },
-      senderName: {
-        type: String,
-        default: "",
-      },
-      text: {
-        type: String,
-        default: "",
-      },
-    },
-  },
-  {
-    timestamps: true, // Adds createdAt and updatedAt
+      default: ""
+    }
   }
+},
+{
+  timestamps: true
+}
 );
 
-// Improve query performance
 messageSchema.index({ roomId: 1, createdAt: -1 });
 messageSchema.index({ sender: 1 });
 messageSchema.index({ storyId: 1 });

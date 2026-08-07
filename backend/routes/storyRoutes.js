@@ -11,39 +11,39 @@ router.get("/feed", protect, async (req, res) => {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const stories = await Story.aggregate([
-      {
-        $match: {
-          userId: { $in: userIdsToFetch },
-          createdAt: { $gte: oneDayAgo },
-        },
-      },
-      { $sort: { createdAt: 1 } },
-      {
-        $group: {
-          _id: "$userId",
-          stories: { $push: "$$ROOT" },
-        },
-      },
-      {
-        $lookup: {
-          from: "users",
-          localField: "_id",
-          foreignField: "_id",
-          as: "author",
-        },
-      },
-      { $unwind: "$author" },
-      {
-        $project: {
-          _id: 0,
-          userId: "$_id",
-          userName: "$author.name",
-          userPic: { $ifNull: ["$author.pic", "$author.avatar"] },
-          isVerified: { $ifNull: ["$author.isVerified", false] },
-          stories: 1,
-        },
-      },
-    ]);
+    {
+      $match: {
+        userId: { $in: userIdsToFetch },
+        createdAt: { $gte: oneDayAgo }
+      }
+    },
+    { $sort: { createdAt: 1 } },
+    {
+      $group: {
+        _id: "$userId",
+        stories: { $push: "$$ROOT" }
+      }
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "author"
+      }
+    },
+    { $unwind: "$author" },
+    {
+      $project: {
+        _id: 0,
+        userId: "$_id",
+        userName: "$author.name",
+        userPic: { $ifNull: ["$author.pic", "$author.avatar"] },
+        isVerified: { $ifNull: ["$author.isVerified", false] },
+        stories: 1
+      }
+    }]
+    );
 
     const myGroupIndex = stories.findIndex((g) => g.userId.toString() === currentUserId.toString());
     if (myGroupIndex > 0) {
@@ -63,6 +63,12 @@ router.post("/:id/view", protect, async (req, res) => {
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
+    const { canInteractWithContent } = require("../utils/privacyHelper");
+    const isAllowed = await canInteractWithContent(story.userId, req.user);
+    if (!isAllowed) {
+      return res.status(403).json({ success: false, message: "Forbidden: You cannot view this story." });
+    }
+
     const hasViewer = story.viewers.some((v) => v.userId && v.userId.toString() === userId.toString());
     if (!hasViewer) {
       story.viewers.push({ userId, viewedAt: new Date() });
@@ -81,6 +87,12 @@ router.post("/:id/like", protect, async (req, res) => {
     const userId = req.user._id;
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
+
+    const { canInteractWithContent } = require("../utils/privacyHelper");
+    const isAllowed = await canInteractWithContent(story.userId, req.user);
+    if (!isAllowed) {
+      return res.status(403).json({ success: false, message: "Forbidden: You cannot interact with this story." });
+    }
 
     if (!story.reactions) story.reactions = [];
     const likeIndex = story.reactions.findIndex((id) => id.toString() === userId.toString());
@@ -106,12 +118,18 @@ router.post("/:id/comment", protect, async (req, res) => {
     const story = await Story.findById(req.params.id);
     if (!story) return res.status(404).json({ success: false, message: "Story not found" });
 
+    const { canInteractWithContent } = require("../utils/privacyHelper");
+    const isAllowed = await canInteractWithContent(story.userId, req.user);
+    if (!isAllowed) {
+      return res.status(403).json({ success: false, message: "Forbidden: You cannot interact with this story." });
+    }
+
     story.comments.push({
       userId: req.user._id,
       userName: req.user.name,
       userPic: req.user.pic || req.user.avatar,
       text: text,
-      createdAt: new Date(),
+      createdAt: new Date()
     });
 
     await story.save();

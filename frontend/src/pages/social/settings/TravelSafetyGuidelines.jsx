@@ -6,46 +6,50 @@ const TravelSafetyGuidelines = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="w-full max-w-7xl mx-auto pb-20 pt-14 lg:pt-4">
-      <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-8">
+    <div className="w-full max-w-7xl mx-auto pb-16 pt-10 lg:pt-4">
+      <div className="max-w-2xl mx-auto px-4 md:px-6 space-y-5">
         
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button 
-            onClick={() => navigate('/settings')}
-            className="p-2 hover:bg-slate-200 rounded-full transition-colors"
-          >
-            <ChevronLeft className="w-6 h-6 text-slate-700" />
+        {}
+        <div className="flex items-center gap-3 mb-5">
+          <button
+          onClick={() => navigate('/settings')}
+          className="p-1.5 hover:bg-slate-200 rounded-full transition-colors">
+
+            <ChevronLeft className="w-5 h-5 text-slate-700" />
           </button>
           <div>
-            <h1 className="text-2xl font-black text-slate-800">Travel Safety Guidelines</h1>
-            <p className="text-sm text-slate-500 font-medium mt-1">Best practices for a safe and enjoyable journey</p>
+            <h1 className="text-xl font-black text-slate-800">Travel Safety Guidelines</h1>
+            <p className="text-xs text-slate-500 font-medium mt-0.5">Best practices for a safe and enjoyable journey</p>
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-brand-500 to-blue-600 rounded-3xl p-8 text-white shadow-lg relative overflow-hidden">
-          <div className="relative z-10">
-            <Shield className="w-12 h-12 mb-4 text-brand-100" />
-            <h2 className="text-2xl font-bold mb-2">Your Safety is Our Priority</h2>
-            <p className="text-brand-50 max-w-lg">
-              Whether you're exploring a new city or embarking on a wilderness adventure, these guidelines will help you stay secure, prepared, and connected.
-            </p>
-          </div>
-          {/* Decorative Background Pattern */}
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-20 -mb-10 w-40 h-40 bg-brand-300 opacity-20 rounded-full blur-2xl"></div>
-        </div>
+        {}
+        <div
+        className="p-6 shadow-sm"
+        style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '24px', borderLeft: '4px solid #22C55E' }}>
 
-        {/* Guidelines Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          
-          {/* Card 1: Preparation */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-amber-50 text-amber-500 rounded-2xl flex items-center justify-center mb-4">
-              <Map className="w-6 h-6" />
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F0FDF4' }}>
+              <Shield className="w-5 h-5" style={{ color: '#22C55E' }} />
             </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">Pre-Trip Preparation</h3>
+            <div>
+              <h2 className="text-lg font-bold text-slate-800 mb-1">Your Safety is Our Priority</h2>
+              <p className="text-sm text-slate-500 leading-relaxed">
+                Whether you're exploring a new city or embarking on a wilderness adventure, these guidelines will help you stay secure, prepared, and connected.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {}
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 bg-amber-50 text-amber-500 rounded-xl flex items-center justify-center mb-3">
+              <Map className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-800 mb-2">Pre-Trip Preparation</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
@@ -62,12 +66,12 @@ const TravelSafetyGuidelines = () => {
             </ul>
           </div>
 
-          {/* Card 2: Personal Safety */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
-            <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-2xl flex items-center justify-center mb-4">
-              <AlertTriangle className="w-6 h-6" />
+          {}
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
+            <div className="w-10 h-10 bg-rose-50 text-rose-500 rounded-xl flex items-center justify-center mb-3">
+              <AlertTriangle className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">Personal Safety</h3>
+            <h3 className="text-base font-bold text-slate-800 mb-2">Personal Safety</h3>
             <ul className="space-y-3">
               <li className="flex items-start gap-2">
                 <CheckCircle2 className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -84,13 +88,13 @@ const TravelSafetyGuidelines = () => {
             </ul>
           </div>
 
-          {/* Card 3: App Features */}
-          <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
-            <div className="w-12 h-12 bg-emerald-50 text-emerald-500 rounded-2xl flex items-center justify-center mb-4">
-              <Phone className="w-6 h-6" />
+          {}
+          <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow md:col-span-2">
+            <div className="w-10 h-10 bg-emerald-50 text-emerald-500 rounded-xl flex items-center justify-center mb-3">
+              <Phone className="w-5 h-5" />
             </div>
-            <h3 className="text-lg font-bold text-slate-800 mb-2">Using Go YatriGo Safety Features</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+            <h3 className="text-base font-bold text-slate-800 mb-2">Using Go YatriGo Safety Features</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
               <div className="bg-slate-50 p-4 rounded-2xl">
                 <h4 className="font-bold text-slate-700 text-sm mb-1">Emergency Contacts</h4>
                 <p className="text-xs text-slate-500 mb-3">Add up to 5 emergency contacts. The primary contact will be alerted first when SOS is triggered.</p>
@@ -105,15 +109,14 @@ const TravelSafetyGuidelines = () => {
           </div>
         </div>
 
-        {/* Footer info */}
-        <div className="text-center mt-10 p-6 bg-slate-200/50 rounded-3xl">
-          <p className="text-sm text-slate-600 font-medium">In case of an immediate life-threatening emergency, always contact local emergency services (e.g., 911, 112) first.</p>
+        {}
+        <div className="text-center mt-6 p-4 bg-slate-100/70 rounded-2xl">
+          <p className="text-xs text-slate-600 font-medium">In case of an immediate life-threatening emergency, always contact local emergency services (e.g., 911, 112) first.</p>
         </div>
 
       </div>
-    </div>
-  );
+    </div>);
+
 };
 
 export default TravelSafetyGuidelines;
-

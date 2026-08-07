@@ -6,18 +6,18 @@ const {
   addContact,
   updateContact,
   deleteContact,
-  toggleSOS,
+  toggleSOS
 } = require("../controllers/emergencyController");
 
 router.use(protect);
 
-router.route("/contacts")
-  .get(getContacts)
-  .post(addContact);
+router.route("/contacts").
+get(getContacts).
+post(addContact);
 
-router.route("/contacts/:id")
-  .put(updateContact)
-  .delete(deleteContact);
+router.route("/contacts/:id").
+put(updateContact).
+delete(deleteContact);
 
 router.post("/sos", toggleSOS);
 
