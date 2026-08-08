@@ -105,11 +105,14 @@ Found a Travel Memory you love? **Feel the vibe!** Your curated collection of Fe
 ### 🗺️ Buddy Trips & Travel Groups
 Create **Buddy Trips**, form **Travel Groups**, invite members, set itineraries, and collaborate with a built-in journey workspace, timeline & gallery.
 
+### 🏆 Unified Journey Stats & Badges
+Single source of truth API powering cross-page travel metrics (`totalJourneys`, `travelDays`, `companionsCount`, dynamic traveler tiers & achievements).
+
 ### 🚨 Emergency SOS
 One-tap emergency alert system with saved emergency contacts. Your safety is never an afterthought.
 
 ### 👤 Rich Profiles
-Detailed profiles with cover photos, bio, onboarding checklist, **Journey Mates** system, and a personal timeline of all your Travel Memories and Stories.
+Detailed profiles with cover photos, bio, onboarding checklist, **Journey Mates** system, public **Journeys** tab, and a personal timeline of all your Travel Memories and Stories.
 
 ### 🛡️ Admin Dashboard
 Full admin panel with user management, content moderation, analytics pie charts, and data grid tables for oversight.
@@ -172,6 +175,7 @@ Go yatriGo
 *What this project demonstrates, beyond just "it works":*
 
 - **Real-time architecture** — Socket.IO powers live chat, notifications, and presence across the app, not bolted on as an afterthought.
+- **Single Source of Truth Statistics Architecture** — Unified `/journeys/stats/user/:id` endpoint powering Home Dashboard, Profile Header, Journey Statistics, and My Journeys views, guaranteeing 100% data consistency with explicit invariant `totalJourneys = completed + ongoing + upcoming`.
 - **Schema design at scale** — 29 interrelated Mongoose models (users, journeys, social graph, moderation, support) designed to avoid duplication and support complex queries.
 - **Security-first backend** — layered protection with Helmet, rate limiting, JWT + HTTP-only cookies, input sanitization (XSS/HPP/Mongo injection), and bcrypt password hashing.
 - **Full moderation pipeline** — block/report system feeding into an admin dashboard with analytics, not just a hidden database flag.
@@ -370,6 +374,7 @@ Go yatriGo takes security seriously with multiple layers of protection:
 | `/api/chat` | Chat Rooms, Messages, Real-time Events |
 | `/api/social/buddy` | Buddy Trips, Felt Vibes, Explore Hub |
 | `/api/journey` | Journey CRUD, Workspace, Timeline, Gallery |
+| `/api/journey/stats` | Unified Journey Stats, Badges, Achievements & Companion Metrics |
 | `/api/emergency` | SOS Alerts, Emergency Contacts |
 | `/api/security` | Privacy Settings, Security Preferences |
 | `/api/admin` | User Management, Content Moderation |
