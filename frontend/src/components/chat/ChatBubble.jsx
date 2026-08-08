@@ -47,12 +47,7 @@ const renderReadReceipt = (msg, isSelf) => {
 
 };
 
-const sanitizeText = (text) => {
-  if (!text) return "";
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-};
+
 
 const renderClickableText = (text, isSelf = false) => {
   if (!text) return "";

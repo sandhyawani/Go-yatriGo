@@ -19,7 +19,7 @@ const SettingsSelect = ({
     if (!isLoading) {
       setValue(initialValue);
     }
-  }, [initialValue]);
+  }, [initialValue, isLoading]);
 
   const handleChange = useCallback(async (e) => {
     const newValue = e.target.value;

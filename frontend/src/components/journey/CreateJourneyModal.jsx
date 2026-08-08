@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 Compass,
-Calendar,
 MapPin,
 Users,
 X,
 Sparkles,
-Image as ImageIcon,
 ArrowRight,
 ArrowLeft,
 CheckCircle2,
@@ -167,13 +165,7 @@ const CreateJourneyModal = ({
   }];
 
 
-  const categories = [
-  "🏔️ Mountains & Treks",
-  "🏖️ Beach & Islands",
-  "🚗 Road Trip & Highways",
-  "⛺ Camping & Nature",
-  "🏛️ Culture & Heritage",
-  "🏙️ City & Luxury"];
+
 
   const displayedPresets = allPresets.filter(
   (p) => p.category === coverCategory
@@ -530,8 +522,7 @@ const CreateJourneyModal = ({
                   "🚗 Road Trip & Highways",
                   "⛺ Camping & Nature",
                   "🏛️ Culture & Heritage",
-                  "🏙️ City & Luxury"].
-                  map((cat) =>
+                  "🏙️ City & Luxury"].map((cat) =>
                   <button
                   key={cat}
                   type="button"

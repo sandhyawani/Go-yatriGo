@@ -1,19 +1,15 @@
 import React from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 ArrowLeft,
-ChevronRight,
 LayoutDashboard,
-LogOut,
 Mail,
 ShieldAlert,
-Sparkles,
 UserPlus,
 Users,
 X } from
 "lucide-react";
-import { useAuth } from "../../context/authContext";
 
 const navigation = [
 { label: "Overview", to: "/admin", end: true, Icon: LayoutDashboard },
@@ -25,13 +21,6 @@ const navigation = [
 
 
 const AdminSidebar = ({ isOpen, onClose }) => {
-  const { user, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/login", { replace: true });
-  };
 
   const sidebar =
   <aside
