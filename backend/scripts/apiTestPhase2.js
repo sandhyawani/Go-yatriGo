@@ -13,7 +13,7 @@ function makeRequest(method, path, body = null, token = null) {
     };
     if (token) options.headers['Authorization'] = `Bearer ${token}`;
     if (body) {
-      options.headers['Content-Length'] = Buffer.byteLength(JSON.stringify(body));
+      options.headers['Content-Length'] = new TextEncoder().encode(JSON.stringify(body)).length;
     }
 
     const req = http.request(`${BASE_URL}${path}`, options, (res) => {
