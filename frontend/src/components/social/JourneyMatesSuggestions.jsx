@@ -74,7 +74,7 @@ const JourneyMatesSuggestions = ({
               {localTitle}
             </h3>
           </div>
-          <div className="flex flex-col gap-3 max-h-[360px] overflow-y-auto pr-1 scrollbar-none">
+          <div className="flex flex-col gap-3 max-h-[420px] overflow-y-auto pr-2 pb-2">
             {localMates.map((s) =>
           <TravelerSuggestionCard
           key={s._id}

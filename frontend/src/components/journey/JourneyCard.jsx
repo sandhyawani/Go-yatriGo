@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import Avatar from "../common/Avatar";
 
+import moment from "moment";
+
 const JourneyCard = ({ journey, onCheckInClick }) => {
   const isSolo =
     journey.journeyType === "Solo Journey" ||
@@ -31,10 +33,14 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
   const defaultCover =
     "https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=600&q=80";
 
+  const isHappeningNow = journey?.startDate && moment(journey.startDate).isSameOrBefore(moment(), 'day') && (!journey?.endDate || moment(journey.endDate).isSameOrAfter(moment(), 'day'));
+  const isPast = journey?.endDate && moment(journey.endDate).isBefore(moment(), 'day');
+  const isCancelledStatus = journey?.status?.toLowerCase() === "cancelled";
+
   const isCompleted =
-    journey.status === "Completed" || journey.lifecycleStatus === "completed";
+    journey.status === "Completed" || journey.lifecycleStatus === "completed" || (isPast && !isCancelledStatus);
   const isOngoing =
-    journey.status === "Ongoing" || journey.status === "Active" || journey.lifecycleStatus === "active";
+    (journey.status === "Ongoing" || journey.status === "Active" || journey.lifecycleStatus === "active" || isHappeningNow) && !isCompleted && !isCancelledStatus;
 
   const getSignatureCode = () => {
     const prefix = "GY";

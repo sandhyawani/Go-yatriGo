@@ -465,17 +465,38 @@ const Home = () => {
           return j.status === "Ongoing" || j.status === "Planning" || j.status === "Upcoming";
         });
 
-        // Deduplicate buddy trips that are already imported as personal journeys
+        // Deduplicate buddy trips that are already imported as personal journeys,
+        // and also ensure no duplicate IDs are pushed into activeJourneys.
+        const activeIds = new Set(actives.map(j => (j._id || j.id)?.toString()));
         const activeSourceIds = new Set(
           actives
             .filter((j) => j.sourceType === "explore" && j.sourceId)
             .map((j) => j.sourceId.toString())
         );
+        
         const filteredBuddyActives = buddyActives.filter(
-          (trip) => !activeSourceIds.has((trip._id || trip.id)?.toString())
+          (trip) => {
+            const tripId = (trip._id || trip.id)?.toString();
+            return !activeSourceIds.has(tripId) && !activeIds.has(tripId);
+          }
         );
 
-        setActiveJourneys([...actives, ...filteredBuddyActives]);
+        const combinedActives = [...actives, ...filteredBuddyActives];
+          
+        const now = moment();
+        combinedActives.sort((a, b) => {
+          const aHappening = a.startDate && moment(a.startDate).isSameOrBefore(now, 'day') && (!a.endDate || moment(a.endDate).isSameOrAfter(now, 'day'));
+          const bHappening = b.startDate && moment(b.startDate).isSameOrBefore(now, 'day') && (!b.endDate || moment(b.endDate).isSameOrAfter(now, 'day'));
+          
+          if (aHappening && !bHappening) return -1;
+          if (!aHappening && bHappening) return 1;
+          
+          const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+          const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+          return dateA - dateB;
+        });
+
+        setActiveJourneys(combinedActives);
       }
     });
   }, [myUserId]);
@@ -1246,9 +1267,12 @@ const Home = () => {
 
             {}
             {(() => {
-              const hasOngoing = activeJourneys.some(
-              (j) => j.status === "Ongoing" || j.status === "active"
-              );
+              const hasOngoing = activeJourneys.some((j) => {
+                const s = j.status?.toLowerCase();
+                if (s === "cancelled") return false;
+                if (s === "ongoing" || s === "active" || s === "active now") return true;
+                return j.startDate && moment(j.startDate).isSameOrBefore(moment(), 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(moment(), 'day'));
+              });
               const headerLabel = hasOngoing ?
               "CURRENT JOURNEY" :
               activeJourneys.length > 0 ?
@@ -1274,15 +1298,21 @@ const Home = () => {
 
                   {activeJourneys.length > 0 ?
                   <div className="space-y-4">
-                      {activeJourneys.map((j) =>
-                    <React.Fragment key={j._id}>
-                          <JourneyStatusWidget journey={j} user={user} />
-                          {j.status === "ongoing" || j.status === "active" || j.status === "active now" || j.status === "Ongoing" ?
-                      <TravelWeatherWidget destination={j.destination} /> :
-                      null}
-                        </React.Fragment>
-                    )}
-                    </div> :
+                        {activeJourneys.map((j) => {
+                          const isOngoingStatus = j.status === "ongoing" || j.status === "active" || j.status === "active now" || j.status === "Ongoing";
+                          const isHappeningNow = j.startDate && moment(j.startDate).isSameOrBefore(moment(), 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(moment(), 'day'));
+                          const s = j.status?.toLowerCase();
+                          const isCancelled = s === "cancelled";
+                          const showWeather = (isOngoingStatus || isHappeningNow) && !isCancelled;
+                          
+                          return (
+                            <React.Fragment key={j._id}>
+                              <JourneyStatusWidget journey={j} user={user} />
+                              {showWeather ? <TravelWeatherWidget destination={j.destination} /> : null}
+                            </React.Fragment>
+                          );
+                        })}
+                      </div> :
 
                   <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl p-6 text-center space-y-3">
                       <div className="w-12 h-12 bg-[#F3E8FF] rounded-full flex items-center justify-center mx-auto text-[#7C3AED] shadow-sm">

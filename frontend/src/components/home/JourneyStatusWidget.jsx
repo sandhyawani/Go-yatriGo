@@ -39,9 +39,15 @@ const JourneyStatusWidget = ({ journey, user }) => {
     ? journey.sourceId
     : journey?._id;
 
-  const normalizedStatus = journey?.isBuddyTrip ?
-  journey.status === "active" || journey.status === "active now" || journey.status === "Ongoing" ? "ongoing" : journey.status ? journey.status.toLowerCase() : "planning" :
-  journey?.status ? journey.status.toLowerCase() : "planning";
+  const now = new Date();
+  const isHappeningNow = journey?.startDate && moment(journey.startDate).isSameOrBefore(moment(), 'day') && (!journey?.endDate || moment(journey.endDate).isSameOrAfter(moment(), 'day'));
+  const isCancelled = journey?.status?.toLowerCase() === "cancelled";
+  
+  let baseStatus = journey?.isBuddyTrip ?
+    (journey.status === "active" || journey.status === "active now" || journey.status === "Ongoing" ? "ongoing" : journey.status ? journey.status.toLowerCase() : "planning") :
+    (journey?.status ? journey.status.toLowerCase() : "planning");
+    
+  const normalizedStatus = (isHappeningNow && !isCancelled) ? "ongoing" : baseStatus;
 
   const statusConfig = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.planning;
 

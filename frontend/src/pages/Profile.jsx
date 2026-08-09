@@ -959,7 +959,8 @@ const Profile = () => {
         canWriteReview={canWriteReview}
         userStories={userStories}
         handleOpenStory={handleOpenStory}
-        journeyStats={journeyStats} />
+        journeyStats={journeyStats}
+        setActiveTab={setActiveTab} />
 
 
         {}

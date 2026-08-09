@@ -14,6 +14,7 @@ ChevronRight,
 ChevronDown,
 MapPin } from
 "lucide-react";
+import moment from "moment";
 import axiosInstance from "../../api/axios";
 import JourneyCard from "../../components/journey/JourneyCard";
 import JourneyInvitationCard from "../../components/journey/JourneyInvitationCard";
@@ -136,27 +137,25 @@ const MyJourneys = () => {
 
       // Deduplicate combined list by ID and title/destination signature to eliminate duplicate cards
       const seenIds = new Set();
-      const seenKeys = new Set();
       const deduplicated = [];
 
       for (const item of combined) {
         const id = (item._id || item.id)?.toString();
-        const startStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : '';
-        const titleKey = `${(item.title || "").trim().toLowerCase()}_${(item.destination || "").trim().toLowerCase()}_${startStr}`;
 
         if (id && seenIds.has(id)) continue;
-        if (titleKey && seenKeys.has(titleKey)) continue;
 
         if (id) seenIds.add(id);
-        if (titleKey) seenKeys.add(titleKey);
         deduplicated.push(item);
       }
 
       if (activeTab === "all") {
+        const now = moment();
         deduplicated.sort((a, b) => {
           const getPriority = (j) => {
             const s = (j.status || "").toLowerCase();
-            if (s === "ongoing" || s === "active") return 1;
+            if (s === "cancelled") return 5;
+            const isHappeningNow = j.startDate && moment(j.startDate).isSameOrBefore(now, 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(now, 'day'));
+            if (isHappeningNow || s === "ongoing" || s === "active") return 1;
             if (s === "upcoming" || s === "planning") return 2;
             if (s === "completed") return 3;
             return 4;
@@ -209,11 +208,25 @@ const MyJourneys = () => {
       .catch(err => console.error("Failed to fetch journey stats", err));
   }, [myUserId]);
 
-  const upcomingCount = journeys.filter(j => j.status === "Upcoming" || j.status === "Planning" || j.lifecycleStatus === "upcoming").length;
-  const activeCount = journeys.filter(j => j.status === "Ongoing" || j.status === "Active" || j.lifecycleStatus === "active").length;
-  const completedCount = journeys.filter(j => j.status === "Completed" || j.lifecycleStatus === "completed").length;
+  const upcomingCount = journeyStats ? journeyStats.upcoming : journeys.filter(j => {
+    const s = (j.status || "").toLowerCase();
+    const lcs = (j.lifecycleStatus || "").toLowerCase();
+    return s === "upcoming" || s === "planning" || lcs === "upcoming" || lcs === "planning";
+  }).length;
+  
+  const activeCount = journeyStats ? journeyStats.ongoing : journeys.filter(j => {
+    const s = (j.status || "").toLowerCase();
+    const lcs = (j.lifecycleStatus || "").toLowerCase();
+    return s === "ongoing" || s === "active" || s === "active now" || lcs === "active";
+  }).length;
+  
+  const completedCount = journeyStats ? journeyStats.completed : journeys.filter(j => {
+    const s = (j.status || "").toLowerCase();
+    const lcs = (j.lifecycleStatus || "").toLowerCase();
+    return s === "completed" || s === "cancelled" || lcs === "completed";
+  }).length;
 
-  const journeySummary = journeys.length > 0 
+  const journeySummary = (journeyStats?.totalJourneys > 0 || journeys.length > 0) 
     ? `${upcomingCount} Upcoming · ${activeCount} Active · ${completedCount} Completed`
     : "Plan your next adventure";
 

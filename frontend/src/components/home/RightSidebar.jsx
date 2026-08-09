@@ -183,96 +183,98 @@ const RightSidebar = ({
   }, [nearbyTrips, user?.state]);
 
   return (
-    <div className={className}>
-      <JourneyMatesSuggestions
-      currentUserId={user?._id || user?.id}
-      initialSuggestions={suggestions} />
+    <div className={className.replace('overflow-y-auto', '').replace('space-y-[var(--spacing-section)]', 'flex flex-col gap-[var(--spacing-section)]')}>
+      <div className="flex-1 overflow-y-auto scrollbar-none space-y-[var(--spacing-section)] pr-1 pb-2">
+        <JourneyMatesSuggestions
+        currentUserId={user?._id || user?.id}
+        initialSuggestions={suggestions} />
 
 
-      {travelMemories && <TravelHighlights travelMemories={travelMemories} onHighlightClick={onHighlightClick} />}
+        {travelMemories && <TravelHighlights travelMemories={travelMemories} onHighlightClick={onHighlightClick} />}
 
-      {displayTrips?.length > 0 &&
-      <Card variant="default" padding="md" className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-              <Users className="w-3.5 h-3.5 text-[#7C3AED]" />
-              {activeGroupsTitle}
+        {displayTrips?.length > 0 &&
+        <Card variant="default" padding="md" className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-[#7C3AED]" />
+                {activeGroupsTitle}
+              </h3>
+              <Link
+            to="/social/buddy"
+            className="text-[11px] font-bold text-slate-400 hover:text-brand-600 transition-colors">
+
+                See All
+              </Link>
+            </div>
+            <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
+              {displayTrips.map((trip) => {
+              const myUserId = user?._id?.toString();
+              const isJoined = trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
+              (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
+              return (
+                <Card
+                variant="outlined"
+                padding="sm"
+                interactive
+                key={trip._id}
+                onClick={() => navigate(`/social/buddy/${trip._id}`)}
+                className="flex items-start gap-3">
+
+                    <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] text-[#7C3AED] flex items-center justify-center font-black text-sm shrink-0 shadow-sm border border-[#7C3AED]/20">
+                      {trip.destination ? trip.destination.substring(0, 2).toUpperCase() : "TR"}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-bold text-slate-800 truncate" title={trip.title}>
+                        {trip.title}
+                      </p>
+                      <p className="text-[9px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5 truncate">
+                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {trip.destination}
+                      </p>
+                      <p className="text-[9px] font-bold text-slate-500 mt-1">
+                        {Math.max(0, trip.maxMembers - (trip.members?.length || 0))} slots open
+                      </p>
+                    </div>
+                    <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/social/buddy/${trip._id}`);
+                  }}
+                  className={`text-[10px] font-extrabold px-3 py-1.5 rounded-[var(--radius-button)] transition-all shrink-0 self-center flex items-center gap-0.5 ${
+                  isJoined ?
+                  "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200" :
+                  "text-brand-600 bg-brand-50 hover:bg-brand-100"
+                  }`}>
+
+                      {isJoined ? "Joined ✓" : <>Join <ChevronRight className="w-3 h-3" /></>}
+                    </button>
+                  </Card>);
+
+            })}
+            </div>
+          </Card>}
+      </div>
+
+      <div className="shrink-0">
+        <Card variant="transparent" padding="md" interactive className="!bg-[#7C3AED] text-white border-none shadow-[0_12px_32px_rgb(124,58,237,0.2)] relative overflow-hidden group">
+          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700" />
+          <div className="relative z-10 space-y-3.5">
+            <h3 className="text-sm font-black leading-tight tracking-wider uppercase text-white">
+              Planning a trip?
             </h3>
+            <p className="text-[11px] font-semibold text-white/80 leading-relaxed max-w-[200px]">
+              Create a group and invite travelers to join your adventure.
+            </p>
             <Link
-          to="/social/buddy"
-          className="text-[11px] font-bold text-slate-400 hover:text-brand-600 transition-colors">
-
-              See All
-            </Link>
-          </div>
-          <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
-            {displayTrips.map((trip) => {
-            const myUserId = user?._id?.toString();
-            const isJoined = trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-            (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
-            return (
-              <Card
-              variant="outlined"
-              padding="sm"
-              interactive
-              key={trip._id}
-              onClick={() => navigate(`/social/buddy/${trip._id}`)}
-              className="flex items-start gap-3">
-
-                  <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] text-[#7C3AED] flex items-center justify-center font-black text-sm shrink-0 shadow-sm border border-[#7C3AED]/20">
-                    {trip.destination ? trip.destination.substring(0, 2).toUpperCase() : "TR"}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-xs font-bold text-slate-800 truncate" title={trip.title}>
-                      {trip.title}
-                    </p>
-                    <p className="text-[9px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5 truncate">
-                      <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {trip.destination}
-                    </p>
-                    <p className="text-[9px] font-bold text-slate-500 mt-1">
-                      {Math.max(0, trip.maxMembers - (trip.members?.length || 0))} slots open
-                    </p>
-                  </div>
-                  <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/social/buddy/${trip._id}`);
-                }}
-                className={`text-[10px] font-extrabold px-3 py-1.5 rounded-[var(--radius-button)] transition-all shrink-0 self-center flex items-center gap-0.5 ${
-                isJoined ?
-                "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200" :
-                "text-brand-600 bg-brand-50 hover:bg-brand-100"
-                }`}>
-
-                    {isJoined ? "Joined ✓" : <>Join <ChevronRight className="w-3 h-3" /></>}
-                  </button>
-                </Card>);
-
-          })}
-          </div>
-        </Card>}
-
-
-      {}
-      <Card variant="transparent" padding="md" interactive className="!bg-[#7C3AED] text-white border-none shadow-[0_12px_32px_rgb(124,58,237,0.2)] relative overflow-hidden group">
-        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700" />
-        <div className="relative z-10 space-y-3.5">
-          <h3 className="text-sm font-black leading-tight tracking-wider uppercase text-white">
-            Planning a trip?
-          </h3>
-          <p className="text-[11px] font-semibold text-white/80 leading-relaxed max-w-[200px]">
-            Create a group and invite travelers to join your adventure.
-          </p>
-          <Link
           to="/social/buddy/new"
           className="inline-flex bg-white hover:bg-slate-50 text-[#7C3AED] text-[11px] font-black uppercase tracking-widest px-4 py-2.5 rounded-[var(--radius-button)] transition-all active:scale-95 shadow-md">
 
-            Create
-          </Link>
-        </div>
-        <Compass className="absolute -bottom-4 -right-4 w-20 h-20 text-white opacity-10" />
-      </Card>
+              Create
+            </Link>
+          </div>
+          <Compass className="absolute -bottom-4 -right-4 w-20 h-20 text-white opacity-10" />
+        </Card>
+      </div>
     </div>);
 
 };

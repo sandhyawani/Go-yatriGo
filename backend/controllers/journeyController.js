@@ -1190,14 +1190,20 @@ exports.getUserStatistics = async (req, res) => {
     );
 
     journeys.forEach((j) => {
-      if (j.status === "Completed") {
-        completed++;
-        travelDays += j.durationDays || 1;
-      } else if (j.status === "Ongoing" || j.status === "Active") {
+      const s = (j.status || "").toLowerCase();
+      const isPast = j.endDate && new Date(j.endDate) < now;
+      if (s === "completed" || s === "cancelled" || (isPast && s !== "cancelled")) {
+        if (s === "completed" || (isPast && s !== "cancelled")) {
+          completed++;
+          travelDays += j.durationDays || 1;
+        } else {
+          cancelled++;
+        }
+      } else if (s === "ongoing" || s === "active" || s === "active now") {
         ongoing++;
-      } else if (j.status === "Upcoming" || j.status === "Planning") {
+      } else if (s === "upcoming" || s === "planning") {
         upcoming++;
-      } else if (j.status === "Cancelled") cancelled++;
+      }
 
       if (j.destination) {
         destMap[j.destination] = (destMap[j.destination] || 0) + 1;
@@ -1205,10 +1211,11 @@ exports.getUserStatistics = async (req, res) => {
     });
 
     filteredBuddyTrips.forEach((trip) => {
-      const isCompleted = trip.status === "completed" || trip.endDate && new Date(trip.endDate) < now;
-      const isOngoing = trip.status === "active" || trip.status === "active now" || (trip.startDate && new Date(trip.startDate) <= now && (!trip.endDate || new Date(trip.endDate) >= now) && trip.status !== "cancelled" && trip.status !== "completed");
-      const isUpcoming = trip.status === "upcoming" || trip.startDate && new Date(trip.startDate) > now && trip.status !== "cancelled";
-      const isCancelled = trip.status === "cancelled";
+      const s = (trip.status || "").toLowerCase();
+      const isCompleted = s === "completed" || trip.endDate && new Date(trip.endDate) < now;
+      const isOngoing = s === "active" || s === "active now" || s === "ongoing" || (trip.startDate && new Date(trip.startDate) <= now && (!trip.endDate || new Date(trip.endDate) >= now) && s !== "cancelled" && s !== "completed");
+      const isUpcoming = s === "upcoming" || s === "planning" || trip.startDate && new Date(trip.startDate) > now && s !== "cancelled";
+      const isCancelled = s === "cancelled";
 
       if (isCompleted) {
         completed++;

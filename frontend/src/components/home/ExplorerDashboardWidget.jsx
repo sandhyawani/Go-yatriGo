@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Compass, Map, Users, Camera, Award } from "lucide-react";
+import { Compass, Map, Users, Camera, Award, Plane } from "lucide-react";
 import axios from "../../api/axios";
 import DashboardStatCard from "./cards/DashboardStatCard";
 import SectionHeader from "../common/SectionHeader";
@@ -26,7 +26,8 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
     fetchStats();
   }, [userId]);
 
-  const journeys = stats?.totalJourneys ?? activeJourneysCount ?? 0;
+  const journeys = stats ? ((stats.ongoing || 0) + (stats.upcoming || 0)) : (activeJourneysCount ?? 0);
+  const upcomingTrips = stats?.upcoming ?? 0;
   const memories = stats?.postsShared ?? fallbackMemories ?? 0;
   const buddies = stats?.companionsCount ?? 0;
   const stamps = stats?.achievements?.length ?? 0;
@@ -46,33 +47,32 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
         title="Journeys"
         value={journeys}
         accent="primary"
-        description="Active trips" /> :
+        description="Active" /> :
 
 
         <EmptyState
         title="0 Journeys"
-        subtitle="Plan your next trip"
-        actionLabel="Create"
-        actionLink="/journey/new"
-        className="h-full" />}
-
-
-
-        {memories > 0 ?
-        <DashboardStatCard
-        icon={Camera}
-        title="Memories"
-        value={memories}
-        accent="warning"
-        description="Captured moments" /> :
-
-
-        <EmptyState
-        title="0 Memories"
-        subtitle="Start capturing your trips"
-        actionLabel="Travel Memory"
+        subtitle="Plan your first trip"
+        actionLabel="Explore"
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         className="h-full" />}
+
+
+
+        {upcomingTrips > 0 ?
+          <DashboardStatCard
+          icon={Plane}
+          title="Upcoming Trips"
+          value={upcomingTrips}
+          accent="warning"
+          description="Next trip" /> :
+  
+          <EmptyState
+          title="0 Upcoming"
+          subtitle="Plan your next trip"
+          actionLabel="Explore"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="h-full" />}
 
 
 
@@ -82,14 +82,14 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
         title="Trip Mates"
         value={buddies}
         accent="info"
-        description="Travel network" /> :
+        description="Network" /> :
 
 
         <EmptyState
-        title="0 Trip Mates"
-        subtitle="Find Trip Mates"
-        actionLabel="Explore"
-        actionLink="/social/buddy"
+        title="0 Mates"
+        subtitle="Connect with travelers"
+        actionLabel="Find Buddies"
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
         className="h-full" />}
 
 
@@ -100,7 +100,7 @@ const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, active
         title="Badges"
         value={stamps}
         accent="success"
-        description="Unlocked achievements" /> :
+        description="Earned" /> :
 
 
         <EmptyState
