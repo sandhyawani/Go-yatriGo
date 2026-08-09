@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search, Check, X } from 'lucide-react';
 
 const CustomSelect = ({
+  id,
   value,
   onChange,
   options = [],
@@ -173,14 +174,14 @@ const CustomSelect = ({
 
   const handleSelect = (opt) => {
     if (opt.disabled) return;
-    onChange({ target: { value: getOptionValue(opt) } }, opt);
+    onChange({ target: { id, value: getOptionValue(opt) } }, opt);
     setIsOpen(false);
     buttonRef.current?.focus();
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
-    onChange({ target: { value: "" } });
+    onChange({ target: { id, value: "" } });
     buttonRef.current?.focus();
   };
 
