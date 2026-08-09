@@ -1012,29 +1012,49 @@ exports.requestToJoinTrip = async (req, res) => {
   }
 };
 exports.manageJoinRequest = async (req, res) => {
+  let session = null;
   try {
+    try {
+      session = await mongoose.startSession();
+      session.startTransaction();
+    } catch (e) {
+      session = null;
+    }
+    const sessionOpt = session ? { session } : {};
+
     const { requestId, status } = req.body;
     const hostId = req.user._id || req.user.id;
 
     if (!requestId || !["Approved", "Rejected"].includes(status)) {
+      if (session) { await session.abortTransaction(); session.endSession(); }
       return res.status(400).json({
         success: false,
         message: "Valid request ID and status required"
       });
     }
 
-    const requestObj = await JoinRequest.findById(requestId);
+    const requestObj = await JoinRequest.findById(requestId).session(session || null);
 
     if (!requestObj) {
+      if (session) { await session.abortTransaction(); session.endSession(); }
       return res.status(404).json({
         success: false,
         message: "Request not found"
       });
     }
 
-    const group = await TravelGroup.findById(requestObj.groupId);
+    if (requestObj.status !== "Pending") {
+      if (session) { await session.abortTransaction(); session.endSession(); }
+      return res.status(400).json({
+        success: false,
+        message: "Invitation has already been processed"
+      });
+    }
+
+    const group = await TravelGroup.findById(requestObj.groupId).session(session || null);
 
     if (!group) {
+      if (session) { await session.abortTransaction(); session.endSession(); }
       return res.status(404).json({
         success: false,
         message: "Group not found"
@@ -1042,93 +1062,116 @@ exports.manageJoinRequest = async (req, res) => {
     }
 
     if (
-    group.members &&
-    group.members.length > 0 &&
-    !group.members[0].user &&
-    group.members[0]._id === undefined)
-    {
+      group.members &&
+      group.members.length > 0 &&
+      !group.members[0].user &&
+      group.members[0]._id === undefined
+    ) {
       group.members = group.members.map((memberId) => ({
         user: memberId,
-        role:
-        memberId.toString() === group.host.toString() ?
-        "host" :
-        "member",
+        role: memberId.toString() === group.host.toString() ? "host" : "member",
         joinedAt: group.createdAt || new Date()
       }));
     }
 
-    if (group.host.toString() !== hostId.toString()) {
+    const isHost = group.host.toString() === hostId.toString();
+    const isCoHost = group.members.some(
+      (m) => (m.user?._id || m.user)?.toString() === hostId.toString() && m.role === "cohost"
+    );
+
+    if (!isHost && !isCoHost) {
+      if (session) { await session.abortTransaction(); session.endSession(); }
       return res.status(403).json({
         success: false,
-        message: "Only the host can manage join requests"
+        message: "Only the host or co-host can manage join requests"
       });
     }
 
     if (status === "Approved") {
       const now = new Date();
-      if (group.isCancelled || group.status === "cancelled" || group.endDate && new Date(group.endDate) < now) {
+      if (group.isCancelled || group.status === "cancelled" || (group.endDate && new Date(group.endDate) < now)) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
         return res.status(400).json({
           success: false,
           message: "Cannot approve request: journey is cancelled or has already ended"
         });
       }
 
+      // Re-verify capacity atomically before adding member
       if (group.members.length >= group.maxMembers) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
         return res.status(400).json({
           success: false,
-          message: "This travel group is already full"
+          message: "Group capacity has been reached"
         });
       }
-    }
 
-    requestObj.status = status;
-    await requestObj.save();
+      // Atomic update with capacity check to prevent race condition
+      const updatedGroup = await TravelGroup.findOneAndUpdate(
+        {
+          _id: group._id,
+          isCancelled: { $ne: true },
+          status: { $ne: "cancelled" },
+          $expr: { $lt: [{ $size: "$members" }, "$maxMembers"] },
+          "members.user": { $ne: requestObj.userId }
+        },
+        {
+          $push: { members: { user: requestObj.userId, role: "member", joinedAt: new Date() } }
+        },
+        { new: true, ...sessionOpt }
+      );
 
-    if (status === "Approved") {
-      if (
-      !group.members.some(
-      (member) =>
-      member.user &&
-      member.user.toString() === requestObj.userId.toString()
-      ))
-      {
-        group.members.push({
-          user: requestObj.userId,
-          role: "member"
+      if (!updatedGroup) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
+        return res.status(400).json({
+          success: false,
+          message: "Group capacity has been reached"
         });
+      }
 
-        if (group.members.length >= group.maxMembers) {
-          group.status = "full";
-        }
+      if (updatedGroup.members.length >= updatedGroup.maxMembers) {
+        await TravelGroup.findByIdAndUpdate(updatedGroup._id, { status: "full" }, sessionOpt);
+      }
 
-        await group.save();
-
-        await ChatRoom.findOneAndUpdate(
+      await ChatRoom.findOneAndUpdate(
         { travelGroupId: group._id },
         {
           $addToSet: { members: requestObj.userId },
           $pull: { hiddenFor: requestObj.userId }
-        }
-        );
-      }
+        },
+        sessionOpt
+      );
     }
 
-    await Notification.create({
-      sender: hostId,
-      receiver: requestObj.userId,
-      type:
-      status === "Approved" ?
-      "request_approved" :
-      "request_rejected",
-      group: group._id,
-      message: `Your request to join "${group.title}" was ${status.toLowerCase()}.`
-    });
+    requestObj.status = status;
+    await requestObj.save(sessionOpt);
 
-    await Notification.findOneAndDelete({
-      receiver: hostId,
-      type: "join_request",
-      joinRequest: requestObj._id
-    });
+    await Notification.create(
+      [
+        {
+          sender: hostId,
+          receiver: requestObj.userId,
+          type: status === "Approved" ? "request_approved" : "request_rejected",
+          group: group._id,
+          message: `Your request to join "${group.title}" was ${status.toLowerCase()}.`
+        }
+      ],
+      sessionOpt
+    );
+
+    await Notification.findOneAndDelete(
+      {
+        receiver: hostId,
+        type: "join_request",
+        joinRequest: requestObj._id
+      },
+      sessionOpt
+    );
+
+    if (session) {
+      await session.commitTransaction();
+      session.endSession();
+    }
 
     res.status(200).json({
       success: true,
@@ -1136,6 +1179,9 @@ exports.manageJoinRequest = async (req, res) => {
       request: requestObj
     });
   } catch (error) {
+    if (session) {
+      try { await session.abortTransaction(); session.endSession(); } catch (e) {}
+    }
     res.status(500).json({
       success: false,
       message: error.message

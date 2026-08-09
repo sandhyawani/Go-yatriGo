@@ -769,7 +769,7 @@ const TravelBuddyDetails = () => {
 
 
             {}
-            {isHost &&
+            {(isHost || myRole === "cohost") &&
             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
                 <h3 className="text-[10px] font-black text-slate-500 border-b border-slate-100 pb-2">
                   Pending Requests ({pendingRequests.length})

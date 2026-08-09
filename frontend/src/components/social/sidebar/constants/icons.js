@@ -24,7 +24,8 @@ import {
   Camera,
   Users,
   Video,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from "lucide-react";
 
 export const ICONS = {
@@ -53,5 +54,6 @@ export const ICONS = {
   Camera,
   Users,
   Video,
-  ArrowRight
+  ArrowRight,
+  Trash2
 };

@@ -11,9 +11,10 @@ const NotificationSchema = new mongoose.Schema(
     "new_follower", "follow_request", "post_like", "post_comment", "story_like", "story_reply",
     "follow", "trip_cancelled", "admin_warning", "group_joined", "group_left", "direct", "group",
     "warning", "follow_accept",
-    "journey_created", "journey_invitation", "journey_invitation_accepted", "journey_started",
+    "journey_created", "journey_invitation", "journey_invitation_accepted", "journey_invite_accepted", "journey_started",
     "journey_completed", "journey_cancelled", "safe_checkin", "journey_member_joined",
-    "journey_member_left", "journey_updated", "memory_added"],
+    "journey_member_left", "journey_updated", "memory_added",
+    "journey_join_request", "journey_join_request_accepted", "journey_join_request_rejected"],
 
     required: true
   },
@@ -24,6 +25,7 @@ const NotificationSchema = new mongoose.Schema(
   journeyModel: { type: String, enum: ["Journey", "TravelGroup"], default: "Journey" },
   room: { type: mongoose.Schema.Types.ObjectId, ref: "ChatRoom" },
   joinRequest: { type: mongoose.Schema.Types.ObjectId, ref: "JoinRequest" },
+  journeyJoinRequest: { type: mongoose.Schema.Types.ObjectId, ref: "JourneyJoinRequest" },
   message: { type: String, required: true },
   isRead: { type: Boolean, default: false }
 },

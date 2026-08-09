@@ -103,6 +103,10 @@ const journeySchema = new mongoose.Schema(
     type: Number,
     default: 1
   },
+  maxMembers: {
+    type: Number,
+    default: 50
+  },
   acceptedInvitationCount: {
     type: Number,
     default: 0

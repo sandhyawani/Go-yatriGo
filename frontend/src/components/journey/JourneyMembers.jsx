@@ -27,6 +27,7 @@ const JourneyMembers = ({
 }) => {
   const navigate = useNavigate();
   const [invitations, setInvitations] = useState([]);
+  const [joinRequests, setJoinRequests] = useState([]);
   const [loadingInvites, setLoadingInvites] = useState(false);
   const [openMenuId, setOpenMenuId] = useState(null);
 
@@ -41,25 +42,53 @@ const JourneyMembers = ({
   m.role === "Co-Organizer"
   );
 
-  const fetchInvitations = () => {
-    if (!journey?._id || !isOrganizer && !isCoOrganizer) return;
+  const fetchInvitationsAndRequests = () => {
+    if (!journey?._id || (!isOrganizer && !isCoOrganizer)) return;
     setLoadingInvites(true);
-    axiosInstance.
-    get(`/journeys/${journey._id}/invitations`).
-    then((res) => {
-      if (res.data?.success) {
-        setInvitations(
-        res.data.invitations.filter((i) => i.status === "pending") || []
-        );
-      }
-    }).
-    catch((err) => console.error("Error loading sent invitations:", err)).
-    finally(() => setLoadingInvites(false));
+    
+    Promise.all([
+      axiosInstance.get(`/journeys/${journey._id}/invitations`),
+      axiosInstance.get(`/journeys/${journey._id}/join-requests`)
+    ])
+      .then(([invRes, reqRes]) => {
+        if (invRes.data?.success) {
+          setInvitations(invRes.data.invitations.filter((i) => i.status === "pending") || []);
+        }
+        if (reqRes.data?.success) {
+          setJoinRequests(reqRes.data.requests.filter((r) => r.status === "pending") || []);
+        }
+      })
+      .catch((err) => console.error("Error loading pending requests:", err))
+      .finally(() => setLoadingInvites(false));
   };
 
   useEffect(() => {
-    fetchInvitations();
+    fetchInvitationsAndRequests();
   }, [journey]);
+
+  const handleAcceptJoinRequest = async (requestId) => {
+    try {
+      const res = await axiosInstance.post(`/journeys/join-requests/${requestId}/accept`);
+      if (res.data?.success) {
+        setJoinRequests((prev) => prev.filter((r) => r._id !== requestId));
+        if (onRefreshJourney) onRefreshJourney();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to accept request");
+    }
+  };
+
+  const handleRejectJoinRequest = async (requestId) => {
+    try {
+      const res = await axiosInstance.post(`/journeys/join-requests/${requestId}/reject`);
+      if (res.data?.success) {
+        setJoinRequests((prev) => prev.filter((r) => r._id !== requestId));
+        if (onRefreshJourney) onRefreshJourney();
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to reject request");
+    }
+  };
 
   const handleRoleChange = async (targetUserId, newRole) => {
     try {
@@ -429,8 +458,61 @@ const JourneyMembers = ({
           </div>
         </div>}
 
+      {isOrganizer && joinRequests.length > 0 &&
+      <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+          <div className="flex items-center justify-between px-1">
+            <h4 className="text-[11px] font-black text-[#7C3AED] uppercase tracking-wider flex items-center gap-1.5">
+              <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />{" "}
+              Pending Join Requests ({joinRequests.length})
+            </h4>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
+            {joinRequests.map((req) => {
+            const u = req.userId || {};
+            return (
+              <div
+              key={req._id}
+              className="bg-gradient-to-br from-[#7C3AED]/10 via-white dark:via-slate-900 to-[#7C3AED]/5 p-3 rounded-2xl border border-[#7C3AED]/30 dark:border-[#7C3AED]/40 flex items-center justify-between shadow-xs">
+
+                  <div className="flex items-center gap-2.5 min-w-0 pr-1.5">
+                    <Avatar
+                  user={u}
+                  className="w-9 h-9 rounded-xl object-cover shrink-0" />
+
+                    <div className="min-w-0">
+                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block truncate">
+                        {u.name || u.email}
+                      </span>
+                      <span className="text-[10px] text-[#7C3AED] dark:text-[#7C3AED] font-bold flex items-center gap-1 mt-0.5">
+                        {req.message ? `"${req.message.substring(0, 15)}..."` : "Wants to join"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                  type="button"
+                  onClick={() => handleAcceptJoinRequest(req._id)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#7C3AED] text-white hover:bg-[#7c3aed] transition-all shadow-xs border border-[#7C3AED]/60 text-[10px] font-black uppercase tracking-wider"
+                  title="Accept Request">
+                      Accept
+                    </button>
+                    <button
+                  type="button"
+                  onClick={() => handleRejectJoinRequest(req._id)}
+                  className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xs border border-slate-200/60 dark:border-slate-700/60 text-[10px] font-black uppercase tracking-wider"
+                  title="Reject Request">
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>}
+
     </div>);
 
-};
+  };
 
-export default JourneyMembers;
+  export default JourneyMembers;

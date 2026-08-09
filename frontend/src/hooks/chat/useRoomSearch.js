@@ -41,17 +41,19 @@ export const useRoomSearch = ({
   const requestChats = rooms.filter(
   (r) => r.type === "direct" && r.requestStatus === "pending" && !isMyRequest(r)
   );
-  const groupChats = rooms.filter((r) => r.type === "group" || r.travelGroupId);
+  const groupChats = rooms.filter(
+    (r) => r.type === "group" || r.type === "journey" || r.travelGroupId || r.journeyId
+  );
 
   const displayedRooms =
-  activeTab === "chats" ?
-  activeChats :
-  activeTab === "requests" ?
-  requestChats :
-  groupChats;
+    activeTab === "chats" ?
+    activeChats :
+    activeTab === "requests" ?
+    requestChats :
+    groupChats;
 
   const filteredRooms = displayedRooms.filter((r) =>
-  r.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (r.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const followRequests = notifications.filter(

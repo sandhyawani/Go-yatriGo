@@ -98,10 +98,9 @@ export const SidebarHeader = ({
 
           <Bell className={iconClass(showNotifPanel)} />
           <span className="flex-1 text-left">Notifications</span>
-          {unreadCount > 0 &&
-          <span className="w-4.5 h-4.5 min-w-[18px] bg-accent-500 text-white text-[9px] font-black rounded-full flex items-center justify-center px-1">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>}
+          {unreadCount > 0 && (
+            <span className="w-2.5 h-2.5 bg-accent-500 rounded-full shrink-0" />
+          )}
 
         </button>
       </div>

@@ -134,9 +134,26 @@ const MyJourneys = () => {
 
       let combined = [...privateJourneys, ...filteredExploreTrips];
 
+      // Deduplicate combined list by ID and title/destination signature to eliminate duplicate cards
+      const seenIds = new Set();
+      const seenKeys = new Set();
+      const deduplicated = [];
+
+      for (const item of combined) {
+        const id = (item._id || item.id)?.toString();
+        const startStr = item.startDate ? new Date(item.startDate).toISOString().split('T')[0] : '';
+        const titleKey = `${(item.title || "").trim().toLowerCase()}_${(item.destination || "").trim().toLowerCase()}_${startStr}`;
+
+        if (id && seenIds.has(id)) continue;
+        if (titleKey && seenKeys.has(titleKey)) continue;
+
+        if (id) seenIds.add(id);
+        if (titleKey) seenKeys.add(titleKey);
+        deduplicated.push(item);
+      }
 
       if (activeTab === "all") {
-        combined.sort((a, b) => {
+        deduplicated.sort((a, b) => {
           const getPriority = (j) => {
             const s = (j.status || "").toLowerCase();
             if (s === "ongoing" || s === "active") return 1;
@@ -144,16 +161,16 @@ const MyJourneys = () => {
             if (s === "completed") return 3;
             return 4;
           };
-          const pa = getPriority(a),pb = getPriority(b);
+          const pa = getPriority(a), pb = getPriority(b);
           if (pa !== pb) return pa - pb;
           if (pa === 3) return new Date(b.endDate || b.startDate) - new Date(a.endDate || a.startDate);
           return new Date(a.startDate) - new Date(b.startDate);
         });
       } else if (activeTab === "Completed") {
-        combined.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        deduplicated.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
       }
 
-      setJourneys(combined);
+      setJourneys(deduplicated);
     }).catch((err) => {
       console.error("Error loading journeys:", err);
     }).finally(() => setLoading(false));
@@ -173,11 +190,10 @@ const MyJourneys = () => {
   const activeInvitations = invitations.filter((inv) => {
     if (!inv.journeyId) return false;
     const isPending = inv.status === "pending";
-    const notStarted = !inv.journeyId?.startDate || new Date(inv.journeyId.startDate) > new Date();
     const notCompleted =
-    inv.journeyId?.status !== "Completed" &&
-    inv.journeyId?.status !== "Cancelled";
-    return isPending && notStarted && notCompleted;
+      inv.journeyId?.status !== "Completed" &&
+      inv.journeyId?.status !== "Cancelled";
+    return isPending && notCompleted;
   });
 
   const [journeyStats, setJourneyStats] = useState(null);
@@ -193,24 +209,21 @@ const MyJourneys = () => {
       .catch(err => console.error("Failed to fetch journey stats", err));
   }, [myUserId]);
 
-  const upcomingCount = journeyStats?.upcoming ?? journeys.filter(j => j.status === "Upcoming" || j.lifecycleStatus === "upcoming").length;
-  const activeCount = journeyStats?.ongoing ?? journeys.filter(j => j.status === "Ongoing" || j.status === "Active" || j.lifecycleStatus === "active").length;
-  const completedCount = journeyStats?.completed ?? journeys.filter(j => j.status === "Completed" || j.lifecycleStatus === "completed").length;
+  const upcomingCount = journeys.filter(j => j.status === "Upcoming" || j.status === "Planning" || j.lifecycleStatus === "upcoming").length;
+  const activeCount = journeys.filter(j => j.status === "Ongoing" || j.status === "Active" || j.lifecycleStatus === "active").length;
+  const completedCount = journeys.filter(j => j.status === "Completed" || j.lifecycleStatus === "completed").length;
 
-  const journeySummary = (journeyStats?.totalJourneys || journeys.length) > 0 
+  const journeySummary = journeys.length > 0 
     ? `${upcomingCount} Upcoming · ${activeCount} Active · ${completedCount} Completed`
     : "Plan your next adventure";
 
   const pastInvitations = invitations.filter((inv) => {
     if (!inv.journeyId) return false;
-    const isPending = inv.status === "pending";
-    const isExpired =
-    inv.status === "expired" ||
-    inv.journeyId?.startDate && new Date(inv.journeyId.startDate) <= new Date();
+    const isProcessed = inv.status !== "pending";
     const isCompleted =
-    inv.journeyId?.status === "Completed" ||
-    inv.journeyId?.status !== undefined && inv.journeyId?.status === "Cancelled";
-    return !isPending || isExpired || isCompleted;
+      inv.journeyId?.status === "Completed" ||
+      inv.journeyId?.status === "Cancelled";
+    return isProcessed || isCompleted;
   });
 
   const tabs = [

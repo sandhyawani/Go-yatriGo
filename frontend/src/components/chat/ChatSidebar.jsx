@@ -367,7 +367,7 @@ export const ChatSidebar = ({
 
 
                   <div className="relative shrink-0">
-                    {room.type === "group" ?
+                    {room.type === "group" || room.type === "journey" || room.travelGroupId || room.journeyId ?
                   <GroupSidebarAvatar room={room} /> :
 
                   <img

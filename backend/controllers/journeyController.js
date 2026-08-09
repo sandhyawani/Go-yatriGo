@@ -4,6 +4,7 @@ const JourneyMember = require("../models/JourneyMember");
 const JourneyTimeline = require("../models/JourneyTimeline");
 const JourneyWorkspace = require("../models/JourneyWorkspace");
 const JourneyInvitation = require("../models/JourneyInvitation");
+const JourneyJoinRequest = require("../models/JourneyJoinRequest");
 const JourneyMemory = require("../models/JourneyMemory");
 const JourneyGallery = require("../models/JourneyGallery");
 const Notification = require("../models/Notification");
@@ -541,42 +542,65 @@ exports.inviteMembers = async (req, res) => {
     const journey = await Journey.findById(id);
     if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
 
+    // Validate sender permission: Only Organizer or Co-Organizer can invite
+    const isOrganizerOrCoHost = journey.members.some(
+      (m) => (m.user?._id || m.user).toString() === userId.toString() &&
+             (m.role === "Organizer" || m.role === "Co-Organizer")
+    ) || (journey.creator && journey.creator.toString() === userId.toString());
+
+    if (!isOrganizerOrCoHost) {
+      return res.status(403).json({ success: false, message: "Only organizers can send invitations" });
+    }
+
     const inviter = await User.findById(userId);
     const createdInvites = [];
 
     for (const targetId of userIds) {
-      const existingMem = journey.members.some((m) => (m.user?._id || m.user).toString() === targetId.toString());
-      if (!existingMem) {
-        const targetUser = await User.findById(targetId);
-        if (targetUser && targetUser.privacySettings) {
-          const mode = targetUser.privacySettings.journeyInvites || "everyone";
-          if (mode === "none") {
+      const isAlreadyMember = journey.members.some(
+        (m) => (m.user?._id || m.user).toString() === targetId.toString()
+      );
+      if (isAlreadyMember) {
+        return res.status(400).json({ success: false, message: "User is already a member of this journey" });
+      }
+
+      const existingPendingInvite = await JourneyInvitation.findOne({
+        journeyId: id,
+        inviteeId: targetId,
+        status: "pending"
+      });
+      if (existingPendingInvite) {
+        return res.status(400).json({ success: false, message: "User already has a pending invitation" });
+      }
+
+      const targetUser = await User.findById(targetId);
+      if (targetUser && targetUser.privacySettings) {
+        const mode = targetUser.privacySettings.journeyInvites || "everyone";
+        if (mode === "none") {
+          continue;
+        }
+        if (mode === "mates_only") {
+          const isMate = targetUser.following?.some((fid) => fid.toString() === userId.toString()) &&
+                         targetUser.followers?.some((fid) => fid.toString() === userId.toString());
+          if (!isMate) {
             continue;
           }
-          if (mode === "mates_only") {
-            const isMate = targetUser.following?.some((id) => id.toString() === userId.toString()) &&
-            targetUser.followers?.some((id) => id.toString() === userId.toString());
-            if (!isMate) {
-              continue;
-            }
-          }
         }
+      }
 
-        const invite = await JourneyInvitation.findOneAndUpdate(
+      const invite = await JourneyInvitation.findOneAndUpdate(
         { journeyId: id, inviteeId: targetId },
         { inviterId: userId, type: "invitation", status: "pending", role: role || "Member" },
         { upsert: true, new: true }
-        );
-        createdInvites.push(invite);
+      );
+      createdInvites.push(invite);
 
-        await Notification.create({
-          sender: userId,
-          receiver: targetId,
-          type: "journey_invitation",
-          journey: id,
-          message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
-        });
-      }
+      await Notification.create({
+        sender: userId,
+        receiver: targetId,
+        type: "journey_invitation",
+        journey: id,
+        message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
+      });
     }
 
     journey.pendingInvitationCount = await JourneyInvitation.countDocuments({ journeyId: id, status: "pending" });
@@ -590,46 +614,72 @@ exports.inviteMembers = async (req, res) => {
 };
 
 exports.acceptInvitation = async (req, res) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const invitationId = req.params.invitationId || req.params.id;
-    const userId = req.user._id || req.user.id;
+  const maxRetries = 3;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let session = null;
+    try {
+      try {
+        session = await mongoose.startSession();
+        session.startTransaction();
+      } catch (e) {
+        session = null;
+      }
+      const sessionOpt = session ? { session } : {};
 
-    const invitation = await JourneyInvitation.findById(invitationId).session(session);
-    if (!invitation || invitation.status !== "pending") {
-      return res.status(400).json({ success: false, message: "Invalid or expired invitation" });
-    }
+      const invitationId = req.params.invitationId || req.params.id;
+      const userId = req.user._id || req.user.id;
 
-    if (invitation.inviteeId.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized for this invitation" });
-    }
+      const invitation = await JourneyInvitation.findById(invitationId).session(session || null);
+      if (!invitation) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
+        return res.status(404).json({ success: false, message: "Invitation not found" });
+      }
 
-    const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
-    const journey = await Journey.findById(invitation.journeyId).session(session);
+      if (invitation.status !== "pending") {
+        if (session) { await session.abortTransaction(); session.endSession(); }
+        return res.status(400).json({ success: false, message: "Invitation has already been processed" });
+      }
 
-    if (!journey) {
-      return res.status(404).json({ success: false, message: "Journey not found" });
-    }
+      if (invitation.inviteeId.toString() !== userId.toString()) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
+        return res.status(403).json({ success: false, message: "Not authorized for this invitation" });
+      }
 
-    const now = new Date();
+      const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
+      const journey = await Journey.findById(invitation.journeyId).session(session || null);
 
-    if (journey.startDate && new Date(journey.startDate) <= now) {
-      invitation.status = "expired";
-      await invitation.save({ session });
-      return res.status(400).json({ success: false, message: "Cannot accept invitation after the journey has started" });
-    }
+      if (!journey) {
+        if (session) { await session.abortTransaction(); session.endSession(); }
+        return res.status(404).json({ success: false, message: "Journey not found" });
+      }
 
-    if (journey.status === "Completed" || journey.status === "Cancelled") {
-      invitation.status = "expired";
-      await invitation.save({ session });
-      return res.status(400).json({ success: false, message: `This journey is already ${journey.status.toLowerCase()}` });
-    }
+      const maxCap = journey.maxMembers || 50;
+      if (journey.members && journey.members.length >= maxCap) {
+        invitation.status = "capacity_full";
+        await invitation.save(sessionOpt);
+        if (session) { await session.commitTransaction(); session.endSession(); }
+        return res.status(400).json({ success: false, message: "Journey capacity is full" });
+      }
 
-    invitation.status = "accepted";
-    await invitation.save({ session });
+      const now = new Date();
 
-    if (journey) {
+      if (journey.startDate && new Date(journey.startDate) <= now) {
+        invitation.status = "expired";
+        await invitation.save(sessionOpt);
+        if (session) { await session.commitTransaction(); session.endSession(); }
+        return res.status(400).json({ success: false, message: "Cannot accept invitation after the journey has started" });
+      }
+
+      if (journey.status === "Completed" || journey.status === "Cancelled") {
+        invitation.status = "expired";
+        await invitation.save(sessionOpt);
+        if (session) { await session.commitTransaction(); session.endSession(); }
+        return res.status(400).json({ success: false, message: `This journey is already ${journey.status.toLowerCase()}` });
+      }
+
+      invitation.status = "accepted";
+      await invitation.save(sessionOpt);
+
       const alreadyIn = journey.members.some((m) => (m.user?._id || m.user).toString() === targetUserId.toString());
       if (!alreadyIn) {
         journey.members.push({ user: targetUserId, role: invitation.role, joinedAt: new Date() });
@@ -640,21 +690,21 @@ exports.acceptInvitation = async (req, res) => {
         journey.memberCount = journey.members.length;
 
         const [pCount, aCount] = await Promise.all([
-        JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }).session(session),
-        JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }).session(session)]
-        );
+          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }).session(session || null),
+          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }).session(session || null)
+        ]);
 
         journey.pendingInvitationCount = pCount;
         journey.acceptedInvitationCount = aCount;
-        await journey.save({ session });
+        await journey.save(sessionOpt);
 
-        await JourneyMember.create([{ journeyId: journey._id, userId: targetUserId, role: invitation.role }], { session });
+        await JourneyMember.create([{ journeyId: journey._id, userId: targetUserId, role: invitation.role }], sessionOpt);
 
         if (journey.chatRoomId) {
-          await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $addToSet: { members: targetUserId } }).session(session);
+          await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $addToSet: { members: targetUserId } }).session(session || null);
         }
 
-        const user = await User.findById(targetUserId).session(session);
+        const user = await User.findById(targetUserId).session(session || null);
         await JourneyTimeline.create([{
           journeyId: journey._id,
           userId: targetUserId,
@@ -663,42 +713,53 @@ exports.acceptInvitation = async (req, res) => {
           eventType: "member_joined",
           title: "Member Joined",
           description: `${user?.name || "A traveler"} joined the squad!`
-        }], { session });
+        }], sessionOpt);
 
         await Notification.create([{
           sender: userId,
           receiver: invitation.type === "request" ? targetUserId : journey.creator,
-          type: invitation.type === "request" ? "journey_request_approved" : "journey_invitation_accepted",
+          type: "journey_invite_accepted",
           journey: journey._id,
-          message: invitation.type === "request" ?
-          `Your request to join "${journey.title}" was approved!` :
-          `${user?.name || "A traveler"} accepted your invite to "${journey.title}".`
-        }], { session });
+          message: `${user?.name || "A traveler"} accepted the invitation to join "${journey.title}".`
+        }], sessionOpt);
       }
+
+      if (session) {
+        await session.commitTransaction();
+        session.endSession();
+      }
+
+      return res.json({ success: true, message: "Invitation accepted successfully", journey });
+    } catch (error) {
+      if (session) {
+        try { await session.abortTransaction(); session.endSession(); } catch (e) {}
+      }
+      if (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError') && attempt < maxRetries) {
+        continue; // Retry
+      }
+      console.error("Error accepting invitation:", error);
+      return res.status(500).json({ success: false, message: "Server Error" });
     }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.json({
-      success: true,
-      message: "Joined journey successfully",
-      journey,
-      redirectUrl: journey ? `/social/journeys/${journey._id}` : "/social/journeys"
-    });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error accepting invite:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
 exports.rejectInvitation = async (req, res) => {
   try {
     const invitationId = req.params.invitationId || req.params.id;
-    const inv = await JourneyInvitation.findByIdAndUpdate(invitationId, { status: "rejected" }, { new: true });
-    if (inv && inv.journeyId) {
+    
+    const inv = await JourneyInvitation.findById(invitationId);
+    if (!inv) {
+      return res.status(404).json({ success: false, message: "Invitation not found" });
+    }
+
+    if (inv.status !== "pending") {
+      return res.status(400).json({ success: false, message: `Cannot reject invitation that is already ${inv.status}` });
+    }
+
+    inv.status = "rejected";
+    await inv.save();
+
+    if (inv.journeyId) {
       const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
       await Journey.findByIdAndUpdate(inv.journeyId, { pendingInvitationCount: pendingCount });
     }
@@ -769,8 +830,27 @@ exports.removeMember = async (req, res) => {
     const journey = await Journey.findById(id).session(session);
     if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
 
+    const isOrganizerOrCoHost = journey.members.some(
+      (m) => (m.user?._id || m.user).toString() === currentUserId.toString() &&
+             (m.role === "Organizer" || m.role === "Co-Organizer")
+    ) || (journey.creator && journey.creator.toString() === currentUserId.toString());
+
+    if (!isOrganizerOrCoHost) {
+      return res.status(403).json({ success: false, message: "Only organizers can remove members" });
+    }
+
+    const targetMember = journey.members.find((m) => (m.user?._id || m.user).toString() === targetUserId.toString());
+    
+    // Prevent removing the creator
+    if (journey.creator && journey.creator.toString() === targetUserId.toString()) {
+      return res.status(403).json({ success: false, message: "Cannot remove the journey creator" });
+    }
+
+    // Optional: Prevent Co-Organizer from removing another Organizer/Co-Organizer
     if (journey.creator.toString() !== currentUserId.toString()) {
-      return res.status(403).json({ success: false, message: "Only creator can remove members" });
+      if (targetMember && (targetMember.role === "Organizer" || targetMember.role === "Co-Organizer")) {
+         return res.status(403).json({ success: false, message: "Co-organizers cannot remove other organizers" });
+      }
     }
 
     journey.members = journey.members.filter((m) => (m.user?._id || m.user).toString() !== targetUserId.toString());
@@ -1524,6 +1604,237 @@ exports.updateMemberRole = async (req, res) => {
     res.json({ success: true, message: `Member role updated to ${role}`, journey });
   } catch (error) {
     console.error("Error updating role:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.requestToJoinJourney = async (req, res) => {
+  try {
+    const journeyId = req.params.id;
+    const userId = req.user._id || req.user.id;
+
+    const journey = await Journey.findById(journeyId);
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    if (!["Planning", "Upcoming", "Ongoing"].includes(journey.status)) {
+      return res.status(400).json({ success: false, message: "Can only request to join active journeys" });
+    }
+
+    if (journey.creator.toString() === userId.toString()) {
+      return res.status(400).json({ success: false, message: "Creator cannot request to join their own journey" });
+    }
+
+    const isMember = journey.members.some(m => (m.user?._id || m.user).toString() === userId.toString());
+    if (isMember) {
+      return res.status(400).json({ success: false, message: "Already a member" });
+    }
+
+    const existingPendingInvite = await JourneyInvitation.findOne({ journeyId, inviteeId: userId, status: "pending" });
+    if (existingPendingInvite) {
+      return res.status(400).json({ success: false, message: "You already have a pending invitation" });
+    }
+
+    if (journey.members.length >= journey.maxMembers) {
+      return res.status(400).json({ success: false, message: "Journey is at full capacity" });
+    }
+
+    const newRequest = await JourneyJoinRequest.create({
+      journeyId,
+      userId,
+      status: "pending",
+      message: req.body.message || ""
+    });
+
+    await Notification.create({
+      sender: userId,
+      receiver: journey.creator,
+      type: "journey_join_request",
+      journey: journeyId,
+      journeyJoinRequest: newRequest._id,
+      message: `${req.user.name || "A user"} requested to join your journey "${journey.title}"`
+    });
+
+    res.status(201).json({ success: true, message: "Request sent successfully", joinRequest: newRequest });
+  } catch (error) {
+    if (error.code === 11000) {
+      return res.status(400).json({ success: false, message: "You already have a pending join request" });
+    }
+    console.error("Error creating join request:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getJourneyJoinRequests = async (req, res) => {
+  try {
+    const journeyId = req.params.id;
+    const userId = req.user._id || req.user.id;
+
+    const journey = await Journey.findById(journeyId);
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    if (journey.creator.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized to view join requests" });
+    }
+
+    const requests = await JourneyJoinRequest.find({ journeyId }).populate("userId", "name profilePic username");
+    res.json({ success: true, requests });
+  } catch (error) {
+    console.error("Error fetching join requests:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.cancelJourneyJoinRequest = async (req, res) => {
+  try {
+    const requestId = req.params.requestId;
+    const userId = req.user._id || req.user.id;
+
+    const joinRequest = await JourneyJoinRequest.findById(requestId);
+    if (!joinRequest) return res.status(404).json({ success: false, message: "Request not found" });
+
+    if (joinRequest.userId.toString() !== userId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized to cancel this request" });
+    }
+
+    joinRequest.status = "cancelled";
+    await joinRequest.save();
+
+    res.json({ success: true, message: "Request cancelled successfully" });
+  } catch (error) {
+    console.error("Error cancelling join request:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.acceptJourneyJoinRequest = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    const requestId = req.params.requestId;
+    const hostId = req.user._id || req.user.id;
+
+    const joinRequest = await JourneyJoinRequest.findById(requestId).session(session);
+    if (!joinRequest) throw new Error("Request not found");
+    
+    if (joinRequest.status !== "pending") {
+      throw new Error("Request is not pending");
+    }
+
+    const journey = await Journey.findById(joinRequest.journeyId).session(session);
+    if (!journey) throw new Error("Journey not found");
+
+    if (journey.creator.toString() !== hostId.toString()) {
+      throw new Error("Not authorized");
+    }
+
+    // Atomic capacity check & update
+    const updatedJourney = await Journey.findOneAndUpdate(
+      {
+        _id: journey._id,
+        status: { $in: ["Planning", "Upcoming", "Ongoing"] },
+        "members.user": { $ne: joinRequest.userId },
+        $expr: { $lt: [{ $size: "$members" }, "$maxMembers"] }
+      },
+      {
+        $push: { members: { user: joinRequest.userId, role: "Member", joinedAt: new Date() } },
+        $inc: { memberCount: 1 }
+      },
+      { new: true, session }
+    );
+
+    if (!updatedJourney) {
+      // Could be full, already a member, or journey not active
+      const currentJourney = await Journey.findById(journey._id).session(session);
+      if (currentJourney && currentJourney.members.length >= currentJourney.maxMembers) {
+        joinRequest.status = "capacity_full";
+        await joinRequest.save({ session });
+        await session.commitTransaction();
+        session.endSession();
+        
+        await Notification.create({
+          sender: hostId,
+          receiver: joinRequest.userId,
+          type: "journey_join_request_rejected",
+          journey: journey._id,
+          message: `Your request to join "${journey.title}" was not accepted because the journey has reached its capacity.`
+        });
+        
+        return res.status(400).json({ success: false, message: "Journey is at full capacity" });
+      } else {
+        throw new Error("Could not add member (might already be member or journey inactive)");
+      }
+    }
+
+    joinRequest.status = "accepted";
+    await joinRequest.save({ session });
+    
+    await JourneyMember.create([{
+      journeyId: journey._id,
+      userId: joinRequest.userId,
+      role: "Member"
+    }], { session });
+
+    await session.commitTransaction();
+    session.endSession();
+
+    await Notification.create({
+      sender: hostId,
+      receiver: joinRequest.userId,
+      type: "journey_join_request_accepted",
+      journey: journey._id,
+      message: `Your request to join "${journey.title}" was accepted!`
+    });
+
+    res.json({ success: true, message: "Request accepted successfully", journey: updatedJourney });
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error accepting join request:", error);
+    res.status(error.message === "Not authorized" ? 403 : 400).json({ success: false, message: error.message || "Server Error" });
+  }
+};
+
+exports.rejectJourneyJoinRequest = async (req, res) => {
+  try {
+    const requestId = req.params.requestId;
+    const hostId = req.user._id || req.user.id;
+
+    const joinRequest = await JourneyJoinRequest.findById(requestId);
+    if (!joinRequest) return res.status(404).json({ success: false, message: "Request not found" });
+
+    const journey = await Journey.findById(joinRequest.journeyId);
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+
+    if (journey.creator.toString() !== hostId.toString()) {
+      return res.status(403).json({ success: false, message: "Not authorized" });
+    }
+
+    joinRequest.status = "rejected";
+    await joinRequest.save();
+
+    await Notification.create({
+      sender: hostId,
+      receiver: joinRequest.userId,
+      type: "journey_join_request_rejected",
+      journey: journey._id,
+      message: `Your request to join "${journey.title}" was rejected.`
+    });
+
+    res.json({ success: true, message: "Request rejected successfully" });
+  } catch (error) {
+    console.error("Error rejecting join request:", error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+};
+
+exports.getMyJoinRequest = async (req, res) => {
+  try {
+    const journeyId = req.params.id;
+    const userId = req.user._id || req.user.id;
+    const joinRequest = await JourneyJoinRequest.findOne({ journeyId, userId, status: "pending" });
+    res.json({ success: true, joinRequest });
+  } catch (error) {
+    console.error("Error fetching my join request:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

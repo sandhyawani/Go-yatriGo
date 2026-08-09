@@ -85,4 +85,20 @@ post(journeyController.resendInvitation);
 router.route("/invitations/:id/cancel").
 delete(journeyController.cancelInvitation);
 
+router.route("/:id/join-requests").
+get(journeyController.getJourneyJoinRequests).
+post(journeyController.requestToJoinJourney);
+
+router.route("/:id/my-join-request").
+get(journeyController.getMyJoinRequest);
+
+router.route("/join-requests/:requestId").
+delete(journeyController.cancelJourneyJoinRequest);
+
+router.route("/join-requests/:requestId/accept").
+post(journeyController.acceptJourneyJoinRequest);
+
+router.route("/join-requests/:requestId/reject").
+post(journeyController.rejectJourneyJoinRequest);
+
 module.exports = router;

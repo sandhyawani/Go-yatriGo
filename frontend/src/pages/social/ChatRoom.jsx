@@ -619,13 +619,22 @@ const ChatRoom = () => {
           window.history.replaceState({}, document.title);
           const matched = res.data.rooms.find((r) => {
             const rGroupId =
-            typeof r.travelGroupId === "object" ?
-            r.travelGroupId?._id :
-            r.travelGroupId;
+              typeof r.travelGroupId === "object" ?
+              r.travelGroupId?._id :
+              r.travelGroupId;
+            const rJourneyId =
+              typeof r.journeyId === "object" ?
+              r.journeyId?._id :
+              r.journeyId;
             const rGroupIdStr = rGroupId ? rGroupId.toString() : "";
+            const rJourneyIdStr = rJourneyId ? rJourneyId.toString() : "";
             const roomIdStr = r._id ? r._id.toString() : "";
             const targetGroupIdStr = targetGroupId ? targetGroupId.toString() : "";
-            return rGroupIdStr === targetGroupIdStr || roomIdStr === targetGroupIdStr;
+            return (
+              rGroupIdStr === targetGroupIdStr ||
+              rJourneyIdStr === targetGroupIdStr ||
+              roomIdStr === targetGroupIdStr
+            );
           });
           if (matched) selectRoom(matched);
         }
@@ -1508,15 +1517,17 @@ const ChatRoom = () => {
   const followRequests = notifications.filter(
   (n) => n.type === "follow_request"
   );
-  const groupChats = rooms.filter((r) => r.type === "group" || r.travelGroupId);
+  const groupChats = rooms.filter(
+    (r) => r.type === "group" || r.type === "journey" || r.travelGroupId || r.journeyId
+  );
   const displayedRooms =
-  activeTab === "chats" ?
-  activeChats :
-  activeTab === "requests" ?
-  requestChats :
-  groupChats;
+    activeTab === "chats" ?
+    activeChats :
+    activeTab === "requests" ?
+    requestChats :
+    groupChats;
   const filteredRooms = displayedRooms.filter((r) =>
-  r.name?.toLowerCase().includes(searchQuery.toLowerCase())
+    (r.name || "").toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const formatTime = (d) =>

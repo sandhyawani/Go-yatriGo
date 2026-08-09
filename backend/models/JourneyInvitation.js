@@ -26,7 +26,7 @@ const journeyInvitationSchema = new mongoose.Schema(
   },
   status: {
     type: String,
-    enum: ["pending", "accepted", "rejected", "cancelled", "expired"],
+    enum: ["pending", "accepted", "rejected", "cancelled", "expired", "capacity_full"],
     default: "pending",
     index: true
   },

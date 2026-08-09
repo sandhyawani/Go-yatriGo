@@ -63,10 +63,16 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
           window.history.replaceState({}, document.title);
           const matched = res.rooms.find((r) => {
             const rGroupId = typeof r.travelGroupId === "object" ? r.travelGroupId?._id : r.travelGroupId;
+            const rJourneyId = typeof r.journeyId === "object" ? r.journeyId?._id : r.journeyId;
             const rGroupIdStr = rGroupId ? rGroupId.toString() : "";
+            const rJourneyIdStr = rJourneyId ? rJourneyId.toString() : "";
             const roomIdStr = r._id ? r._id.toString() : "";
             const targetGroupIdStr = targetGroupId ? targetGroupId.toString() : "";
-            return rGroupIdStr === targetGroupIdStr || roomIdStr === targetGroupIdStr;
+            return (
+              rGroupIdStr === targetGroupIdStr ||
+              rJourneyIdStr === targetGroupIdStr ||
+              roomIdStr === targetGroupIdStr
+            );
           });
           if (matched) selectRoom(matched);
         }

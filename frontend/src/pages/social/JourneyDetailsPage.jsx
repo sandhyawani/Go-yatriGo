@@ -46,7 +46,8 @@ const JourneyDetailsPage = () => {
   const [journey, setJourney] = useState(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(true);
-
+  const [myJoinRequest, setMyJoinRequest] = useState(null);
+  const [requestingJoin, setRequestingJoin] = useState(false);
 
   const [isInviteOpen, setIsInviteOpen] = useState(false);
   const [isCheckInOpen, setIsCheckInOpen] = useState(false);
@@ -81,6 +82,33 @@ const JourneyDetailsPage = () => {
     fetchJourney();
   }, [id]);
 
+  useEffect(() => {
+    if (journey && user) {
+      const isMem = journey.members?.some(m => (m.user?._id || m.user).toString() === currentUserId?.toString());
+      if (!isMem) {
+        axiosInstance.get(`/journeys/${id}/my-join-request`)
+          .then(res => {
+            if (res.data?.success) setMyJoinRequest(res.data.joinRequest);
+          })
+          .catch(err => console.error("Error fetching join request:", err));
+      }
+    }
+  }, [journey, user, id]);
+
+  const handleRequestJoin = async () => {
+    try {
+      setRequestingJoin(true);
+      const res = await axiosInstance.post(`/journeys/${id}/join-requests`);
+      if (res.data?.success) {
+        setMyJoinRequest(res.data.joinRequest);
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to send join request");
+    } finally {
+      setRequestingJoin(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
@@ -101,6 +129,14 @@ const JourneyDetailsPage = () => {
   (m.user?._id || m.user).toString() === currentUserId?.toString() && (
   m.role === "Organizer" || m.role === "Co-Organizer")
   );
+
+  const isMember = journey.members?.some(
+  (m) =>
+  (m.user?._id || m.user).toString() === currentUserId?.toString()
+  );
+
+  const availableSeats = journey.maxMembers - (journey.members?.length || 0);
+  const isJoinable = !isMember && ["Planning", "Upcoming", "Ongoing"].includes(journey.status) && journey.creator.toString() !== currentUserId?.toString();
 
   const handleCancelJourney = async () => {
     if (
@@ -274,6 +310,33 @@ const JourneyDetailsPage = () => {
                       </button>
                     </>}
 
+                  {isJoinable && (
+                    <button
+                      onClick={handleRequestJoin}
+                      disabled={!!myJoinRequest || requestingJoin || availableSeats <= 0}
+                      className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95 ${
+                        myJoinRequest 
+                        ? "bg-amber-500/80 text-white cursor-not-allowed border border-amber-400/50"
+                        : availableSeats <= 0
+                        ? "bg-slate-500/80 text-white cursor-not-allowed border border-slate-400/50"
+                        : "bg-[#7C3AED]/90 hover:bg-[#7C3AED] text-white border border-[#7C3AED]/50"
+                      }`}
+                    >
+                      {myJoinRequest ? (
+                        <>
+                          <Clock className="w-3.5 h-3.5" /> Request Pending
+                        </>
+                      ) : availableSeats <= 0 ? (
+                        <>
+                          <XCircle className="w-3.5 h-3.5" /> Full Capacity
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3.5 h-3.5" /> Request to Join
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -301,6 +364,33 @@ const JourneyDetailsPage = () => {
                       <span>Invite</span>
                     </button>}
 
+                  {isJoinable && (
+                    <button
+                      onClick={handleRequestJoin}
+                      disabled={!!myJoinRequest || requestingJoin || availableSeats <= 0}
+                      className={`px-2.5 py-1 rounded-lg backdrop-blur-md text-white border text-[11px] font-bold flex items-center gap-1 ${
+                        myJoinRequest 
+                        ? "bg-amber-500/80 border-amber-400/50"
+                        : availableSeats <= 0
+                        ? "bg-slate-500/80 border-slate-400/50"
+                        : "bg-[#7C3AED]/90 border-[#7C3AED]/50"
+                      }`}
+                    >
+                      {myJoinRequest ? (
+                        <>
+                          <Clock className="w-3 h-3" /> Pending
+                        </>
+                      ) : availableSeats <= 0 ? (
+                        <>
+                          <XCircle className="w-3 h-3" /> Full
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="w-3 h-3" /> Join
+                        </>
+                      )}
+                    </button>
+                  )}
                 </div>
               </div>
 

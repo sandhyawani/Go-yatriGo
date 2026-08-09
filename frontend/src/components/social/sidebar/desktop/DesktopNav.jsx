@@ -73,9 +73,7 @@ const DesktopNav = () => {
           <ICONS.Bell className={iconClass(showNotifPanel)} />
           <span className="flex-1 text-left">Notifications</span>
           {unreadCount > 0 && (
-            <span className="w-5 h-5 min-w-[20px] bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
+            <span className="w-2.5 h-2.5 bg-rose-500 rounded-full shrink-0" />
           )}
         </button>
       </div>

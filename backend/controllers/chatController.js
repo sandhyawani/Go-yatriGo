@@ -213,13 +213,15 @@ exports.getUserRooms = async (req, res) => {
         room.name = otherMember ? otherMember.name : "Traveler";
         room.pic = otherMember ? otherMember.pic || otherMember.img : "";
       } else if (room.journeyId) {
-        room.name = room.journeyId.title;
-        room.pic = room.journeyId.coverImage || "";
+        room.name = room.journeyId.title || room.name || "Journey Group";
+        room.pic = room.journeyId.coverImage || room.pic || "";
         room.memberCount = room.journeyId.members ? room.journeyId.members.length : room.members ? room.members.length : 1;
       } else if (room.travelGroupId) {
-        room.name = room.travelGroupId.title;
-        room.pic = room.travelGroupId.coverImage || "";
+        room.name = room.travelGroupId.title || room.name || "Travel Group";
+        room.pic = room.travelGroupId.coverImage || room.pic || "";
         room.memberCount = room.travelGroupId.members ? room.travelGroupId.members.length : room.members ? room.members.length : 1;
+      } else {
+        room.name = room.name || "Group Chat";
       }
       return room;
     });
