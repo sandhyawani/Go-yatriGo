@@ -85,16 +85,16 @@ const popularLanguages = [
 
 
 const popularDestinations = [
-{ label: "Goa", value: "Goa" },
-{ label: "Manali", value: "Manali" },
-{ label: "Jaipur", value: "Jaipur" },
-{ label: "Ladakh", value: "Ladakh" },
-{ label: "Kerala", value: "Kerala" },
-{ label: "Mumbai", value: "Mumbai" },
-{ label: "Rishikesh", value: "Rishikesh" },
-{ label: "Udaipur", value: "Udaipur" },
-{ label: "Varanasi", value: "Varanasi" },
-{ label: "Coorg", value: "Coorg" }];
+{ label: "🏖️ Goa", value: "Goa" },
+{ label: "🏔️ Manali", value: "Manali" },
+{ label: "🏰 Jaipur", value: "Jaipur" },
+{ label: "🏍️ Ladakh", value: "Ladakh" },
+{ label: "🌴 Kerala", value: "Kerala" },
+{ label: "🌃 Mumbai", value: "Mumbai" },
+{ label: "🧘 Rishikesh", value: "Rishikesh" },
+{ label: "🏰 Udaipur", value: "Udaipur" },
+{ label: "🛕 Varanasi", value: "Varanasi" },
+{ label: "☕ Coorg", value: "Coorg" }];
 
 
 const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
@@ -1289,7 +1289,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                           {!locationQuery.trim() &&
                 <div className="mb-2">
                               <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                Popular Destinations
+                                🔥 Popular Destinations
                               </p>
                               <div className="flex flex-col gap-1.5">
                                 {popularDestinations.map((dest) =>
