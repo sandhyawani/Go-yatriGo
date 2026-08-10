@@ -47,13 +47,50 @@
   <img src="https://img.shields.io/badge/🚀_Click_here_to_view_the_live_app-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a&logo=vercel&logoColor=white" alt="Launch Live Demo" width="480"/>
 </a>
 
-<br><br>
+</div>
 
-<a href="https://go-yatri-go.vercel.app">
-<img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
-</a>
+<br>
 
-*Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
+## 🎯 The Problem it Solves (Why Go yatriGo?)
+
+Traveling solo or planning group trips often comes with unique challenges:
+1. **Finding the Right Company:** It's hard to find reliable, like-minded travel buddies who share your vibe and interests.
+2. **Fragmented Planning:** Coordinating a trip usually means juggling WhatsApp groups for chat, Google Docs for itineraries, and another app for expenses or notes.
+3. **Safety Concerns:** Traveling to new places requires a reliable way to share emergency contacts and trigger SOS alerts.
+4. **Scattered Memories:** Sharing trip photos and stories across different generic social media platforms loses the context of the journey itself.
+
+**Go yatriGo** solves this by unifying **Connection, Planning, Safety, and Memory-Sharing** into a single, cohesive platform built exclusively for travelers. It allows you to find your tribe, plan the trip collaboratively, stay safe, and document the journey forever—all in one place!
+
+<br>
+
+## 📸 App Screenshots
+
+<div align="center">
+  
+  <p><b>Home & Travel Dashboard</b></p>
+  <img src="frontend/src/assets/images/desktop.png" width="85%" alt="Desktop Travel Dashboard"/>
+  
+  <br><br>
+
+  <p><b>Mobile Experience & Travel Dispatches</b></p>
+  <img src="frontend/src/assets/images/mobile view.png" width="40%" alt="Mobile Dashboard"/>
+  &nbsp; &nbsp; &nbsp;
+  <img src="frontend/src/assets/images/mobile view 2.png" width="40%" alt="Mobile Dispatches"/>
+
+  <br><br>
+
+  <p><b>Explore Journey & Travel Buddy Hub</b></p>
+  <img src="frontend/src/assets/images/explore.png" width="85%" alt="Explore Hub"/>
+
+  <br><br>
+
+  <p><b>Journey Hub (My Journeys)</b></p>
+  <img src="frontend/src/assets/images/journey hub.png" width="85%" alt="Journey Hub"/>
+
+  <br><br>
+
+  <p><b>Rich User Profile</b></p>
+  <img src="frontend/src/assets/images/profile.png" width="85%" alt="User Profile"/>
 
 </div>
 
