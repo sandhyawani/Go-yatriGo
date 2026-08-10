@@ -53,7 +53,7 @@
    <img src="frontend/src/assets/images/desktop.png" width="85%" alt="Desktop Travel Dashboard"/>
 </a>
 
-*Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
+
 
 </div>
 
