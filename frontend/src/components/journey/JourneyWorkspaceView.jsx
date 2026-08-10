@@ -114,7 +114,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
   const handleEditClick = (note) => {
     setEditingNoteId(note._id);
-    setCategory(note.category || "Notes");
+    
+    let mappedCategory = "Notes";
+    const foundCat = categories.find(c => c.match.includes(note.category) || c.name === note.category);
+    if (foundCat) mappedCategory = foundCat.name;
+    
+    setCategory(mappedCategory);
     setTitle(note.title || "");
     const parsed = parseNoteDetails(note.content);
     setContent(parsed.instructions || parsed.details || note.content || "");
