@@ -1,0 +1,58 @@
+Created At: 2026-06-03T09:47:07Z
+Completed At: 2026-06-03T09:47:07Z
+File Path: `file:///c:/Users/sandh/OneDrive/Desktop/my%20pro/frontend/src/pages/social/TravelBuddyDetails.jsx`
+Total Lines: 887
+Total Bytes: 46461
+Showing lines 1 to 50
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import React, { useState, useEffect, useContext } from "react";
+2: import axios from "../../api/axios";
+3: import { useParams, useNavigate } from "react-router-dom";
+4: import { motion } from "framer-motion";
+5: import { 
+6:   Users, 
+7:   MapPin, 
+8:   Calendar, 
+9:   ArrowLeft, 
+10:   MessageSquare,
+11:   MoreVertical,
+12:   AlertTriangle, 
+13:   UserCheck,
+14:   UserPlus,
+15: import React, { useState, useEffect, useContext } from "react";
+16: import axios from "../../api/axios";
+17: import { useParams, useNavigate } from "react-router-dom";
+18: import { motion, AnimatePresence } from "framer-motion";
+19: import { 
+20:   Users, 
+21:   MapPin, 
+22:   Calendar, 
+23:   ArrowLeft, 
+24:   MessageSquare,
+25:   MoreVertical,
+26:   AlertTriangle, 
+27:   UserCheck,
+28:   UserPlus,
+29:   ShieldCheck,
+30:   Clock,
+31:   Lock,
+32:   Globe,
+33:   Heart,
+34:   Award,
+35:   Star,
+36:   ShieldAlert
+37: } from "lucide-react";
+38: import { showToast } from "../../utils/showToast";
+39: import { AuthContext } from "../../context/authContext";
+40: import { getAvatarUrl } from "../../utils/avatar";
+41:   const [showLeaveModal, setShowLeaveModal] = useState(false);
+42:   const [cancellationReason, setCancellationReason] = useState("");
+43:   const [expandedDesc, setExpandedDesc] = useState(false);
+44:   const [imgLoaded, setImgLoaded] = useState(false);
+45:   const [imgError, setImgError] = useState(false);
+46:   const [showMembersModal, setShowMembersModal] = useState(false);
+47:   const [showCancelJoinModal, setShowCancelJoinModal] = useState(false);
+48: 
+49:   const [manageAction, setManageAction] = useState(null); // { type: 'remove'|'ban'|'promote'|'warn', memberId, memberName }
+50:   const [warningMsg, setWarningMsg] = useState("");
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.

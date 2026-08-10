@@ -1,0 +1,88 @@
+Created At: 2026-06-03T09:40:39Z
+Completed At: 2026-06-03T09:40:39Z
+File Path: `file:///c:/Users/sandh/OneDrive/Desktop/my%20pro/frontend/src/pages/social/TravelBuddyDetails.jsx`
+Total Lines: 814
+Total Bytes: 42646
+Showing lines 1 to 800
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: import React, { useState, useEffect, useContext } from "react";
+2: import axios from "../../api/axios";
+3: import { useParams, useNavigate } from "react-router-dom";
+4: import { motion } from "framer-motion";
+5: import { 
+6:   Users, 
+7:   MapPin, 
+8:   Calendar, 
+9:   ArrowLeft, 
+10:   MessageSquare,
+11:   MoreVertical,
+12:   AlertTriangle, 
+13:   UserCheck,
+14:   UserPlus,
+15:   ShieldCheck,
+16:   Clock,
+17:   Lock,
+18:   Globe,
+19:   Heart,
+20:   Award,
+21:   Star,
+22:   ShieldAlert
+23: } from "lucide-react";
+24: import { showToast } from "../../utils/showToast";
+25: import { AuthContext } from "../../context/authContext";
+26: import { getAvatarUrl } from "../../utils/avatar";
+27: import ReportModal from "../../components/modals/ReportModal";
+28: 
+29: const TravelBuddyDetails = () => {
+30:   const { id } = useParams();
+31:   const navigate = useNavigate();
+32:   const { user } = useContext(AuthContext);
+33: 
+34:   const [trip, setTrip] = useState(null);
+35:   const [reportModal, setReportModal] = useState({ isOpen: false });
+36:   const [loading, setLoading] = useState(true);
+37:   const [requestMessage, setRequestMessage] = useState("");
+38:   const [submittingRequest, setSubmittingRequest] = useState(false);
+39:   const [showCancelModal, setShowCancelModal] = useState(false);
+40:   const [showLeaveModal, setShowLeaveModal] = useState(false);
+41:   const [cancellationReason, setCancellationReason] = useState("");
+42: 
+43:   const [manageAction, setManageAction] = useState(null); // { type: 'rem
+<truncated 42781 bytes>
+</div>
+766:           </div>
+767:         </div>
+768:       )}
+769: 
+770:       {showCancelModal && (
+771:         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+772:           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
+773:             <h3 className="text-xl font-black text-[#111827] mb-2">Cancel this trip?</h3>
+774:             <p className="text-xs font-semibold text-slate-500 mb-4">
+775:               This action cannot be undone. Joined members will be notified.
+776:             </p>
+777:             <textarea
+778:               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#111827] outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
+779:               placeholder="Reason for cancellation (optional)"
+780:               value={cancellationReason}
+781:               onChange={(e) => setCancellationReason(e.target.value)}
+782:             />
+783:             <div className="flex justify-end gap-3">
+784:               <button
+785:                 onClick={() => setShowCancelModal(false)}
+786:                 className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm"
+787:               >
+788:                 Keep Group
+789:               </button>
+790:               <button
+791:                 onClick={handleCancelTrip}
+792:                 className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95"
+793:               >
+794:                 Cancel Trip
+795:               </button>
+796:             </div>
+797:           </div>
+798:         </div>
+799:       )}
+800:       {reportModal.isOpen && (
+The above content does NOT show the entire file contents. If you need to view any lines of the file which were not shown to complete your task, call this tool again to view those lines.
