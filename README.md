@@ -73,49 +73,6 @@ Traveling solo or planning group trips often comes with unique challenges:
 **Go yatriGo** solves this by unifying **Connection, Planning, Safety, and Memory-Sharing** into a single, cohesive platform built exclusively for travelers. It allows you to find your tribe, plan the trip collaboratively, stay safe, and document the journey forever—all in one place!
 
 <br>
-
-## 📸 App Screenshots
-
-<div align="center">
-  
-  <p><b>Home & Travel Dashboard</b></p>
-  <img src="frontend/src/assets/images/desktop-dashboard.png" width="85%" alt="Desktop Travel Dashboard"/>
-  
-  <br><br>
-
-  <p><b>Mobile Experience & Travel Dispatches</b></p>
-  <img src="frontend/src/assets/images/mobile-dashboard.png" width="40%" alt="Mobile Dashboard"/>
-  &nbsp; &nbsp; &nbsp;
-  <img src="frontend/src/assets/images/mobile-dispatches.png" width="40%" alt="Mobile Dispatches"/>
-
-  <br><br>
-
-  <p><b>Explore Journey & Travel Buddy Hub</b></p>
-  <img src="frontend/src/assets/images/explore-hub.png" width="85%" alt="Explore Hub"/>
-
-  <br><br>
-
-  <p><b>Journey Hub (My Journeys)</b></p>
-  <img src="frontend/src/assets/images/journey-hub.png" width="85%" alt="Journey Hub"/>
-
-  <br><br>
-
-  <p><b>Rich User Profile</b></p>
-  <img src="frontend/src/assets/images/user-profile.png" width="85%" alt="User Profile"/>
-
-  <br><br>
-
-  <p><b>Explorer Logbook & Travel Memories Feed</b></p>
-  <img src="frontend/src/assets/images/mobile-feed-1.png" width="40%" alt="Mobile Feed 1"/>
-  &nbsp; &nbsp; &nbsp;
-  <img src="frontend/src/assets/images/mobile-feed-2.png" width="40%" alt="Mobile Feed 2"/>
-
-</div>
-
-*(Note: Don't forget to upload these images to the `frontend/src/assets/images/` folder in your repository to make them visible!)*
-
-<br>
-
 ## 💡 What is Go yatriGo?
 
 **Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find your **Journey Mates**, plan **Buddy Trips**, share **Travel Memories**, express **Felt Vibes**, chat in real-time, and even trigger an **Emergency SOS** for safety on the go.
