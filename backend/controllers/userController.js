@@ -516,6 +516,7 @@ const reportUser = asyncHandler(async (req, res) => {
     reporter: currentUserId,
     reportedUser: targetUserId,
     targetType: "user",
+    targetId: targetUserId,
     reason
   });
 
