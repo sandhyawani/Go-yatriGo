@@ -62,40 +62,6 @@ Traveling solo or planning group trips often comes with unique challenges:
 **Go yatriGo** solves this by unifying **Connection, Planning, Safety, and Memory-Sharing** into a single, cohesive platform built exclusively for travelers. It allows you to find your tribe, plan the trip collaboratively, stay safe, and document the journey forever—all in one place!
 
 <br>
-
-## 📸 App Screenshots
-
-<div align="center">
-  
-  <p><b>Home & Travel Dashboard</b></p>
-  <img src="frontend/src/assets/images/desktop.png" width="85%" alt="Desktop Travel Dashboard"/>
-  
-  <br><br>
-
-  <p><b>Mobile Experience & Travel Dispatches</b></p>
-  <img src="frontend/src/assets/images/mobile view.png" width="40%" alt="Mobile Dashboard"/>
-  &nbsp; &nbsp; &nbsp;
-  <img src="frontend/src/assets/images/mobile view 2.png" width="40%" alt="Mobile Dispatches"/>
-
-  <br><br>
-
-  <p><b>Explore Journey & Travel Buddy Hub</b></p>
-  <img src="frontend/src/assets/images/explore.png" width="85%" alt="Explore Hub"/>
-
-  <br><br>
-
-  <p><b>Journey Hub (My Journeys)</b></p>
-  <img src="frontend/src/assets/images/journey hub.png" width="85%" alt="Journey Hub"/>
-
-  <br><br>
-
-  <p><b>Rich User Profile</b></p>
-  <img src="frontend/src/assets/images/profile.png" width="85%" alt="User Profile"/>
-
-</div>
-
-<br>
-
 ## 🎯 The Problem it Solves (Why Go yatriGo?)
 
 Traveling solo or planning group trips often comes with unique challenges:
