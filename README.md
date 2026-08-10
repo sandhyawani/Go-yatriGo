@@ -50,7 +50,7 @@
 <br><br>
 
 <a href="https://go-yatri-go.vercel.app">
-<img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+   <img src="frontend/src/assets/images/desktop.png" width="85%" alt="Desktop Travel Dashboard"/>
 </a>
 
 *Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
@@ -75,8 +75,8 @@ Traveling solo or planning group trips often comes with unique challenges:
 
 <div align="center">
   
-  <p><b>Home & Travel Dashboard</b></p>
-  <img src="frontend/src/assets/images/desktop.png" width="85%" alt="Desktop Travel Dashboard"/>
+  <p><b>Travel Dashboard</b></p>
+  <img src="frontend/src/assets/images/explore.png" width="85%" alt="Desktop Travel Dashboard"/>
   
   <br><br>
 
@@ -88,7 +88,7 @@ Traveling solo or planning group trips often comes with unique challenges:
   <br><br>
 
   <p><b>Explore Journey & Travel Buddy Hub</b></p>
-  <img src="frontend/src/assets/images/explore.png" width="85%" alt="Explore Hub"/>
+  <img src="frontend/src/assets/images/explore 2.png" width="85%" alt="Explore Hub"/>
 
   <br><br>
 
