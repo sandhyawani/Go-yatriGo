@@ -72,7 +72,6 @@ const KPI_CONFIG = [
   key: "newPostsToday",
   label: "New posts today",
   detail: "Community submissions",
-  to: "/",
   Icon: FileText,
   iconClass: "bg-brand-100 text-brand-700",
   glowClass: "from-brand-200"
