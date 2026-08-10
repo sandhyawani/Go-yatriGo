@@ -47,6 +47,14 @@
   <img src="https://img.shields.io/badge/🚀_Click_here_to_view_the_live_app-go--yatri--go.vercel.app-8b5cf6?style=for-the-badge&labelColor=0f172a&logo=vercel&logoColor=white" alt="Launch Live Demo" width="480"/>
 </a>
 
+<br><br>
+
+<a href="https://go-yatri-go.vercel.app">
+<img src="frontend/src/assets/images/demo-preview.png" width="85%" alt="Go yatriGo home feed preview"/>
+</a>
+
+*Home feed — Stories, Travel Memories, Suggested Explorers & Active Travel Groups, all in one place.*
+
 </div>
 
 <br>
@@ -62,17 +70,7 @@ Traveling solo or planning group trips often comes with unique challenges:
 **Go yatriGo** solves this by unifying **Connection, Planning, Safety, and Memory-Sharing** into a single, cohesive platform built exclusively for travelers. It allows you to find your tribe, plan the trip collaboratively, stay safe, and document the journey forever—all in one place!
 
 <br>
-## 🎯 The Problem it Solves (Why Go yatriGo?)
 
-Traveling solo or planning group trips often comes with unique challenges:
-1. **Finding the Right Company:** It's hard to find reliable, like-minded travel buddies who share your vibe and interests.
-2. **Fragmented Planning:** Coordinating a trip usually means juggling WhatsApp groups for chat, Google Docs for itineraries, and another app for expenses or notes.
-3. **Safety Concerns:** Traveling to new places requires a reliable way to share emergency contacts and trigger SOS alerts.
-4. **Scattered Memories:** Sharing trip photos and stories across different generic social media platforms loses the context of the journey itself.
-
-**Go yatriGo** solves this by unifying **Connection, Planning, Safety, and Memory-Sharing** into a single, cohesive platform built exclusively for travelers. It allows you to find your tribe, plan the trip collaboratively, stay safe, and document the journey forever—all in one place!
-
-<br>
 ## 💡 What is Go yatriGo?
 
 **Go yatriGo** is a full-stack social platform built from the ground up — designed for people who believe that every journey is better when shared. It's not just another app; it's a complete ecosystem where you can find your **Journey Mates**, plan **Buddy Trips**, share **Travel Memories**, express **Felt Vibes**, chat in real-time, and even trigger an **Emergency SOS** for safety on the go.
