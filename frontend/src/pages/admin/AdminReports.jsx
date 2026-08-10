@@ -74,7 +74,7 @@ const AdminReports = () => {
     try {
       setActionLoading(true);
       if (action === "resolve") {
-        await axios.put(`/admin/report/${payload.id}/resolve`, { status: payload.status });
+        await axios.put(`/admin/reports/${payload.id}/resolve`, { status: payload.status });
         showToast.success(`Report marked as ${payload.status}`);
       } else if (action === "suspend") {
         await axios.put(`/admin/users/${payload.id}/suspend`);
