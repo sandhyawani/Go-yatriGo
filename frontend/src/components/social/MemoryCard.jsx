@@ -5,7 +5,7 @@ import {
   MapPin,
   Calendar,
   Compass,
-  Heart,
+  Sparkles,
   MessageCircle,
   Share2,
   Bookmark,
@@ -475,17 +475,18 @@ const MemoryCard = ({
               }}
               className={`inline-flex items-center gap-1 text-xs font-bold transition-transform active:scale-90 ${
                 hasLiked
-                  ? "text-rose-500"
-                  : "text-slate-600 hover:text-rose-500"
+                  ? "text-[#7C3AED]"
+                  : "text-slate-600 hover:text-[#7C3AED]"
               }`}
               title="Felt this memory"
+              aria-label={hasLiked ? "Remove Felt" : "Felt this travel memory"}
             >
-              <Heart
-                className={`w-3.5 h-3.5 transition-colors ${
-                  hasLiked ? "fill-rose-500 text-rose-500" : ""
+              <Sparkles
+                className={`w-3.5 h-3.5 transition-all duration-300 ${
+                  hasLiked ? "fill-[#7C3AED] text-[#7C3AED] scale-110" : "text-slate-400"
                 }`}
               />
-              <span>{likesCount}</span>
+              <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
             </button>
 
             {/* Comment */}

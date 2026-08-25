@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Heart,
+  Sparkles,
   MessageCircle,
   Share2,
   Bookmark,
@@ -211,7 +211,7 @@ export const ProfileMemoryCard = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left"
+                  className="absolute right-0 top-full mt-1 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {isCreator ? (
@@ -223,10 +223,10 @@ export const ProfileMemoryCard = ({
                           if (setEditPostData) setEditPostData(currentPost);
                           if (setShowEditPostModal) setShowEditPostModal(true);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
-                        <Edit className="w-3.5 h-3.5 text-primary-500" />
-                        Edit Memory
+                        <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                        <span>Edit Memory</span>
                       </button>
 
                       <button
@@ -235,10 +235,10 @@ export const ProfileMemoryCard = ({
                           setShowMenu(false);
                           setShowChangeCoverModal(true);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
-                        <Camera className="w-3.5 h-3.5 text-primary-500" />
-                        Change Cover Photo
+                        <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                        <span>Change Cover</span>
                       </button>
 
                       <button
@@ -247,10 +247,10 @@ export const ProfileMemoryCard = ({
                           setShowMenu(false);
                           if (handleDeletePost) handleDeletePost(currentPost);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5 whitespace-nowrap"
                       >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        Delete Memory
+                        <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                        <span>Delete Memory</span>
                       </button>
                     </>
                   ) : (
@@ -268,10 +268,10 @@ export const ProfileMemoryCard = ({
                           });
                         }
                       }}
-                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
                     >
-                      <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
-                      Report Memory
+                      <ShieldAlert className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span>Report Memory</span>
                     </button>
                   )}
                 </motion.div>
@@ -371,7 +371,7 @@ export const ProfileMemoryCard = ({
               </button>
             )}
 
-            {/* Double-tap heart animation indicator */}
+            {/* Double-tap felt animation indicator */}
             {journeyLikeAnim?.postId === postId && (
               <motion.div
                 initial={{ scale: 0, opacity: 0 }}
@@ -379,7 +379,10 @@ export const ProfileMemoryCard = ({
                 transition={{ duration: 0.9 }}
                 className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
               >
-                <Heart className="w-14 h-14 text-rose-500 fill-rose-500 drop-shadow-lg" />
+                <div className="flex flex-col items-center justify-center gap-1.5 drop-shadow-xl select-none">
+                  <Sparkles className="w-14 h-14 text-[#7C3AED] fill-[#7C3AED]" />
+                  <span className="text-[11px] font-black text-white px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md">Journey Felt</span>
+                </div>
               </motion.div>
             )}
           </div>
@@ -435,17 +438,18 @@ export const ProfileMemoryCard = ({
               }}
               className={`inline-flex items-center gap-1 text-xs font-bold transition-transform active:scale-90 ${
                 hasFelt
-                  ? "text-rose-500"
-                  : "text-slate-600 hover:text-rose-500"
+                  ? "text-[#7C3AED]"
+                  : "text-slate-600 hover:text-[#7C3AED]"
               } ${postId && feltLoadingMap?.[postId] ? "opacity-50 cursor-not-allowed" : ""}`}
               title="Felt this memory"
+              aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
             >
-              <Heart
-                className={`w-3.5 h-3.5 transition-colors ${
-                  hasFelt ? "fill-rose-500 text-rose-500" : ""
+              <Sparkles
+                className={`w-3.5 h-3.5 transition-all duration-300 ${
+                  hasFelt ? "fill-[#7C3AED] text-[#7C3AED] scale-110" : "text-slate-400"
                 }`}
               />
-              <span>{likesCount}</span>
+              <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
             </button>
 
             {/* Comment */}

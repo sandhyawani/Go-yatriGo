@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { X, Heart, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -257,7 +257,7 @@ export const MemoryDetailModal = ({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -4 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 text-left"
+                        className="absolute right-0 top-full mt-1 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 text-left"
                       >
                         {isCreator ? (
                           <>
@@ -272,10 +272,10 @@ export const MemoryDetailModal = ({
                                   setShowEditPostModal(true);
                                 }
                               }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors"
+                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                             >
-                              <Edit className="w-3.5 h-3.5 text-primary-500" />
-                              Edit Memory
+                              <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                              <span>Edit Memory</span>
                             </button>
 
                             <button
@@ -284,10 +284,10 @@ export const MemoryDetailModal = ({
                                 setShowMenu(false);
                                 setShowChangeCoverModal(true);
                               }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors"
+                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                             >
-                              <Camera className="w-3.5 h-3.5 text-primary-500" />
-                              Change Cover Photo
+                              <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                              <span>Change Cover</span>
                             </button>
 
                             <button
@@ -298,10 +298,10 @@ export const MemoryDetailModal = ({
                                   handleDeletePost(selectedMemory);
                                 }
                               }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5"
+                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5 whitespace-nowrap"
                             >
-                              <Trash2 className="w-3.5 h-3.5" />
-                              Delete Memory
+                              <Trash2 className="w-3.5 h-3.5 shrink-0" />
+                              <span>Delete Memory</span>
                             </button>
                           </>
                         ) : (
@@ -320,10 +320,10 @@ export const MemoryDetailModal = ({
                                 });
                               }
                             }}
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
                           >
-                            <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
-                            Report Memory
+                            <ShieldAlert className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <span>Report Memory</span>
                           </button>
                         )}
                       </motion.div>
@@ -487,7 +487,7 @@ export const MemoryDetailModal = ({
                   </button>
                 )}
 
-                {/* Double-tap heart animation indicator */}
+                {/* Double-tap felt animation indicator */}
                 {journeyLikeAnim?.postId === postId && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
@@ -495,7 +495,10 @@ export const MemoryDetailModal = ({
                     transition={{ duration: 0.9 }}
                     className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
                   >
-                    <Heart className="w-16 h-16 text-rose-500 fill-rose-500 drop-shadow-xl" />
+                    <div className="flex flex-col items-center justify-center gap-2 drop-shadow-xl select-none">
+                      <Sparkles className="w-16 h-16 text-[#7C3AED] fill-[#7C3AED]" />
+                      <span className="text-xs sm:text-sm font-black text-white px-3 py-1 rounded-full bg-black/60 backdrop-blur-md">Journey Felt</span>
+                    </div>
                   </motion.div>
                 )}
               </div>
@@ -567,16 +570,18 @@ export const MemoryDetailModal = ({
                   }}
                   className={`inline-flex items-center gap-1.5 text-xs font-bold transition-transform active:scale-95 ${
                     hasFelt
-                      ? "text-rose-500"
-                      : "text-slate-600 hover:text-rose-500"
+                      ? "text-[#7C3AED]"
+                      : "text-slate-600 hover:text-[#7C3AED]"
                   }`}
+                  title="Felt this memory"
+                  aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
                 >
-                  <Heart
-                    className={`w-4 h-4 transition-colors ${
-                      hasFelt ? "fill-rose-500 text-rose-500" : ""
+                  <Sparkles
+                    className={`w-4 h-4 transition-all duration-300 ${
+                      hasFelt ? "fill-[#7C3AED] text-[#7C3AED] scale-110" : "text-slate-400"
                     }`}
                   />
-                  <span>{likesCount} Felt</span>
+                  <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
                 </button>
 
                 {/* Comments count */}

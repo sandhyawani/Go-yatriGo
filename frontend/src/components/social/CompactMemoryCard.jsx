@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { MapPin, User, FileText, Video, Users, Clapperboard, Heart, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { MapPin, User, FileText, Video, Users, Clapperboard, Sparkles, MessageCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import moment from "moment";
 
 const CompactMemoryCard = ({ item }) => {
@@ -172,9 +172,9 @@ const CompactMemoryCard = ({ item }) => {
         {/* Action Row */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-500 select-none">
           <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-0.5">
-              <Heart className="w-3 h-3 text-rose-500 fill-rose-500" />
-              <span>{item.likesCount || 0}</span>
+            <span className="flex items-center gap-1 text-[#7C3AED]">
+              <Sparkles className="w-3 h-3 text-[#7C3AED] fill-[#7C3AED]" />
+              <span>{item.likesCount || 0} Felt</span>
             </span>
             <span className="flex items-center gap-0.5">
               <MessageCircle className="w-3 h-3 text-primary-600" />
