@@ -143,7 +143,7 @@ const TravelRightSidebar = ({ journey, user, onUserUpdate, onJourneyUpdate }) =>
           </div>
           <button
           onClick={handleSaveNote}
-          className="p-1 bg-slate-50 hover:bg-indigo-50 hover:text-indigo-600 text-slate-400 rounded-lg transition-all"
+          className="p-1 bg-slate-50 hover:bg-brand-50 hover:text-brand-600 text-slate-400 rounded-lg transition-all"
           title="Save trip notes">
 
             <Save className="w-3.5 h-3.5" />
@@ -153,7 +153,7 @@ const TravelRightSidebar = ({ journey, user, onUserUpdate, onJourneyUpdate }) =>
         value={note}
         onChange={(e) => setNote(e.target.value)}
         placeholder="Jot down permit info, stay address, or crew numbers..."
-        className="w-full flex-1 bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-150 focus:border-indigo-400 focus:outline-none rounded-xl p-3 text-[11px] font-bold text-slate-650 resize-none leading-relaxed transition-all" />
+        className="w-full flex-1 bg-slate-50/50 hover:bg-slate-50 focus:bg-white border border-slate-150 focus:border-brand-500 focus:outline-none rounded-xl p-3 text-[11px] font-bold text-slate-650 resize-none leading-relaxed transition-all" />
 
       </div>
 

@@ -8,13 +8,13 @@ import { useNotifications } from "../hooks/useNotifications";
 const DesktopNav = () => {
   const location = useLocation();
   const { setIsSearchOpen, user, showNotifPanel, setShowNotifPanel } = useSidebar();
-  const { unreadCount, handleMarkAllRead } = useNotifications(user);
+  const { unreadCount } = useNotifications();
 
   const navItemClass = (isActive) =>
-    `relative flex items-center gap-3 py-3 transition-all duration-200 group w-full select-none text-sm font-semibold ${
+    `relative flex items-center gap-3 py-2.5 transition-all duration-200 group w-full select-none text-[15px] ${
       isActive
-        ? "bg-brand-50 text-brand-700 border-l-4 border-brand-600 rounded-r-2xl rounded-l-none pl-3 pr-4 shadow-sm"
-        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium hover:-translate-y-0.5 px-4 rounded-2xl"
+        ? "bg-brand-50 text-brand-700 border-l-4 border-brand-600 rounded-r-xl rounded-l-none pl-3 pr-3.5 shadow-xs font-semibold"
+        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium hover:-translate-y-0.5 px-3.5 rounded-xl"
     }`;
 
   const iconClass = (isActive) =>
@@ -23,14 +23,14 @@ const DesktopNav = () => {
     }`;
 
   return (
-    <div className="flex flex-col gap-1">
-      <Link to="/" className="flex items-center gap-3.5 px-3 py-2 mb-4 group">
-        <div className="relative w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-600/20 shrink-0 group-hover:-rotate-6 transition-all duration-300">
-          <span className="relative z-10 text-white font-bold text-base tracking-tighter">
+    <div className="flex flex-col gap-0.5 font-sans">
+      <Link to="/" className="flex items-center gap-3 px-2.5 py-1.5 mb-2 group">
+        <div className="relative w-10 h-10 rounded-xl bg-brand-600 flex items-center justify-center shadow-md shadow-brand-600/20 shrink-0 group-hover:-rotate-6 transition-all duration-300">
+          <span className="relative z-10 text-white font-bold text-sm tracking-tighter">
             GY
           </span>
         </div>
-        <span className="text-lg font-bold tracking-tight text-slate-900 truncate">
+        <span className="text-lg font-bold tracking-tight text-slate-900 truncate font-heading">
           Go YatriGo
         </span>
       </Link>
@@ -64,16 +64,16 @@ const DesktopNav = () => {
 
       <div className="relative w-full">
         <button
-          onClick={() => {
-            setShowNotifPanel((prev) => !prev);
-            if (!showNotifPanel && unreadCount > 0) handleMarkAllRead();
-          }}
+          onClick={() => setShowNotifPanel((prev) => !prev)}
           className={`bell-btn ${navItemClass(showNotifPanel)}`}
+          aria-label="Notifications"
         >
           <ICONS.Bell className={iconClass(showNotifPanel)} />
           <span className="flex-1 text-left">Notifications</span>
           {unreadCount > 0 && (
-            <span className="w-2.5 h-2.5 bg-rose-500 rounded-full shrink-0" />
+            <span className="px-2 py-0.5 text-xs font-bold bg-rose-500 text-white rounded-full shrink-0 animate-pulse shadow-sm">
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </span>
           )}
         </button>
       </div>

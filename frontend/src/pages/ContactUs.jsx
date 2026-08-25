@@ -2,7 +2,6 @@ import { showToast } from "../utils/showToast";
 import React, { useState } from "react";
 import { Mail, Phone, MapPin, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-import Swal from "sweetalert2";
 import axios from "../api/axios";
 
 

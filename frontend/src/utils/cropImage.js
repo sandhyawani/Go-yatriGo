@@ -92,9 +92,17 @@ quality = 0.95)
   ctx.translate(-image.width / 2, -image.height / 2);
   ctx.drawImage(image, 0, 0);
 
+  const maxOutputDimension = 2048;
+  const outputScale = Math.min(
+    1,
+    maxOutputDimension / Math.max(pixelCrop.width, pixelCrop.height)
+  );
+  const outputWidth = Math.max(1, Math.round(pixelCrop.width * outputScale));
+  const outputHeight = Math.max(1, Math.round(pixelCrop.height * outputScale));
+
   const croppedCanvas = document.createElement("canvas");
-  croppedCanvas.width = pixelCrop.width;
-  croppedCanvas.height = pixelCrop.height;
+  croppedCanvas.width = outputWidth;
+  croppedCanvas.height = outputHeight;
 
   const croppedCtx = croppedCanvas.getContext("2d");
   if (!croppedCtx) {
@@ -109,8 +117,8 @@ quality = 0.95)
   pixelCrop.height,
   0,
   0,
-  pixelCrop.width,
-  pixelCrop.height
+  outputWidth,
+  outputHeight
   );
 
   releaseCanvas(canvas);

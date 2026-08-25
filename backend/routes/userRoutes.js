@@ -8,6 +8,7 @@ const {
   getAllUsers,
   followUser,
   unfollowUser,
+  cancelFollowRequest,
   acceptFollowRequest,
   rejectFollowRequest,
   getFollowers,
@@ -21,6 +22,7 @@ const {
   getBlockedUsers,
   searchUsers,
   getProfileStats,
+  removeFollower,
   getPrivacySettings,
   updatePrivacySettings
 } = require("../controllers/userController");
@@ -38,6 +40,7 @@ router.get("/blocked", verifyToken, getBlockedUsers);
 
 router.put("/follow/:id", verifyToken, followUser);
 router.put("/unfollow/:id", verifyToken, unfollowUser);
+router.delete("/follow-requests/:id", verifyToken, cancelFollowRequest);
 
 router.post("/:id/follow", verifyToken, followUser);
 router.post("/:id/unfollow", verifyToken, unfollowUser);
@@ -45,6 +48,7 @@ router.post("/:id/follow-request/accept", verifyToken, acceptFollowRequest);
 router.post("/:id/follow-request/reject", verifyToken, rejectFollowRequest);
 router.get("/:id/followers", verifyToken, getFollowers);
 router.get("/:id/following", verifyToken, getFollowing);
+router.delete("/me/followers/:id", verifyToken, removeFollower);
 
 router.post("/rate/:id", verifyToken, rateUser);
 router.post("/block/:id", verifyToken, blockUser);

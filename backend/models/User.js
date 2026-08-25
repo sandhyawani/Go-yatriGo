@@ -22,7 +22,9 @@ const UserSchema = new mongoose.Schema(
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
+    lowercase: true,
+    trim: true
   },
   country: {
     type: String,
@@ -56,7 +58,8 @@ const UserSchema = new mongoose.Schema(
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    select: false
   },
   isAdmin: {
     type: Boolean,
@@ -73,18 +76,26 @@ const UserSchema = new mongoose.Schema(
   },
   avatar: {
     type: String,
-    default: "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
+    default: ""
   },
   pic: {
     type: String,
-    required: true,
-    default: "https://icon-library.com/images/no-image-icon/no-image-icon-0.jpg"
+    required: false,
+    default: ""
   },
   profilePic: {
     type: String,
     default: ""
   },
   profilePicture: {
+    type: String,
+    default: ""
+  },
+  coverImage: {
+    type: String,
+    default: ""
+  },
+  coverPic: {
     type: String,
     default: ""
   },
@@ -173,8 +184,14 @@ const UserSchema = new mongoose.Schema(
     type: Boolean,
     default: false
   },
-  resetPasswordToken: String,
-  resetPasswordExpire: Date,
+  resetPasswordToken: {
+    type: String,
+    select: false
+  },
+  resetPasswordExpire: {
+    type: Date,
+    select: false
+  },
   isDeleted: {
     type: Boolean,
     default: false
@@ -202,5 +219,21 @@ UserSchema.index({ privateAccount: 1 });
 UserSchema.index({ city: 1 });
 UserSchema.index({ state: 1 });
 UserSchema.index({ city: 1, state: 1 });
+UserSchema.index({ blockedUsers: 1 });
+
+const stripSensitiveFields = (_doc, ret) => {
+  delete ret.password;
+  delete ret.resetPasswordToken;
+  delete ret.resetPasswordExpire;
+  return ret;
+};
+
+UserSchema.set("toJSON", {
+  transform: stripSensitiveFields
+});
+
+UserSchema.set("toObject", {
+  transform: stripSensitiveFields
+});
 
 module.exports = mongoose.model("User", UserSchema);

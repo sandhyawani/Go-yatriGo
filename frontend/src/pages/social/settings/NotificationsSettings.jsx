@@ -72,8 +72,8 @@ const NotificationsSettings = () => {
           endpoint="/settings" />
 
           <SettingsToggle
-          title="Connection Requests"
-          description="Get notified about new Trip Mate requests."
+          title="Follow Requests"
+          description="Get notified about new Follow requests."
           settingKey="connectionRequestNotifications"
           initialValue={settings.connectionRequestNotifications}
           endpoint="/settings" />

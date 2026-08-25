@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Compass, Check } from "lucide-react";
 import { getAvatarUrl } from "../../../utils/avatar";
 import NearbyTrips from "./NearbyTrips";
+import { resolveRelationship } from "../../../utils/relationshipResolver";
 
 export const RightSidebar = ({
   user,
@@ -36,7 +37,7 @@ export const RightSidebar = ({
         </div>
         <Link
           to="/profile"
-          className="text-[10px] font-bold text-[#6C4DF6] hover:text-[#5b3ee0] transition-colors shrink-0"
+          className="text-[10px] font-bold text-[#7C3AED] hover:text-[#5b3ee0] transition-colors shrink-0"
         >
           Profile
         </Link>
@@ -51,20 +52,16 @@ export const RightSidebar = ({
             </h3>
             <Link
               to="/social/buddy"
-              className="text-[10px] font-bold text-slate-400 hover:text-[#6C4DF6] transition-colors"
+              className="text-[10px] font-bold text-slate-400 hover:text-[#7C3AED] transition-colors"
             >
               See All
             </Link>
           </div>
-          <div className="flex flex-col gap-3.5 max-h-[300px] overflow-y-auto pr-2 overflow-x-hidden scrollbar-none [&::-webkit-scrollbar]:hidden">
+          <div className="flex flex-col gap-3.5 max-h-[300px] overflow-y-auto pr-2 overflow-x-hidden">
             {suggestions.map((s) => {
-              const myId = (user?._id || user?.id)?.toString();
-              const isFollowing = s.followers?.some(
-                (id) => id?.toString() === myId
-              );
-              const isRequested = s.followRequests?.some(
-                (id) => id?.toString() === myId
-              );
+              const rel = resolveRelationship(user, s, "not_connected");
+              const isFollowing = rel.socialState === "following" || rel.socialState === "mutual";
+              const isRequested = rel.socialState === "requested";
               return (
                 <div
                   key={s._id}
@@ -98,7 +95,7 @@ export const RightSidebar = ({
                     className={`text-[10px] font-bold px-3 py-1.5 rounded-xl transition-colors shrink-0 ml-2 flex items-center justify-center gap-1 ${
                       isFollowing || isRequested
                         ? "bg-slate-100/50 text-slate-500 hover:bg-rose-50 hover:text-rose-500"
-                        : "bg-[#6C4DF6]/10 text-[#6C4DF6] hover:bg-[#6C4DF6] hover:text-white"
+                        : "bg-[#7C3AED]/10 text-[#7C3AED] hover:bg-[#7C3AED] hover:text-white"
                     }`}
                   >
                     {isFollowing ? (
@@ -107,7 +104,7 @@ export const RightSidebar = ({
                         Following
                       </>
                     ) : isRequested ? (
-                      "Requested"
+                      "Cancel Request"
                     ) : (
                       "Follow"
                     )}
@@ -123,7 +120,7 @@ export const RightSidebar = ({
       <NearbyTrips nearbyTrips={nearbyTrips} />
 
       {/* CTA Card */}
-      <div className="bg-gradient-to-br from-[#6C4DF6] to-[#5b3ee0] p-5 rounded-3xl shadow-[0_8px_30px_rgba(108,77,246,0.15)] hover:-translate-y-0.5 transition-all duration-300 text-white relative overflow-hidden">
+      <div className="bg-gradient-to-br from-[#7C3AED] to-[#5b3ee0] p-5 rounded-3xl shadow-[0_8px_30px_rgba(108,77,246,0.15)] hover:-translate-y-0.5 transition-all duration-300 text-white relative overflow-hidden">
         <div className="relative z-10 space-y-3">
           <h3 className="text-base font-bold leading-tight tracking-wide">
             Planning a trip?
@@ -133,7 +130,7 @@ export const RightSidebar = ({
           </p>
           <Link
             to="/social/buddy/new"
-            className="inline-block bg-white text-[#6C4DF6] text-[11px] font-bold px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors"
+            className="inline-block bg-white text-[#7C3AED] text-[11px] font-bold px-4 py-2 rounded-xl hover:bg-slate-50 transition-colors"
           >
             Create Group
           </Link>

@@ -63,7 +63,12 @@ export const getAllComments = (post) => {
 
 export const getVisibleComments = (post) => {
   return getAllComments(post).filter(
-    (comment) => !comment.hidden && !comment.deleted
+    (comment) =>
+      comment &&
+      typeof comment === "object" &&
+      typeof comment.text === "string" &&
+      !comment.hidden &&
+      !comment.deleted
   );
 };
 
@@ -72,11 +77,16 @@ export const getPreviewComments = (post) => {
 };
 
 export const getTotalCommentCount = (post) => {
-  if (post.commentsCount !== undefined) {
+  if (post?.commentsCount !== undefined && post?.commentsCount !== null) {
     return post.commentsCount;
   }
 
-  return getAllComments(post).filter((comment) => !comment.deleted).length;
+  return getAllComments(post).filter(
+    (comment) =>
+      comment &&
+      (typeof comment === "string" ||
+        (typeof comment === "object" && !comment.deleted))
+  ).length;
 };
 
 export const getVisibleCommentCount = (post) => {

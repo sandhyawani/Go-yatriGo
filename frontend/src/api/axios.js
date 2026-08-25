@@ -1,5 +1,8 @@
 import axios from 'axios';
 
+const STORAGE_KEY = 'user';
+export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
+
 const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
 let baseURL =
 process.env.REACT_APP_API_URL || (
@@ -28,9 +31,14 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
 (config) => {
   try {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem(STORAGE_KEY);
     if (userStr) {
       const user = JSON.parse(userStr);
+      if (user?.tokenExpiry && Date.now() > user.tokenExpiry) {
+        localStorage.removeItem(STORAGE_KEY);
+        window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+        return config;
+      }
       if (user && user.token) {
         config.headers.Authorization = `Bearer ${user.token}`;
       }
@@ -44,17 +52,31 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-(response) => response,
-(error) => {
-  if (error.response && error.response.status === 401) {
-    console.warn("Unauthorized request. Clearing local session.");
-    localStorage.removeItem('user');
-    if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
+      console.warn("Unauthorized request. Clearing local session.");
+      localStorage.removeItem(STORAGE_KEY);
+      window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+
+      const isPublicAuthPage =
+        window.location.pathname === '/login' ||
+        window.location.pathname === '/register' ||
+        window.location.pathname === '/forgot-password' ||
+        window.location.pathname.startsWith('/reset-password');
+
+      if (!isPublicAuthPage) {
+        window.location.href = '/login';
+      }
     }
+    return Promise.reject(error);
   }
-  return Promise.reject(error);
-}
 );
 
+axiosInstance.isCancel = axios.isCancel;
+axiosInstance.CancelToken = axios.CancelToken;
+axiosInstance.AxiosError = axios.AxiosError;
+
+export const isCancel = axios.isCancel;
+export { axios };
 export default axiosInstance;

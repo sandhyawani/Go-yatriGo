@@ -34,7 +34,7 @@ const FeedHeader = ({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <Link to={`/profile/${post.userId?._id || post.userId}`} className="min-w-0">
-              <h4 className="truncate text-sm font-bold text-slate-900 transition-colors hover:text-brand-600">
+              <h4 className="truncate text-sm font-bold text-slate-900 transition-colors hover:text-brand-600 font-heading">
                 {post.userName}
               </h4>
             </Link>

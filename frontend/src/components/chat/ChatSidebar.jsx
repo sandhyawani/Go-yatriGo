@@ -1,17 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-Home,
-Trash2,
-MoreVertical,
-Search,
-X,
-MessageSquare,
-Users,
-Check,
-ArrowLeft,
-EyeOff } from
-"lucide-react";
+import { Home, Trash2, MoreVertical, Search, X, MessageSquare, Users, Check, EyeOff, Loader2 } from "lucide-react";
 
 const GroupSidebarAvatar = ({ room }) => {
   const [imgError, setImgError] = React.useState(false);
@@ -63,7 +52,8 @@ export const ChatSidebar = ({
   globalUsers,
   handleSelectGlobalUser,
   handleAcceptFollowRequest,
-  handleDeclineFollowRequest
+  handleDeclineFollowRequest,
+  processingRequestIds = new Set()
 }) => {
   const navigate = useNavigate();
 
@@ -234,7 +224,7 @@ export const ChatSidebar = ({
       {}
       <div
       role="listbox"
-      className="flex-1 overflow-y-auto cs p-1.5 space-y-0.5">
+      className="flex-1 overflow-y-auto cs p-1.5 pb-24 lg:pb-1.5 space-y-0.5">
 
         {loading ?
         Array.from({ length: 5 }).map((_, i) =>
@@ -272,9 +262,9 @@ export const ChatSidebar = ({
             "No users or conversations found" :
 
             <>
-                  {activeTab === "chats" && "No conversations yet"}
-                  {activeTab === "requests" && "No pending requests"}
-                  {activeTab === "groups" && "No group chats yet"}
+                  {activeTab === "chats" && "Your conversations will appear here."}
+                  {activeTab === "requests" && "No new chat requests"}
+                  {activeTab === "groups" && "Your journey groups will appear here."}
                 </>}
 
             </p>
@@ -285,50 +275,78 @@ export const ChatSidebar = ({
             {activeTab === "requests" &&
           followRequests.
           filter(
-          (n) =>
-          !searchQuery ||
-          n.sender?.name?.
-          toLowerCase().
-          includes(searchQuery.toLowerCase())
+          (n) => {
+            if (!searchQuery) return true;
+            const q = searchQuery.toLowerCase();
+            return (
+              (n.sender?.name || "").toLowerCase().includes(q) ||
+              (n.sender?.username || "").toLowerCase().includes(q)
+            );
+          }
           ).
-          map((req) =>
-          <div
-          key={req._id}
-          className="p-3 rounded-2xl bg-[#fafafa]/50 border border-slate-100 flex flex-col gap-2.5 mb-1.5">
+          map((req) => {
+            const senderId = req.sender?._id || req.sender;
+            const isProcessing = processingRequestIds.has(req._id || senderId);
+            return (
+              <div
+              key={req._id}
+              className="p-3 rounded-2xl bg-[#fafafa]/50 border border-slate-100 flex flex-col gap-2.5 mb-1.5 shadow-xs">
 
-                    <div className="flex items-center gap-2.5">
-                      <img
-              src={getAvatar(req.sender, req.sender?.name)}
-              alt=""
-              className="w-8 h-8 rounded-full object-cover" />
+                        <div className="flex items-center gap-2.5">
+                          <img
+                  src={getAvatar(req.sender, req.sender?.name)}
+                  alt=""
+                  className="w-8 h-8 rounded-full object-cover border border-slate-100 shadow-xs cursor-pointer hover:opacity-85 transition-opacity"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (senderId) navigate(`/profile/${senderId}`);
+                  }} />
 
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-[12px] font-bold text-slate-800 truncate">
-                          {req.sender?.name || "Traveler"}
-                        </h4>
-                        <p className="text-[10px] text-slate-400 truncate">
-                          @{req.sender?.username}
-                        </p>
+                          <div
+                  className="flex-1 min-w-0 cursor-pointer hover:opacity-85"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (senderId) navigate(`/profile/${senderId}`);
+                  }}>
+                            <h4 className="text-[12px] font-bold text-slate-800 truncate hover:text-[#7C3AED] transition-colors">
+                              {req.sender?.name || "Traveler"}
+                            </h4>
+                            <p className="text-[10px] text-slate-400 truncate">
+                              @{req.sender?.username || "traveler"}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAcceptFollowRequest(senderId, req._id);
+                  }}
+                  disabled={isProcessing}
+                  className="flex-1 py-1.5 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white text-[11px] font-semibold transition-all duration-200 shadow-soft flex items-center justify-center gap-1">
+
+                            {isProcessing ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Check className="w-3.5 h-3.5" />
+                            )}
+                            Accept
+                          </button>
+                          <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeclineFollowRequest(senderId, req._id);
+                  }}
+                  disabled={isProcessing}
+                  className="flex-1 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-[#1E293B] hover:bg-slate-50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-[11px] font-semibold transition-all duration-200 flex items-center justify-center gap-1">
+
+                            <X className="w-3.5 h-3.5" />
+                            Decline
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-              onClick={() => handleAcceptFollowRequest(req)}
-              className="flex-1 py-1.5 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-[11px] font-semibold transition-all duration-200 shadow-soft flex items-center justify-center gap-1">
-
-                        <Check className="w-3.5 h-3.5" />
-                        Accept
-                      </button>
-                      <button
-              onClick={() => handleDeclineFollowRequest(req)}
-              className="flex-1 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-[#1E293B] hover:bg-slate-50 text-[11px] font-semibold transition-all duration-200 flex items-center justify-center gap-1">
-
-                        <X className="w-3.5 h-3.5" />
-                        Decline
-                      </button>
-                    </div>
-                  </div>
-          )}
+            );
+          })}
 
             {}
             {filteredRooms.map((room) => {
@@ -393,12 +411,7 @@ export const ChatSidebar = ({
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <div className="flex justify-between items-center mb-0.5">
-                      <span
-                    className={`text-[13px] truncate font-bold text-slate-800 ${
-                    room.type === "direct" ? "cursor-pointer hover:text-[#7C3AED] transition-colors" : ""
-                    }`}
-                    onClick={(e) => handleProfileClick(e, room)}>
-
+                      <span className="text-[13px] truncate font-bold text-slate-800">
                         {room.name}
                       </span>
                       {room.latestMessage &&
@@ -429,7 +442,7 @@ export const ChatSidebar = ({
           })}
 
             {}
-            {searchQuery &&
+            {activeTab === "chats" && searchQuery &&
           <>
                 <div className="px-3 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-t border-slate-100/50 mt-2 select-none">
                   Global Search

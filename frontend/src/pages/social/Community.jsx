@@ -1,27 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import {
-Globe,
-Sparkles,
-Heart,
-MessageSquare,
-Bookmark,
-Share2,
-Compass,
-MapPin,
-Plus,
-BookOpen,
-Calendar,
-Users,
-HelpCircle,
-ChevronRight,
-Eye,
-Award,
-FileText,
-Loader2,
-TrendingUp,
-MessageCircle,
-ThumbsUp } from
-"lucide-react";
+import { Sparkles, Heart, MessageSquare, Bookmark, Share2, MapPin, Plus, BookOpen, Calendar, FileText, Loader2, MessageCircle, ThumbsUp } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import axios from "../../api/axios";
 import { showToast } from "../../utils/showToast";
@@ -31,7 +9,6 @@ import CreateDispatchModal from "../../components/modals/CreateDispatchModal";
 import { AnimatePresence } from "framer-motion";
 import DispatchViewer from "../../components/story/DispatchViewer";
 import { getAvatarUrl } from "../../utils/avatar";
-import JourneyMatesSuggestions from "../../components/social/JourneyMatesSuggestions";
 import RightSidebar from "../../components/home/RightSidebar";
 
 const Community = () => {
@@ -67,106 +44,6 @@ const Community = () => {
   const [discussionVotes, setDiscussionVotes] = useState({});
 
 
-  const mockStories = [
-  {
-    userId: "user-1",
-    userName: "Aiko Tanaka",
-    userPic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150",
-    stories: [
-    {
-      _id: "story-1",
-      media: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800",
-      mediaType: "image",
-      caption: "Morning light over Kyoto's golden pagoda! 🌸"
-    }]
-
-  },
-  {
-    userId: "user-2",
-    userName: "Carlos Santos",
-    userPic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150",
-    stories: [
-    {
-      _id: "story-2",
-      media: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800",
-      mediaType: "image",
-      caption: "Kayaking down the glacial lakes in Patagonia. Pure heaven."
-    }]
-
-  },
-  {
-    userId: "user-3",
-    userName: "Elena Petrova",
-    userPic: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150",
-    stories: [
-    {
-      _id: "story-3",
-      media: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=800",
-      mediaType: "image",
-      caption: "Sunset at Santorini, Greece 🌅"
-    }]
-
-  }];
-
-
-  const mockPosts = [
-  {
-    _id: "post-101",
-    userId: {
-      _id: "user-1",
-      name: "Aiko Tanaka",
-      pic: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"
-    },
-    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=1000",
-    caption: "Stumbling upon hidden temples in Kyoto during the autumn leaf peak. Travel tip: arrive before 7 AM to beat the crowds!",
-    destination: "Kyoto, Japan",
-    journeyTag: "Kyoto Autumn Expedition",
-    likes: ["user-2"],
-    commentsCount: 3,
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString()
-  },
-  {
-    _id: "post-102",
-    userId: {
-      _id: "user-2",
-      name: "Carlos Santos",
-      pic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150"
-    },
-    image: "https://images.unsplash.com/photo-1502784444187-359ac186c5bb?w=1000",
-    caption: "Splitting costs makes backpacking across southern Italy so much more viable. Our travel squad just finalized expenses for Amalfi Coast!",
-    destination: "Amalfi Coast, Italy",
-    journeyTag: "Amalfi Coastal Walk",
-    likes: [],
-    commentsCount: 1,
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString()
-  }];
-
-
-  const mockMemories = [
-  {
-    _id: "mem-1",
-    title: "Alpine Crossing Completed",
-    destination: "Zermatt, Switzerland",
-    coverImage: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800",
-    diarySummary: "A grueling 5-day trekking journey across Switzerland's iconic peaks with a squad of 6 explorers. We successfully split all supplies, checked in safely twice a day, and recorded 48 kilometers of pure wilderness.",
-    host: "Marc Dubois",
-    companions: 6,
-    distance: "48 km",
-    rating: 5,
-    date: "June 2026"
-  },
-  {
-    _id: "mem-2",
-    title: "Spiti Valley Jeep Expedition",
-    destination: "Himachal Pradesh, India",
-    coverImage: "https://images.unsplash.com/photo-1589308078059-be1415eab4c3?w=800",
-    diarySummary: "Successfully navigated the rugged passes of Spiti with our yatri group. The road conditions were challenging, but shared planning in our collaborative workspace got us through perfectly.",
-    host: "Aditi Sharma",
-    companions: 4,
-    distance: "320 km",
-    rating: 4.9,
-    date: "July 2026"
-  }];
 
 
   const travelTips = [
@@ -229,31 +106,20 @@ const Community = () => {
       const storiesRes = await axios.get("/stories/feed", { withCredentials: true }).catch(() => null);
       if (storiesRes?.data?.success) {
         setStories(storiesRes.data.stories || []);
-      } else {
-        setStories(mockStories);
       }
-
 
       const postsRes = await axios.get("/posts/feed", { withCredentials: true }).catch(() => null);
       if (postsRes?.data?.success) {
         setTravelMemories(postsRes.data.posts || []);
-      } else {
-        setTravelMemories(mockPosts);
       }
-
 
       const journeysRes = await axios.get("/journeys/my", { withCredentials: true }).catch(() => null);
       if (journeysRes?.data?.success) {
         const completed = (journeysRes.data.journeys || []).filter((j) => j.status === "Completed");
-        setMemories(completed.length > 0 ? completed : mockMemories);
-      } else {
-        setMemories(mockMemories);
+        setMemories(completed);
       }
     } catch (err) {
-      console.warn("Failed to load community feeds, serving fallbacks.");
-      setStories(mockStories);
-      setTravelMemories(mockPosts);
-      setMemories(mockMemories);
+      console.warn("Failed to load community feeds.");
     } finally {
       setLoading(false);
     }
@@ -380,7 +246,7 @@ const Community = () => {
                   }}
                   className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
 
-                      <div className="w-8 h-8 rounded-lg bg-indigo-50 flex items-center justify-center text-indigo-650 shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
                         <Calendar className="w-4 h-4" />
                       </div>
                       <div>
@@ -492,7 +358,7 @@ const Community = () => {
                 }}
                 className="flex flex-col items-center gap-2 cursor-pointer group shrink-0">
 
-                          <div className="relative w-16 h-16 rounded-full p-[2.5px] bg-gradient-to-tr from-brand-500 to-indigo-500 shadow-sm hover:scale-105 transition-all">
+                          <div className="relative w-16 h-16 rounded-full p-[2.5px] bg-gradient-to-tr from-brand-500 to-brand-700 shadow-sm hover:scale-105 transition-all">
                             <img
                     src={group.userPic || getAvatarUrl(group.userName)}
                     alt={group.userName}

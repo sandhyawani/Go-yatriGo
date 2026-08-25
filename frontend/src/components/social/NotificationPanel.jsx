@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, X, Compass, Calendar, ArrowRight, Trash2 } from "lucide-react";
+import { Bell, X, Calendar, ArrowRight, Trash2 } from "lucide-react";
 import NotificationItem from "./NotificationItem";
 import { showToast } from "../../utils/showToast";
 import axios from "../../api/axios";
@@ -29,10 +29,10 @@ export const NotificationPanel = ({
   const handleAcceptInvite = async (e, invitationId) => {
     e.stopPropagation();
     try {
-      const res = await axios.post(`/notifications/journey-invitation/${invitationId}/accept`, {}, { withCredentials: true });
+      const res = await axios.post(`/journeys/invitations/${invitationId}/accept`, {}, { withCredentials: true });
       if (res.data.success) {
         showToast.success("Invitation accepted! Added to your journeys.");
-        removeJourneyInvitation(invitationId);
+        if (removeJourneyInvitation) removeJourneyInvitation(invitationId);
         setShowNotifPanel(false);
         navigate("/social/journeys");
       }
@@ -44,10 +44,10 @@ export const NotificationPanel = ({
   const handleDeclineInvite = async (e, invitationId) => {
     e.stopPropagation();
     try {
-      const res = await axios.post(`/notifications/journey-invitation/${invitationId}/decline`, {}, { withCredentials: true });
+      const res = await axios.post(`/journeys/invitations/${invitationId}/reject`, {}, { withCredentials: true });
       if (res.data.success) {
         showToast.success("Invitation declined");
-        removeJourneyInvitation(invitationId);
+        if (removeJourneyInvitation) removeJourneyInvitation(invitationId);
       }
     } catch (err) {
       showToast.error("Failed to decline invitation");

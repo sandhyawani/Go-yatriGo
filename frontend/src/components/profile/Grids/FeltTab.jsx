@@ -13,7 +13,7 @@ export const FeltTab = ({
         {[1, 2, 3].map((i) => (
           <div
             key={i}
-            className="aspect-[3/4] bg-slate-100 dark:bg-slate-800 animate-pulse rounded-3xl shadow-sm border border-slate-100 dark:border-slate-700"
+            className="aspect-[3/4] bg-secondary-100 animate-pulse rounded-3xl shadow-sm border border-border"
           />
         ))}
       </div>
@@ -22,15 +22,15 @@ export const FeltTab = ({
 
   if (feltPosts.length === 0) {
     return (
-      <div className="bg-slate-50/50 border border-slate-100 rounded-3xl p-16 text-center select-none shadow-sm">
-        <div className="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-slate-100">
-          <div className="absolute inset-0 bg-amber-500/10 rounded-full blur-xl animate-pulse" />
-          <Star className="w-10 h-10 text-amber-200 fill-amber-100 relative z-10" />
+      <div className="bg-surface/50 border border-border rounded-3xl p-16 text-center select-none shadow-sm">
+        <div className="w-24 h-24 bg-surface rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-border">
+          <div className="absolute inset-0 bg-primary-600/5 rounded-full blur-xl animate-pulse" />
+          <Star className="w-10 h-10 text-primary-600 relative z-10" />
         </div>
-        <h3 className="text-sm font-bold text-slate-900 mb-1">
+        <h3 className="text-sm font-bold text-dark mb-1">
           No felt vibes yet ✨
         </h3>
-        <p className="text-[13px] text-slate-500 font-medium">
+        <p className="text-[13px] text-muted font-medium">
           No travel memories have been felt yet.
         </p>
       </div>
@@ -44,44 +44,44 @@ export const FeltTab = ({
           let badgeInfo = {
             icon: <MapPin className="w-3 h-3" />,
             label: "Travel Memory",
-            bg: "text-rose-600",
+            bg: "text-danger",
           };
           if (post.postType === "story")
             badgeInfo = {
               icon: <Clapperboard className="w-3 h-3" />,
               label: "Story",
-              bg: "text-purple-600",
+              bg: "text-primary-600",
             };
           else if (post.postType === "group")
             badgeInfo = {
               icon: <Users className="w-3 h-3" />,
               label: "Travel Group",
-              bg: "text-blue-600",
+              bg: "text-info",
             };
           else if (post.postType === "document")
             badgeInfo = {
               icon: <FileText className="w-3 h-3" />,
               label: "Document",
-              bg: "text-amber-600",
+              bg: "text-warning",
             };
           else if (post.postType === "profile_update")
             badgeInfo = {
               icon: <User className="w-3 h-3" />,
               label: "Profile Update",
-              bg: "text-emerald-600",
+              bg: "text-success",
             };
           else if (post.postType === "travel_video")
             badgeInfo = {
               icon: <Video className="w-3 h-3" />,
               label: "Travel Video",
-              bg: "text-indigo-600",
+              bg: "text-primary-600",
             };
 
           return (
             <div
               key={post._id}
               onClick={() => setSelectedMemory(post)}
-              className="aspect-[3/4] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/50 overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1 transition-all duration-300"
+              className="aspect-[3/4] bg-surface/80 backdrop-blur-xl rounded-3xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1 transition-all duration-300"
             >
               {post.mediaType === "video" ||
               (post.image || post.mediaUrl || post.mediaUrls?.[0] || "").match(/\.(mp4|webm|mov)$/i) ? (
@@ -102,7 +102,7 @@ export const FeltTab = ({
               )}
               <div className="absolute top-2 left-2 z-10">
                 <div
-                  className={`flex items-center gap-1 px-2 py-1 rounded-full bg-white/90 backdrop-blur-md ${badgeInfo.bg} text-[9px] sm:text-[10px] font-bold shadow-sm`}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-full bg-surface/90 backdrop-blur-md ${badgeInfo.bg} text-[9px] sm:text-[10px] font-bold shadow-sm`}
                 >
                   {badgeInfo.icon}
                   <span className="hidden sm:inline">
@@ -131,7 +131,7 @@ export const FeltTab = ({
       {feltPosts.length > 3 && (
         <button
           onClick={() => navigate("/felt-vibes")}
-          className="w-full py-4 bg-white/80 backdrop-blur-xl hover:bg-purple-50 text-purple-700 text-sm font-extrabold rounded-3xl transition-all duration-300 border border-purple-100 shadow-[0_4px_20px_rgba(124,58,237,0.05)] hover:shadow-[0_8px_30px_rgba(124,58,237,0.1)] flex items-center justify-center gap-2 group"
+          className="w-full py-3 bg-surface border border-border hover:bg-secondary-50 text-primary-600 font-bold rounded-2xl transition-all duration-300 shadow-sm flex items-center justify-center gap-2 group"
         >
           View All Felt Vibes
           <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

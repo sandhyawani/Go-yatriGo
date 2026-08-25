@@ -10,6 +10,7 @@ FileText,
 Play } from
 "lucide-react";
 import axiosInstance from "../../api/axios";
+import { showToast } from "../../utils/showToast";
 
 const JourneyGalleryView = ({ journeyId }) => {
   const [gallery, setGallery] = useState([]);
@@ -58,7 +59,7 @@ const JourneyGalleryView = ({ journeyId }) => {
     if (!file) return;
 
     if (file.size > 25 * 1024 * 1024) {
-      alert("File size exceeds 25 MB limit.");
+      showToast.error("File size exceeds 25 MB limit.");
       return;
     }
 
@@ -162,7 +163,7 @@ const JourneyGalleryView = ({ journeyId }) => {
       }
     } catch (err) {
       console.error("Upload error:", err);
-      alert(
+      showToast.error(
       err.response?.data?.message || err.message || "Failed to upload memory"
       );
       setLoading(false);
@@ -222,7 +223,7 @@ const JourneyGalleryView = ({ journeyId }) => {
               No journey memories yet
             </h4>
             <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1 max-w-sm mx-auto leading-relaxed">
-              Photos and videos shared by your squad will appear here.
+              Photos and videos shared by your travel group will appear here.
             </p>
             <button
           onClick={() => setIsModalOpen(true)}
@@ -498,7 +499,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                 {uploadSuccess &&
               <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800/50 flex items-center justify-center gap-2.5 text-emerald-600 dark:text-emerald-400 text-xs font-black animate-scale-in">
                     <Check className="w-5 h-5 stroke-[3]" />
-                    <span>✅ Memory uploaded successfully!</span>
+                    <span>✅ Travel Memory uploaded successfully!</span>
                   </div>}
 
               </div>

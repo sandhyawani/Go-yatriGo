@@ -107,6 +107,39 @@ const journeySchema = new mongoose.Schema(
     type: Number,
     default: 50
   },
+
+  // Explore/Buddy Trip Compatibility Fields
+  category: {
+    type: String,
+    default: "Adventure",
+    trim: true
+  },
+  budget: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  allowJoinAfterStart: {
+    type: Boolean,
+    default: true
+  },
+  isExplorePrivate: {
+    type: Boolean,
+    default: false
+  },
+  tags: [
+    {
+      type: String,
+      trim: true
+    }
+  ],
+  likes: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    }
+  ],
+  
   acceptedInvitationCount: {
     type: Number,
     default: 0
@@ -134,6 +167,11 @@ const journeySchema = new mongoose.Schema(
       enum: ["Organizer", "Co-Organizer", "Member"],
       default: "Member"
     },
+    status: {
+      type: String,
+      enum: ["active", "left", "removed", "banned"],
+      default: "active"
+    },
     joinedAt: {
       type: Date,
       default: Date.now
@@ -155,6 +193,20 @@ const journeySchema = new mongoose.Schema(
   cancelledAt: {
     type: Date,
     default: null
+  },
+  cancelledBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    default: null
+  },
+  cancellationReason: {
+    type: String,
+    default: "",
+    trim: true
+  },
+  isCancelled: {
+    type: Boolean,
+    default: false
   },
   completedAt: {
     type: Date,
@@ -190,5 +242,11 @@ journeySchema.index({
   title: "text",
   description: "text"
 });
+
+// Partial unique index for Explore TravelGroups to prevent multiple Journeys from the same group
+journeySchema.index(
+  { sourceType: 1, sourceId: 1 },
+  { unique: true, partialFilterExpression: { sourceType: "explore", sourceId: { $type: "objectId" } } }
+);
 
 module.exports = mongoose.model("Journey", journeySchema);

@@ -5,13 +5,16 @@ import App from "./App";
 
 import { AuthContextProvider } from "./context/authContext";
 import { SocketProvider } from "./context/SocketContext";
+import { NotificationProvider } from "./context/NotificationContext";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
-<>
+  <>
     <AuthContextProvider>
       <SocketProvider>
-        <App />
+        <NotificationProvider>
+          <App />
+        </NotificationProvider>
       </SocketProvider>
     </AuthContextProvider>
   </>

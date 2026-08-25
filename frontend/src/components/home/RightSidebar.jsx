@@ -103,12 +103,158 @@ const TravelHighlights = ({ travelMemories, onHighlightClick }) => {
                   <span className="flex items-center gap-0.5">💬 {commentsCount}</span>
                 </div>
               </div>
-            </Card>);
-
+            </Card>
+          );
         })}
       </div>
-    </Card>);
+    </Card>
+  );
+};
 
+export const ActiveTravelGroups = ({
+  user,
+  nearbyTrips = [],
+  className = ""
+}) => {
+  const navigate = useNavigate();
+
+  const displayTrips = useMemo(() => {
+    const myUserId = user?._id?.toString() || user?.id?.toString();
+    const notJoinedTrips = (nearbyTrips || []).filter((t) => {
+      const isJoined = t.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
+        (t.userId?._id || t.userId || t.host?._id || t.host)?.toString() === myUserId;
+      return !isJoined;
+    });
+
+    if (!user?.state && !user?.city) return notJoinedTrips.slice(0, 4);
+
+    const userCity = (user?.city || "").toLowerCase();
+    const userState = (user?.state || "").toLowerCase();
+
+    const sortedTrips = [...notJoinedTrips].sort((a, b) => {
+      const aFrom = (a.from || "").toLowerCase();
+      const aDest = (a.destination || "").toLowerCase();
+      const bFrom = (b.from || "").toLowerCase();
+      const bDest = (b.destination || "").toLowerCase();
+
+      const getScore = (fromStr, destStr) => {
+        if (userCity && (fromStr.includes(userCity) || destStr.includes(userCity))) return 2;
+        if (userState && (fromStr.includes(userState) || destStr.includes(userState))) return 1;
+        return 0;
+      };
+
+      return getScore(bFrom, bDest) - getScore(aFrom, aDest);
+    });
+
+    return sortedTrips.slice(0, 4);
+  }, [nearbyTrips, user?.state, user?.city, user?._id, user?.id]);
+
+  const activeGroupsTitle = useMemo(() => {
+    if (!user?.state) return "Active Travel Groups";
+    const hasLocal = (nearbyTrips || []).some((t) =>
+      t.destination?.toLowerCase().includes(user.state.toLowerCase()) ||
+      t.from?.toLowerCase().includes(user.state.toLowerCase())
+    );
+    return hasLocal ? `Active Groups in ${user.state}` : "Active Travel Groups";
+  }, [nearbyTrips, user?.state]);
+
+  if (!displayTrips || displayTrips.length === 0) {
+    return (
+      <Card variant="default" padding="sm" className={`space-y-3 !p-4 border-slate-200/80 shadow-xs ${className}`}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1.5 font-sans">
+            <Users className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+            {activeGroupsTitle}
+          </h3>
+          <Link
+            to="/social/buddy"
+            className="text-[10.5px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-[0.08em]"
+          >
+            Explore
+          </Link>
+        </div>
+        <div className="py-4 text-center space-y-2">
+          <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+            <Users className="w-4 h-4" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-700">No active groups right now</p>
+            <p className="text-[10.5px] text-slate-400 mt-0.5">Be the first to start a group trip</p>
+          </div>
+          <Link
+            to="/social/buddy/new"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-bold bg-brand-50 text-brand-700 hover:bg-brand-100 transition-colors border border-brand-200"
+          >
+            + Create Group
+          </Link>
+        </div>
+      </Card>
+    );
+  }
+
+  return (
+    <Card variant="default" padding="sm" className={`space-y-3 !p-4 border-slate-200/80 shadow-xs ${className}`}>
+      <div className="flex items-center justify-between">
+        <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] flex items-center gap-1.5 font-sans">
+          <Users className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+          {activeGroupsTitle}
+        </h3>
+        <Link
+          to="/social/buddy"
+          className="text-[10.5px] font-bold text-slate-500 hover:text-brand-600 transition-colors uppercase tracking-[0.08em]"
+        >
+          See All
+        </Link>
+      </div>
+      <div className="flex flex-col gap-2.5">
+        {displayTrips.map((trip) => {
+          const myUserId = user?._id?.toString();
+          const isJoined = trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
+            (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
+
+          return (
+            <Card
+              variant="default"
+              padding="sm"
+              interactive
+              key={trip._id}
+              onClick={() => navigate(`/social/buddy/${trip._id}`)}
+              className="flex items-center gap-2.5 !p-2.5 border-slate-200/80 hover:border-brand-200 shadow-xs hover:shadow-sm transition-all duration-200"
+            >
+              <div className="w-9 h-9 rounded-xl bg-brand-50 text-brand-700 flex items-center justify-center font-extrabold text-xs shrink-0 shadow-xs border border-brand-100">
+                {trip.destination ? trip.destination.substring(0, 2).toUpperCase() : "TR"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold text-slate-800 truncate group-hover:text-brand-600 transition-colors font-heading" title={trip.title}>
+                  {trip.title}
+                </p>
+                <p className="text-[9.5px] text-slate-400 font-semibold flex items-center gap-1 mt-0.5 truncate">
+                  <MapPin className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                  <span className="truncate">{trip.destination}</span>
+                </p>
+                <p className="text-[9px] font-bold text-brand-600 mt-0.5">
+                  {Math.max(0, (trip.maxMembers || 5) - (trip.members?.length || 0))} slots open
+                </p>
+              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/social/buddy/${trip._id}`);
+                }}
+                className={`text-[10.5px] font-bold px-2.5 py-1 rounded-[var(--radius-button)] transition-all shrink-0 self-center flex items-center gap-0.5 ${
+                  isJoined
+                    ? "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200"
+                    : "btn-primary !py-1 !px-2.5"
+                }`}
+              >
+                {isJoined ? "Joined ✓" : <>Join <ChevronRight className="w-3 h-3" /></>}
+              </button>
+            </Card>
+          );
+        })}
+      </div>
+    </Card>
+  );
 };
 
 const RightSidebar = ({
@@ -119,9 +265,9 @@ const RightSidebar = ({
   followLoadingMap,
   travelMemories,
   onHighlightClick,
-  className = "sticky top-6 h-[calc(100vh-3rem)] overflow-y-auto scrollbar-none pr-1 pb-4 w-full hidden xl:block space-y-[var(--spacing-section)] shrink-0"
+  tripMateStates,
+  className = "min-w-0 w-full flex flex-col gap-4 shrink-0 self-start"
 }) => {
-  const navigate = useNavigate();
   const [nearbyTrips, setNearbyTrips] = useState(initialNearbyTrips || []);
 
   useEffect(() => {
@@ -142,141 +288,42 @@ const RightSidebar = ({
     }
   }, [initialNearbyTrips]);
 
-  const displayTrips = useMemo(() => {
-    const myUserId = user?._id?.toString() || user?.id?.toString();
-    const notJoinedTrips = nearbyTrips.filter((t) => {
-      const isJoined = t.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-      (t.userId?._id || t.userId || t.host?._id || t.host)?.toString() === myUserId;
-      return !isJoined;
-    });
-
-    if (!user?.state && !user?.city) return notJoinedTrips.slice(0, 5);
-
-    const userCity = (user?.city || "").toLowerCase();
-    const userState = (user?.state || "").toLowerCase();
-
-    const sortedTrips = [...notJoinedTrips].sort((a, b) => {
-      const aFrom = (a.from || "").toLowerCase();
-      const aDest = (a.destination || "").toLowerCase();
-      const bFrom = (b.from || "").toLowerCase();
-      const bDest = (b.destination || "").toLowerCase();
-
-      const getScore = (fromStr, destStr) => {
-        if (userCity && (fromStr.includes(userCity) || destStr.includes(userCity))) return 2;
-        if (userState && (fromStr.includes(userState) || destStr.includes(userState))) return 1;
-        return 0;
-      };
-
-      return getScore(bFrom, bDest) - getScore(aFrom, aDest);
-    });
-
-    return sortedTrips.slice(0, 5);
-  }, [nearbyTrips, user?.state, user?.city, user?._id, user?.id]);
-
-  const activeGroupsTitle = useMemo(() => {
-    if (!user?.state) return "Active Travel Groups";
-    const hasLocal = nearbyTrips.some((t) =>
-    t.destination?.toLowerCase().includes(user.state.toLowerCase()) ||
-    t.from?.toLowerCase().includes(user.state.toLowerCase())
-    );
-    return hasLocal ? `Active Groups in ${user.state}` : "Active Travel Groups";
-  }, [nearbyTrips, user?.state]);
-
   return (
-    <div className={className.replace('overflow-y-auto', '').replace('space-y-[var(--spacing-section)]', 'flex flex-col gap-[var(--spacing-section)]')}>
-      <div className="flex-1 overflow-y-auto scrollbar-none space-y-[var(--spacing-section)] pr-1 pb-2">
-        <JourneyMatesSuggestions
+    <div className={className}>
+      <JourneyMatesSuggestions
+        currentUser={user}
         currentUserId={user?._id || user?.id}
-        initialSuggestions={suggestions} />
+        initialSuggestions={suggestions}
+        handleFollowToggle={handleFollowToggle}
+        followLoadingMap={followLoadingMap}
+        tripMateStates={tripMateStates}
+      />
 
+      {travelMemories && <TravelHighlights travelMemories={travelMemories} onHighlightClick={onHighlightClick} />}
 
-        {travelMemories && <TravelHighlights travelMemories={travelMemories} onHighlightClick={onHighlightClick} />}
+      <ActiveTravelGroups user={user} nearbyTrips={nearbyTrips} />
 
-        {displayTrips?.length > 0 &&
-        <Card variant="default" padding="md" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] flex items-center gap-2">
-                <Users className="w-3.5 h-3.5 text-[#7C3AED]" />
-                {activeGroupsTitle}
-              </h3>
-              <Link
-            to="/social/buddy"
-            className="text-[11px] font-bold text-slate-400 hover:text-brand-600 transition-colors">
-
-                See All
-              </Link>
-            </div>
-            <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1 scrollbar-none">
-              {displayTrips.map((trip) => {
-              const myUserId = user?._id?.toString();
-              const isJoined = trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-              (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
-              return (
-                <Card
-                variant="outlined"
-                padding="sm"
-                interactive
-                key={trip._id}
-                onClick={() => navigate(`/social/buddy/${trip._id}`)}
-                className="flex items-start gap-3">
-
-                    <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] text-[#7C3AED] flex items-center justify-center font-black text-sm shrink-0 shadow-sm border border-[#7C3AED]/20">
-                      {trip.destination ? trip.destination.substring(0, 2).toUpperCase() : "TR"}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-slate-800 truncate" title={trip.title}>
-                        {trip.title}
-                      </p>
-                      <p className="text-[9px] text-slate-500 font-semibold flex items-center gap-1 mt-0.5 truncate">
-                        <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" /> {trip.destination}
-                      </p>
-                      <p className="text-[9px] font-bold text-slate-500 mt-1">
-                        {Math.max(0, trip.maxMembers - (trip.members?.length || 0))} slots open
-                      </p>
-                    </div>
-                    <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/social/buddy/${trip._id}`);
-                  }}
-                  className={`text-[10px] font-extrabold px-3 py-1.5 rounded-[var(--radius-button)] transition-all shrink-0 self-center flex items-center gap-0.5 ${
-                  isJoined ?
-                  "text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200" :
-                  "text-brand-600 bg-brand-50 hover:bg-brand-100"
-                  }`}>
-
-                      {isJoined ? "Joined ✓" : <>Join <ChevronRight className="w-3 h-3" /></>}
-                    </button>
-                  </Card>);
-
-            })}
-            </div>
-          </Card>}
-      </div>
-
-      <div className="shrink-0">
-        <Card variant="transparent" padding="md" interactive className="!bg-[#7C3AED] text-white border-none shadow-[0_12px_32px_rgb(124,58,237,0.2)] relative overflow-hidden group">
-          <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
-          <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/20 rounded-full blur-2xl group-hover:scale-110 transition-transform duration-700" />
-          <div className="relative z-10 space-y-3.5">
-            <h3 className="text-sm font-black leading-tight tracking-wider uppercase text-white">
-              Planning a trip?
-            </h3>
-            <p className="text-[11px] font-semibold text-white/80 leading-relaxed max-w-[200px]">
-              Create a group and invite travelers to join your adventure.
-            </p>
-            <Link
-          to="/social/buddy/new"
-          className="inline-flex bg-white hover:bg-slate-50 text-[#7C3AED] text-[11px] font-black uppercase tracking-widest px-4 py-2.5 rounded-[var(--radius-button)] transition-all active:scale-95 shadow-md">
-
-              Create
-            </Link>
-          </div>
-          <Compass className="absolute -bottom-4 -right-4 w-20 h-20 text-white opacity-10" />
-        </Card>
-      </div>
-    </div>);
-
+      <Card variant="transparent" padding="md" interactive className="!bg-[#7C3AED] text-white border-none shadow-[0_12px_32px_rgb(124,58,237,0.18)] relative overflow-hidden group !p-4 rounded-2xl">
+        <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23ffffff' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")` }}></div>
+        <div className="absolute -top-10 -right-10 w-28 h-28 bg-white/20 rounded-full blur-xl group-hover:scale-110 transition-transform duration-700" />
+        <div className="relative z-10 space-y-2.5">
+          <h3 className="text-xs sm:text-sm font-extrabold leading-tight tracking-wider uppercase text-white font-heading">
+            Planning a trip?
+          </h3>
+          <p className="text-[11px] font-medium text-white/90 leading-relaxed max-w-[200px]">
+            Create a group and invite travelers to join your adventure.
+          </p>
+          <Link
+            to="/social/buddy/new"
+            className="inline-flex bg-white hover:bg-slate-50 text-[#7C3AED] text-[10.5px] font-extrabold uppercase tracking-wider px-3.5 py-2 rounded-xl transition-all active:scale-95 shadow-xs"
+          >
+            Create Group
+          </Link>
+        </div>
+        <Compass className="absolute -bottom-3 -right-3 w-16 h-16 text-white opacity-10" />
+      </Card>
+    </div>
+  );
 };
 
 export default RightSidebar;

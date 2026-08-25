@@ -36,19 +36,6 @@ const faqs = [
 }];
 
 
-const mockTickets = [
-{
-  id: "#TKT-8291",
-  issue: "Reported suspicious group",
-  status: "Resolved",
-  date: "2 days ago"
-},
-{
-  id: "#TKT-8245",
-  issue: "Location tracking not updating",
-  status: "In Progress",
-  date: "5 days ago"
-}];
 
 
 const HelpSupport = () => {

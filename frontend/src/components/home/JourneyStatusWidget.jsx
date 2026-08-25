@@ -1,8 +1,9 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Map, Plane, Compass } from "lucide-react";
+import { Map, Compass, ArrowRight } from "lucide-react";
 import moment from "moment";
 import Card from "../common/Card";
+import { normalizeJourneyStatus } from "../../utils/journeyLifecycle";
 
 const STATUS_CONFIG = {
   ongoing: {
@@ -11,13 +12,13 @@ const STATUS_CONFIG = {
     label: "Boarding Now"
   },
   planning: {
-    badge: "bg-purple-50 text-purple-700 border-purple-200",
-    dot: "bg-purple-500",
-    label: "Planning"
+    badge: "bg-brand-50 text-brand-700 border-brand-200",
+    dot: "bg-brand-600",
+    label: "Upcoming"
   },
   upcoming: {
-    badge: "bg-sky-50 text-sky-700 border-sky-200",
-    dot: "bg-sky-500",
+    badge: "bg-brand-50 text-brand-700 border-brand-200",
+    dot: "bg-brand-600",
     label: "Upcoming"
   },
   completed: {
@@ -39,17 +40,10 @@ const JourneyStatusWidget = ({ journey, user }) => {
     ? journey.sourceId
     : journey?._id;
 
-  const now = new Date();
-  const isHappeningNow = journey?.startDate && moment(journey.startDate).isSameOrBefore(moment(), 'day') && (!journey?.endDate || moment(journey.endDate).isSameOrAfter(moment(), 'day'));
-  const isCancelled = journey?.status?.toLowerCase() === "cancelled";
-  
-  let baseStatus = journey?.isBuddyTrip ?
-    (journey.status === "active" || journey.status === "active now" || journey.status === "Ongoing" ? "ongoing" : journey.status ? journey.status.toLowerCase() : "planning") :
-    (journey?.status ? journey.status.toLowerCase() : "planning");
-    
-  const normalizedStatus = (isHappeningNow && !isCancelled) ? "ongoing" : baseStatus;
-
-  const statusConfig = STATUS_CONFIG[normalizedStatus] || STATUS_CONFIG.planning;
+  const normalizedStatus = normalizeJourneyStatus(journey);
+  const isOngoing = normalizedStatus === "active";
+  const isUpcoming = normalizedStatus === "upcoming";
+  const statusConfig = STATUS_CONFIG[isOngoing ? "ongoing" : (isUpcoming ? "upcoming" : (normalizedStatus || "upcoming"))] || STATUS_CONFIG.upcoming;
 
   if (!journey) return null;
 
@@ -77,16 +71,16 @@ const JourneyStatusWidget = ({ journey, user }) => {
     let text = "";
     let progressPercentage = 0;
 
-    if (now.isBefore(start)) {
+    if (now.isBefore(start, 'day')) {
       const diff = Math.ceil(start.diff(now, 'days'));
-      text = `T-${diff} days`;
+      text = diff <= 0 ? "Departs Today" : diff === 1 ? "Departs Tomorrow" : `Departs in ${diff} days (T-${diff})`;
       progressPercentage = 0;
-    } else if (now.isAfter(end)) {
+    } else if (now.isAfter(end, 'day')) {
       text = `Completed`;
       progressPercentage = 100;
     } else {
       const currentDay = Math.min(totalDays, Math.ceil(now.diff(start, 'days')) + 1);
-      text = `Day ${currentDay}/${totalDays}`;
+      text = `DAY ${currentDay}/${totalDays}`;
       progressPercentage = Math.min(100, Math.max(0, currentDay / totalDays * 100));
     }
 
@@ -94,153 +88,181 @@ const JourneyStatusWidget = ({ journey, user }) => {
   };
 
   const durationInfo = getDurationInfo();
-  const isOngoing = normalizedStatus === "ongoing";
 
   const routeParts = {
     from: journey.from && journey.from.trim() !== "" ?
-    journey.from.split(",")[0] :
-    user?.location ? user.location.split(",")[0] : "Unknown",
+      journey.from.split(",")[0] :
+      user?.location ? user.location.split(",")[0] : "Unknown",
     to: journey.destination?.split(",")[0] || "Unknown"
   };
 
-  const travelerCount = journey.members?.length || 1;
+  const getTravelerCount = () => {
+    let count = 0;
+    if (journey.creator || journey.host || journey.userId) count += 1;
+    if (journey.members && Array.isArray(journey.members)) {
+      count += journey.members.length;
+    }
+    return count > 0 ? count : 1;
+  };
+  const travelerCount = getTravelerCount();
 
   return (
-    <Card variant="default" padding="none" interactive onClick={handleNavigateWorkspace} className="flex flex-col md:flex-row overflow-hidden group">
-      
-      {}
-      <div className="flex-1 min-w-0 p-3.5 sm:p-4 relative overflow-hidden flex flex-col justify-between">
-        <Compass className="absolute -left-10 -bottom-10 w-40 h-40 text-[#7C3AED] opacity-[0.02] transform -rotate-45 pointer-events-none" />
+    <Card
+      variant="default"
+      padding="none"
+      interactive
+      onClick={handleNavigateWorkspace}
+      className="overflow-hidden group border-slate-200/80 shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-300 relative"
+    >
+      <Compass className="absolute -right-8 -bottom-8 w-36 h-36 text-brand-600 opacity-[0.02] transform -rotate-12 pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-between mb-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-brand-600 flex items-center gap-2">
+      <div className="p-4 sm:p-5 flex flex-col gap-3.5 relative z-10">
+        {/* Top Header: Badge & Status */}
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-600 flex items-center gap-1.5 font-sans">
             <Map className="w-3.5 h-3.5" />
-            Trip Plan
+            {isOngoing ? "CURRENT JOURNEY" : "UPCOMING EXPEDITION"}
           </span>
-          <span className={`px-2.5 py-1 rounded-full border text-[9px] font-black uppercase tracking-wider flex items-center gap-1.5 ${statusConfig.badge}`}>
+          <span className={`px-2.5 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-[0.08em] flex items-center gap-1.5 ${statusConfig.badge}`}>
             <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.dot} ${isOngoing ? "animate-pulse" : ""}`} />
             {statusConfig.label}
           </span>
         </div>
 
-        <div className="relative z-10 mb-3">
-          <h3 className="text-base font-bold text-slate-800 mb-1.5 line-clamp-2 group-hover:text-brand-600 transition-colors">{journey.title}</h3>
-          
-          <div className="flex items-center justify-between gap-1 sm:gap-2">
-            <div className="flex flex-col flex-1 min-w-0">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">From</span>
-              <span className="text-base font-black text-slate-800 truncate leading-tight capitalize block" title={routeParts.from}>{routeParts.from}</span>
-            </div>
+        {/* Journey Title */}
+        <div>
+          <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight leading-snug group-hover:text-brand-600 transition-colors font-heading">
+            {journey.title}
+          </h3>
+        </div>
 
-            <div className="w-12 sm:w-16 shrink-0 flex flex-col items-center">
-              <div className="w-full relative flex items-center justify-center">
-                <div className="absolute w-full h-[1px] bg-slate-200"></div>
-                <Plane className="w-5 h-5 text-brand-400 absolute bg-white px-1" />
-              </div>
-              {durationInfo &&
-              <span className="text-[10px] font-bold text-brand-600 uppercase tracking-wider mt-2 bg-brand-50 px-2 py-0.5 rounded-[var(--radius-button)] z-10 whitespace-nowrap">
-                  {durationInfo.text}
-                </span>}
+        {/* Route: From -> To */}
+        <div className="bg-slate-50/80 rounded-2xl p-3 sm:p-3.5 border border-slate-100/90 flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-[0.08em] block mb-0.5">From</span>
+            <p className="text-sm sm:text-base font-bold text-slate-800 truncate capitalize font-heading" title={routeParts.from}>
+              {routeParts.from}
+            </p>
+          </div>
 
+          <div className="flex flex-col items-center justify-center shrink-0 px-2 sm:px-4">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-brand-600 shadow-xs">
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
+            {journey.transportation && (
+              <span className="text-[9px] font-bold text-slate-400 mt-1 uppercase tracking-wider">
+                {journey.transportation}
+              </span>
+            )}
+          </div>
 
-            <div className="flex flex-col text-right flex-1 min-w-0">
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">To</span>
-              <span className="text-base font-black text-slate-800 truncate leading-tight capitalize block" title={routeParts.to}>{routeParts.to}</span>
-            </div>
+          <div className="min-w-0 flex-1 text-right">
+            <span className="text-[9.5px] font-bold text-slate-400 uppercase tracking-[0.08em] block mb-0.5">To</span>
+            <p className="text-sm sm:text-base font-bold text-slate-800 truncate capitalize font-heading" title={routeParts.to}>
+              {routeParts.to}
+            </p>
           </div>
         </div>
-        
-        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-4 gap-2 border-t border-[var(--border-default)] pt-2.5 mt-auto">
-          <div>
-            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Trip ID</span>
-            <span className="text-[11px] font-black text-slate-700">
-              GY-{displayId ? displayId.toString().slice(-4).toUpperCase() : "1000"}
-            </span>
-          </div>
-          <div>
-            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Date</span>
-            <span className="text-[11px] font-black text-slate-700">
-              {journey.startDate ? moment(journey.startDate).format("MMM DD") : "TBD"}
-            </span>
-          </div>
-          <div>
-            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Mode</span>
-            <span className="text-[11px] font-black text-slate-700">
-              {journey.transportation || "Mixed"}
-            </span>
-          </div>
-          <div>
-            <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Travelers</span>
-            <span className="text-[11px] font-black text-slate-700">
-              {travelerCount}
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {}
-      <div className="w-full md:w-px h-px md:h-auto bg-[var(--border-default)]"></div>
+        {/* Day Progress & Progress Bar */}
+        <div className="space-y-1.5 pt-0.5">
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-[0.08em] flex items-center gap-1">
+              <span className="w-2 h-2 rounded-full bg-brand-600 inline-block" />
+              {durationInfo?.text || (isOngoing ? "Ongoing Trip" : "Upcoming Trip")}
+            </span>
+            <span className="text-[11.5px] font-extrabold text-brand-600 font-heading">
+              {Math.round(durationInfo?.progressPercentage || 0)}%
+            </span>
+          </div>
 
-      {}
-      <div className="p-3.5 sm:p-4 bg-slate-50 flex flex-col justify-center items-center md:w-40 shrink-0 relative">
-        <div className="w-full mb-3 relative">
-           <div className="flex justify-between items-end mb-1.5">
-             <span className="text-[9px] font-black text-slate-400 uppercase tracking-[0.2em]">Progress</span>
-             <span className="text-[10px] font-bold text-brand-600">{Math.round(durationInfo?.progressPercentage || 0)}%</span>
-           </div>
-           <div className="h-2.5 w-full bg-slate-200/80 rounded-full overflow-hidden shadow-inner border border-slate-300/50">
-              <div
-            className="h-full bg-gradient-to-r from-brand-400 to-brand-600 relative transition-all duration-1000 ease-out"
-            style={{ width: `${durationInfo?.progressPercentage || 0}%` }}>
-
-                <div className="absolute top-0 right-0 bottom-0 w-6 bg-white/20 skew-x-[-20deg] animate-pulse"></div>
-              </div>
-           </div>
-        </div>
-        
-        <div className="w-full pt-1.5 flex flex-col gap-2">
-          {!journey.isBuddyTrip && journey.sourceType === "explore" && journey.sourceId ? (
-            <>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/social/journeys/${journey._id}`);
-                }}
-                className="w-full py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-[11px] font-black uppercase tracking-wider rounded-[var(--radius-button)] transition-all duration-200 shadow-md shadow-[#7C3AED]/20 hover:shadow-lg active:scale-[0.98] transition-all duration-200"
-              >
-                Board Now
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate(`/social/buddy/${journey.sourceId}`);
-                }}
-                className="w-full py-2 bg-white border border-[var(--border-default)] hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 text-slate-700 text-[11px] font-black uppercase tracking-wider rounded-[var(--radius-button)] transition-all duration-200 shadow-sm"
-              >
-                View Group
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (journey.isBuddyTrip) {
-                  navigate(`/social/buddy/${journey._id}`);
-                } else {
-                  navigate(`/social/journeys/${journey._id}`);
-                }
-              }}
-              className="w-full py-2 bg-white border border-[var(--border-default)] hover:border-brand-300 hover:bg-brand-50 hover:text-brand-700 text-slate-700 text-[11px] font-black uppercase tracking-wider rounded-[var(--radius-button)] transition-all duration-200 shadow-sm"
+          <div className="h-2.5 w-full bg-slate-100 rounded-full overflow-hidden border border-slate-200/60 p-0.5">
+            <div
+              className="h-full bg-gradient-to-r from-brand-500 to-brand-700 rounded-full transition-all duration-700 ease-out relative"
+              style={{ width: `${Math.max(4, Math.min(100, durationInfo?.progressPercentage || 0))}%` }}
             >
-              {journey.isBuddyTrip ? "View Group" : "Board Now"}
-            </button>
-          )}
+              <div className="absolute inset-0 bg-white/20 animate-pulse rounded-full" />
+            </div>
+          </div>
+        </div>
+
+        {/* Metadata Grid & Action Button */}
+        <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="grid grid-cols-4 gap-2 flex-1 min-w-0">
+            <div>
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.08em] mb-0.5">Trip ID</span>
+              <span className="text-[11px] font-bold text-slate-800 truncate block">
+                GY-{displayId ? displayId.toString().slice(-4).toUpperCase() : "1000"}
+              </span>
+            </div>
+            <div>
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.08em] mb-0.5">Date</span>
+              <span className="text-[11px] font-bold text-slate-800 truncate block">
+                {journey.startDate ? moment(journey.startDate).format("MMM DD") : "TBD"}
+              </span>
+            </div>
+            <div>
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.08em] mb-0.5">Mode</span>
+              <span className="text-[11px] font-bold text-slate-800 truncate block capitalize">
+                {journey.transportation || "Mixed"}
+              </span>
+            </div>
+            <div>
+              <span className="block text-[9px] font-bold text-slate-400 uppercase tracking-[0.08em] mb-0.5">Travelers</span>
+              <span className="text-[11px] font-bold text-slate-800 truncate block">
+                {travelerCount}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Button */}
+          <div className="flex items-center gap-2 shrink-0 pt-1 sm:pt-0">
+            {!journey.isBuddyTrip && journey.sourceType === "explore" && journey.sourceId ? (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/social/journeys/${journey._id}`);
+                  }}
+                  className="btn-primary !py-2 !px-4 text-xs font-bold shadow-sm hover:shadow-md"
+                >
+                  {isOngoing ? "Board Now" : "View Journey"}
+                </button>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(`/social/buddy/${journey.sourceId}`);
+                  }}
+                  className="btn-secondary !py-2 !px-3 text-xs font-bold"
+                >
+                  View Group
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (journey.isBuddyTrip) {
+                    navigate(`/social/buddy/${journey._id}`);
+                  } else {
+                    navigate(`/social/journeys/${journey._id}`);
+                  }
+                }}
+                className="btn-primary !py-2 !px-5 text-xs font-bold shadow-sm hover:shadow-md w-full sm:w-auto"
+              >
+                {journey.isBuddyTrip
+                  ? (isOngoing ? "Board Now" : "View Group")
+                  : (isOngoing ? "Board Now" : "View Journey")}
+              </button>
+            )}
+          </div>
         </div>
       </div>
-
-    </Card>);
-
+    </Card>
+  );
 };
 
 export default JourneyStatusWidget;

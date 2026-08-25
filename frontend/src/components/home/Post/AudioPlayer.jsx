@@ -15,7 +15,7 @@ export const AudioPlayer = ({
       className="absolute bottom-3 left-3 flex items-center gap-2 bg-white/85 dark:bg-slate-800/85 backdrop-blur-md rounded-full shadow-lg px-3 py-1.5 z-10"
       onClick={(e) => e.stopPropagation()}
     >
-      <Music2 className="h-3.5 w-3.5 text-[#6C4DF6] shrink-0" />
+      <Music2 className="h-3.5 w-3.5 text-[#7C3AED] shrink-0" />
       <div className="flex flex-col max-w-[120px] sm:max-w-[150px]">
         <span className="truncate text-[11px] font-bold text-slate-800 dark:text-white leading-tight">
           {post.music.title}
@@ -30,7 +30,7 @@ export const AudioPlayer = ({
             e.stopPropagation();
             toggleAudio(post._id);
           }}
-          className="ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#6C4DF6] text-white shadow-md transition-all hover:scale-105 active:scale-95"
+          className="ml-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#7C3AED] text-white shadow-md transition-all hover:scale-105 active:scale-95"
         >
           {playingAudioId === post._id ? (
             <Pause className="h-3 w-3 fill-current" />

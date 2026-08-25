@@ -1,30 +1,13 @@
-import React, { useState, useContext, useRef } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import axios from "../../api/axios";
 import { useNavigate } from "react-router-dom";
-import {
-MapPin,
-Calendar,
-Users,
-ArrowLeft,
-Lock,
-Globe,
-Image as ImageIcon,
-X,
-Wallet,
-Tag,
-AlertCircle,
-Camera,
-Map,
-FileText,
-ShieldCheck,
-Check } from
-"lucide-react";
-import { showToast } from "../../utils/showToast";
-import { toast } from "sonner";
 import { AuthContext } from "../../context/authContext";
 import { GROUP_CATEGORIES } from "../../constants/groupCategories";
 import CustomSelect from "../../components/ui/CustomSelect";
-import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Calendar, Users, ArrowLeft, Globe, ShieldCheck, Camera, Check, Circle } from "lucide-react";
+import { showToast } from "../../utils/showToast";
+import { toast } from "sonner";
+import moment from "moment";
 
 const CreateBuddyTrip = () => {
   const { user } = useContext(AuthContext);
@@ -40,91 +23,131 @@ const CreateBuddyTrip = () => {
     endDate: "",
     description: "",
     maxMembers: 4,
-    category: "Journey",
+    category: "Adventure",
     isPrivate: false,
     tags: [],
     budget: "",
-    coverImage: "",
-    allowJoinAfterStart: true
+    coverImage: ""
   });
 
-  const [errors, setErrors] = useState({});
   const [imagePreview, setImagePreview] = useState("");
   const [file, setFile] = useState(null);
+  const [autoCoverOptions, setAutoCoverOptions] = useState([]);
+  const [selectedAutoCoverIndex, setSelectedAutoCoverIndex] = useState(0);
+  const [isFetchingAutoCover, setIsFetchingAutoCover] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [activeSection, setActiveSection] = useState("basics");
+
+  // Load draft from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("createTripDraft");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setFormData(parsed);
+        if (parsed.coverImage && !parsed.coverImage.startsWith("blob:")) {
+            // Restore preview if it was a URL
+            setImagePreview(parsed.coverImage);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  // Autosave to localStorage
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      // Don't save the file blob URL to localstorage as it will break
+      const toSave = { ...formData, coverImage: file ? "" : formData.coverImage };
+      localStorage.setItem("createTripDraft", JSON.stringify(toSave));
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [formData, file]);
+
+  // Fetch Auto Cover Preview
+  useEffect(() => {
+    if (!formData.destination || file) {
+      setAutoCoverOptions([]);
+      return;
+    }
+    const timeoutId = setTimeout(async () => {
+      setIsFetchingAutoCover(true);
+      try {
+        const res = await axios.get(`/journeys/auto-cover-preview?destination=${encodeURIComponent(formData.destination)}&category=${encodeURIComponent(formData.category)}`);
+        if (res.data?.success) {
+          setAutoCoverOptions(res.data.urls || (res.data.url ? [res.data.url] : []));
+          setSelectedAutoCoverIndex(0);
+        }
+      } catch (err) {
+        console.error("Failed to fetch auto cover preview", err);
+      } finally {
+        setIsFetchingAutoCover(false);
+      }
+    }, 1500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.destination, formData.category, file]);
+
+  // ScrollSpy for Progress Indicator
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ["basics", "plan", "rules"];
+      let current = "basics";
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const rect = el.getBoundingClientRect();
+          if (rect.top <= window.innerHeight / 2.5) {
+            current = section;
+          }
+        }
+      }
+      setActiveSection(current);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const isFormValid =
-  Boolean(formData.title.trim()) &&
-  Boolean(formData.from.trim()) &&
-  Boolean(formData.destination.trim()) &&
-  Boolean(formData.startDate) &&
-  Boolean(formData.endDate) &&
-  formData.startDate <= formData.endDate &&
-  formData.description.trim().length >= 20;
+    Boolean(formData.title?.trim()) &&
+    Boolean(formData.from?.trim()) &&
+    Boolean(formData.destination?.trim()) &&
+    Boolean(formData.startDate) &&
+    Boolean(formData.endDate) &&
+    formData.startDate <= formData.endDate &&
+    (formData.description?.trim().length || 0) >= 20;
 
-  const categories = GROUP_CATEGORIES;
   const predefinedTags = [
-  "luxury",
-  "budget",
-  "students",
-  "family",
-  "photography",
-  "spiritual",
-  "trekking",
-  "roadtrip",
-  "weekend",
-  "foodie"];
+    "luxury", "budget", "students", "family", "photography",
+    "spiritual", "trekking", "roadtrip", "weekend", "foodie"
+  ];
 
+  const tagIcons = {
+    luxury: "✨", budget: "💰", students: "🎓", family: "👨‍👩‍👧", photography: "📸",
+    spiritual: "🧘", trekking: "🏔️", roadtrip: "🚗", weekend: "🌅", foodie: "🍜"
+  };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const val = type === "checkbox" ? checked : value;
 
     setFormData((prev) => {
-      const updated = {
-        ...prev,
-        [name]: val
-      };
-
-
-      if (
-      name === "startDate" &&
-      val &&
-      updated.endDate &&
-      val > updated.endDate)
-      {
+      const updated = { ...prev, [name]: val };
+      if (name === "startDate" && val && updated.endDate && val > updated.endDate) {
         updated.endDate = val;
       }
-      if (
-      name === "endDate" &&
-      val &&
-      updated.startDate &&
-      val < updated.startDate)
-      {
+      if (name === "endDate" && val && updated.startDate && val < updated.startDate) {
         updated.startDate = val;
       }
-
       return updated;
     });
-
-
-    if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-    if ((name === "startDate" || name === "endDate") && errors.endDate) {
-      setErrors((prev) => ({ ...prev, endDate: "" }));
-    }
-    if ((name === "startDate" || name === "endDate") && errors.startDate) {
-      setErrors((prev) => ({ ...prev, startDate: "" }));
-    }
   };
 
   const handleTagToggle = (tag) => {
     setFormData((prev) => {
-      const tags = prev.tags.includes(tag) ?
-      prev.tags.filter((t) => t !== tag) :
-      [...prev.tags, tag];
-      return { ...prev, tags };
+      if (prev.tags.includes(tag)) {
+        return { ...prev, tags: prev.tags.filter((t) => t !== tag) };
+      }
+      if (prev.tags.length >= 8) return prev;
+      return { ...prev, tags: [...prev.tags, tag] };
     });
   };
 
@@ -153,49 +176,22 @@ const CreateBuddyTrip = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = "Trip title is required";
-    if (!formData.from.trim()) newErrors.from = "Starting location is required";
-    if (!formData.destination.trim())
-    newErrors.destination = "Destination is required";
-    if (!formData.startDate) newErrors.startDate = "Start date is required";else
-    if (formData.startDate < todayStr)
-    newErrors.startDate = "Start date cannot be in the past";
-
-    if (!formData.endDate) newErrors.endDate = "End date is required";else
-    if (
-    formData.startDate &&
-    formData.endDate &&
-    formData.startDate > formData.endDate)
-    {
-      newErrors.endDate = "End date must be after start date";
-    }
-    if (!formData.description.trim()) {
-      newErrors.description = "Trip description is required";
-    } else if (formData.description.trim().length < 20) {
-      newErrors.description = "Description should be at least 20 characters";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) {
-      showToast.error("Please fix the errors in the form");
-
-      window.scrollTo({ top: 0, behavior: "smooth" });
+    if (!isFormValid) {
+      showToast.error("Please complete all required fields");
       return;
     }
 
     setIsSubmitting(true);
-    let toastId = toast.loading("Creating your amazing trip...");
+    let toastId = toast.loading("Creating your adventure...");
 
     try {
       let imageUrl = formData.coverImage;
+      if (!file && !imageUrl && autoCoverOptions.length > 0) {
+        imageUrl = autoCoverOptions[selectedAutoCoverIndex];
+      }
 
       if (file) {
         const data = new FormData();
@@ -203,27 +199,41 @@ const CreateBuddyTrip = () => {
         data.append("upload_preset", "upload");
 
         const uploadRes = await fetch(
-        "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
-        { method: "POST", body: data }
+          "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
+          { method: "POST", body: data }
         ).then((res) => res.json());
         imageUrl = uploadRes.url;
       }
 
       const payload = {
-        ...formData,
-        maxCompanions: formData.maxMembers,
-        coverImage: imageUrl
+        title: formData.title,
+        destination: formData.destination,
+        from: formData.from,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        description: formData.description,
+        coverImage: imageUrl,
+        journeyType: "Group",
+        privacy: formData.isPrivate ? "Private" : "Public",
+        maxMembers: formData.maxMembers,
+        sourceType: "explore",
+        category: formData.category,
+        budget: formData.budget,
+        isExplorePrivate: formData.isPrivate,
+        tags: formData.tags
       };
-      const res = await axios.post("/social/buddy", payload, {
+
+      const res = await axios.post("/journeys", payload, {
         withCredentials: true
       });
 
       if (res.data.success) {
-        toast.success("Travel group created successfully!", { id: toastId });
+        localStorage.removeItem("createTripDraft");
+        toast.success("Trip created successfully!", { id: toastId });
         navigate("/social/buddy");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create group", {
+      toast.error(err.response?.data?.message || "Failed to create trip", {
         id: toastId
       });
     } finally {
@@ -231,525 +241,463 @@ const CreateBuddyTrip = () => {
     }
   };
 
-  const ErrorMessage = ({ message }) =>
-  <AnimatePresence>
-      {message &&
-    <motion.div
-    initial={{ opacity: 0, height: 0, y: -5 }}
-    animate={{ opacity: 1, height: "auto", y: 0 }}
-    exit={{ opacity: 0, height: 0 }}
-    className="text-rose-500 text-xs font-medium mt-1.5 flex items-center gap-1">
+  const getDurationString = () => {
+    if (formData.startDate && formData.endDate) {
+      const start = moment(formData.startDate);
+      const end = moment(formData.endDate);
+      if (start.isValid() && end.isValid() && start.isSameOrBefore(end)) {
+        const days = end.diff(start, 'days') + 1;
+        return `${days} day${days > 1 ? 's' : ''} · ${start.format('MMM D')}–${end.format('MMM D')}`;
+      }
+    }
+    return "Select valid dates";
+  };
 
-          <AlertCircle className="w-3.5 h-3.5" />
-          {message}
-        </motion.div>}
-
-    </AnimatePresence>;
-
+  const scrollToSection = (id) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-800 font-sans pb-24 selection:bg-brand-100 selection:text-brand-900">
-      {}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-white/20 shadow-sm supports-[backdrop-filter]:bg-white/60">
-        <div className="max-w-4xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+    <div className="min-h-screen bg-[#FDFCFE] text-slate-800 font-sans pb-12 selection:bg-purple-100 selection:text-purple-900 relative">
+      {/* Decorative gradient top background */}
+      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-purple-50/80 to-transparent pointer-events-none z-0" />
+
+      {/* Sticky Header */}
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
+        <div className="max-w-[1100px] mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2 sm:gap-5 min-w-0">
             <button
-            onClick={() => navigate("/social/buddy")}
-            className="p-2 -ml-2 rounded-xl hover:bg-slate-50 text-[#1E293B] border border-transparent hover:border-[#E5E7EB] transition-all duration-200">
-
-              <ArrowLeft className="w-5 h-5 text-[#7C3AED]" />
+              onClick={() => {
+                if (window.history.length > 1) {
+                  navigate(-1);
+                } else {
+                  navigate("/social/buddy");
+                }
+              }}
+              className="p-1.5 sm:p-2 -ml-1 rounded-xl hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
             </button>
-            <h1 className="text-xl font-bold text-[#1E293B]">
-              Create New Trip
-            </h1>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-[17px] font-bold text-slate-900 tracking-tight truncate font-heading">Create New Trip</h1>
+              <p className="text-[11px] font-normal sm:font-medium text-slate-500 hidden sm:block font-sans">Plan your next adventure with the right travel buddies.</p>
+            </div>
           </div>
-          <motion.button
-          whileHover={{ scale: isFormValid && !isSubmitting ? 1.02 : 1 }}
-          whileTap={{ scale: isFormValid && !isSubmitting ? 0.98 : 1 }}
-          onClick={handleSubmit}
-          disabled={isSubmitting || !isFormValid}
-          className={`px-6 py-2 font-semibold text-sm rounded-xl transition-all duration-200 flex items-center gap-2 ${
-          isSubmitting || !isFormValid ?
-          "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none" :
-          "bg-[#7C3AED] hover:bg-[#6D28D9] text-white shadow-soft"
-          }`}>
+          <div className="flex items-center gap-2 sm:gap-4 shrink-0 font-sans">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 hidden md:inline-block bg-slate-100 px-2 py-1 rounded-md">Draft Auto-Saved</span>
+            <button
+              disabled={!isFormValid || isSubmitting}
+              onClick={handleSubmit}
+              className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-semibold transition-all flex items-center gap-1.5 sm:gap-2 ${
+                isFormValid && !isSubmitting
+                  ? "bg-purple-600 hover:bg-purple-700 text-white shadow-[0_4px_14px_rgba(124,58,237,0.25)] active:scale-95"
+                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
+              }`}
+            >
+              {isSubmitting ? "Launching..." : "Launch Trip →"}
+            </button>
+          </div>
+        </div>
 
-            {isSubmitting ?
-            <>
-                <svg
-              className="animate-spin -ml-1 mr-2 h-4 w-4 text-white"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24">
-
-                  <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4">
-                </circle>
-                  <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                </path>
-                </svg>
-                Publishing...
-              </> :
-
-            "Launch Trip"}
-
-          </motion.button>
+        {/* Lightweight Progress Indicator */}
+        <div className="max-w-[1100px] mx-auto px-4 h-11 flex items-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar border-t border-slate-100">
+          {[
+            { id: "basics", num: "01", label: "Basics" },
+            { id: "plan", num: "02", label: "Trip Plan" },
+            { id: "rules", num: "03", label: "Crew & Rules" }
+          ].map((step, idx, arr) => (
+            <div key={step.id} className="flex items-center shrink-0">
+              <button
+                type="button"
+                onClick={() => scrollToSection(step.id)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold tracking-wide transition-all ${
+                  activeSection === step.id ? "text-purple-700 bg-purple-50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span>{step.num}</span> <span>{step.label}</span>
+              </button>
+              {idx < arr.length - 1 && <span className="text-slate-300 mx-1 sm:mx-2">→</span>}
+            </div>
+          ))}
         </div>
       </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
-        <form
-        id="createBuddyTripForm"
-        onSubmit={handleSubmit}
-        className="space-y-8">
+      <main className="max-w-[1100px] mx-auto px-4 py-6 relative z-10">
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          
+          {/* Left Column: Form Fields */}
+          <div className="lg:col-span-8 space-y-8 pb-8">
+            
+            {/* Step 1: Basics */}
+            <section id="basics" className="scroll-mt-28 space-y-3">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Let’s start with the basics</h2>
+                <p className="text-sm text-slate-500 font-medium mt-1">Give your trip a name and tell travelers where you're headed.</p>
+              </div>
 
-          {}
-          <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative w-full h-48 md:h-64 rounded-3xl overflow-hidden bg-white shadow-soft border border-[#E5E7EB]/60 group">
+              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+                
+                <div className="w-full">
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image</label>
+                    <div 
+                      className={`relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-[24px] border border-slate-200/80 overflow-hidden group bg-slate-50/50 flex flex-col items-center justify-center transition-all shadow-sm ${!file && autoCoverOptions.length === 0 ? "border-dashed hover:border-[#7C3AED]/40 hover:bg-[#7C3AED]/5 cursor-pointer" : ""}`}
+                      onClick={() => !file && autoCoverOptions.length === 0 && fileInputRef.current?.click()}
+                    >
+                      {file && imagePreview ? (
+                        <>
+                          <img src={imagePreview} alt="User Cover" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="bg-white/10 backdrop-blur-md border border-white/20 px-4 py-1.5 rounded-full mb-3 flex items-center gap-2">
+                              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                              <span className="text-xs font-bold text-white tracking-wide uppercase">Your uploaded cover</span>
+                            </div>
+                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-slate-800 hover:bg-slate-100 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
+                              Change
+                            </button>
+                          </div>
+                          {/* Always visible badge when not hovered */}
+                          <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-2 group-hover:opacity-0 transition-opacity">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+                            <span className="text-[10px] font-bold text-white tracking-wide uppercase">Your Cover</span>
+                          </div>
+                        </>
+                      ) : autoCoverOptions.length > 0 ? (
+                        <>
+                          <img src={autoCoverOptions[selectedAutoCoverIndex]} alt="Auto Cover" className="w-full h-full object-cover" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-slate-800 hover:bg-slate-100 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
+                              Upload your own
+                            </button>
+                          </div>
+                          {/* Always visible badge when not hovered */}
+                          <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 group-hover:opacity-0 transition-opacity">
+                            <span className="text-sm leading-none">✨</span>
+                            <span className="text-[10px] font-bold text-white tracking-wide uppercase">Auto Cover</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center justify-center p-6 text-center">
+                           <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                              <Camera className="w-5 h-5 text-slate-400 group-hover:text-[#7C3AED]" />
+                           </div>
+                           <h3 className="text-sm font-bold text-slate-700 mb-1">Add a trip cover</h3>
+                           <p className="text-xs text-slate-500 max-w-[260px] mb-5">
+                             Upload your own photo or let Go YatriGo choose one for you.
+                           </p>
+                           <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 shadow-sm px-5 py-2 rounded-xl text-xs font-bold transition-all mb-3">
+                             + Upload photo
+                           </button>
+                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">JPG / PNG · Max 5 MB</p>
+                        </div>
+                      )}
+                      
+                      <input type="file" ref={fileInputRef} onChange={handleImageChange} accept="image/*" className="hidden" />
+                    </div>
 
-            <div
-            className={`absolute inset-0 flex flex-col items-center justify-center cursor-pointer transition-colors ${imagePreview ? "" : "bg-gradient-to-br from-brand-50/50 to-brand-50/50 hover:from-brand-100/50 hover:to-brand-100/50"}`}
-            onClick={() => !imagePreview && fileInputRef.current?.click()}>
-
-              {imagePreview ?
-              <>
-                  <img
-                src={imagePreview}
-                alt="Cover"
-                className="w-full h-full object-cover absolute inset-0" />
-
-                  <div className="absolute inset-0 bg-black/10 group-hover:bg-black/40 transition-colors z-10"></div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity absolute inset-0 flex items-center justify-center z-20">
-                    <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    removeImage();
-                  }}
-                  className="px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md rounded-full text-white font-medium flex items-center gap-2 transition-all shadow-lg">
-
-                      <X className="w-4 h-4" /> Remove Photo
-                    </button>
+                    {!file && autoCoverOptions.length > 1 && (
+                      <div className="mt-4 overflow-x-auto no-scrollbar flex gap-2.5 pb-2 px-1">
+                        {autoCoverOptions.map((url, idx) => (
+                          <div 
+                            key={idx} 
+                            onClick={() => setSelectedAutoCoverIndex(idx)}
+                            className={`flex-shrink-0 w-24 h-16 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${selectedAutoCoverIndex === idx ? "border-[#7C3AED] scale-105 shadow-md" : "border-transparent hover:border-slate-300 opacity-70 hover:opacity-100"}`}
+                          >
+                            <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    
                   </div>
-                </> :
 
-              <div className="flex flex-col items-center text-brand-400">
-                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center shadow-sm mb-3">
-                    <Camera className="w-6 h-6 text-brand-500" />
-                  </div>
-                  <span className="text-sm font-bold text-slate-700 mb-1">
-                    Upload Trip Cover
-                  </span>
-                  <span className="text-xs text-slate-400 font-medium">
-                    Recommended: 16:9, Max 5MB
-                  </span>
-                </div>}
-
-              <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleImageChange}
-              accept="image/*,.heic,.heif"
-              className="hidden" />
-
-            </div>
-          </motion.section>
-
-          {}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {}
-            <div className="md:col-span-2 space-y-8">
-              {}
-              <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white p-6 sm:p-8 rounded-3xl shadow-soft border border-[#E5E7EB]/60">
-
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 bg-[#F3E8FF] text-[#7C3AED] rounded-xl">
-                    <Map className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-lg font-bold text-slate-800">
-                    Trip Basics
-                  </h2>
-                </div>
-
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                      Trip Title
-                    </label>
+                  <div className="w-full">
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Trip Title</label>
                     <input
-                    type="text"
-                    name="title"
-                    placeholder="e.g. Mystical Manali Weekend"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    className={`w-full bg-white border ${errors.title ? "border-rose-300 bg-rose-50/30 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl px-4 py-3.5 text-slate-900 font-semibold placeholder:text-slate-400 placeholder:font-medium focus:bg-white outline-none transition-all focus:ring-4`} />
-
-                    <ErrorMessage message={errors.title} />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                        Starting From
-                      </label>
-                      <div className="relative">
-                        <MapPin
-                        className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${errors.from ? "text-rose-400" : "text-slate-400"}`} />
-
-                        <input
-                        type="text"
-                        name="from"
-                        placeholder="City or Landmark"
-                        value={formData.from}
-                        onChange={handleInputChange}
-                        className={`w-full bg-white border ${errors.from ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`} />
-
-                      </div>
-                      <ErrorMessage message={errors.from} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                        Destination
-                      </label>
-                      <div className="relative">
-                        <MapPin
-                        className={`absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 ${errors.destination ? "text-rose-400" : "text-brand-400"}`} />
-
-                        <input
-                        type="text"
-                        name="destination"
-                        placeholder="Where to?"
-                        value={formData.destination}
-                        onChange={handleInputChange}
-                        className={`w-full bg-white border ${errors.destination ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl pl-10 pr-4 py-3 text-sm font-semibold focus:bg-white outline-none transition-all focus:ring-4`} />
-
-                      </div>
-                      <ErrorMessage message={errors.destination} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                        Start Date
-                      </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        <input
-                        type="date"
-                        name="startDate"
-                        value={formData.startDate}
-                        min={todayStr}
-                        onChange={handleInputChange}
-                        className={`w-full bg-white border ${errors.startDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`} />
-
-                      </div>
-                      <ErrorMessage message={errors.startDate} />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                        End Date
-                      </label>
-                      <div className="relative">
-                        <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                        <input
-                        type="date"
-                        name="endDate"
-                        value={formData.endDate}
-                        min={formData.startDate || todayStr}
-                        onChange={handleInputChange}
-                        className={`w-full bg-white border ${errors.endDate ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl pl-10 pr-4 py-3 text-sm font-semibold text-slate-700 focus:bg-white outline-none transition-all focus:ring-4 cursor-pointer`} />
-
-                      </div>
-                      <ErrorMessage message={errors.endDate} />
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-
-              {}
-              <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white p-6 sm:p-8 rounded-3xl shadow-soft border border-[#E5E7EB]/60">
-
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2.5 bg-[#F3E8FF] text-[#7C3AED] rounded-xl">
-                    <FileText className="w-5 h-5" />
-                  </div>
-                  <h2 className="text-lg font-bold text-slate-800">
-                    Trip Details
-                  </h2>
-                </div>
-
-                <div className="space-y-5">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                      Description & Itinerary
-                    </label>
-                    <textarea
-                    name="description"
-                    rows="5"
-                    placeholder="What's the plan? Describe the vibe, places you'll visit, and what kind of trip mates you're looking for..."
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    className={`w-full bg-white border ${errors.description ? "border-rose-300 focus:border-rose-500 focus:ring-rose-500/20" : "border-[#E5E7EB] focus:border-[#7C3AED] focus:ring-[#7C3AED]/10"} rounded-xl px-4 py-3 text-sm font-medium focus:bg-white outline-none transition-all focus:ring-4 resize-none`} />
-
-                    <div className="flex justify-between items-center mt-1.5">
-                      <ErrorMessage message={errors.description} />
-                      <span
-                      className={`text-xs font-medium ml-auto ${formData.description.length < 20 ? "text-rose-400" : "text-emerald-500"}`}>
-
-                        {formData.description.length}/500
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                      Vibe Tags
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      {predefinedTags.map((tag) => {
-                        const isSelected = formData.tags.includes(tag);
-                        return (
-                          <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          key={tag}
-                          type="button"
-                          onClick={() => handleTagToggle(tag)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-                          isSelected ?
-                          "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-200" :
-                          "bg-white text-slate-500 border-[#E5E7EB] hover:border-brand-300 hover:text-[#7C3AED]"
-                          }`}>
-
-                            #{tag}
-                          </motion.button>);
-
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {}
-            <div className="space-y-8">
-              <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white p-6 rounded-3xl shadow-soft border border-[#E5E7EB]/60">
-
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-                    <Wallet className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-base font-bold text-slate-800">
-                    Budget Estimate
-                  </h3>
-                </div>
-
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-lg">
-                    ₹
-                  </span>
-                  <input
-                  type="number"
-                  name="budget"
-                  placeholder="0"
-                  value={formData.budget}
-                  onChange={handleInputChange}
-                  min="0"
-                  className="w-full bg-white border border-[#E5E7EB] rounded-xl pl-8 pr-4 py-3 text-lg font-bold text-slate-800 focus:bg-white focus:border-emerald-500 outline-none transition-all focus:ring-4 focus:ring-emerald-500/20" />
-
-                </div>
-                <p className="text-xs text-slate-500 font-medium mt-2 ml-1">
-                  Approximate cost per person
-                </p>
-              </motion.div>
-
-              <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white p-6 rounded-3xl shadow-soft border border-[#E5E7EB]/60 space-y-6">
-
-                <div className="flex items-center gap-3 mb-2">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <h3 className="text-base font-bold text-slate-800">
-                    Group Rules
-                  </h3>
-                </div>
-
-                <div>
-                  <div className="flex justify-between items-center mb-2 ml-1">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      Group Size
-                    </label>
-                    <input
-                      type="number"
-                      min="2"
-                      max="500"
-                      value={formData.maxMembers}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          maxMembers: parseInt(e.target.value) || 2
-                        }))
-                      }
-                      className="text-sm font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md w-16 text-center outline-none focus:ring-2 focus:ring-blue-500/20"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      placeholder="e.g. Weekend Escape to Manali"
+                      className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl px-5 py-4 text-[15px] font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
                     />
                   </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Starting from</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        name="from"
+                        value={formData.from}
+                        onChange={handleInputChange}
+                        placeholder="City or landmark"
+                        className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Going to</label>
+                    <div className="relative">
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <input
+                        name="destination"
+                        value={formData.destination}
+                        onChange={handleInputChange}
+                        placeholder="Where are you headed?"
+                        className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 2: Trip Plan */}
+            <section id="plan" className="scroll-mt-28 space-y-3">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Plan the details</h2>
+                <p className="text-sm text-slate-500 font-medium mt-1">When are you going, and what will the experience be like?</p>
+              </div>
+
+              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+                {/* Dates */}
+                <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Start date</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <input
+                          type="date"
+                          name="startDate"
+                          value={formData.startDate}
+                          min={todayStr}
+                          onChange={handleInputChange}
+                          className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition-all cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">End date</label>
+                      <div className="relative">
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <input
+                          type="date"
+                          name="endDate"
+                          value={formData.endDate}
+                          min={formData.startDate || todayStr}
+                          onChange={handleInputChange}
+                          className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition-all cursor-pointer"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-[11px] font-extrabold text-purple-600 mt-3 inline-block px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-100">
+                    {getDurationString()}
+                  </p>
+                </div>
+
+                {/* Description */}
+                <div>
+                  <label className="block text-[15px] font-extrabold text-slate-900 mb-1">Tell travelers about the trip</label>
+                  <p className="text-[13px] text-slate-500 font-medium mb-4">What will you do, where will you go, and what kind of travel buddies are you looking for?</p>
+                  <textarea
+                    name="description"
+                    value={formData.description}
+                    onChange={handleInputChange}
+                    rows="4"
+                    placeholder="“Exploring waterfalls, local food and forts around…”"
+                    className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl px-5 py-4 text-[14px] font-medium text-slate-900 placeholder:text-slate-400 outline-none transition-all resize-none leading-relaxed"
+                  />
+                  <div className="flex justify-between items-center mt-2.5">
+                    <p className="text-[11px] text-slate-400 font-bold">Tip: A clear itinerary helps you attract the right travel buddies.</p>
+                    <span className={`text-[11px] font-bold ${(formData.description?.trim().length || 0) < 20 ? "text-rose-400" : "text-emerald-500"}`}>
+                      {formData.description?.trim().length || 0}/500
+                    </span>
+                  </div>
+                </div>
+
+                {/* Vibe Tags */}
+                <div>
+                  <label className="block text-[15px] font-extrabold text-slate-900 mb-1">What’s the vibe?</label>
+                  <p className="text-[13px] text-slate-500 font-medium mb-4">Pick up to 8 · Tip: Choose tags that describe the actual experience.</p>
+                  <div className="flex flex-wrap gap-2.5">
+                    {predefinedTags.map((tag) => {
+                      const isSelected = formData.tags?.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => handleTagToggle(tag)}
+                          className={`px-3 py-1.5 rounded-full text-[13px] font-bold transition-all border flex items-center gap-1.5 ${
+                            isSelected
+                              ? "bg-purple-100 text-purple-700 border-purple-200 shadow-[0_2px_8px_rgba(124,58,237,0.15)]"
+                              : "bg-white text-slate-600 border-slate-200 hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50"
+                          }`}
+                        >
+                          <span>{tagIcons[tag] || "🏷️"}</span> <span className="capitalize">{tag}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Step 3: Group & Rules */}
+            <section id="rules" className="scroll-mt-28 space-y-3">
+              <div>
+                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Choose your crew</h2>
+                <p className="text-sm text-slate-500 font-medium mt-1">Decide who can join and how they get in.</p>
+              </div>
+
+              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Group Size</label>
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setFormData((p) => ({ ...p, maxMembers: Math.max(2, p.maxMembers - 1) }))}
+                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 font-bold transition-colors"
+                      >
+                        −
+                      </button>
+                      <div className="text-[15px] font-extrabold text-slate-900 w-24 text-center">{formData.maxMembers} travelers</div>
+                      <button
+                        type="button"
+                        onClick={() => setFormData((p) => ({ ...p, maxMembers: Math.min(500, p.maxMembers + 1) }))}
+                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 font-bold transition-colors"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                    <CustomSelect
+                      id="category"
+                      name="category"
+                      value={formData.category}
+                      onChange={handleInputChange}
+                      options={GROUP_CATEGORIES}
+                      placeholder="Select category"
+                    />
+                  </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                    Category
-                  </label>
-                  <CustomSelect
-                  value={formData.category}
-                  onChange={handleInputChange}
-                  options={categories.map(cat => ({ value: cat, label: cat }))}
-                  placeholder="Select Category"
-                  />
-                </div>
-
-                <div className="pt-4 border-t border-slate-100 space-y-5">
-                  {}
-                  <div>
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                      Joining Method
-                    </label>
-                    <div className="grid grid-cols-1 gap-2.5">
-                      {}
-                      <div
-                      onClick={() => setFormData((p) => ({ ...p, isPrivate: false }))}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
-                      !formData.isPrivate ?
-                      "border-emerald-500 bg-emerald-50/40 text-emerald-950 shadow-2xs" :
-                      "border-[#E5E7EB] bg-white hover:border-slate-300 text-slate-700"
-                      }`}>
-
-                        <div
-                        className={`p-2 rounded-xl shrink-0 ${
-                        !formData.isPrivate ? "bg-emerald-500 text-white" : "bg-slate-100 text-slate-500"
-                        }`}>
-
-                          <Globe className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-extrabold flex items-center justify-between">
-                            Open Group
-                            {!formData.isPrivate && <Check className="w-4 h-4 text-emerald-600" />}
-                          </p>
-                          <p className="text-[11px] font-medium text-slate-500 mt-0.5">
-                            Anyone can join instantly.
-                          </p>
-                        </div>
-                      </div>
-
-                      {}
-                      <div
-                      onClick={() => setFormData((p) => ({ ...p, isPrivate: true }))}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer flex items-start gap-3 ${
-                      formData.isPrivate ?
-                      "border-purple-500 bg-purple-50/40 text-purple-950 shadow-2xs" :
-                      "border-[#E5E7EB] bg-white hover:border-slate-300 text-slate-700"
-                      }`}>
-
-                        <div
-                        className={`p-2 rounded-xl shrink-0 ${
-                        formData.isPrivate ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-500"
-                        }`}>
-
-                          <ShieldCheck className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-extrabold flex items-center justify-between">
-                            Approval Required
-                            {formData.isPrivate && <Check className="w-4 h-4 text-[#7C3AED]" />}
-                          </p>
-                          <p className="text-[11px] font-medium text-slate-500 mt-0.5">
-                            Travelers send a request and the host approves them.
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {}
-                  <div className="pt-3 border-t border-slate-100">
-                    <label className="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">
-                      After Trip Starts
-                    </label>
+                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">Joining Method</label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
-                    className="flex items-center justify-between group cursor-pointer p-3.5 rounded-xl border border-[#E5E7EB] bg-white hover:bg-slate-50 transition-colors"
-                    onClick={() =>
-                    setFormData((p) => ({ ...p, allowJoinAfterStart: !p.allowJoinAfterStart }))}>
-
-
-                      <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
-                        <div
-                        className={`p-2 rounded-xl shrink-0 transition-colors ${
-                        formData.allowJoinAfterStart ? "bg-[#F3E8FF] text-[#7C3AED]" : "bg-slate-200 text-slate-500"
-                        }`}>
-
-                          <Users className="w-4 h-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs font-bold text-slate-800 truncate">
-                            Allow Join Requests
-                          </p>
-                          <p className="text-[10px] font-medium text-slate-500 leading-relaxed mt-0.5">
-                            {formData.allowJoinAfterStart ?
-                            "Allow travelers to request to join after the trip has started. Host approval is required." :
-                            "New members cannot join after the trip starts."}
-                          </p>
+                      onClick={() => setFormData((p) => ({ ...p, isPrivate: false }))}
+                      className={`p-5 rounded-[20px] border-2 transition-all cursor-pointer ${
+                        !formData.isPrivate ? "border-purple-500 bg-purple-50/30 shadow-[0_4px_16px_rgba(124,58,237,0.06)]" : "border-slate-200 bg-white hover:border-purple-200 hover:bg-slate-50/50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <Globe className={`w-5 h-5 ${!formData.isPrivate ? "text-purple-600" : "text-slate-400"}`} />
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${!formData.isPrivate ? "bg-purple-500" : "border-2 border-slate-200"}`}>
+                          {!formData.isPrivate && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
                         </div>
                       </div>
+                      <h3 className={`text-[15px] font-extrabold ${!formData.isPrivate ? "text-purple-900" : "text-slate-700"}`}>Open Group</h3>
+                      <p className="text-[12px] font-semibold text-slate-500 mt-1 leading-relaxed">Anyone can join before the journey starts.</p>
+                    </div>
 
-                      <div
-                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 ${
-                      formData.allowJoinAfterStart ? "bg-brand-600" : "bg-slate-300"
-                      }`}>
-
-                        <span
-                        className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        formData.allowJoinAfterStart ? "translate-x-6" : "translate-x-1"
-                        }`} />
-
+                    <div
+                      onClick={() => setFormData((p) => ({ ...p, isPrivate: true }))}
+                      className={`p-5 rounded-[20px] border-2 transition-all cursor-pointer ${
+                        formData.isPrivate ? "border-purple-500 bg-purple-50/30 shadow-[0_4px_16px_rgba(124,58,237,0.06)]" : "border-slate-200 bg-white hover:border-purple-200 hover:bg-slate-50/50"
+                      }`}
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <ShieldCheck className={`w-5 h-5 ${formData.isPrivate ? "text-purple-600" : "text-slate-400"}`} />
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${formData.isPrivate ? "bg-purple-500" : "border-2 border-slate-200"}`}>
+                          {formData.isPrivate && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
+                        </div>
                       </div>
+                      <h3 className={`text-[15px] font-extrabold ${formData.isPrivate ? "text-purple-900" : "text-slate-700"}`}>Approval Required</h3>
+                      <p className="text-[12px] font-semibold text-slate-500 mt-1 leading-relaxed">Travelers can request to join before the journey starts. You approve them.</p>
                     </div>
                   </div>
+
+                  <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-600">
+                    <span className="text-sm shrink-0">🔒</span>
+                    <p className="text-[12px] font-medium text-slate-600 leading-relaxed">
+                      <strong className="font-semibold text-slate-800">Roster locks when the journey starts.</strong> No new travelers can join after that.
+                    </p>
+                  </div>
                 </div>
-              </motion.div>
+              </div>
+            </section>
+          </div>
+
+          {/* Right Column: Sticky Summary */}
+          <div className="lg:col-span-4 lg:sticky lg:top-[100px] order-last">
+            <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-slate-200/60 flex flex-col h-full">
+              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6">Your Trip</h3>
+              
+              <div className="space-y-4 mb-6 flex-1">
+                <div className="flex gap-4 items-start">
+                  <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-purple-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Destination</p>
+                    <p className={`text-[15px] ${formData.destination?.trim() ? "text-slate-900 font-extrabold" : "text-slate-300 font-semibold"}`}>
+                      {formData.destination?.trim() ? formData.destination : "Add destination"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-9 h-9 rounded-full bg-emerald-50 flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Dates</p>
+                    <p className={`text-[15px] ${formData.startDate && formData.endDate ? "text-slate-900 font-extrabold" : "text-slate-300 font-semibold"}`}>
+                      {formData.startDate && formData.endDate ? `${moment(formData.startDate).format('MMM D')}–${moment(formData.endDate).format('MMM D')}` : "Add dates"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-4 items-start">
+                  <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 text-brand-600" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Group & Rules</p>
+                    <p className="text-[15px] font-extrabold text-slate-900">Up to {formData.maxMembers} travelers</p>
+                    <p className="text-[12px] font-bold text-slate-500 mt-0.5">{formData.category} · {!formData.isPrivate ? "Open Group" : "Approval Required"}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-6 border-t border-slate-100">
+                <h4 className="text-[12px] font-extrabold text-slate-900 mb-3">Ready to launch?</h4>
+                <ul className="space-y-2.5 text-[12px] font-bold">
+                  <li className={`flex items-center gap-2.5 ${formData.title?.trim() ? "text-emerald-600" : "text-slate-400"}`}>
+                    {formData.title?.trim() ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Trip title
+                  </li>
+                  <li className={`flex items-center gap-2.5 ${formData.destination?.trim() ? "text-emerald-600" : "text-slate-400"}`}>
+                    {formData.destination?.trim() ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Destination
+                  </li>
+                  <li className={`flex items-center gap-2.5 ${formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? "text-emerald-600" : "text-slate-400"}`}>
+                    {formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Dates
+                  </li>
+                  <li className={`flex items-center gap-2.5 ${(formData.description?.trim().length || 0) >= 20 ? "text-emerald-600" : "text-slate-400"}`}>
+                    {(formData.description?.trim().length || 0) >= 20 ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Itinerary
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
         </form>
       </main>
-    </div>);
-
+    </div>
+  );
 };
 
 export default CreateBuddyTrip;

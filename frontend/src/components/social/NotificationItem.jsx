@@ -1,6 +1,7 @@
 import React from "react";
 import { Heart, MessageCircle, UserPlus, Compass, Trash2 } from "lucide-react";
 import { formatTime, getAvatar } from "../../utils/chat/chatHelpers";
+import { chatService } from "../../services/chatService";
 
 export const NotificationItem = ({
   n,
@@ -29,15 +30,45 @@ export const NotificationItem = ({
     }
   };
 
-  const handleClick = () => {
+  const handleClick = async () => {
     markAsRead(n._id);
     setShowNotifPanel(false);
-    if (n.type === "follow" || n.type === "follow_request") {
-      navigate(`/profile/${n.sender?._id}`);
+    const type = (n.type || "").toLowerCase();
+    const senderId = n.sender?._id || n.sender?.id;
+    const memoryId = typeof n.post === "object" ? n.post?._id : n.post;
+    const dispatchId = typeof n.story === "object" ? n.story?._id : n.story;
+
+    if (type === "follow" || type === "follow_request" || type === "new_follower") {
+      if (senderId) navigate(`/profile/${senderId}`);
+    } else if (memoryId || type === "post_like" || type === "post_comment" || type.includes("memory")) {
+      if (memoryId && senderId) {
+        navigate(`/profile/${senderId}?postId=${memoryId}`);
+      } else {
+        navigate(senderId ? `/profile/${senderId}` : "/");
+      }
+    } else if (dispatchId || type === "story_like" || type === "story_reply") {
+      navigate("/", { state: dispatchId ? { dispatchId } : undefined });
     } else if (n.type === "buddy_request" || n.type === "buddy_approved" || n.type === "buddy_rejected") {
       navigate(`/social/buddy/${n.relatedId}`);
-    } else if (n.type === "message_request") {
-      navigate(`/social/chat`);
+    } else if (type === "message_request" || type === "new_message" || type === "direct") {
+      const roomId = typeof n.room === "object" ? n.room?._id : n.room;
+      if (roomId) {
+        navigate(`/social/chat/${roomId}`);
+        return;
+      }
+
+      const targetUserId = n.sender?._id || n.sender?.id;
+      if (targetUserId) {
+        try {
+          const directRoomId = await chatService.getDirectRoomId(targetUserId);
+          if (directRoomId) {
+            navigate(`/social/chat/${directRoomId}`);
+            return;
+          }
+        } catch {
+        }
+      }
+      navigate("/social/chat");
     } else {
       navigate(`/`);
     }
@@ -70,7 +101,7 @@ export const NotificationItem = ({
       <div className="flex-1 min-w-0">
         <div className="text-[12.5px] leading-relaxed text-slate-700">
           <span className="font-bold text-slate-900 pr-1 hover:underline">{n.sender?.name}</span>
-          {n.text}
+          {n.message || n.content || n.text || ""}
         </div>
         <span className="text-[10px] text-slate-400 font-medium block mt-1.5">{formatTime(n.createdAt)}</span>
 

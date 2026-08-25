@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Search, Users, ShieldCheck, Check, Globe } from "lucide-react";
+import { Search, Users, ShieldCheck, Check } from "lucide-react";
 import axiosInstance from "../../api/axios";
 import Avatar from "../common/Avatar";
 import { useAuth } from "../../context/authContext";
+import { resolveRelationship } from "../../utils/relationshipResolver";
 
 const MemberSelector = ({
   selectedIds = [],
@@ -10,85 +11,167 @@ const MemberSelector = ({
   excludeUserIds = []
 }) => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("Connections");
-  const [users, setUsers] = useState([]);
-  const [followersList, setFollowersList] = useState([]);
-  const [followingList, setFollowingList] = useState([]);
-  const [previousCompanions, setPreviousCompanions] = useState([]);
+  const [usersList, setUsersList] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [displayLimit, setDisplayLimit] = useState(20);
+  const [activeTab, setActiveTab] = useState("Mutuals");
 
-  useEffect(() => {
+  const getEffectiveUserId = () => {
+    if (user?._id) return String(user._id);
+    if (user?.id) return String(user.id);
+    try {
+      const raw = localStorage.getItem("user");
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        return String(parsed._id || parsed.id || "");
+      }
+    } catch {}
+    return "";
+  };
+
+  const effectiveUserId = getEffectiveUserId();
+  const excludeStr = excludeUserIds.join(',');
+
+  const fetchTravelers = () => {
     setLoading(true);
-    const userId = user?._id || localStorage.getItem("userId") || "";
-    const fetchPromises = [
-    axiosInstance.get("/users/search").catch(() => ({ data: [] })),
-    axiosInstance.
-    get("/journeys/previous-companions").
-    catch(() => ({ data: { companions: [] } }))];
-
-    if (userId) {
-      fetchPromises.push(
-      axiosInstance.get(`/users/${userId}/followers`).catch(() => ({ data: { followers: [] } })),
-      axiosInstance.get(`/users/${userId}/following`).catch(() => ({ data: { following: [] } }))
-      );
+    setError(false);
+    const userId = getEffectiveUserId();
+    
+    if (!userId) {
+      setLoading(false);
+      return;
     }
 
-    Promise.all(fetchPromises).
-    then(([usersRes, compRes, followersRes, followingRes]) => {
-      const list = Array.isArray(usersRes.data) ?
-      usersRes.data :
-      usersRes.data?.users || [];
+    const fetchPromises = [
+      axiosInstance.get(`/trip-mates/${userId}`).catch(err => {
+        console.warn("[MemberSelector] Failed to load trip mates:", err);
+        return { data: { trip_mates: [] } };
+      }),
+      axiosInstance.get(`/users/${userId}/followers`).catch(err => {
+        console.warn("[MemberSelector] Failed to load followers:", err);
+        return { data: { followers: [] } };
+      }),
+      axiosInstance.get(`/users/${userId}/following`).catch(err => {
+        console.warn("[MemberSelector] Failed to load following:", err);
+        return { data: { following: [] } };
+      }),
+      axiosInstance.get(`/journeys/previous-companions?userId=${userId}`).catch(err => {
+        console.warn("[MemberSelector] Failed to load previous companions:", err);
+        return { data: { companions: [] } };
+      })
+    ];
 
-      const uniqueMap = new Map();
-      list.forEach((u) => {
-        if (u && u._id) uniqueMap.set(u._id.toString(), u);
-      });
-      const uniqueList = Array.from(uniqueMap.values());
+    Promise.all(fetchPromises)
+      .then(([tripMatesRes, followersRes, followingRes, companionsRes]) => {
+        const tripMates = tripMatesRes?.data?.trip_mates || [];
+        const followers = followersRes?.data?.followers || [];
+        const following = followingRes?.data?.following || [];
+        const previousCompanions = companionsRes?.data?.companions || [];
 
-      const filteredUsers = uniqueList.filter(
-      (u) => !excludeUserIds.includes(u._id)
-      );
-      setUsers(filteredUsers);
+        const companionMap = new Map();
+        previousCompanions.forEach((c) => {
+          if (c && (c._id || c.id)) {
+            companionMap.set(String(c._id || c.id), c);
+          }
+        });
 
-      if (followersRes?.data?.followers) {
-        setFollowersList(followersRes.data.followers.filter((u) => !excludeUserIds.includes(u._id)));
-      }
-      if (followingRes?.data?.following) {
-        setFollowingList(followingRes.data.following.filter((u) => !excludeUserIds.includes(u._id)));
-      }
+        const tripMatesMap = new Map();
+        tripMates.forEach(c => {
+          if (c && (c._id || c.id)) {
+            tripMatesMap.set(String(c._id || c.id), c);
+          }
+        });
 
-      const compList = compRes.data?.companions || [];
-      let finalCompanions = compList.filter(
-      (u) => !excludeUserIds.includes(u._id)
-      );
+        const myIdStr = String(userId);
+        const excludedSet = new Set([
+          myIdStr,
+          ...(excludeUserIds || []).map(id => String(id?._id || id?.id || id))
+        ]);
 
+        const followingMap = new Map();
+        following.forEach(u => {
+          if (u && (u._id || u.id)) {
+            followingMap.set(String(u._id || u.id), u);
+          }
+        });
 
-      if (finalCompanions.length === 0 && filteredUsers.length > 0) {
-        const simulatedTrips = [
-        "Kedarnath Trek",
-        "Goa Beach Getaway",
-        "Manali Expedition",
-        "Leh Ladakh Roadtrip"];
+        const mutualUsers = [];
+        followers.forEach(u => {
+          if (u && (u._id || u.id)) {
+            const uIdStr = String(u._id || u.id);
+            if (followingMap.has(uIdStr) && !excludedSet.has(uIdStr)) {
+              mutualUsers.push(u);
+            }
+          }
+        });
 
-        finalCompanions = filteredUsers.map((u, idx) => ({
-          ...u,
-          category: "Previous Companions",
-          tripsCount: idx % 4 + 1,
-          lastJourney: {
-            title: simulatedTrips[idx % simulatedTrips.length],
-            date: new Date(Date.now() - idx * 864000000).toISOString()
-          },
-          verified: idx % 2 === 0,
-          online: idx % 3 === 0
-        }));
-      }
-      setPreviousCompanions(finalCompanions);
-    }).
-    catch((err) => console.error("Error loading travelers:", err)).
-    finally(() => setLoading(false));
-  }, [user?._id]);
+        const uniqueMap = new Map();
+        [...mutualUsers, ...tripMates].forEach((u) => {
+          if (u && (u._id || u.id)) {
+            const uIdStr = String(u._id || u.id);
+            if (!excludedSet.has(uIdStr) && !uniqueMap.has(uIdStr)) {
+              uniqueMap.set(uIdStr, {
+                ...u,
+                _id: uIdStr
+              });
+            }
+          }
+        });
+
+        const currentUserObj = {
+          ...user,
+          _id: userId,
+          following: following.map(u => String(u._id || u.id || u)),
+          followers: followers.map(u => String(u._id || u.id || u)),
+          followRequests: (user?.followRequests || []).map(u => String(u._id || u.id || u))
+        };
+
+        const processedUsers = Array.from(uniqueMap.values()).map(u => {
+          const uId = String(u._id || u.id);
+          const isTripMateBool = tripMatesMap.has(uId);
+          const rel = resolveRelationship(currentUserObj, u, isTripMateBool ? "connected" : "not_connected");
+          const compData = companionMap.get(uId);
+          const tripsCount = typeof compData?.tripsCount === "number" ? compData.tripsCount : 0;
+          const lastJourney = compData?.lastJourney || null;
+
+          // Determine priority (1 is highest: Mutual + Trip Mate)
+          let priority = 4;
+          if (rel.socialState === "mutual" && rel.tripMateState === "trip_mate") priority = 1;
+          else if (rel.socialState === "mutual") priority = 2;
+          else if (rel.tripMateState === "trip_mate") priority = 3;
+
+          // Dynamic badges strictly from resolved states
+          const badges = [];
+          if (rel.socialState === "mutual") badges.push("Mutual");
+          if (rel.tripMateState === "trip_mate") badges.push("Trip Mate");
+
+          return {
+            ...u,
+            _id: uId,
+            socialState: rel.socialState,
+            tripMateState: rel.tripMateState,
+            isTripMate: rel.tripMateState === "trip_mate",
+            priority,
+            badges,
+            tripsCount,
+            lastJourney
+          };
+        });
+
+        setUsersList(processedUsers);
+      })
+      .catch((err) => {
+        console.error("Error loading travelers:", err);
+        setError(true);
+      })
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchTravelers();
+  }, [effectiveUserId, excludeStr]);
 
   const toggleUser = (userId) => {
     if (selectedIds.includes(userId)) {
@@ -98,106 +181,66 @@ const MemberSelector = ({
     }
   };
 
-  const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setDisplayLimit(20);
-  };
-
-
-  const getDynamicRelationship = (user, index) => {
-    if (activeTab === "Connections") {
-      return {
-        category: "Connections",
-        badgeIcon: "✨",
-        badgeText: "Trip Mate",
-        subText: `${index % 5 + 2} Mutual Journeys`,
-        verified: index % 2 === 0,
-        online: index % 3 === 0
-      };
-    }
-    if (activeTab === "Trip Mates") {
-      return {
-        category: "Trip Mates",
-        badgeIcon: "✨",
-        badgeText: "Trip Mate",
-        subText: "Your Trip Mate",
-        verified: index % 3 === 0,
-        online: index % 2 === 0
-      };
-    }
-    return {};
-  };
-
-  let rawList = [];
-  if (activeTab === "Previous Trip Mates" || activeTab === "Previous Companions") {
-    rawList = previousCompanions;
-  } else {
-    const sourceList = followingList.length > 0 ? followingList : users;
-    rawList = sourceList.map((u, i) => ({ ...u, ...getDynamicRelationship(u, i) }));
-  }
-
-
   const searchKw = search.toLowerCase().trim();
-  console.log("Raw list:", rawList);
-  console.log("Search keyword:", searchKw);
-  let filteredList = rawList.filter(
-  (u) =>
-  (u.name && u.name.toLowerCase().includes(searchKw)) ||
-  (u.username && u.username.toLowerCase().includes(searchKw)) ||
-  (u.email && u.email.toLowerCase().includes(searchKw))
-  );
-  console.log("Filtered list:", filteredList);
-
-
-  if (activeTab === "Previous Trip Mates" || activeTab === "Previous Companions") {
-    filteredList.sort((a, b) => {
-      const tripsA = a.tripsCount || 1;
-      const tripsB = b.tripsCount || 1;
-      if (tripsB !== tripsA) return tripsB - tripsA;
-      const dateA = a.lastJourney?.date ?
-      new Date(a.lastJourney.date).getTime() :
-      0;
-      const dateB = b.lastJourney?.date ?
-      new Date(b.lastJourney.date).getTime() :
-      0;
-      return dateB - dateA;
-    });
+  
+  // Filter by active tab first
+  let tabList = usersList;
+  if (activeTab === "Mutuals") {
+    tabList = usersList.filter(u => u.socialState === "mutual");
+  } else if (activeTab === "Trip Mates") {
+    tabList = usersList.filter(u => u.tripMateState === "trip_mate");
   }
+
+  // Search within the active tab's list
+  let filteredList = tabList.filter(
+    (u) =>
+      (u.name && u.name.toLowerCase().includes(searchKw)) ||
+      (u.username && u.username.toLowerCase().includes(searchKw)) ||
+      (u.email && u.email.toLowerCase().includes(searchKw))
+  );
+
+  // Sort by priority, then alphabetically
+  filteredList.sort((a, b) => {
+    if (a.priority !== b.priority) return a.priority - b.priority;
+    
+    const nameA = (a.name || "").toLowerCase();
+    const nameB = (b.name || "").toLowerCase();
+    return nameA.localeCompare(nameB);
+  });
 
   const displayUsers = filteredList.slice(0, displayLimit);
 
   const tabs = [
-  { id: "Connections", label: "Trip Mates", desc: "People you travel with" },
-  {
-    id: "Previous Trip Mates",
-    label: "Previous Trip Mates",
-    desc: "(Past travel squad)"
-  }];
-
+    { id: "Mutuals", label: "Mutuals", desc: "Your mutual connections" },
+    { id: "Trip Mates", label: "Trip Mates", desc: "Your travel connections" }
+  ];
 
   return (
     <div className="space-y-5 animate-fade-in">
       {}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 bg-slate-100 dark:bg-slate-800/80 p-1.5 rounded-2xl">
         {tabs.map((t) => {
           const isActive = activeTab === t.id;
           return (
             <button
-            key={t.id}
-            type="button"
-            onClick={() => handleTabChange(t.id)}
-            className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
-            isActive ?
-            "bg-white dark:bg-slate-900 text-[#7C3AED] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700" :
-            "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
-            }`}>
-
+              key={t.id}
+              type="button"
+              onClick={() => {
+                setActiveTab(t.id);
+                setDisplayLimit(20);
+              }}
+              className={`py-2.5 px-3 rounded-xl text-xs font-bold transition-all flex flex-col items-center justify-center gap-0.5 ${
+                isActive
+                  ? "bg-white dark:bg-slate-900 text-[#7C3AED] shadow-sm ring-1 ring-slate-200 dark:ring-slate-700"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+              }`}
+            >
               <span>{t.label}</span>
               <span className="text-[9px] font-normal opacity-70 hidden sm:inline">
                 {t.desc}
               </span>
-            </button>);
-
+            </button>
+          );
         })}
       </div>
 
@@ -205,150 +248,158 @@ const MemberSelector = ({
       <div className="relative">
         <Search className="w-4 h-4 text-slate-400 absolute left-4 top-3.5" />
         <input
-        type="text"
-        placeholder={
-        activeTab === "Previous Companions" ?
-        "Search Previous Companions by name..." :
-        `Search ${activeTab.toLowerCase()} by name or handle...`}
-
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        className="w-full bg-white dark:bg-slate-900 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-hidden focus:border-[#7C3AED] shadow-xs" />
-
+          type="text"
+          placeholder="Search by name or handle..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-white dark:bg-slate-900 pl-11 pr-4 py-3 rounded-2xl border border-slate-200 dark:border-slate-800 text-xs text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-hidden focus:border-[#7C3AED] shadow-xs"
+        />
       </div>
 
       {}
       <div className="max-h-72 overflow-y-auto pr-1 space-y-2.5 custom-scrollbar">
-        {loading ?
-        <div className="p-8 text-center space-y-2">
+        {loading ? (
+          <div className="p-8 text-center space-y-2">
             <div className="w-6 h-6 border-2 border-[#7C3AED] border-t-transparent rounded-full animate-spin mx-auto" />
-            <p className="text-xs text-slate-500">
-              Scanning traveler network...
+            <p className="text-xs text-slate-500">Scanning traveler network...</p>
+          </div>
+        ) : error ? (
+          <div className="p-8 text-center bg-red-50 dark:bg-red-900/10 rounded-3xl border border-dashed border-red-200 dark:border-red-900/40">
+            <ShieldCheck className="w-8 h-8 text-red-400 mx-auto mb-2 opacity-60" />
+            <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
+              Couldn't load travelers.
             </p>
-          </div> :
-        displayUsers.length === 0 ?
-        <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
+            <button onClick={fetchTravelers} className="mt-3 text-[#7C3AED] text-xs font-bold hover:underline">
+              Retry
+            </button>
+          </div>
+        ) : displayUsers.length === 0 ? (
+          <div className="p-8 text-center bg-slate-50 dark:bg-slate-900/40 rounded-3xl border border-dashed border-slate-200 dark:border-slate-800">
             <Users className="w-8 h-8 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
             <p className="text-xs font-bold text-slate-700 dark:text-slate-300">
-              No travelers found in {activeTab}
+              {activeTab === "Trip Mates" ? "No Trip Mates yet" : "No Mutuals yet"}
             </p>
             <p className="text-[11px] text-slate-400 mt-0.5">
-              Try switching categories or expanding your search.
+              {activeTab === "Trip Mates"
+                ? "Add travelers to your Trip Mates to invite them here."
+                : "You can invite mutual connections here."}
             </p>
-          </div> :
-
-        <>
+          </div>
+        ) : (
+          <>
             {displayUsers.map((u) => {
-            const isSelected = selectedIds.includes(u._id);
-            const lastTripName = u.lastJourney ?
-            typeof u.lastJourney === "object" ?
-            u.lastJourney.title :
-            u.lastJourney :
-            null;
+              const isSelected = selectedIds.includes(u._id);
+              const lastTripName = u.lastJourney
+                ? typeof u.lastJourney === "object"
+                  ? u.lastJourney.title || u.lastJourney.destination || null
+                  : u.lastJourney
+                : null;
 
-            return (
-              <div
-              key={u._id}
-              onClick={() => toggleUser(u._id)}
-              className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group select-none ${
-              isSelected ?
-              "bg-[#7C3AED]/10 border-[#7C3AED] dark:bg-[#7C3AED]/20" :
-              "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#7C3AED]/40 shadow-xs"
-              }`}>
-
+              return (
+                <div
+                  key={u._id}
+                  onClick={() => toggleUser(u._id)}
+                  className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-center justify-between group select-none ${
+                    isSelected
+                      ? "bg-[#7C3AED]/10 border-[#7C3AED] dark:bg-[#7C3AED]/20"
+                      : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-[#7C3AED]/40 shadow-xs"
+                  }`}
+                >
                   <div className="flex items-center gap-3.5 flex-1 min-w-0 pr-2">
-                    {}
                     <div className="relative shrink-0">
                       <Avatar
-                    user={u}
-                    className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800" />
-
-                      {u.online &&
-                    <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />}
-
+                        user={u}
+                        className="w-11 h-11 rounded-full object-cover ring-2 ring-slate-100 dark:ring-slate-800"
+                      />
+                      {u.online && (
+                        <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+                      )}
                     </div>
 
-                    {}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span className="text-xs font-bold text-slate-800 dark:text-slate-100 truncate">
                           {u.name}
                         </span>
-                        {u.verified &&
-                      <ShieldCheck
-                      className="w-3.5 h-3.5 text-sky-500 shrink-0"
-                      title="Verified Traveler" />}
-
-
+                        {u.verified && (
+                          <ShieldCheck
+                            className="w-3.5 h-3.5 text-emerald-500 shrink-0"
+                            title="Verified Traveler"
+                          />
+                        )}
                       </div>
 
                       <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {activeTab === "Previous Companions" || activeTab === "Previous Trip Mates" ?
-                      <>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-brand-50 dark:bg-brand-900/60 text-[#7C3AED] dark:text-brand-300 text-[10px] font-extrabold border border-brand-100 dark:border-brand-800/60">
-                              {u.tripsCount || 1}{" "}
-                              {u.tripsCount === 1 ? "Journey" : "Journeys"} Together
-                            </span>
-                            {lastTripName &&
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[10px] font-semibold border border-amber-100 dark:border-amber-800/50 truncate max-w-[160px]">
-                                Last Trip: {lastTripName}
-                              </span>}
-
-                          </> :
-
-                      <>
-                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[10px] font-bold">
-                              {u.badgeIcon} {u.badgeText}
-                            </span>
-                            <span className="text-[10px] text-slate-400 flex items-center gap-1 truncate">
-                              <Globe className="w-2.5 h-2.5" /> {u.subText}
-                            </span>
-                          </>}
-
+                        {u.badges.map((badge, idx) => (
+                          <span
+                            key={idx}
+                            className={`inline-flex items-center px-1.5 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider border ${
+                              badge === "Trip Mate"
+                                ? "bg-brand-50 dark:bg-brand-900/60 text-[#7C3AED] border-brand-200 dark:border-brand-800/60"
+                                : badge === "Mutual"
+                                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                : badge === "Requested"
+                                ? "bg-amber-50 text-amber-700 border-amber-200"
+                                : badge === "Follow Request"
+                                ? "bg-purple-50 text-purple-700 border-purple-200"
+                                : "bg-slate-100 text-slate-600 border-slate-200"
+                            }`}
+                          >
+                            {badge}
+                          </span>
+                        ))}
                       </div>
+
+                      {Boolean(u.tripsCount && u.tripsCount > 0) && (
+                        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] font-semibold border border-slate-200 dark:border-slate-700">
+                            {u.tripsCount} {u.tripsCount === 1 ? "Journey Together" : "Journeys Together"}
+                          </span>
+                          {lastTripName && (
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-[10px] font-semibold border border-amber-100 dark:border-amber-800/50 truncate max-w-[160px]">
+                              Last Trip: {lastTripName}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {}
                   <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleUser(u._id);
-                }}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
-                isSelected ?
-                "bg-[#7C3AED] text-white shadow-md shadow-[#7C3AED]/30" :
-                "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#7C3AED]/10 hover:text-[#7C3AED]"
-                }`}>
-
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleUser(u._id);
+                    }}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                      isSelected
+                        ? "bg-[#7C3AED] text-white shadow-md shadow-[#7C3AED]/30"
+                        : "bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-[#7C3AED]/10 hover:text-[#7C3AED]"
+                    }`}
+                  >
                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
                     <span>{isSelected ? "Selected" : "+ Select"}</span>
                   </button>
-                </div>);
+                </div>
+              );
+            })}
 
-          })}
-
-            {}
-            {filteredList.length > displayLimit &&
-          <div className="pt-2 pb-1 text-center">
+            {filteredList.length > displayLimit && (
+              <div className="pt-2 pb-1 text-center">
                 <button
-            type="button"
-            onClick={() => setDisplayLimit((prev) => prev + 20)}
-            className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all border border-slate-200/60 dark:border-slate-700/60">
-
-                  Load More Companions ({filteredList.length - displayLimit}{" "}
-                  remaining)
+                  type="button"
+                  onClick={() => setDisplayLimit((prev) => prev + 20)}
+                  className="w-full py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800/80 hover:bg-slate-200 dark:hover:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all border border-slate-200/60 dark:border-slate-700/60"
+                >
+                  Load More Companions ({filteredList.length - displayLimit} remaining)
                 </button>
-              </div>}
-
-          </>}
-
+              </div>
+            )}
+          </>
+        )}
       </div>
-
-
-    </div>);
-
+    </div>
+  );
 };
 
 export default MemberSelector;

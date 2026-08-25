@@ -234,7 +234,7 @@ const FeltVibes = () => {
               </div>
               <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
               <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-blue-500 text-sm font-extrabold">{stats.groups}</span>
+                <span className="text-brand-600 text-sm font-extrabold">{stats.groups}</span>
                 <span>Groups</span>
               </div>
             </div>

@@ -1,22 +1,7 @@
 import React, { Fragment } from "react";
 import { Link } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
-import {
-Home as HomeIcon,
-Search,
-Compass,
-Navigation,
-MessageSquare,
-Bell,
-PlusSquare,
-User,
-Camera,
-Users,
-Video,
-MapPin,
-ArrowRight } from
-"lucide-react";
-import ProfileMenu from "../settings/ProfileMenu";
+import { Home as HomeIcon, Search, Compass, BookOpen, MessageSquare, Bell, User, Camera, Users, ArrowRight } from "lucide-react";
 
 export const SidebarHeader = ({
   location,
@@ -26,7 +11,8 @@ export const SidebarHeader = ({
   setShowNotifPanel,
   showNotifPanel,
   setIsCreateStoryOpen,
-  setIsCreatePostOpen
+  setIsCreatePostOpen,
+  setIsCreateJourneyOpen
 }) => {
   const navItemClass = (isActive) =>
   `relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 group w-full select-none text-[14px] ${
@@ -78,7 +64,7 @@ export const SidebarHeader = ({
       to="/social/journeys"
       className={navItemClass(location.pathname.startsWith("/social/journeys"))}>
 
-        <Navigation className={iconClass(location.pathname.startsWith("/social/journeys"))} />
+        <BookOpen className={iconClass(location.pathname.startsWith("/social/journeys"))} />
         Journey Hub
       </Link>
 
@@ -132,8 +118,8 @@ export const SidebarHeader = ({
 
             <Menu.Item>
               {({ active }) =>
-              <Link
-              to="/social/journeys"
+              <button
+              onClick={() => setIsCreateJourneyOpen && setIsCreateJourneyOpen(true)}
               className={`group relative w-full text-left flex items-center gap-3 p-3 rounded-2xl transition-all duration-300 ${active ? 'bg-gradient-to-r from-[#6D3EF5]/10 to-transparent shadow-sm translate-y-[-4px]' : 'bg-white/50 hover:bg-gradient-to-r hover:from-[#6D3EF5]/10 hover:to-transparent hover:shadow-[0_8px_20px_rgba(109,62,245,0.12)] hover:-translate-y-1'}`}
               style={{ border: '1px solid rgba(109,62,245,0.1)' }}>
 
@@ -149,7 +135,7 @@ export const SidebarHeader = ({
                     </p>
                   </div>
                   <ArrowRight className="w-5 h-5 text-slate-300 group-hover:text-[#6D3EF5] group-hover:translate-x-1 transition-all duration-300" />
-                </Link>}
+                </button>}
 
             </Menu.Item>
 

@@ -9,35 +9,9 @@ useMemo } from
 "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
-import { getAvatarUrl } from "../utils/avatar";
-import Avatar from "../components/common/Avatar";
+
 import AudioManager from "../utils/AudioManager";
-import {
-Heart,
-MessageSquare,
-Trash2,
-Send,
-Plus,
-X,
-MapPin,
-Compass,
-UserPlus,
-Sparkles,
-Bookmark,
-Share2,
-Search,
-Bell,
-Loader2,
-ShieldAlert,
-Music2,
-Play,
-Pause,
-ChevronLeft,
-ChevronRight,
-Edit2,
-MoreHorizontal,
-Clock } from
-"lucide-react";
+import { MessageSquare, X, MapPin, Compass, UserPlus, Sparkles, Bell, Loader2, ShieldAlert } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
@@ -46,15 +20,19 @@ import { SOCKET_EVENTS } from "../constants/socketEvents";
 import Swal from "sweetalert2";
 import CreateDispatchModal from "../components/modals/CreateDispatchModal";
 import DispatchViewer from "../components/story/DispatchViewer";
-import RightSidebar from "../components/home/RightSidebar";
-import LazyImage from "../components/common/LazyImage";
+import RightSidebar, { ActiveTravelGroups } from "../components/home/RightSidebar";
 import JourneyMatesSuggestions from "../components/social/JourneyMatesSuggestions";
+import Card from "../components/common/Card";
 import ReportModal from "../components/modals/ReportModal";
 import DispatchBar from "../components/home/DispatchBar";
 import FeedCard from "../components/home/FeedCard";
 import JourneyStatusWidget from "../components/home/JourneyStatusWidget";
 import ExplorerDashboardWidget from "../components/home/ExplorerDashboardWidget";
 import TravelWeatherWidget from "../components/home/TravelWeatherWidget";
+import UpcomingTripsWidget from "../components/home/UpcomingTripsWidget";
+import { resolveRelationship } from "../utils/relationshipResolver";
+import { useTripMates } from "../hooks/useTripMates";
+import { normalizeJourneyStatus } from "../utils/journeyLifecycle";
 
 
 const SOCKET_URL =
@@ -159,6 +137,37 @@ const Home = () => {
 
   const [memories, setMemories] = useState([]);
   const [activeJourneys, setActiveJourneys] = useState([]);
+  const upcomingTripsRef = useRef(null);
+
+  const upcomingTripsList = useMemo(() => {
+    return activeJourneys
+      .filter((journey) => normalizeJourneyStatus(journey) === "upcoming")
+      .sort((a, b) => {
+        const aStart = a?.startDate ? new Date(a.startDate).getTime() : Infinity;
+        const bStart = b?.startDate ? new Date(b.startDate).getTime() : Infinity;
+        return aStart - bStart;
+      });
+  }, [activeJourneys]);
+
+  const ongoingJourney = useMemo(() => {
+    return activeJourneys.find(
+      (journey) => normalizeJourneyStatus(journey) === "active"
+    ) || null;
+  }, [activeJourneys]);
+
+  const dashboardJourney = useMemo(() => {
+    if (ongoingJourney) return ongoingJourney;
+    return upcomingTripsList[0] || null;
+  }, [ongoingJourney, upcomingTripsList]);
+
+  const handleScrollToUpcoming = useCallback(() => {
+    if (upcomingTripsRef.current) {
+      upcomingTripsRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else {
+      navigate("/social/journeys");
+    }
+  }, [navigate]);
+
   const [isBannerDismissed, setIsBannerDismissed] = useState(() => localStorage.getItem("goyatrigo_home_banner_dismissed") === "true");
 
   const handleDismissBanner = () => {
@@ -286,6 +295,8 @@ const Home = () => {
   () => (user?._id || user?.id)?.toString(),
   [user?._id, user?.id]
   );
+
+  const { connectionStates: tripMateStates = {} } = useTripMates(myUserId);
 
 
   useEffect(() => {
@@ -427,77 +438,90 @@ const Home = () => {
         setSuggestions(filtered);
       }
       let buddyActives = [];
-      if (results[2].status === "fulfilled" && results[2].value.data.success) {
+      if (results[2].status === "fulfilled" && results[2].value.data?.success) {
         const trips = results[2].value.data.trips || [];
         setNearbyTrips(trips);
-        const todayBuddy = new Date();todayBuddy.setHours(0, 0, 0, 0);
-        buddyActives = trips.
-        filter((trip) => {
-          const isJoined = trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-          (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
-          if (!isJoined || trip.status === "cancelled") return false;
+        const todayBuddy = new Date();
+        todayBuddy.setHours(0, 0, 0, 0);
+        buddyActives = trips
+          .filter((trip) => {
+            const isJoined =
+              trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
+              (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
+            if (!isJoined || trip.status === "cancelled") return false;
 
-          if (trip.endDate && new Date(trip.endDate) < todayBuddy) return false;
-          return true;
-        }).
-        map((trip) => ({
-          ...trip,
-          isBuddyTrip: true,
-          status: trip.status === "active" || trip.status === "active now" ? "Ongoing" : trip.status === "upcoming" ? "Upcoming" : "Planning"
-        }));
+            if (trip.endDate && new Date(trip.endDate) < todayBuddy) return false;
+            return true;
+          })
+          .map((trip) => ({
+            ...trip,
+            isBuddyTrip: true,
+            status:
+              trip.status === "active" || trip.status === "active now"
+                ? "Ongoing"
+                : trip.status === "upcoming"
+                ? "Upcoming"
+                : "Planning"
+          }));
       }
-      if (results[3].status === "fulfilled" && results[3].value.data.success) {
+      if (results[3].status === "fulfilled" && results[3].value.data?.success) {
         const ids = new Set(
-        (results[3].value.data.posts || []).map((p) =>
-        (p._id || p.postId?._id)?.toString()
-        )
+          (results[3].value.data.posts || []).map((p) =>
+            (p._id || p.postId?._id)?.toString()
+          )
         );
         setSavedPostIds(ids);
       }
-      if (results[4].status === "fulfilled" && results[4].value.data.success) {
-        const userJourneys = results[4].value.data.journeys || [];
-        const todayJourney = new Date();todayJourney.setHours(0, 0, 0, 0);
-        const actives = userJourneys.filter((j) => {
 
-          if (["Completed", "completed", "Cancelled", "cancelled", "Scrapbook", "scrapbook"].includes(j.status)) return false;
-
-          if (j.endDate && new Date(j.endDate) < todayJourney) return false;
-          return j.status === "Ongoing" || j.status === "Planning" || j.status === "Upcoming";
-        });
-
-        // Deduplicate buddy trips that are already imported as personal journeys,
-        // and also ensure no duplicate IDs are pushed into activeJourneys.
-        const activeIds = new Set(actives.map(j => (j._id || j.id)?.toString()));
-        const activeSourceIds = new Set(
-          actives
-            .filter((j) => j.sourceType === "explore" && j.sourceId)
-            .map((j) => j.sourceId.toString())
-        );
-        
-        const filteredBuddyActives = buddyActives.filter(
-          (trip) => {
-            const tripId = (trip._id || trip.id)?.toString();
-            return !activeSourceIds.has(tripId) && !activeIds.has(tripId);
-          }
-        );
-
-        const combinedActives = [...actives, ...filteredBuddyActives];
-          
-        const now = moment();
-        combinedActives.sort((a, b) => {
-          const aHappening = a.startDate && moment(a.startDate).isSameOrBefore(now, 'day') && (!a.endDate || moment(a.endDate).isSameOrAfter(now, 'day'));
-          const bHappening = b.startDate && moment(b.startDate).isSameOrBefore(now, 'day') && (!b.endDate || moment(b.endDate).isSameOrAfter(now, 'day'));
-          
-          if (aHappening && !bHappening) return -1;
-          if (!aHappening && bHappening) return 1;
-          
-          const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
-          const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
-          return dateA - dateB;
-        });
-
-        setActiveJourneys(combinedActives);
+      let userJourneys = [];
+      if (results[4].status === "fulfilled" && results[4].value.data?.success) {
+        userJourneys = results[4].value.data.journeys || [];
       }
+
+      const todayJourney = new Date();
+      todayJourney.setHours(0, 0, 0, 0);
+      const actives = userJourneys.filter((j) => {
+        const s = String(j.status || "").trim().toLowerCase();
+        if (["completed", "cancelled", "canceled", "scrapbook"].includes(s) || j.isCancelled) return false;
+        if (j.endDate && new Date(j.endDate) < todayJourney) return false;
+        return s === "ongoing" || s === "planning" || s === "upcoming" || s === "active" || s === "active now" || s === "pending";
+      });
+
+      // Deduplicate buddy trips that are already imported as personal journeys
+      const activeIds = new Set(actives.map((j) => (j._id || j.id)?.toString()));
+      const activeSourceIds = new Set(
+        actives
+          .filter((j) => j.sourceType === "explore" && j.sourceId)
+          .map((j) => j.sourceId.toString())
+      );
+
+      const filteredBuddyActives = buddyActives.filter((trip) => {
+        const tripId = (trip._id || trip.id)?.toString();
+        return !activeSourceIds.has(tripId) && !activeIds.has(tripId);
+      });
+
+      const combinedActives = [...actives, ...filteredBuddyActives];
+
+      const now = moment();
+      combinedActives.sort((a, b) => {
+        const aHappening =
+          a.startDate &&
+          moment(a.startDate).isSameOrBefore(now, "day") &&
+          (!a.endDate || moment(a.endDate).isSameOrAfter(now, "day"));
+        const bHappening =
+          b.startDate &&
+          moment(b.startDate).isSameOrBefore(now, "day") &&
+          (!b.endDate || moment(b.endDate).isSameOrAfter(now, "day"));
+
+        if (aHappening && !bHappening) return -1;
+        if (!aHappening && bHappening) return 1;
+
+        const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
+        const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
+        return dateA - dateB;
+      });
+
+      setActiveJourneys(combinedActives);
     });
   }, [myUserId]);
 
@@ -631,7 +655,7 @@ const Home = () => {
       { withCredentials: true }
       );
       if (res.data.success) {
-        showToast.success("Travel memory shared! 🌍");
+        showToast.success("Travel Memory created successfully!");
         setPostCaption("");
         setPostLocation("");
         setPostTags("");
@@ -649,53 +673,62 @@ const Home = () => {
 
 
   const handleFelt = useCallback(
-  async (postId) => {
-    if (lastTapTime.current[`like_${postId}`]) return;
-    lastTapTime.current[`like_${postId}`] = true;
+    async (postId) => {
+      const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
+      if (!cleanPostId) return;
+      if (feltLoadingMap[cleanPostId] || lastTapTime.current[`like_${cleanPostId}`]) return;
+      lastTapTime.current[`like_${cleanPostId}`] = true;
 
-    setFeltLoadingMap((prev) => ({ ...prev, [postId]: true }));
+      setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
 
-    setMemories((prev) =>
-    prev.map((m) => {
-      if (m._id === postId) {
-        const hasFelt = m.likes?.some(
-        (id) => (id?._id || id)?.toString() === myUserId
+      let previousMemories = [];
+      setMemories((prev) => {
+        previousMemories = prev;
+        return prev.map((m) => {
+          const mId = (m._id || m.id)?.toString();
+          if (mId === cleanPostId) {
+            const hasFelt = m.likes?.some(
+              (id) => (id?._id || id)?.toString() === myUserId?.toString()
+            );
+            const newLikes = hasFelt
+              ? (m.likes || []).filter(
+                  (id) => (id?._id || id)?.toString() !== myUserId?.toString()
+                )
+              : [...(m.likes || []), myUserId];
+            return { ...m, likes: newLikes, likesCount: newLikes.length };
+          }
+          return m;
+        });
+      });
+
+      try {
+        const res = await axios.post(
+          `/social/memory/like/${cleanPostId}`,
+          {},
+          { withCredentials: true }
         );
-        const newLikes = hasFelt ?
-        (m.likes || []).filter(
-        (id) => (id?._id || id)?.toString() !== myUserId
-        ) :
-        [...(m.likes || []), myUserId];
-        return { ...m, likes: newLikes };
-      }
-      return m;
-    })
-    );
-
-    try {
-      const res = await axios.post(
-      `/social/memory/like/${postId}`,
-      {},
-      { withCredentials: true }
-      );
-      if (res.data.success) {
-        const updatedLikes = res.data.memory?.likes || res.data.post?.likes;
-        if (updatedLikes) {
-          setMemories((prev) =>
-          prev.map((m) =>
-          m._id === postId ? { ...m, likes: updatedLikes } : m
-          )
-          );
+        if (res.data && res.data.success) {
+          const updatedLikes =
+            res.data.likes || res.data.memory?.likes || res.data.post?.likes;
+          if (Array.isArray(updatedLikes)) {
+            setMemories((prev) =>
+              prev.map((m) =>
+                (m._id || m.id)?.toString() === cleanPostId
+                  ? { ...m, likes: updatedLikes, likesCount: updatedLikes.length }
+                  : m
+              )
+            );
+          }
         }
+      } catch (err) {
+        setMemories(previousMemories);
+        showToast.error(err.response?.data?.message || "Failed to update reaction");
+      } finally {
+        setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));
+        lastTapTime.current[`like_${cleanPostId}`] = false;
       }
-    } catch (err) {
-      showToast.error("Failed to update like");
-    } finally {
-      setFeltLoadingMap((prev) => ({ ...prev, [postId]: false }));
-      lastTapTime.current[`like_${postId}`] = false;
-    }
-  },
-  [myUserId]
+    },
+    [myUserId, feltLoadingMap]
   );
 
   const handleDoubleTapLike = useCallback(
@@ -855,7 +888,7 @@ const Home = () => {
           const next = new Set(prev);
           if (!isSaved) {
             next.add(postIdStr);
-            showToast.success("Post saved");
+            showToast.success("Travel Memory saved!");
           } else {
             next.delete(postIdStr);
             showToast.success("Removed from saved");
@@ -864,7 +897,7 @@ const Home = () => {
         });
       }
     } catch {
-      showToast.error("Failed to save post");
+      showToast.error("Failed to save Travel Memory.");
     } finally {
       setSaveLoadingMap((prev) => ({ ...prev, [postIdStr]: false }));
     }
@@ -881,86 +914,118 @@ const Home = () => {
         showToast.success("Link shared!");
       } else {
         await navigator.clipboard.writeText(url);
-        showToast.success("Link copied!");
+        showToast.success("Link copied to clipboard!");
       }
-    } catch {
-
+    } catch (err) {
+      console.error("Failed to share:", err);
     }
   }, []);
 
   const handleFollowToggle = useCallback(
-  async (targetUser) => {
-    if (followLoadingMap[targetUser._id]) return;
-    setFollowLoadingMap((prev) => ({ ...prev, [targetUser._id]: true }));
-    const isFollowing = targetUser.followers?.some(
-    (id) => id?.toString() === myUserId
-    );
-    const isRequested = targetUser.followRequests?.some(
-    (id) => id?.toString() === myUserId
-    );
-    try {
-      if (isFollowing || isRequested) {
-        await axios.post(
-        `/users/${targetUser._id}/unfollow`,
-        {},
-        { withCredentials: true }
-        );
-        showToast.success(
-        isRequested ?
-        `Trip Mate request cancelled` :
-        `Removed ${targetUser.name} from My Trip Mates`
-        );
-        setSuggestions((prev) =>
-        prev.map((s) =>
-        s._id === targetUser._id ?
-        {
-          ...s,
-          followers: (s.followers || []).filter(
-          (id) => id?.toString() !== myUserId
-          ),
-          followRequests: (s.followRequests || []).filter(
-          (id) => id?.toString() !== myUserId
-          )
-        } :
-        s
-        )
-        );
-      } else {
-        const res = await axios.post(
-        `/users/${targetUser._id}/follow`,
-        {},
-        { withCredentials: true }
-        );
-        if (res.data.status === "requested") {
-          showToast.success(`Trip Mate request sent to ${targetUser.name}!`);
+    async (targetUser) => {
+      const targetId = String(targetUser._id || targetUser.id || "");
+      if (!targetId || followLoadingMap[targetId]) return;
+
+      const tripMateStatus = tripMateStates[targetId] || "not_connected";
+      const rel = resolveRelationship(user, targetUser, tripMateStatus);
+      if (rel.isSelf || rel.socialState === "self") {
+        return;
+      }
+
+      const isCurrentlyFollowing =
+        rel.socialState === "following" ||
+        rel.socialState === "mutual" ||
+        Boolean(targetUser.isFollowing) ||
+        Boolean(targetUser.followers?.some((f) => String(f?._id || f?.id || f) === String(myUserId)));
+
+      const isCurrentlyRequested =
+        rel.socialState === "requested" ||
+        Boolean(targetUser.isRequested) ||
+        Boolean(targetUser.followRequests?.some((r) => String(r?._id || r?.id || r) === String(myUserId)));
+
+      setFollowLoadingMap((prev) => ({ ...prev, [targetId]: true }));
+
+      // Optimistic update
+      setSuggestions((prev) =>
+        prev.map((s) => {
+          const sId = String(s._id || s.id || "");
+          if (sId !== targetId) return s;
+
+          if (isCurrentlyFollowing) {
+            return {
+              ...s,
+              isFollowing: false,
+              followers: (s.followers || []).filter(
+                (id) => String(id?._id || id?.id || id) !== String(myUserId)
+              ),
+            };
+          } else if (isCurrentlyRequested) {
+            return {
+              ...s,
+              isRequested: false,
+              followRequests: (s.followRequests || []).filter(
+                (id) => String(id?._id || id?.id || id) !== String(myUserId)
+              ),
+            };
+          } else {
+            if (s.privateAccount) {
+              const reqs = (s.followRequests || []).map((id) => String(id?._id || id?.id || id));
+              if (!reqs.includes(String(myUserId))) reqs.push(String(myUserId));
+              return { ...s, isRequested: true, followRequests: reqs };
+            } else {
+              const flws = (s.followers || []).map((id) => String(id?._id || id?.id || id));
+              if (!flws.includes(String(myUserId))) flws.push(String(myUserId));
+              return { ...s, isFollowing: true, followers: flws };
+            }
+          }
+        })
+      );
+
+      try {
+        if (isCurrentlyFollowing) {
+          await axios.post(`/users/${targetId}/unfollow`, {}, { withCredentials: true });
+          showToast.success(`Unfollowed ${targetUser.name || "traveler"}`);
+        } else if (isCurrentlyRequested) {
+          await axios.delete(`/users/follow-requests/${targetId}`, { withCredentials: true });
+          showToast.success(`Follow request cancelled`);
+        } else {
+          const res = await axios.post(`/users/${targetId}/follow`, {}, { withCredentials: true });
+          if (res.data?.status === "requested" || targetUser.privateAccount) {
+            showToast.success(`Follow request sent!`);
+          } else {
+            showToast.success(`Following ${targetUser.name || "traveler"}`);
+          }
+        }
+      } catch (err) {
+        const errMsg = err.response?.data?.message || "";
+        if (errMsg.includes("already follow") || errMsg.includes("already following")) {
+          showToast.success(`Following ${targetUser.name || "traveler"}`);
           setSuggestions((prev) =>
-          prev.map((s) =>
-          s._id === targetUser._id ?
-          {
-            ...s,
-            followRequests: [...(s.followRequests || []), myUserId]
-          } :
-          s
-          )
+            prev.map((s) => {
+              if (String(s._id || s.id) !== targetId) return s;
+              const flws = (s.followers || []).map((id) => String(id?._id || id?.id || id));
+              if (!flws.includes(String(myUserId))) flws.push(String(myUserId));
+              return { ...s, isFollowing: true, followers: flws };
+            })
+          );
+        } else if (errMsg.includes("already sent")) {
+          showToast.success(`Follow request pending`);
+          setSuggestions((prev) =>
+            prev.map((s) => {
+              if (String(s._id || s.id) !== targetId) return s;
+              const reqs = (s.followRequests || []).map((id) => String(id?._id || id?.id || id));
+              if (!reqs.includes(String(myUserId))) reqs.push(String(myUserId));
+              return { ...s, isRequested: true, followRequests: reqs };
+            })
           );
         } else {
-          showToast.success(`You are now Trip Mates with ${targetUser.name}! ✈️`);
-          setSuggestions((prev) =>
-          prev.map((s) =>
-          s._id === targetUser._id ?
-          { ...s, followers: [...(s.followers || []), myUserId] } :
-          s
-          )
-          );
+          showToast.error(errMsg || "Action failed");
         }
+      } finally {
+        setFollowLoadingMap((prev) => ({ ...prev, [targetId]: false }));
       }
-    } catch {
-      showToast.error("Action failed");
-    } finally {
-      setFollowLoadingMap((prev) => ({ ...prev, [targetUser._id]: false }));
-    }
-  },
-  [followLoadingMap, myUserId]
+    },
+    [myUserId, user, tripMateStates, followLoadingMap]
   );
 
 
@@ -970,24 +1035,25 @@ const Home = () => {
     setIsSaving(true);
     try {
       const res = await axios.put(
-      `/social/memory/${editPostData._id}`,
-      {
-        caption: editPostData.caption,
-        location: editPostData.location,
-        tags: editPostData.tags
-      },
-      { withCredentials: true }
+        `/social/memory/${editPostData._id}`,
+        {
+          caption: editPostData.caption,
+          location: editPostData.location,
+          tags: editPostData.tags
+        },
+        { withCredentials: true }
       );
       if (res.data.success) {
-        showToast.success("Post updated successfully!");
+        showToast.success("Travel Memory updated successfully!");
+        const updatedMemory = res.data.post || res.data.memory;
         setMemories((prev) =>
-        prev.map((p) => p._id === editPostData._id ? res.data.post : p)
+          prev.map((p) => (p._id === editPostData._id ? { ...p, ...updatedMemory } : p))
         );
         setShowEditPostModal(false);
         setEditPostData(null);
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to update post");
+      showToast.error(err.response?.data?.message || "Failed to update Travel Memory.");
     } finally {
       setIsSaving(false);
     }
@@ -1009,7 +1075,7 @@ const Home = () => {
         withCredentials: true
       });
       if (res.data.success) {
-        showToast.success("Post deleted");
+        showToast.success("Travel Memory deleted successfully!");
         setMemories((prev) => prev.filter((m) => m._id !== postId));
       }
     } catch {
@@ -1070,6 +1136,24 @@ const Home = () => {
       return bLatest - aLatest;
     });
   }, [otherStories, myUserId]);
+
+  useEffect(() => {
+    const dispatchId = location.state?.dispatchId;
+    if (!dispatchId || dispatches.length === 0) return;
+
+    const group = dispatches.find((candidate) =>
+      candidate.stories?.some((dispatch) => String(dispatch._id) === String(dispatchId))
+    );
+    const index = group?.stories?.findIndex(
+      (dispatch) => String(dispatch._id) === String(dispatchId)
+    );
+
+    if (group && index >= 0) {
+      setActiveStoryGroup(group);
+      setActiveStoryIndex(index);
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [dispatches, location.pathname, location.state, navigate]);
 
 
   const nextStory = useCallback(() => {
@@ -1254,353 +1338,227 @@ const Home = () => {
         <Compass className="w-[800px] h-[800px] text-[#7C3AED]" strokeWidth={0.5} />
       </div>
       <div className="w-full pt-4 px-4 sm:px-6 lg:pl-0 lg:pr-0 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_380px] gap-6 xl:gap-8 items-start">
+        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_380px] gap-6 xl:gap-8 items-start">
           {}
           <div className="w-full space-y-4 min-w-0">
 
             {}
             <ExplorerDashboardWidget
-            user={user}
-            memoriesCount={memories.filter((m) => (m.userId?._id || m.userId)?.toString() === myUserId).length}
-            activeJourneysCount={activeJourneys.length} />
-
-
-            {}
-            {(() => {
-              const hasOngoing = activeJourneys.some((j) => {
-                const s = j.status?.toLowerCase();
-                if (s === "cancelled") return false;
-                if (s === "ongoing" || s === "active" || s === "active now") return true;
-                return j.startDate && moment(j.startDate).isSameOrBefore(moment(), 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(moment(), 'day'));
-              });
-              const headerLabel = hasOngoing ?
-              "CURRENT JOURNEY" :
-              activeJourneys.length > 0 ?
-              "UPCOMING JOURNEY" :
-              "JOURNEY HEADQUARTERS";
-
-              return (
-                <div className="bg-white dark:bg-slate-900 border border-slate-150 dark:border-slate-800 rounded-3xl p-4 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-extrabold text-[#71717A] dark:text-slate-400 uppercase tracking-wider flex items-center gap-2">
-                      <span
-                      className={`w-2 h-2 rounded-full ${
-                      hasOngoing ?
-                      "bg-emerald-500 animate-pulse" :
-                      activeJourneys.length > 0 ?
-                      "bg-sky-500" :
-                      "bg-slate-300"
-                      }`} />
-
-                      {headerLabel}
-                    </h3>
-                  </div>
-
-                  {activeJourneys.length > 0 ?
-                  <div className="space-y-4">
-                        {activeJourneys.map((j) => {
-                          const isOngoingStatus = j.status === "ongoing" || j.status === "active" || j.status === "active now" || j.status === "Ongoing";
-                          const isHappeningNow = j.startDate && moment(j.startDate).isSameOrBefore(moment(), 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(moment(), 'day'));
-                          const s = j.status?.toLowerCase();
-                          const isCancelled = s === "cancelled";
-                          const showWeather = (isOngoingStatus || isHappeningNow) && !isCancelled;
-                          
-                          return (
-                            <React.Fragment key={j._id}>
-                              <JourneyStatusWidget journey={j} user={user} />
-                              {showWeather ? <TravelWeatherWidget destination={j.destination} /> : null}
-                            </React.Fragment>
-                          );
-                        })}
-                      </div> :
-
-                  <div className="bg-[#F8FAFC] border border-[#E5E7EB] rounded-2xl p-6 text-center space-y-3">
-                      <div className="w-12 h-12 bg-[#F3E8FF] rounded-full flex items-center justify-center mx-auto text-[#7C3AED] shadow-sm">
-                        <Compass className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h4 className="text-[11px] font-black text-[#64748B] uppercase tracking-[0.15em]">
-                          No active or upcoming journey
-                        </h4>
-                        <p className="text-sm font-bold text-[#1E293B] mt-1">
-                          Plan your next expedition today
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-center gap-3 pt-2">
-                        <Link
-                      to="/social/buddy"
-                      className="px-4 py-2.5 bg-[#F3E8FF] hover:bg-[#E9D5FF] text-[#7C3AED] text-xs font-bold rounded-xl transition-all duration-200">
-
-                          Find Trip Mates
-                        </Link>
-                        <Link
-                      to="/social/journeys"
-                      className="px-4 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold rounded-xl transition-all duration-200 shadow-md">
-
-                          + Launch Journey
-                        </Link>
-                      </div>
-                    </div>}
-
-                </div>);
-
-            })()}
-
-            {}
-            <div className="space-y-3">
-               <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] pl-2 flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" /> Travel Dispatches
-               </h3>
-               <DispatchBar
               user={user}
-              myUserId={myUserId}
-              dispatches={dispatches}
-              myStoryGroup={myStoryGroup}
-              sortedStories={sortedStories}
-              loadingStories={loadingStories}
-              onlineUsersMap={onlineUsersMap}
-              setActiveStoryGroup={setActiveStoryGroup}
-              setActiveStoryIndex={setActiveStoryIndex}
-              setShowStoryModal={setShowStoryModal}
-              handleAvatarError={handleAvatarError} />
+              memoriesCount={memories.filter((m) => (m.userId?._id || m.userId)?.toString() === myUserId).length}
+              activeJourneysCount={activeJourneys.length}
+              onUpcomingClick={handleScrollToUpcoming}
+            />
 
+            {/* Current Ongoing Journey OR Featured Next Upcoming Trip */}
+            {dashboardJourney ? (
+              <div className="space-y-3">
+                <JourneyStatusWidget journey={dashboardJourney} user={user} />
+                {dashboardJourney.destination ? (
+                  <TravelWeatherWidget destination={dashboardJourney.destination} />
+                ) : null}
+              </div>
+            ) : (
+              <Card variant="default" padding="md" className="border-slate-200/80 shadow-xs text-center space-y-3 !p-6 rounded-2xl">
+                <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto text-brand-600 shadow-xs border border-brand-100/70">
+                  <Compass className="w-6 h-6" />
+                </div>
+                <div>
+                  <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.12em]">
+                    NO ACTIVE JOURNEY
+                  </h4>
+                  <p className="text-base font-extrabold text-slate-900 font-heading mt-0.5">
+                    Plan your next expedition today
+                  </p>
+                </div>
+                <div className="flex items-center justify-center gap-3 pt-1">
+                  <Link
+                    to="/social/journeys"
+                    className="btn-primary !py-2 !px-4 text-xs font-bold shadow-sm"
+                  >
+                    Plan Journey
+                  </Link>
+                </div>
+              </Card>
+            )}
+
+            {/* Upcoming Trips Section on Dashboard */}
+            {ongoingJourney && upcomingTripsList.length > 0 ? (
+              <div ref={upcomingTripsRef}>
+                <UpcomingTripsWidget upcomingTrips={upcomingTripsList} title="Upcoming Trips" />
+              </div>
+            ) : !ongoingJourney && upcomingTripsList.length > 1 ? (
+              <div ref={upcomingTripsRef}>
+                <UpcomingTripsWidget upcomingTrips={upcomingTripsList.slice(1)} title="More Upcoming Trips" />
+              </div>
+            ) : (
+              <div ref={upcomingTripsRef} />
+            )}
+
+            {/* Mobile-only In-Stream Sections (Travelers for You & Active Groups in deliberate single-column order) */}
+            <div className="lg:hidden space-y-4">
+              <JourneyMatesSuggestions
+                currentUser={user}
+                currentUserId={user?._id || user?.id}
+                initialSuggestions={suggestions}
+                handleFollowToggle={handleFollowToggle}
+                followLoadingMap={followLoadingMap}
+                tripMateStates={tripMateStates}
+              />
+
+              <ActiveTravelGroups user={user} nearbyTrips={nearbyTrips} />
             </div>
 
-            {}
-            <div className="space-y-4">
-              <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] pl-2 flex items-center gap-1.5">
-                <Compass className="w-3.5 h-3.5" /> Explorer Logbook
-              </h3>
-              {loadingMemories ?
-              <AnimatePresence>
-                  <div className="space-y-6">
-                    {[1, 2].map((i) =>
-                  <motion.div
-                  key={i}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}>
+            {/* 7. Travel Dispatches */}
+            <div className="space-y-3">
+               <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] pl-1 flex items-center gap-1.5 font-sans">
+                  <MapPin className="w-3.5 h-3.5 text-brand-600" /> Travel Dispatches
+               </h3>
+               <DispatchBar
+                user={user}
+                myUserId={myUserId}
+                dispatches={dispatches}
+                myStoryGroup={myStoryGroup}
+                sortedStories={sortedStories}
+                loadingStories={loadingStories}
+                onlineUsersMap={onlineUsersMap}
+                setActiveStoryGroup={setActiveStoryGroup}
+                setActiveStoryIndex={setActiveStoryIndex}
+                setShowStoryModal={setShowStoryModal}
+                handleAvatarError={handleAvatarError} />
+            </div>
 
+            {/* 8. Explorer Logbook / Travel Memories */}
+            <div className="space-y-4">
+              <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] pl-1 flex items-center gap-1.5 font-sans">
+                <Compass className="w-3.5 h-3.5 text-brand-600" /> Explorer Logbook
+              </h3>
+              {loadingMemories ? (
+                <AnimatePresence>
+                  <div className="space-y-6">
+                    {[1, 2].map((i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
                         <PostSkeleton />
                       </motion.div>
-                  )}
+                    ))}
                   </div>
-                </AnimatePresence> :
-              errorMemories ?
-              <div className="card p-8 sm:p-16 text-center min-h-[300px] flex flex-col items-center justify-center">
-                  <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <ShieldAlert className="w-8 h-8 text-rose-500" />
+                </AnimatePresence>
+              ) : errorMemories ? (
+                <Card variant="default" padding="lg" className="p-8 sm:p-14 text-center min-h-[280px] flex flex-col items-center justify-center border-slate-200/80 shadow-xs">
+                  <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-100">
+                    <ShieldAlert className="w-7 h-7 text-rose-500" />
                   </div>
-                  <h3 className="text-lg font-black text-slate-800">
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-800 font-heading">
                     Oops, something went wrong!
                   </h3>
-                  <p className="text-sm font-medium text-slate-500 mt-2 mb-6 max-w-[280px] mx-auto">
-                    We couldn't load the feed right now. Please check your
-                    connection and try again.
+                  <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 mb-5 max-w-[280px] mx-auto">
+                    We couldn't load the feed right now. Please check your connection and try again.
                   </p>
                   <button
-                onClick={() => fetchMemories(1)}
-                className="btn-primary">
-
+                    onClick={() => fetchMemories(1)}
+                    className="btn-primary !py-2 !px-5 text-xs font-bold"
+                  >
                     Try again
                   </button>
-                </div> :
-              memories.length === 0 ?
-              <div className="card p-8 sm:p-16 text-center min-h-[420px] flex flex-col items-center justify-center">
-                  <div className="w-20 h-20 bg-brand-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <Compass className="w-10 h-10 text-brand-600 animate-float" />
+                </Card>
+              ) : memories.length === 0 ? (
+                <Card variant="default" padding="lg" className="p-8 sm:p-14 text-center min-h-[340px] flex flex-col items-center justify-center border-slate-200/80 shadow-xs">
+                  <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-100/70">
+                    <Compass className="w-8 h-8 text-brand-600 animate-float" />
                   </div>
-                  <h3 className="text-lg font-black text-slate-800">
+                  <h3 className="text-base sm:text-lg font-extrabold text-slate-800 font-heading">
                     No Travel Memories yet
                   </h3>
-                  <p className="text-sm font-medium text-slate-500 mt-2 max-w-[280px] mx-auto">
-                    Follow travelers or share your first journey to start building
-                    your feed.
+                  <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 max-w-[280px] mx-auto">
+                    Follow travelers or share your first journey to start building your feed.
                   </p>
-                  <div className="mt-8">
+                  <div className="mt-6">
                     <Link
-                  to="/social/buddy"
-                  className="btn-secondary">
-
+                      to="/social/explore"
+                      className="btn-secondary !py-2 !px-4 text-xs font-bold"
+                    >
                       Explore travelers
                     </Link>
                   </div>
-                </div> :
-
-              <div className="space-y-6">
+                </Card>
+              ) : (
+                <div className="space-y-6">
                   {memories.map((post) => {
-                  const hasFelt = post.likes?.some(
-                  (id) => (id?._id || id)?.toString() === myUserId
-                  );
-                  const isSaved = savedPostIds.has(post._id?.toString());
-                  const isCreator = isPostCreator(post);
+                    const hasFelt = post.likes?.some(
+                      (id) => (id?._id || id)?.toString() === myUserId
+                    );
+                    const isSaved = savedPostIds.has(post._id?.toString());
+                    const isCreator = isPostCreator(post);
 
-                  return (
-                    <FeedCard
-                    key={post._id}
-                    ref={(el) => postRefs.current[post._id] = el}
-                    post={post}
-                    user={user}
-                    myUserId={myUserId}
-                    hasFelt={hasFelt}
-                    isSaved={isSaved}
-                    isCreator={isCreator}
-                    feltLoadingMap={feltLoadingMap}
-                    saveLoadingMap={saveLoadingMap}
-                    commentsLoadingMap={commentsLoadingMap}
-                    isSubmittingComment={isSubmittingComment}
-                    commentText={commentText}
-                    activeCommentPost={activeCommentPost}
-                    playingAudioId={playingAudioId}
-                    journeyLikeAnim={journeyLikeAnim}
-                    handleFelt={handleFelt}
-                    handlePostTap={handlePostTap}
-                    handleOpenComments={handleOpenComments}
-                    handleDispatch={handleDispatch}
-                    handleSaveToggle={handleSaveToggle}
-                    handleDeleteComment={handleDeleteComment}
-                    handleCommentSubmit={handleCommentSubmit}
-                    setCommentText={setCommentText}
-                    toggleAudio={toggleAudio}
-                    setReportModal={setReportModal}
-                    setEditPostData={setEditPostData}
-                    setShowEditPostModal={setShowEditPostModal}
-                    handleDeletePost={handleDeletePost}
-                    handleAvatarError={handleAvatarError}
-                    audioRefCallback={(el) => audioRefs.current[post._id] = el} />);
-
-
-                })}
-                  {hasMore && memories.length > 0 &&
-                <div
-                className="flex justify-center mt-6 pb-6"
-                ref={loadMoreRef}>
-
-                      {loadingMore &&
-                  <Loader2 className="w-6 h-6 animate-spin text-brand-650" />}
-
-                    </div>}
-
-                </div>}
-
-            </div>
-
-            {}
-            <div className="block lg:hidden mt-4">
-              <JourneyMatesSuggestions
-              currentUserId={myUserId}
-              initialSuggestions={suggestions} />
-
-            </div>
-
-            {}
-            {(() => {
-              const displayTrips = (() => {
-                const myUserId = user?._id?.toString() || user?.id?.toString();
-
-                const notJoinedTrips = nearbyTrips.filter((t) => {
-                  const isJoined = t.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-                  (t.userId?._id || t.userId || t.host?._id || t.host)?.toString() === myUserId;
-                  return !isJoined;
-                });
-
-                if (!user?.state && !user?.city) return notJoinedTrips.slice(0, 5);
-
-                const userCity = (user?.city || "").toLowerCase();
-                const userState = (user?.state || "").toLowerCase();
-
-
-                const sortedTrips = [...notJoinedTrips].sort((a, b) => {
-                  const aFrom = (a.from || "").toLowerCase();
-                  const aDest = (a.destination || "").toLowerCase();
-                  const bFrom = (b.from || "").toLowerCase();
-                  const bDest = (b.destination || "").toLowerCase();
-
-                  const getScore = (fromStr, destStr) => {
-                    if (userCity && (fromStr.includes(userCity) || destStr.includes(userCity))) return 2;
-                    if (userState && (fromStr.includes(userState) || destStr.includes(userState))) return 1;
-                    return 0;
-                  };
-
-                  return getScore(bFrom, bDest) - getScore(aFrom, aDest);
-                });
-
-                return sortedTrips.slice(0, 5);
-              })();
-
-              const activeGroupsTitle = (() => {
-                if (!user?.state) return "Active Travel Groups";
-                const hasLocal = nearbyTrips.some((t) =>
-                t.destination?.toLowerCase().includes(user.state.toLowerCase()) ||
-                t.from?.toLowerCase().includes(user.state.toLowerCase())
-                );
-                return hasLocal ? `Active Groups in ${user.state}` : "Active Travel Groups";
-              })();
-
-              if (!displayTrips?.length) return null;
-
-              return (
-                <div className="block lg:hidden bg-white border border-slate-100 rounded-2xl p-4 shadow-sm space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      {activeGroupsTitle}
-                    </h3>
-                    <Link to="/social/buddy" className="text-xs font-bold text-brand-600 hover:underline">
-                      See All
-                    </Link>
-                  </div>
-                  <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x">
-                    {displayTrips.map((trip) => {
-                      const isJoined = trip.members?.some(
-                      (m) => (m.user?._id || m.user)?.toString() === myUserId
-                      ) || (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
-
-                      return (
-                        <div
-                        key={trip._id}
-                        onClick={() => navigate(`/social/buddy/${trip._id}`)}
-                        className="w-[240px] shrink-0 bg-slate-50/50 border border-slate-100 rounded-xl p-3 space-y-2.5 cursor-pointer hover:border-brand-200 transition-all snap-start">
-
-                        <div className="flex justify-between items-start gap-2">
-                          <h4 className="text-xs font-bold text-slate-800 line-clamp-1 flex-1">{trip.title}</h4>
-                          <span className="text-[9px] bg-brand-50 text-brand-700 font-extrabold px-1.5 py-0.5 rounded-md shrink-0">
-                            {Math.max(0, trip.maxMembers - (trip.members?.length || 0))} slots open
-                          </span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 font-semibold flex items-center gap-1">
-                          <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                          <span className="truncate">{trip.destination}</span>
-                        </p>
-                        <div className="flex items-center justify-between pt-1 border-t border-slate-100/50">
-                          <span className="text-[9px] text-slate-400 font-bold">
-                            By {(trip.userId?.name || trip.host?.name || "Traveler").split(" ")[0]}
-                          </span>
-                          {isJoined ?
-                            <span className="text-[10px] text-emerald-600 font-black flex items-center gap-0.5">
-                              Joined ✓
-                            </span> :
-
-                            <span className="text-[10px] text-brand-600 font-black flex items-center gap-0.5">
-                              Join <ChevronRight className="w-3 h-3" />
-                            </span>}
-
-                        </div>
-                      </div>);
-
-                    })}
+                    return (
+                      <FeedCard
+                        key={post._id}
+                        ref={(el) => postRefs.current[post._id] = el}
+                        post={post}
+                        user={user}
+                        myUserId={myUserId}
+                        hasFelt={hasFelt}
+                        isSaved={isSaved}
+                        isCreator={isCreator}
+                        feltLoadingMap={feltLoadingMap}
+                        saveLoadingMap={saveLoadingMap}
+                        commentsLoadingMap={commentsLoadingMap}
+                        isSubmittingComment={isSubmittingComment}
+                        commentText={commentText}
+                        activeCommentPost={activeCommentPost}
+                        playingAudioId={playingAudioId}
+                        journeyLikeAnim={journeyLikeAnim}
+                        handleFelt={handleFelt}
+                        handlePostTap={handlePostTap}
+                        handleOpenComments={handleOpenComments}
+                        handleDispatch={handleDispatch}
+                        handleSaveToggle={handleSaveToggle}
+                        handleDeleteComment={handleDeleteComment}
+                        handleCommentSubmit={handleCommentSubmit}
+                        setCommentText={setCommentText}
+                        toggleAudio={toggleAudio}
+                        setReportModal={setReportModal}
+                        setEditPostData={setEditPostData}
+                        setShowEditPostModal={setShowEditPostModal}
+                        handleDeletePost={handleDeletePost}
+                        handleAvatarError={handleAvatarError}
+                        audioRefCallback={(el) => audioRefs.current[post._id] = el}
+                      />
+                    );
+                  })}
+                  {hasMore && memories.length > 0 && (
+                    <div
+                      className="flex justify-center mt-6 pb-6"
+                      ref={loadMoreRef}
+                    >
+                      {loadingMore && (
+                        <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
+                      )}
+                    </div>
+                  )}
                 </div>
-                </div>);
+              )}
+            </div>
 
-            })()}
           </div>
 
-          {}
-          <RightSidebar
-          user={user}
-          suggestions={suggestions}
-          nearbyTrips={nearbyTrips}
-          handleFollowToggle={handleFollowToggle}
-          followLoadingMap={followLoadingMap} />
+          {/* Desktop Right Sidebar (Travelers for You, Highlights, Active Groups) */}
+          <div className="hidden lg:block">
+            <RightSidebar
+              className="min-w-0 w-full flex flex-col gap-4 shrink-0 self-start"
+              user={user}
+              suggestions={suggestions}
+              nearbyTrips={nearbyTrips}
+              handleFollowToggle={handleFollowToggle}
+              followLoadingMap={followLoadingMap}
+              tripMateStates={tripMateStates}
+            />
+          </div>
 
         </div>
 

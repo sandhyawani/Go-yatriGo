@@ -1,7 +1,7 @@
 .user-management-page {
   background:
     radial-gradient(circle at 94% 2%, rgba(124, 58, 237, 0.12), transparent 28rem),
-    radial-gradient(circle at 10% 34%, rgba(59, 130, 246, 0.08), transparent 24rem),
+    radial-gradient(circle at 10% 34%, rgba(124, 58, 237, 0.05), transparent 24rem),
     linear-gradient(145deg, #f8f9ff 0%, #f5f6fb 46%, #f7f8fc 100%);
 }
 
@@ -36,8 +36,8 @@
   }
 
   &.user-metric-blue .metric-icon {
-    background: rgba(37, 99, 235, 0.1);
-    color: #2563eb;
+    background: rgba(100, 116, 139, 0.1);
+    color: #64748b;
   }
 
   &.user-metric-rose .metric-icon {
@@ -160,8 +160,8 @@
   }
 
   &.role-guide {
-    background: #dbeafe;
-    color: #2563eb;
+    background: #f1f5f9;
+    color: #475569;
   }
 
   &.role-traveler {

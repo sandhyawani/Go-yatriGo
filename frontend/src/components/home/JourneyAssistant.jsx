@@ -1,16 +1,6 @@
 import React, { useState, useEffect } from "react";
 import SafetyWidget from "./SafetyWidget";
-import {
-CloudSun,
-Calendar,
-Phone,
-FileText,
-Save,
-Clock,
-BellRing,
-ShieldCheck,
-Compass } from
-"lucide-react";
+import { CloudSun, Phone, FileText, Save, ShieldCheck, Compass } from "lucide-react";
 import { showToast } from "../../utils/showToast";
 
 const JourneyAssistant = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
@@ -202,7 +192,7 @@ const JourneyAssistant = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
 
         {}
         {isUpcoming && daysLeft > 0 &&
-        <div className="bg-gradient-to-r from-brand-600 to-indigo-650 text-white p-4 rounded-2xl shadow-xs relative overflow-hidden">
+        <div className="bg-gradient-to-r from-brand-600 to-brand-700 text-white p-4 rounded-2xl shadow-xs relative overflow-hidden">
             <span className="text-[9px] font-black uppercase tracking-widest block text-brand-200">Countdown</span>
             <span className="text-sm font-extrabold block mt-1">{daysLeft} Days to Departure</span>
           </div>}

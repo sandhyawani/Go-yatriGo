@@ -39,8 +39,8 @@ const GUIDELINES = [
 {
   icon: Lock,
   title: 'Privacy',
-  color: '#3B82F6',
-  bg: '#EFF6FF',
+  color: '#64748B',
+  bg: '#F1F5F9',
   items: [
   'Do not share another traveler\'s photos, location, or personal details without their consent.',
   'Respect the privacy settings others have chosen for their profiles and visibility.',
@@ -72,8 +72,8 @@ const GUIDELINES = [
 {
   icon: Eye,
   title: 'Appropriate Content',
-  color: '#06B6D4',
-  bg: '#ECFEFF',
+  color: '#64748B',
+  bg: '#F1F5F9',
   items: [
   'All shared photos and posts should be appropriate for a general audience.',
   'Do not post violent, explicit, or graphic content.',

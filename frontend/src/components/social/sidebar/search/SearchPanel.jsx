@@ -109,12 +109,12 @@ const SearchPanel = () => {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
             <Search className="w-4 h-4 text-brand-500" /> Search
           </h3>
           <button
             onClick={() => setIsSearchOpen(false)}
-            className="p-1.5 rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors"
+            className="p-1.5 rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors font-sans"
           >
             <X className="w-4 h-4" />
           </button>

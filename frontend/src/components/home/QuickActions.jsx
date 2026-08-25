@@ -31,11 +31,11 @@ const QuickActions = ({ journey }) => {
       case "Planning":
         return [
         {
-          title: "Invite Trip Mate",
+          title: "Invite Buddies",
           subtitle: "Add trip companions",
           icon: Users,
           to: `/social/journeys/${journey._id}`,
-          color: "text-indigo-600 bg-indigo-50 border-indigo-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Trip Budget",
@@ -49,7 +49,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Manage group tasks",
           icon: ClipboardList,
           to: `/social/journeys/${journey._id}`,
-          color: "text-blue-600 bg-blue-50 border-blue-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Squad Chat",
@@ -67,7 +67,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Check gear items",
           icon: Briefcase,
           to: `/social/journeys/${journey._id}`,
-          color: "text-indigo-600 bg-indigo-50 border-indigo-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Weather Advisories",
@@ -81,7 +81,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Permits & ID scans",
           icon: FileText,
           to: `/social/journeys/${journey._id}`,
-          color: "text-blue-600 bg-blue-50 border-blue-100"
+          color: "text-slate-600 bg-slate-100 border-slate-200"
         },
         {
           title: "Squad Chat",
@@ -106,7 +106,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Split cab & stays",
           icon: DollarSign,
           to: `/social/journeys/${journey._id}`,
-          color: "text-indigo-600 bg-indigo-50 border-indigo-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Emergency SOS",
@@ -120,7 +120,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Real-time messages",
           icon: MessageCircle,
           to: `/social/chat/${journey.chatRoomId || ""}`,
-          color: "text-blue-600 bg-blue-50 border-blue-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         }];
 
 
@@ -131,7 +131,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Interactive timelines",
           icon: PlayCircle,
           to: `/social/journeys/${journey._id}`,
-          color: "text-indigo-600 bg-indigo-50 border-indigo-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Share Memories",
@@ -145,7 +145,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Travel passport maps",
           icon: Map,
           to: "/profile",
-          color: "text-blue-600 bg-blue-50 border-blue-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Crew Chat",
@@ -164,7 +164,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Map route & budgets",
           icon: PlusCircle,
           to: "/social/buddy/new",
-          color: "text-indigo-600 bg-indigo-50 border-indigo-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Find Buddies",
@@ -178,7 +178,7 @@ const QuickActions = ({ journey }) => {
           subtitle: "Co-travel messages",
           icon: MessageCircle,
           to: "/social/chat",
-          color: "text-blue-600 bg-blue-50 border-blue-100"
+          color: "text-brand-600 bg-brand-50 border-brand-100"
         },
         {
           title: "Safety Center",

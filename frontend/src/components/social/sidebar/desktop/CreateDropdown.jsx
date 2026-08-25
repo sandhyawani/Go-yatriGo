@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
 import { ICONS } from "../constants/icons";
 import { createActions } from "../constants/createActions";
@@ -7,20 +7,24 @@ import { dropdownVariants } from "../animations/sidebarAnimations";
 import { useSidebar } from "../SidebarProvider";
 
 const CreateDropdown = () => {
-  const { setIsCreatePostOpen } = useSidebar();
+  const { openCreateJourney, openCreatePost } = useSidebar();
+  const navigate = useNavigate();
 
   const handleActionClick = (action) => {
-    if (action.isAction && action.action === "openCreatePost") {
-      setIsCreatePostOpen(true);
+    if (!action.isAction) return;
+    if (action.action === "openCreateJourney") {
+      openCreateJourney();
+    } else if (action.action === "openCreatePost") {
+      openCreatePost();
     }
   };
 
   return (
-    <Menu as="div" className="relative mt-4">
-      <Menu.Button className="w-full flex items-center justify-between gap-3 px-4 py-3 bg-gradient-to-r from-brand-600 to-[#7C4CFF] hover:from-brand-700 hover:to-[#6D3EF5] text-white rounded-2xl font-bold shadow-[0_8px_20px_rgba(109,62,245,0.25)] hover:shadow-[0_12px_25px_rgba(109,62,245,0.35)] hover:-translate-y-0.5 transition-all duration-300 group">
+    <Menu as="div" className="relative mt-2.5">
+      <Menu.Button className="w-full flex items-center justify-between gap-3 px-3.5 py-2.5 bg-gradient-to-r from-brand-600 to-[#7C4CFF] hover:from-brand-700 hover:to-[#6D3EF5] text-white rounded-xl font-bold shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
         <div className="flex items-center gap-2">
           <ICONS.PlusSquare className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
-          <span>Create</span>
+          <span className="text-sm">Create</span>
         </div>
         <ICONS.ChevronDown className="w-4 h-4 opacity-70 group-hover:opacity-100 transition-opacity" />
       </Menu.Button>
@@ -44,7 +48,7 @@ const CreateDropdown = () => {
 
           {createActions.map((action, idx) => {
             const ActionIcon = action.icon;
-            
+
             return (
               <Menu.Item key={idx}>
                 {({ active }) => {
@@ -69,14 +73,19 @@ const CreateDropdown = () => {
                     active ? "bg-slate-50 shadow-sm" : ""
                   }`;
 
+                  // path-based action (Travel Squad → /social/buddy/new)
                   if (action.path) {
                     return (
-                      <Link to={action.path} className={commonClasses}>
+                      <button
+                        className={commonClasses}
+                        onClick={() => navigate(action.path)}
+                      >
                         {content}
-                      </Link>
+                      </button>
                     );
                   }
 
+                  // action-based items (Start Journey, Travel Memory)
                   return (
                     <button
                       onClick={() => handleActionClick(action)}

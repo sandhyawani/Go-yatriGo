@@ -80,7 +80,7 @@ export const StoriesTab = ({
                   setShowDeleteStoryModal(true);
                 }}
                 className="absolute top-3 right-3 bg-black/45 hover:bg-rose-600/80 p-2 rounded-full backdrop-blur-md text-white transition-all z-20 scale-90 md:scale-100"
-                title="Delete Story"
+                title="Delete Dispatch"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>

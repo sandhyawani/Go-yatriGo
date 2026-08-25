@@ -90,7 +90,7 @@ export const StoriesBar = ({
                 <span className="text-[10px] font-bold text-white truncate drop-shadow-md">
                   My Story
                 </span>
-                <div className="w-5 h-5 bg-[#6C4DF6] rounded-full flex items-center justify-center border-2 border-white shadow-lg hover:bg-[#5b3ee0] transition-colors shrink-0">
+                <div className="w-5 h-5 bg-[#7C3AED] rounded-full flex items-center justify-center border-2 border-white shadow-lg hover:bg-[#5b3ee0] transition-colors shrink-0">
                   <Plus className="w-3 h-3 text-white" />
                 </div>
               </div>
@@ -110,7 +110,7 @@ export const StoriesBar = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
 
               <div className="absolute bottom-3 left-0 right-0 flex flex-col items-center justify-center gap-1.5">
-                <div className="w-7 h-7 bg-[#6C4DF6] rounded-full flex items-center justify-center border-[2px] border-white shadow-lg group-hover:scale-110 transition-transform">
+                <div className="w-7 h-7 bg-[#7C3AED] rounded-full flex items-center justify-center border-[2px] border-white shadow-lg group-hover:scale-110 transition-transform">
                   <Plus className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-[10px] font-bold text-white drop-shadow-md">
@@ -165,7 +165,7 @@ export const StoriesBar = ({
                       />
                     )
                   ) : (
-                    <div className="w-full h-full bg-gradient-to-br from-[#6C4DF6]/80 to-purple-400" />
+                    <div className="w-full h-full bg-gradient-to-br from-[#7C3AED]/80 to-purple-400" />
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
 

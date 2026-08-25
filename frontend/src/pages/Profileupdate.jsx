@@ -6,37 +6,7 @@ import { showToast } from "../utils/showToast";
 import { getAvatarUrl } from "../utils/avatar";
 import { compressImage } from "../utils/compressImage";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-User,
-Mail,
-Phone,
-Globe,
-ArrowLeft,
-ShieldCheck,
-Save,
-Camera,
-Home as HomeIcon,
-Compass,
-Plus,
-MessageCircle,
-User as UserIcon,
-Calendar,
-Image,
-Layout,
-AtSign,
-AlignLeft,
-Users,
-AlertCircle,
-Loader2,
-Check,
-X,
-ShieldAlert,
-MapPin,
-Clock,
-CheckCircle,
-AlertTriangle,
-ChevronDown } from
-"lucide-react";
+import { User, Mail, Phone, ArrowLeft, ShieldCheck, Save, Camera, Home as HomeIcon, Compass, Plus, MessageCircle, User as UserIcon, Calendar, Image, AtSign, AlignLeft, AlertCircle, Loader2, Check, X, ShieldAlert, MapPin, Clock, CheckCircle, AlertTriangle, ChevronDown } from "lucide-react";
 import moment from "moment";
 import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 import CustomSelect from "../components/ui/CustomSelect";
@@ -437,9 +407,13 @@ const Profileupdate = () => {
   const { state } = location;
   const { user, updateUser } = useAuth();
 
-  const profileUser = state?._id ? state : state?.user || user;
+  // Non-admins can strictly only edit their own profile
+  const profileUser = (user?.isAdmin && (state?._id || state?.user))
+    ? (state?._id ? state : state?.user)
+    : user;
   const profileUserId = getProfileId(profileUser);
   const isAdminMode = location.pathname.startsWith("/admin");
+
   const backPath = isAdminMode ? "/admin/profile" : "/profile";
   const successPath = isAdminMode ? "/admin/profile" : "/profile";
 
@@ -1202,13 +1176,13 @@ const Profileupdate = () => {
                       </div>
                     </div> :
                   profileUser?.verificationStatus === "pending" ?
-                  <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 flex items-center justify-between">
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-center justify-between">
                       <div>
-                        <h4 className="text-sm font-bold text-blue-900 mb-1 flex items-center gap-2">
-                          <Clock className="w-4 h-4 text-blue-600" />
+                        <h4 className="text-sm font-bold text-amber-900 mb-1 flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-amber-600" />
                           Verification Pending
                         </h4>
-                        <p className="text-xs text-blue-700">Your identity document has been submitted for review.</p>
+                        <p className="text-xs text-amber-700">Your identity document has been submitted for review.</p>
                       </div>
                     </div> :
                   profileUser?.verificationStatus === "rejected" ?

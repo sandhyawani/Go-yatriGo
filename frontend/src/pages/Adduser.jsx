@@ -8,7 +8,6 @@ import PlaceOutlinedIcon from "@mui/icons-material/PlaceOutlined";
 import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 import PhoneOutlinedIcon from "@mui/icons-material/PhoneOutlined";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";

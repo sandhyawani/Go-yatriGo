@@ -71,7 +71,7 @@ const PrivacySettings = () => {
         <div className="bg-white rounded-3xl p-6 shadow-soft border border-[#E5E7EB]/60 space-y-3">
           <SettingsToggle
           title="Private Account"
-          description="When your account is private, only approved Trip Mates can see your posts and stories."
+          description="When your account is private, only approved followers can see your posts and stories."
           settingKey="privateAccount"
           initialValue={currentSettings.privateAccount}
           endpoint="/users/privacy-settings" />
@@ -92,7 +92,7 @@ const PrivacySettings = () => {
 
           <SettingsToggle
           title="Show Online Status"
-          description="Allow your Trip Mates to see when you are currently online."
+          description="Allow your connections to see when you are currently online."
           settingKey="showOnlineStatus"
           initialValue={currentSettings.showOnlineStatus}
           endpoint="/users/privacy-settings" />

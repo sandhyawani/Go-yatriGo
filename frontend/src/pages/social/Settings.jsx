@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../../context/authContext";
-import { Shield, Lock, Activity, LogOut, AlertTriangle, User, Headphones, Bell, X, Sparkles, Bookmark, EyeOff, MessageSquare, Compass } from "lucide-react";
+import { Shield, Lock, Activity, LogOut, AlertTriangle, User, Headphones, X, Bookmark, EyeOff, Compass, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import SettingsRow from "../../components/SettingsRow";
 import { showToast } from "../../utils/showToast";
@@ -324,7 +324,7 @@ const Settings = () => {
           <div>
             <h2 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-3 px-2">1. Account</h2>
             <div className="bg-white rounded-3xl p-3 shadow-soft border border-[#E5E7EB]/60 flex flex-col gap-2">
-              <SettingsRow icon={User} title="Edit Profile" subtitle="Public travel identity" to="/updateProfile" colorClass="text-[#3B82F6] bg-[#DBEAFE]" />
+              <SettingsRow icon={User} title="Edit Profile" subtitle="Public travel identity" to="/updateProfile" colorClass="text-[#7C3AED] bg-[#F3E8FF]" />
               
               {}
               <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80">
@@ -359,7 +359,7 @@ const Settings = () => {
               </div>
 
               <SettingsRow icon={Lock} title="Change Password" subtitle="Update your password" to="/settings/security?tab=password" colorClass="text-[#7C3AED] bg-[#F3E8FF]" />
-              <SettingsRow icon={Activity} title="Login Activity" subtitle="Where you're logged in" to="/settings/security?tab=sessions" colorClass="text-[#06B6D4] bg-[#ECFEFF]" />
+              <SettingsRow icon={Activity} title="Login Activity" subtitle="Where you're logged in" to="/settings/security?tab=sessions" colorClass="text-slate-600 bg-slate-100" />
             </div>
           </div>
 
@@ -369,20 +369,20 @@ const Settings = () => {
             <div className="bg-white rounded-3xl p-3 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-2">
               <SettingsToggle
               title="Private Account"
-              description="When your account is private, only approved Trip Mates can see your posts and stories."
+              description="When your account is private, only approved followers can see your posts and stories."
               settingKey="privateAccount"
               initialValue={currentPrivacy.privateAccount}
               endpoint="/users/privacy-settings" />
 
               <SettingsSelect
-              title="Connection Requests"
-              description="Choose who can send you Trip Mate requests."
+              title="Follow Requests"
+              description="Choose who can send you Follow requests."
               settingKey="connectionRequests"
               initialValue={currentPrivacy.connectionRequests}
               endpoint="/users/privacy-settings"
               options={[
               { value: "everyone", label: "Everyone" },
-              { value: "mates_only", label: "Mates of Mates Only" }]} />
+              { value: "mates_only", label: "Mutuals Only" }]} />
 
 
               <SettingsSelect
@@ -459,8 +459,8 @@ const Settings = () => {
               endpoint="/settings" />
 
               <SettingsToggle
-              title="Connection Requests"
-              description="Get notified about new Trip Mate requests."
+              title="Follow Requests"
+              description="Get notified about new Follow requests."
               settingKey="connectionRequestNotifications"
               initialValue={currentSettings.connectionRequestNotifications}
               endpoint="/settings" />
@@ -528,19 +528,28 @@ const Settings = () => {
 
           {}
           <div>
-            <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">5. Support & Legal</h2>
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">5. Your Activity</h2>
             <div className="bg-white rounded-3xl p-3 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-2">
-              <SettingsRow icon={Headphones} title="Help & Support" subtitle="Get help with your account" to="/help-support" colorClass="text-sky-500 bg-sky-50" />
+              <SettingsRow icon={Star} title="Felt Vibes" subtitle="Your travel moments you've felt" to="/felt-vibes" colorClass="text-amber-500 bg-amber-50" />
+              <SettingsRow icon={Bookmark} title="Saved Posts" subtitle="Posts you've saved for later" to="/saved" colorClass="text-[#7C3AED] bg-[#F3E8FF]" />
+            </div>
+          </div>
+
+          {}
+          <div>
+            <h2 className="text-xs font-black text-slate-400 uppercase tracking-wider mb-3 px-2">6. Support & Legal</h2>
+            <div className="bg-white rounded-3xl p-3 shadow-[0_10px_40px_rgba(0,0,0,0.04)] border border-slate-100 flex flex-col gap-2">
+              <SettingsRow icon={Headphones} title="Help & Support" subtitle="Get help with your account" to="/help-support" colorClass="text-[#7C3AED] bg-[#F3E8FF]" />
               <SettingsRow icon={AlertTriangle} title="Report a Problem" subtitle="Report bugs or issues" to="/report" colorClass="text-orange-500 bg-orange-50" />
               <SettingsRow icon={Shield} title="Community Guidelines" subtitle="Our rules for a safe community" to="/settings/community-guidelines" colorClass="text-emerald-500 bg-emerald-50" />
-              <SettingsRow icon={Shield} title="Privacy Policy" subtitle="How we handle your data" to="/settings/legal/privacy" colorClass="text-blue-500 bg-blue-50" />
+              <SettingsRow icon={Shield} title="Privacy Policy" subtitle="How we handle your data" to="/settings/legal/privacy" colorClass="text-slate-600 bg-slate-100" />
               <SettingsRow icon={Shield} title="Terms of Service" subtitle="Agreement and policies" to="/settings/legal/terms" colorClass="text-slate-500 bg-slate-50" />
             </div>
           </div>
 
           {}
           <div className="pt-4 border-t border-[#E5E7EB]">
-            <h2 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-3 px-2">6. Account Actions</h2>
+            <h2 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-3 px-2">7. Account Actions</h2>
             <div className="flex flex-col gap-2">
               <button onClick={handleLogout} className="w-full flex items-center justify-between p-4 rounded-xl bg-white border border-[#E5E7EB] hover:bg-slate-50 text-[#1E293B] text-sm font-semibold transition-all duration-200 shadow-soft">
                 <span>Log Out</span>

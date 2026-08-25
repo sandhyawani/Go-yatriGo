@@ -53,14 +53,14 @@ export const CommentSection = ({
 
       {commentsLoadingMap?.[post._id] && (
         <div className="flex justify-center my-2">
-          <Loader2 className="w-4 h-4 text-[#6C4DF6] animate-spin" />
+          <Loader2 className="w-4 h-4 text-[#7C3AED] animate-spin" />
         </div>
       )}
 
       {visibleCommentsCount > previewComments.length && activeCommentPost !== post._id && (
         <button
           onClick={() => handleOpenComments(post._id)}
-          className="text-sm font-semibold text-slate-400 hover:text-[#6C4DF6] mt-2 pl-1 block transition-colors"
+          className="text-sm font-semibold text-slate-400 hover:text-[#7C3AED] mt-2 pl-1 block transition-colors"
         >
           View all {visibleCommentsCount} Thoughts
         </button>
@@ -90,13 +90,13 @@ export const CommentSection = ({
             }
             placeholder="Share your thoughts..."
             maxLength={500}
-            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-full pl-4 pr-10 py-2 text-xs text-[#111827] dark:text-white placeholder:text-slate-400 outline-none focus:border-[#6C4DF6]/50 focus:bg-white dark:focus:bg-slate-800 focus:shadow-sm transition-all"
+            className="w-full bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-full pl-4 pr-10 py-2 text-xs text-[#111827] dark:text-white placeholder:text-slate-400 outline-none focus:border-[#7C3AED]/50 focus:bg-white dark:focus:bg-slate-800 focus:shadow-sm transition-all"
           />
           <button
             type="submit"
             disabled={isSubmittingComment[post._id] || !commentText[post._id]?.trim()}
             aria-label="Post comment"
-            className="absolute right-1 p-1.5 bg-gradient-to-r from-violet-500 to-[#6C4DF6] text-white rounded-full active:scale-90 transition-all disabled:opacity-0 disabled:scale-75 disabled:pointer-events-none shadow-sm"
+            className="absolute right-1 p-1.5 bg-gradient-to-r from-violet-500 to-[#7C3AED] text-white rounded-full active:scale-90 transition-all disabled:opacity-0 disabled:scale-75 disabled:pointer-events-none shadow-sm"
           >
             {isSubmittingComment[post._id] ? (
               <Loader2 className="w-3 h-3 animate-spin" />

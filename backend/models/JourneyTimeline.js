@@ -27,6 +27,8 @@ const journeyTimelineSchema = new mongoose.Schema(
     "journey_created",
     "journey_started",
     "journey_completed",
+    "journey_cancelled",
+    "host_transferred",
     "member_joined",
     "member_left",
     "photo_uploaded",
@@ -59,13 +61,14 @@ const journeyTimelineSchema = new mongoose.Schema(
   checkInType: {
     type: String,
     enum: [
-    "Started Journey",
-    "Reached Destination",
-    "Reached Accommodation",
-    "Returning Home",
-    "Reached Home Safely",
-    ""],
-
+      "Started Journey",
+      "Reached Destination",
+      "Reached Accommodation",
+      "Returning Home",
+      "Reached Home Safely",
+      "safe_confirmation",
+      ""
+    ],
     default: ""
   }
 },

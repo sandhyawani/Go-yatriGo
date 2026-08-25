@@ -24,16 +24,22 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
 
     try {
       setLoading(true);
-      await axios.post("/users/report-item", {
+      const res = await axios.post("/users/report-item", {
         targetId,
         targetType,
         reason,
         reportedUserId
       });
-      showToast.success("Report submitted successfully");
+      showToast.success(res.data?.message || "Thanks for keeping Go YatriGo safe! Your report has been submitted.");
       onClose();
     } catch (error) {
-      showToast.error(error.response?.data?.message || "Error submitting report");
+      const msg = error.response?.data?.message;
+      if (msg && (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("flagged"))) {
+        showToast.info(msg);
+        onClose();
+      } else {
+        showToast.error(msg || "Error submitting report");
+      }
     } finally {
       setLoading(false);
     }

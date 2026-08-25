@@ -14,6 +14,10 @@ const JoinRequestSchema = new mongoose.Schema(
 { timestamps: true }
 );
 
-JoinRequestSchema.index({ groupId: 1, userId: 1 }, { unique: true });
+// Partial unique index for Pending requests to allow users to request again if previously rejected
+JoinRequestSchema.index(
+  { groupId: 1, userId: 1 },
+  { unique: true, partialFilterExpression: { status: "Pending" } }
+);
 
 module.exports = mongoose.model("JoinRequest", JoinRequestSchema);

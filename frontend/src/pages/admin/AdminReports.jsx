@@ -84,7 +84,7 @@ const AdminReports = () => {
         showToast.success("User unsuspended");
       } else if (action === "delete_post") {
         await axios.delete(`/admin/post/${payload.id}`);
-        showToast.success("Post deleted");
+        showToast.success("Travel Memory deleted successfully!");
       } else if (action === "delete_group") {
         await axios.delete(`/admin/group/${payload.id}`);
         showToast.success("Group deleted");
@@ -322,12 +322,12 @@ const AdminReports = () => {
                             {report.targetType === "post" &&
                           <ActionIconButton
                           icon={Trash2}
-                          title="Delete post"
+                          title="Delete Travel Memory"
                           onClick={() =>
                           setConfirmModal({
                             isOpen: true,
                             action: "delete_post",
-                            title: "Delete post",
+                            title: "Delete Travel Memory",
                             desc: "Permanently delete this reported post?",
                             payload: { id: report.targetId }
                           })}

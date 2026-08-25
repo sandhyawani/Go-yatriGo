@@ -42,7 +42,8 @@ const {
   addEmergencyContact,
   updateEmergencyContact,
   deleteEmergencyContact,
-  getMemoryComments
+  getMemoryComments,
+  cancelJoinRequest
 } = require("../controllers/socialTravelController");
 
 const router = express.Router();
@@ -55,10 +56,12 @@ router.get("/explore-metadata", verifyToken, getExploreMetadata);
 router.post("/buddy", verifyToken, checkSuspended, createTravelBuddyTrip);
 router.get("/buddy", verifyToken, getAllTravelBuddyTrips);
 router.get("/buddy/liked", verifyToken, getLikedBuddyTrips);
+router.get("/buddy/active-by-location", verifyToken, require("../controllers/socialTravelController").getActiveTravelsByLocation);
 router.get("/buddy/:id", verifyToken, getTravelBuddyTripById);
 router.post("/buddy/like/:id", verifyToken, toggleLikeBuddyTrip);
 router.post("/buddy/join-request/:id", verifyToken, requestToJoinTrip);
 router.post("/buddy/manage-request/:id", verifyToken, manageJoinRequest);
+router.post("/buddy/cancel-request/:id", verifyToken, cancelJoinRequest);
 router.post("/buddy/leave/:id", verifyToken, leaveTravelBuddyTrip);
 router.delete("/buddy/:id", verifyToken, deleteTravelBuddyTrip);
 router.patch("/buddy/:id/cancel", verifyToken, cancelTravelBuddyTrip);
@@ -79,7 +82,7 @@ router.delete("/memory/save/:id", verifyToken, unsavePost);
 router.put("/memory/:id", verifyToken, updateMemory);
 router.delete("/memory/:id", verifyToken, deleteMemory);
 
-router.post("/story", verifyToken, checkSuspended, uploadCloud.single("media"), createStory);
+router.post("/story", verifyToken, checkSuspended, uploadCloud.fields([{ name: "media", maxCount: 1 }, { name: "image", maxCount: 1 }, { name: "file", maxCount: 1 }]), createStory);
 router.get("/story", verifyToken, getActiveStories);
 router.get("/story/:id", verifyToken, getStoryById);
 router.post("/story/:storyId/view", verifyToken, viewStory);

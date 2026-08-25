@@ -17,8 +17,11 @@ export const useChatActions = (currentUserId, activeRoom) => {
       );
       if (!otherUser) return;
 
-      const otherUserId = otherUser._id || otherUser;
-      const isBlocked = user?.blockedUsers?.includes(otherUserId);
+      const otherUserId = (otherUser._id || otherUser)?.toString();
+      const isBlocked = Boolean(
+        otherUserId &&
+        user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherUserId)
+      );
 
       if (!isBlocked) {
         setShowBlockModal(true);
@@ -49,7 +52,7 @@ export const useChatActions = (currentUserId, activeRoom) => {
       );
       if (!otherUser) return;
 
-      const otherUserId = otherUser._id || otherUser;
+      const otherUserId = (otherUser._id || otherUser)?.toString();
       setShowBlockModal(false);
       toast.loading("Blocking user...", { id: "block" });
       const res = await chatService.blockUser(otherUserId);
@@ -77,12 +80,17 @@ export const useChatActions = (currentUserId, activeRoom) => {
       toast.loading("Reporting user...", { id: "report" });
       const res = await chatService.reportUser(otherUser._id || otherUser, "Inappropriate behavior in chat");
       if (res.success) {
-        showToast.success("User reported", { id: "report" });
+        showToast.success(res.message || "Thanks for keeping Go YatriGo safe! User reported.", { id: "report" });
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Error reporting user", {
-        id: "report"
-      });
+      const msg = err.response?.data?.message;
+      if (msg && (msg.toLowerCase().includes("already") || msg.toLowerCase().includes("flagged"))) {
+        showToast.info(msg, { id: "report" });
+      } else {
+        showToast.error(msg || "Error reporting user", {
+          id: "report"
+        });
+      }
     }
   };
 

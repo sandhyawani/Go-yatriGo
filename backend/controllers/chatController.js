@@ -3,6 +3,7 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const Journey = require("../models/Journey");
+const { isBlockedPair, getBlockedUserIds, blockUserAction } = require("../utils/blockHelper");
 
 const emitRequestStatusUpdate = (req, room, userId) => {
   const io = req.app.get("io");
@@ -42,6 +43,11 @@ exports.getOrCreateDirectRoom = async (req, res) => {
       return res.status(400).json({ success: false, message: "You cannot chat with yourself" });
     }
 
+    const isBlocked = await isBlockedPair(userId, targetUserId);
+    if (isBlocked) {
+      return res.status(403).json({ success: false, message: "Cannot chat with a blocked user" });
+    }
+
     let room = await ChatRoom.findOne({
       type: "direct",
       members: { $all: [userId, targetUserId] }
@@ -58,10 +64,11 @@ exports.getOrCreateDirectRoom = async (req, res) => {
         return res.status(403).json({ success: false, message: "This user does not accept direct messages." });
       }
       if (whoCanMsg === "mates_only") {
-        const isMate = targetUser.following?.some((id) => id.toString() === userId.toString()) &&
-        targetUser.followers?.some((id) => id.toString() === userId.toString());
+        const { getValidTripMates } = require("./tripMateController");
+        const validMates = await getValidTripMates(userId);
+        const isMate = validMates.some(m => m._id.toString() === targetUserId.toString());
         if (!isMate) {
-          return res.status(403).json({ success: false, message: "Only approved Journey Mates can message this user." });
+          return res.status(403).json({ success: false, message: "Only approved Trip Mates can message this user." });
         }
       }
 
@@ -117,8 +124,7 @@ exports.getUserRooms = async (req, res) => {
       await ChatRoom.updateMany(
       { travelGroupId: { $in: activeGroupIds } },
       {
-        $addToSet: { members: userId },
-        $pull: { hiddenFor: userId }
+        $addToSet: { members: userId }
       }
       );
     }
@@ -133,8 +139,7 @@ exports.getUserRooms = async (req, res) => {
         await ChatRoom.updateMany(
         { _id: { $in: activeChatRoomIds } },
         {
-          $addToSet: { members: userId },
-          $pull: { hiddenFor: userId }
+          $addToSet: { members: userId }
         }
         );
       }
@@ -329,12 +334,19 @@ exports.sendMessage = async (req, res) => {
       if (!journey) {
         return res.status(404).json({ success: false, message: "Associated journey not found" });
       }
+      if (journey.status === "Cancelled" || journey.isCancelled || String(journey.status).toLowerCase() === "cancelled") {
+        return res.status(403).json({ success: false, message: "This journey has been cancelled. Chat is read-only." });
+      }
       const isMember = journey.members.some((m) => (m.user?._id || m.user).toString() === userId.toString());
       if (!isMember) {
         return res.status(403).json({ success: false, message: "You are not an active member of this Journey" });
       }
     } else if (!room.members.some((m) => m.toString() === userId.toString())) {
       return res.status(403).json({ success: false, message: "You are not a member of this chat room" });
+    }
+
+    if (room.status === "closed") {
+      return res.status(403).json({ success: false, message: "This chat room is closed and read-only." });
     }
 
     if (room.type === "direct") {
@@ -357,14 +369,9 @@ exports.sendMessage = async (req, res) => {
     if (room.type === "direct") {
       const targetUserId = room.members.find((m) => m.toString() !== userId.toString());
       if (targetUserId) {
-        const targetUser = await User.findById(targetUserId);
-        if (targetUser) {
-          if (senderUser.blockedUsers?.includes(targetUserId)) {
-            return res.status(403).json({ success: false, message: "You blocked this user. Unblock to send messages." });
-          }
-          if (targetUser.blockedUsers?.includes(userId)) {
-            return res.status(403).json({ success: false, message: "You cannot message this user." });
-          }
+        const isBlocked = await isBlockedPair(userId, targetUserId);
+        if (isBlocked) {
+          return res.status(403).json({ success: false, message: "Cannot send messages to a blocked user." });
         }
       }
     }
@@ -435,16 +442,38 @@ exports.acceptMessageRequest = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
-    if (!room.members.some((m) => m.toString() === userId.toString())) return res.status(403).json({ success: false, message: "Unauthorized" });
-    if (room.requestedBy && room.requestedBy.toString() === userId.toString()) return res.status(400).json({ success: false, message: "You cannot accept your own request" });
+    
+    // Normalized String-safe member check
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    
+    if (room.requestedBy && String(room.requestedBy) === String(userId)) {
+      return res.status(400).json({ success: false, message: "You cannot accept your own request" });
+    }
+
+    const otherMember = room.members.find((m) => String(m._id || m) !== String(userId));
+    const otherUserId = otherMember ? String(otherMember._id || otherMember) : null;
+    if (otherUserId) {
+      const isBlocked = await isBlockedPair(userId, otherUserId);
+      if (isBlocked) {
+        return res.status(403).json({ success: false, message: "Cannot accept message request from a blocked user" });
+      }
+    }
+
+    // Idempotency: if already accepted, return success safely
+    if (room.requestStatus === "accepted") {
+      return res.status(200).json({ success: true, message: "Request already accepted", room });
+    }
 
     room.requestStatus = "accepted";
     room.acceptedAt = new Date();
     await room.save();
 
     const currentUser = await User.findById(userId);
-    if (currentUser) {
-      currentUser.messageRequests = currentUser.messageRequests.filter((id) => id.toString() !== room.requestedBy.toString());
+    if (currentUser && room.requestedBy) {
+      currentUser.messageRequests = (currentUser.messageRequests || []).filter(
+        (id) => String(id) !== String(room.requestedBy)
+      );
       await currentUser.save();
     }
 
@@ -461,15 +490,28 @@ exports.declineMessageRequest = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
-    if (!room.members.some((m) => m.toString() === userId.toString())) return res.status(403).json({ success: false, message: "Unauthorized" });
-    if (room.requestedBy && room.requestedBy.toString() === userId.toString()) return res.status(400).json({ success: false, message: "You cannot decline your own request" });
+    
+    // Normalized String-safe member check
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    
+    if (room.requestedBy && String(room.requestedBy) === String(userId)) {
+      return res.status(400).json({ success: false, message: "You cannot decline your own request" });
+    }
+
+    // Idempotency: if already declined, return success safely
+    if (room.requestStatus === "declined") {
+      return res.status(200).json({ success: true, message: "Request already declined", room });
+    }
 
     room.requestStatus = "declined";
     await room.save();
 
     const currentUser = await User.findById(userId);
-    if (currentUser) {
-      currentUser.messageRequests = currentUser.messageRequests.filter((id) => id.toString() !== room.requestedBy.toString());
+    if (currentUser && room.requestedBy) {
+      currentUser.messageRequests = (currentUser.messageRequests || []).filter(
+        (id) => String(id) !== String(room.requestedBy)
+      );
       await currentUser.save();
     }
 
@@ -486,10 +528,21 @@ exports.blockMessageRequest = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
-    if (!room.members.some((m) => m.toString() === userId.toString())) return res.status(403).json({ success: false, message: "Unauthorized" });
+    
+    // Normalized String-safe member check
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
 
-    room.requestStatus = "blocked";
-    await room.save();
+    const otherMember = room.members.find((m) => String(m._id || m) !== String(userId));
+    const otherUserId = otherMember ? String(otherMember._id || otherMember) : null;
+
+    if (otherUserId) {
+      await blockUserAction(userId, otherUserId);
+    } else {
+      room.requestStatus = "blocked";
+      await room.save();
+    }
+
     emitRequestStatusUpdate(req, room, userId);
     res.status(200).json({ success: true, message: "User blocked", room });
   } catch (error) {
@@ -502,6 +555,15 @@ exports.markMessagesSeen = async (req, res) => {
     const roomId = req.params.roomId;
     const userId = req.user._id || req.user.id;
     const { messageIds } = req.body;
+
+    const room = await ChatRoom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    }
 
     const query = { roomId, seenBy: { $ne: userId } };
     if (messageIds && messageIds.length > 0) {
@@ -527,12 +589,23 @@ exports.deleteMessageForMe = async (req, res) => {
     const { roomId, messageId } = req.params;
     const userId = req.user._id || req.user.id;
 
+    const room = await ChatRoom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    }
+
     const message = await Message.findOne({ _id: messageId, roomId });
     if (!message) {
       return res.status(404).json({ success: false, message: "Message not found" });
     }
 
-    if (!message.deletedFor.includes(userId)) {
+    const alreadyDeleted = (message.deletedFor || []).some((id) => String(id) === String(userId));
+    if (!alreadyDeleted) {
+      message.deletedFor = message.deletedFor || [];
       message.deletedFor.push(userId);
       await message.save();
     }
@@ -548,13 +621,27 @@ exports.unsendMessage = async (req, res) => {
     const { roomId, messageId } = req.params;
     const userId = req.user._id || req.user.id;
 
+    const room = await ChatRoom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    }
+
     const message = await Message.findOne({ _id: messageId, roomId });
     if (!message) {
       return res.status(404).json({ success: false, message: "Message not found" });
     }
 
-    if (message.sender.toString() !== userId.toString()) {
+    if (String(message.sender) !== String(userId)) {
       return res.status(403).json({ success: false, message: "Only the sender can unsend this message" });
+    }
+
+    // Idempotency: if already unsent, return current message
+    if (message.isUnsent) {
+      return res.status(200).json({ success: true, message: "Message already unsent", data: message });
     }
 
     const diff = Date.now() - new Date(message.createdAt).getTime();
@@ -582,6 +669,15 @@ exports.clearChatForMe = async (req, res) => {
     const { roomId } = req.params;
     const userId = req.user._id || req.user.id;
 
+    const room = await ChatRoom.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
+    }
+
     await Message.updateMany(
     { roomId, deletedFor: { $ne: userId } },
     { $push: { deletedFor: userId } }
@@ -601,6 +697,11 @@ exports.deleteChatForMe = async (req, res) => {
     const room = await ChatRoom.findById(roomId);
     if (!room) {
       return res.status(404).json({ success: false, message: "Chat room not found" });
+    }
+
+    const isMember = room.members.some((m) => String(m._id || m) === String(userId));
+    if (!isMember) {
+      return res.status(403).json({ success: false, message: "Unauthorized: not a member of this chat room" });
     }
 
     if (room.type === "group" && room.travelGroupId) {

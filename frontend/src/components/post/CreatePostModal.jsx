@@ -33,7 +33,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     }
 
     setIsSubmitting(true);
-    toast.loading("Publishing memory...", { id: "post" });
+    toast.loading("Creating Travel Memory...", { id: "post" });
 
     try {
       const formData = new FormData();
@@ -48,7 +48,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
       });
 
       if (res.data.success) {
-        showToast.success("Memory shared!", { id: "post" });
+        showToast.success("Travel Memory created successfully!", { id: "post" });
         if (onPostCreated) onPostCreated();
         onClose();
         // Reset states
@@ -59,7 +59,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
         setDestination("");
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to share memory", { id: "post" });
+      showToast.error(err.response?.data?.message || "Failed to save Travel Memory.", { id: "post" });
     } finally {
       setIsSubmitting(false);
     }
@@ -69,7 +69,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
     <div className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
       <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-slate-150 animate-in fade-in zoom-in-95 duration-200">
         <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
-          <h3 className="text-sm font-bold text-slate-800">Post a Memory</h3>
+          <h3 className="text-sm font-bold text-slate-800">Create Travel Memory</h3>
           <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-50">
             <X className="w-4 h-4" />
           </button>
@@ -92,7 +92,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               </div>
             ) : (
               <label className="cursor-pointer flex flex-col items-center gap-1.5">
-                <div className="w-10 h-10 rounded-full bg-indigo-50 text-[#6C4DF6] flex items-center justify-center">
+                <div className="w-10 h-10 rounded-full bg-brand-50 text-[#7C3AED] flex items-center justify-center">
                   <Image className="w-5 h-5" />
                 </div>
                 <span className="text-xs font-bold text-slate-700">Choose a travel photo</span>
@@ -108,7 +108,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Give this memory a title..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6]"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#7C3AED]"
             />
             <div className="relative">
               <input
@@ -116,7 +116,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
                 value={destination}
                 onChange={(e) => setDestination(e.target.value)}
                 placeholder="Where was this? (e.g. Paris, France)"
-                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6]"
+                className="w-full pl-9 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#7C3AED]"
               />
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
             </div>
@@ -124,7 +124,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Tell us about your experience..."
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#6C4DF6] resize-none"
+              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs outline-none focus:border-[#7C3AED] resize-none"
               rows={3}
             />
           </div>
@@ -140,7 +140,7 @@ export const CreatePostModal = ({ isOpen, onClose, onPostCreated }) => {
           <button
             onClick={handleCreatePost}
             disabled={isSubmitting}
-            className="px-4 py-2 bg-[#6C4DF6] text-white text-xs font-bold rounded-xl hover:bg-[#5b3ee0] active:scale-[0.98] transition-all disabled:opacity-50"
+            className="px-4 py-2 bg-[#7C3AED] text-white text-xs font-bold rounded-xl hover:bg-[#5b3ee0] active:scale-[0.98] transition-all disabled:opacity-50"
           >
             Publish Memory
           </button>

@@ -21,7 +21,6 @@ import moment from "moment";
 import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
 import AudioManager from "../../utils/AudioManager";
-import Swal from "sweetalert2";
 import StorySticker from "./StorySticker";
 import { SocketContext } from "../../context/SocketContext";
 import { useContext } from "react";
@@ -108,7 +107,7 @@ const DispatchViewer = ({
       { withCredentials: true }
       );
       if (res.data.success) {
-        showToast.success("Story deleted");
+        showToast.success("Dispatch deleted successfully!");
         if (typeof handleDeleteStory === "function") {
           try {handleDeleteStory(currentStory._id);} catch {}
         }
@@ -117,7 +116,7 @@ const DispatchViewer = ({
         fetchFeedData?.();
       }
     } catch {
-      showToast.error("Failed to delete story");
+      showToast.error("Failed to delete Dispatch.");
     } finally {
       setDeletingStory(false);
       setIsStoryPaused(false);
@@ -732,8 +731,8 @@ const DispatchViewer = ({
               setReportModal({ isOpen: true });
             }}
             className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-rose-500/80 text-white border border-white/20 rounded-full transition-all shrink-0"
-            aria-label="Report Story"
-            title="Report Story">
+                  aria-label="Report Dispatch"
+                  title="Report Dispatch">
 
                   <ShieldAlert className="w-4 h-4" />
                 </button>
@@ -830,7 +829,7 @@ const DispatchViewer = ({
                 className="w-full flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/15 transition-colors text-left">
 
                       <Trash2 className="w-4 h-4 shrink-0" />
-                      <span className="text-sm font-semibold">Delete Story</span>
+                      <span className="text-sm font-semibold">Delete Dispatch</span>
                     </button>
                   </motion.div>}
 
@@ -913,7 +912,7 @@ const DispatchViewer = ({
                       <Trash2 className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-bold text-white">Delete Story?</h4>
+                      <h4 className="text-sm font-bold text-white">Delete Dispatch?</h4>
                       <p className="text-[11px] text-slate-400 leading-relaxed">This can't be undone.</p>
                     </div>
                     <div className="flex items-center gap-2">

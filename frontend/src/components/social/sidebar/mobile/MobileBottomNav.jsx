@@ -10,8 +10,9 @@ const MobileBottomNav = () => {
   if (!user) return null;
 
   const path = location.pathname;
+  const isChatRoom = /^\/social\/chat\/[^/]+$/.test(path);
   const hideBottomNav =
-    /^\/social\/chat\/.+/.test(path) ||
+    isChatRoom ||
     path.startsWith("/settings/") ||
     path.startsWith("/social/buddy/new") ||
     path.startsWith("/social/buddy/edit") ||
@@ -68,18 +69,28 @@ const MobileBottomNav = () => {
         <span className="text-[9px] font-bold leading-none">Chat</span>
       </Link>
 
-      <Link
-        to="/profile"
-        className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
-          location.pathname === "/profile"
-            ? "text-brand-600"
-            : "text-slate-400 hover:text-slate-600"
-        }`}
-      >
-        <ICONS.User className="w-5 h-5" />
-        <span className="text-[9px] font-bold leading-none">Profile</span>
-      </Link>
+      {(() => {
+        const myId = user?._id || user?.id;
+        const isProfileActive =
+          location.pathname === "/profile" ||
+          location.pathname === "/saved" ||
+          Boolean(myId && location.pathname === `/profile/${myId}`);
+        return (
+          <Link
+            to="/profile"
+            className={`flex flex-col items-center justify-center gap-0.5 px-2 py-1 rounded-xl transition-all min-w-0 ${
+              isProfileActive
+                ? "text-brand-600"
+                : "text-slate-400 hover:text-slate-600"
+            }`}
+          >
+            <ICONS.User className="w-5 h-5" />
+            <span className="text-[9px] font-bold leading-none">Profile</span>
+          </Link>
+        );
+      })()}
     </nav>
+
   );
 };
 

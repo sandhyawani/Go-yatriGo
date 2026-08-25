@@ -41,9 +41,14 @@ import HelpSupport from "../pages/social/HelpSupport";
 import ReportProblem from "../pages/social/ReportProblem";
 import MyJourneys from "../pages/social/MyJourneys";
 import JourneyDetailsPage from "../pages/social/JourneyDetailsPage";
+import ActiveTravelsByLocation from "../pages/social/ActiveTravelsByLocation";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useContext(AuthContext);
+  const { user, loading, initialized } = useContext(AuthContext);
+
+  if (loading || !initialized) {
+    return <div className="min-h-screen bg-slate-50" />;
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
@@ -279,6 +284,15 @@ const RouteTour = () => {
       element={
       <ProtectedRoute>
             <JourneyDetailsPage />
+          </ProtectedRoute>} />
+
+
+
+      <Route
+      path="/social/active-travels"
+      element={
+      <ProtectedRoute>
+            <ActiveTravelsByLocation />
           </ProtectedRoute>} />
 
 

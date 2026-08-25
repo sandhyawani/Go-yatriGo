@@ -623,7 +623,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
           <Link to={`/${path}/update/${params.row._id}`}>
                 <button
             title="Edit"
-            className="rounded-lg bg-blue-50 p-1.5 text-blue-600 shadow-sm transition-all hover:bg-blue-600 hover:text-white">
+            className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white">
 
                   <Edit3 className="h-3.5 w-3.5" />
                 </button>

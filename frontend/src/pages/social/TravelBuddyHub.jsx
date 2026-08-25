@@ -8,32 +8,19 @@ useCallback } from
 import axios from "../../api/axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-Users,
-MapPin,
-Calendar,
-Search,
-Plus,
-Compass,
-Heart,
-X,
-BadgeCheck,
-ChevronDown,
-CalendarClock,
-Flame,
-Star,
-Clock,
-Check,
-Globe,
-ChevronLeft } from
-"lucide-react";
+import { Users, Plus, Compass, BadgeCheck, ChevronDown, CalendarClock, Flame, Star, Clock, Check, ChevronLeft } from "lucide-react";
 import { showToast } from "../../utils/showToast";
 import CustomSelect from "../../components/ui/CustomSelect";
 import { AuthContext } from "../../context/authContext";
 import TripCard from "../../components/social/TripCard";
-import { getAvatarUrl } from "../../utils/avatar";
 import { GROUP_CATEGORIES } from "../../constants/groupCategories";
 import { INDIAN_STATES_AND_CITIES } from "../../constants/locationData";
+import {
+  STATUS_DISPLAY_LABELS,
+  STATUS_DROPDOWN_OPTIONS,
+  normalizeFilterStatus,
+  normalizeJourneyStatus
+} from "../../utils/journeyLifecycle";
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -58,28 +45,64 @@ const TravelBuddyHub = () => {
   const debouncedSearchQuery = useDebounce(searchQuery, 400);
 
   const selectedCategory = searchParams.get("category") || "All";
-  const selectedStatus = searchParams.get("status") || "All";
+  const selectedStatus = normalizeFilterStatus(searchParams.get("status"));
   const rawSort =
-  searchParams.get("sortBy") ||
-  sessionStorage.getItem("explore_sortBy") ||
-  "Starting Soon";
+    searchParams.get("sortBy") ||
+    sessionStorage.getItem("explore_sortBy") ||
+    "Starting Soon";
   const selectedSort = [
-  "Starting Soon",
-  "Trending",
-  "Popular",
-  "Highest Rated",
-  "Newest"].
-  includes(rawSort) ?
-  rawSort :
-  rawSort === "Most Travelers" || rawSort === "Most Joined" ?
-  "Popular" :
-  "Starting Soon";
+    "Starting Soon",
+    "Trending",
+    "Popular",
+    "Highest Rated",
+    "Newest"
+  ].includes(rawSort)
+    ? rawSort
+    : rawSort === "Most Travelers" || rawSort === "Most Joined"
+    ? "Popular"
+    : "Starting Soon";
   const [showSort, setShowSort] = useState(false);
   const [showStatusFilter, setShowStatusFilter] = useState(false);
   const [showLocationDropdown, setShowLocationDropdown] = useState(false);
   const [isCustomSelecting, setIsCustomSelecting] = useState(false);
   const [customState, setCustomState] = useState("");
   const [customCity, setCustomCity] = useState("");
+
+  const statusFilterRef = useRef(null);
+  const sortFilterRef = useRef(null);
+  const locationFilterRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowStatusFilter(false);
+        setShowSort(false);
+        setShowLocationDropdown(false);
+      }
+    };
+
+    const handleClickOutside = (e) => {
+      if (statusFilterRef.current && !statusFilterRef.current.contains(e.target)) {
+        setShowStatusFilter(false);
+      }
+      if (sortFilterRef.current && !sortFilterRef.current.contains(e.target)) {
+        setShowSort(false);
+      }
+      if (locationFilterRef.current && !locationFilterRef.current.contains(e.target)) {
+        setShowLocationDropdown(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   const urlExploreCity = searchParams.get("exploreCity");
   const urlExploreState = searchParams.get("exploreState");
@@ -125,17 +148,17 @@ const TravelBuddyHub = () => {
 
   const observer = useRef();
   const lastTripElementRef = useCallback(
-  (node) => {
-    if (loading || loadingMore) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting && hasMore) {
-        setPage((prevPage) => prevPage + 1);
-      }
-    });
-    if (node) observer.current.observe(node);
-  },
-  [loading, loadingMore, hasMore]
+    (node) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          setPage((prevPage) => prevPage + 1);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore]
   );
 
   useEffect(() => {
@@ -145,17 +168,16 @@ const TravelBuddyHub = () => {
   }, []);
 
   const sortOptionsConfig = [
-  { id: "Starting Soon", label: "Starting Soon", icon: CalendarClock },
-  { id: "Trending", label: "Trending", icon: Flame },
-  { id: "Popular", label: "Popular", icon: Users },
-  { id: "Highest Rated", label: "Highest Rated", icon: Star },
-  { id: "Newest", label: "Newest", icon: Clock }];
-
-
+    { id: "Starting Soon", label: "Starting Soon", icon: CalendarClock },
+    { id: "Trending", label: "Trending", icon: Flame },
+    { id: "Popular", label: "Popular", icon: Users },
+    { id: "Highest Rated", label: "Highest Rated", icon: Star },
+    { id: "Newest", label: "Newest", icon: Clock }
+  ];
 
   const updateUrlParams = (key, value) => {
     const newParams = new URLSearchParams(searchParams);
-    if (value && value !== "All" && value !== "") {
+    if (value && value !== "All" && value !== "all" && value !== "") {
       newParams.set(key, value);
     } else {
       newParams.delete(key);
@@ -200,7 +222,9 @@ const TravelBuddyHub = () => {
   selectedSort,
   page,
   urlExploreCity,
-  urlExploreState]
+  urlExploreState,
+  user?.city,
+  user?.state]
   );
 
   const fetchExploreData = async (isNewSearch = false) => {
@@ -214,19 +238,20 @@ const TravelBuddyHub = () => {
 
     try {
       const params = new URLSearchParams();
-      if (selectedCategory && selectedCategory !== "All")
-      params.append("category", selectedCategory);
-      if (selectedStatus && selectedStatus !== "All")
-      params.append("lifecycleStatus", selectedStatus);
+      if (selectedCategory && selectedCategory !== "All" && selectedCategory !== "all")
+        params.append("category", selectedCategory);
+      if (selectedStatus && selectedStatus !== "all" && selectedStatus !== "All")
+        params.append("lifecycleStatus", selectedStatus);
       if (selectedSort) params.append("sortBy", selectedSort);
       if (debouncedSearchQuery)
-      params.append("destination", debouncedSearchQuery);
+        params.append("destination", debouncedSearchQuery);
 
       if (urlExploreCity) {
         params.append("exploreCity", urlExploreCity);
-      }
-      if (urlExploreState) {
-        params.append("exploreState", urlExploreState);
+        if (urlExploreState) params.append("exploreState", urlExploreState);
+      } else if (user?.city && urlExploreCity !== "none") {
+        params.append("exploreCity", user.city);
+        if (user?.state) params.append("exploreState", user.state);
       }
 
       params.append("page", isNewSearch ? 1 : page);
@@ -243,7 +268,7 @@ const TravelBuddyHub = () => {
         }
         setHasMore(res.data.pagination?.hasMore ?? false);
         setTotalFilteredTrips(
-        res.data.pagination?.total ?? res.data.trips?.length ?? 0
+          res.data.pagination?.total ?? res.data.trips?.length ?? 0
         );
       }
     } catch (err) {
@@ -255,39 +280,82 @@ const TravelBuddyHub = () => {
   };
 
   const handleFelt = async (tripId, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    try {
-      const res = await axios.post(
-      `/social/buddy/like/${tripId}`,
-      {},
-      { withCredentials: true }
-      );
-      setTrips((prev) =>
-      prev?.map((t) => {
-        if (t._id === tripId) {
-          const isLikedNow = res.data.isLiked;
-          const currentLikes = t.likes || [];
-          const updatedLikes = isLikedNow ?
-          [...currentLikes, user?._id] :
-          currentLikes.filter((id) => id !== user?._id);
-          return { ...t, likes: updatedLikes };
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const cleanTripId = (tripId?._id || tripId?.id || tripId)?.toString();
+    if (!cleanTripId) return;
+
+    if (!user) {
+      showToast.error("Please login to save groups");
+      return;
+    }
+
+    const currentUserId = (user._id || user.id)?.toString();
+
+    let prevTripsSnapshot = [];
+    setTrips((prev) => {
+      prevTripsSnapshot = prev;
+      return prev?.map((t) => {
+        const tId = (t._id || t.id)?.toString();
+        if (tId === cleanTripId) {
+          const currentLikes = Array.isArray(t.likes) ? t.likes : [];
+          const hasLiked = currentLikes.some(
+            (id) => (id?._id || id)?.toString() === currentUserId
+          );
+          const updatedLikes = hasLiked
+            ? currentLikes.filter(
+                (id) => (id?._id || id)?.toString() !== currentUserId
+              )
+            : [...currentLikes, user._id || user.id];
+          return { ...t, likes: updatedLikes, likesCount: updatedLikes.length };
         }
         return t;
-      })
+      });
+    });
+
+    try {
+      const res = await axios.post(
+        `/social/buddy/like/${cleanTripId}`,
+        {},
+        { withCredentials: true }
       );
-      showToast.success(
-      res.data.isLiked ? "You felt this vibe!" : "Removed from Felt Vibes"
-      );
+      if (res.data && res.data.success) {
+        const isLikedNow = res.data.isLiked;
+        const serverLikes = res.data.likes;
+        setTrips((prev) =>
+          prev?.map((t) => {
+            const tId = (t._id || t.id)?.toString();
+            if (tId === cleanTripId) {
+              if (Array.isArray(serverLikes)) {
+                return { ...t, likes: serverLikes, likesCount: serverLikes.length };
+              }
+              const currentLikes = Array.isArray(t.likes) ? t.likes : [];
+              const updatedLikes = isLikedNow
+                ? currentLikes.some((id) => (id?._id || id)?.toString() === currentUserId)
+                  ? currentLikes
+                  : [...currentLikes, user._id || user.id]
+                : currentLikes.filter((id) => (id?._id || id)?.toString() !== currentUserId);
+              return { ...t, likes: updatedLikes, likesCount: updatedLikes.length };
+            }
+            return t;
+          })
+        );
+        showToast.success(
+          isLikedNow ? "You felt this vibe!" : "Removed from Felt Vibes"
+        );
+      }
     } catch (err) {
-      showToast.error("Action failed");
+      setTrips(prevTripsSnapshot);
+      showToast.error(err.response?.data?.message || "Failed to update reaction");
     }
   };
 
 
   const getStatusColor = (status) => {
-    switch (status?.toLowerCase()) {
-      case "active now":
+    const s = normalizeJourneyStatus(status);
+    switch (s) {
       case "active":
         return "bg-green-500/90 text-white border border-white/20";
       case "upcoming":
@@ -302,14 +370,15 @@ const TravelBuddyHub = () => {
   };
 
   const getEmptyStateMessage = () => {
-    if (selectedStatus === "Cancelled")
-    return "No cancelled travel groups found";
-    if (selectedStatus === "Active Now") return "No active travel groups found";
-    if (selectedCategory !== "All")
-    return `No ${selectedCategory.toLowerCase()} travel groups found`;
+    if (selectedStatus === "active") return "No active journeys found";
+    if (selectedStatus === "upcoming") return "No upcoming journeys found";
+    if (selectedStatus === "completed") return "No completed journeys found";
+    if (selectedStatus === "cancelled") return "No cancelled journeys found";
+    if (selectedCategory && selectedCategory !== "All" && selectedCategory !== "all")
+      return `No ${selectedCategory.toLowerCase()} journeys found`;
     if (debouncedSearchQuery)
-    return `No travel groups found for "${debouncedSearchQuery}"`;
-    return "No matching travel groups found";
+      return `No journeys found for "${debouncedSearchQuery}"`;
+    return "No matching journeys found";
   };
 
   const renderFilterChips = () => {
@@ -339,12 +408,12 @@ const TravelBuddyHub = () => {
     });
 
     return (
-      <div className="flex overflow-x-auto gap-2 pb-2 pt-1 hide-scrollbar snap-x flex-1 min-w-0">
+      <div className="flex overflow-x-auto gap-2 pb-1 pt-1 hide-scrollbar snap-x flex-1 min-w-0 whitespace-nowrap">
         {chips.map((chip) =>
         <button
         key={chip.id}
         onClick={chip.onClick}
-        className={`snap-start px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 ${
+        className={`snap-start px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 shrink-0 ${
         chip.isActive ?
         "bg-[#7C3AED] text-white shadow-soft" :
         "bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#1E293B] hover:bg-slate-50"
@@ -358,15 +427,14 @@ const TravelBuddyHub = () => {
   };
 
   return (
-    <div className="w-full min-h-[100dvh] overflow-x-hidden pb-24 lg:pb-6 max-w-7xl mx-auto font-sans antialiased">
-      <div className="px-4 sm:px-6 lg:px-8 space-y-4">
-        {}
+    <main className="w-full min-w-0 min-h-[100dvh] overflow-x-hidden pb-24 lg:pb-6 max-w-none lg:max-w-7xl lg:mx-auto font-sans antialiased">
+      <div className="w-full min-w-0 px-0 sm:px-2 lg:px-4 space-y-4">
         <div className="flex justify-between items-center gap-4 select-none pt-0">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-[#1E293B] tracking-tight leading-tight">
+            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-[#1E293B] tracking-tight leading-tight font-heading">
               Explore <span className="text-[#7C3AED]">Journey</span>
             </h1>
-            <p className="text-xs text-[#64748B] font-semibold mt-1">
+            <p className="text-xs sm:text-sm text-[#64748B] font-normal sm:font-medium mt-1 font-sans">
               {isUsingProfile && `Groups starting near ${user.city} and across ${user.state}.`}
               {isCustomLocation && `Groups starting near ${urlExploreCity} and across ${urlExploreState}.`}
               {isEverywhere && "Find groups and travelers heading somewhere you'll love."}
@@ -375,37 +443,32 @@ const TravelBuddyHub = () => {
           </div>
         </div>
 
-        {}
-        <div className="sticky top-12 sm:top-16 z-30 bg-[#F8FAFC]/95 backdrop-blur-xl pb-2 pt-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-3 select-none">
-          {}
+        <div className="sticky top-12 sm:top-16 z-30 bg-[#F8FAFC]/95 backdrop-blur-xl pb-2 pt-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-2 sm:gap-3 select-none">
           {renderFilterChips()}
 
           <Link
           to="/social/buddy/new"
-          className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-xs rounded-xl transition-all duration-200 shadow-soft hover:-translate-y-0.5 shrink-0 mb-1">
+          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-xs rounded-xl transition-all duration-200 shadow-soft hover:-translate-y-0.5 shrink-0 mb-0.5">
 
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Trip Group</span><span className="sm:hidden">Create</span>
+            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Trip Group</span><span className="sm:hidden font-bold">+ Create</span>
           </Link>
         </div>
 
-        {}
-        <div className="flex flex-wrap justify-between items-center gap-y-3 py-1 mt-2">
-          <div className="flex flex-col">
-            <h3 className="text-xs font-semibold text-[#64748B]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 py-1 mt-1">
+          <div className="flex items-center justify-between sm:justify-start gap-3">
+            <h3 className="text-xs sm:text-sm font-bold text-[#64748B]">
               {totalFilteredTrips} Trips
             </h3>
             {metadata?.onlineTravelers > 0 &&
-            <span className="text-[11px] text-[#22C55E] font-semibold flex items-center gap-1.5 mt-0.5">
+            <span className="text-[11px] text-[#22C55E] font-semibold flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
                 {metadata.onlineTravelers} online
               </span>}
 
           </div>
 
-          {}
-          <div className="flex flex-wrap items-center gap-2">
-            {}
-            <div className="relative z-45">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+            <div className="relative z-45" ref={locationFilterRef}>
               <button
               onClick={() => {
                 setShowLocationDropdown(!showLocationDropdown);
@@ -440,7 +503,7 @@ const TravelBuddyHub = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute right-0 mt-2 w-72 bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden p-3 flex flex-col gap-2">
+                  className="absolute left-0 sm:left-auto sm:right-0 mt-2 w-72 max-w-[calc(100vw-2rem)] bg-white border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden p-3 flex flex-col gap-2">
 
                       {!isCustomSelecting ?
                     <>
@@ -448,7 +511,6 @@ const TravelBuddyHub = () => {
                             Explore Location
                           </div>
                           
-                          {}
                           {user?.city &&
                       <button
                       onClick={() => {
@@ -469,7 +531,6 @@ const TravelBuddyHub = () => {
                             </button>}
 
 
-                          {}
                           <button
                       onClick={() => {
                         handleSelectLocation("none", "");
@@ -490,7 +551,6 @@ const TravelBuddyHub = () => {
 
                           <div className="border-t border-slate-100 my-1"></div>
 
-                          {}
                           <button
                       onClick={() => {
                         setIsCustomSelecting(true);
@@ -563,155 +623,133 @@ const TravelBuddyHub = () => {
               </AnimatePresence>
             </div>
 
-            {}
-            <div className="relative z-40">
+            <div className="relative z-40" ref={statusFilterRef}>
               <button
-              onClick={() => setShowStatusFilter(!showStatusFilter)}
-              className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95">
-
+                onClick={() => setShowStatusFilter(!showStatusFilter)}
+                className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+              >
                 <BadgeCheck className="w-4 h-4 text-brand-600" />
                 <span className="hidden sm:inline">
-                  {selectedStatus === "All" ? "All Status" : selectedStatus}
+                  {STATUS_DISPLAY_LABELS[selectedStatus] || "All Status"}
                 </span>
                 <span className="sm:hidden">
-                  {selectedStatus === "All" ? "Status" : selectedStatus}
+                  {STATUS_DISPLAY_LABELS[selectedStatus] || "All Status"}
                 </span>
                 <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showStatusFilter ? "rotate-180" : ""}`} />
-
+                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                    showStatusFilter ? "rotate-180" : ""
+                  }`}
+                />
               </button>
               <AnimatePresence>
-                {showStatusFilter &&
-                <motion.div
-                key="status-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40"
-                onClick={() => setShowStatusFilter(false)}>
-                </motion.div>}
-
-                {showStatusFilter &&
-                <motion.div
-                key="status-dropdown"
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 sm:right-auto sm:left-0 mt-2 w-44 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5">
-
-                    {[
-                  { id: "All", label: "All Status" },
-                  { id: "Active Now", label: "Active" },
-                  { id: "Upcoming", label: "Upcoming" },
-                  { id: "Completed", label: "Completed" }].
-                  map(({ id, label }) => {
-                    const isSelected = selectedStatus === id;
-                    return (
-                      <button
-                      key={id}
-                      onClick={() => {
-                        updateUrlParams("status", id);
-                        setShowStatusFilter(false);
-                      }}
-                      className={`w-full flex text-left items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
-                      isSelected ?
-                      "bg-brand-50 text-brand-600" :
-                      "text-slate-600 hover:bg-slate-50"
-                      }`}>
-
+                {showStatusFilter && (
+                  <motion.div
+                    key="status-dropdown"
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute left-0 mt-2 w-44 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
+                  >
+                    {STATUS_DROPDOWN_OPTIONS.map(({ id, label }) => {
+                      const isSelected = selectedStatus === id;
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => {
+                            updateUrlParams("status", id);
+                            setShowStatusFilter(false);
+                          }}
+                          className={`w-full flex text-left items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                            isSelected
+                              ? "bg-[#7C3AED]/10 text-[#7C3AED]"
+                              : "text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
                           <span>{label}</span>
-                          {isSelected &&
-                        <Check className="w-4 h-4 text-brand-600" />}
-
-                        </button>);
-
-                  })}
-                  </motion.div>}
-
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-[#7C3AED]" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
               </AnimatePresence>
             </div>
 
-            {}
-            <div className="relative z-30">
+            <div className="relative z-30" ref={sortFilterRef}>
               {(() => {
                 const currentSortObj =
-                sortOptionsConfig.find((s) => s.id === selectedSort) ||
-                sortOptionsConfig[0];
+                  sortOptionsConfig.find((s) => s.id === selectedSort) ||
+                  sortOptionsConfig[0];
                 const ActiveIcon = currentSortObj.icon;
                 return (
                   <button
-                  onClick={() => setShowSort(!showSort)}
-                  className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95">
-
+                    onClick={() => setShowSort(!showSort)}
+                    className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+                  >
                     <ActiveIcon className="w-4 h-4 text-brand-600" />
                     <span>{currentSortObj.label}</span>
                     <ChevronDown
-                    className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showSort ? "rotate-180" : ""}`} />
-
-                  </button>);
-
+                      className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                        showSort ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                );
               })()}
               <AnimatePresence>
-                {showSort &&
-                <motion.div
-                key="sort-backdrop"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="fixed inset-0 z-40"
-                onClick={() => setShowSort(false)}>
-                </motion.div>}
-
-                {showSort &&
-                <motion.div
-                key="sort-dropdown"
-                initial={{ opacity: 0, y: 10, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                transition={{ duration: 0.15 }}
-                className="absolute right-0 mt-2 w-52 bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5">
-
+                {showSort && (
+                  <motion.div
+                    key="sort-dropdown"
+                    initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-52 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
+                  >
                     {sortOptionsConfig.map(({ id, label, icon: Icon }) => {
-                    const isSelected = selectedSort === id;
-                    return (
-                      <button
-                      key={id}
-                      onClick={() => {
-                        sessionStorage.setItem("explore_sortBy", id);
-                        updateUrlParams("sortBy", id);
-                        setShowSort(false);
-                      }}
-                      className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
-                      isSelected ?
-                      "bg-brand-50 text-brand-600" :
-                      "text-slate-600 hover:bg-slate-50"
-                      }`}>
-
+                      const isSelected = selectedSort === id;
+                      return (
+                        <button
+                          key={id}
+                          onClick={() => {
+                            sessionStorage.setItem("explore_sortBy", id);
+                            updateUrlParams("sortBy", id);
+                            setShowSort(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                            isSelected
+                              ? "bg-brand-50 text-brand-600"
+                              : "text-slate-600 hover:bg-slate-50"
+                          }`}
+                        >
                           <div className="flex items-center gap-2.5">
                             <Icon
-                          className={`w-4 h-4 ${isSelected ? "text-brand-600" : "text-slate-400"}`} />
-
+                              className={`w-4 h-4 ${
+                                isSelected ? "text-brand-600" : "text-slate-400"
+                              }`}
+                            />
                             <span>{label}</span>
                           </div>
-                          {isSelected &&
-                        <Check className="w-4 h-4 text-brand-600" />}
-
-                        </button>);
-
-                  })}
-                  </motion.div>}
-
+                          {isSelected && (
+                            <Check className="w-4 h-4 text-brand-600" />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
               </AnimatePresence>
             </div>
           </div>
         </div>
 
-        {}
         <div className="space-y-4 pb-8">
           {loading ?
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
               {[1, 2, 3, 4].map((n) =>
             <div
             key={n}
@@ -733,7 +771,7 @@ const TravelBuddyHub = () => {
           <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="bg-white border border-slate-200 rounded-[24px] text-center p-6 sm:p-12 shadow-sm mt-4 mx-4 sm:mx-0">
+          className="bg-white border border-slate-200 rounded-[24px] text-center p-6 sm:p-12 shadow-sm mt-4 w-full">
 
               <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Compass className="w-10 h-10 text-slate-300" />
@@ -752,7 +790,7 @@ const TravelBuddyHub = () => {
                   Clear Filters
                 </button>
                 <Link
-              to="/social/buddy/new"
+                to="/social/buddy/new"
               className="px-6 py-2.5 bg-[#1E293B] hover:bg-black text-white font-bold rounded-full transition-all shadow-md active:scale-95 text-[13px] flex items-center gap-1.5">
 
                   <Plus className="w-4 h-4" /> Create Trip Group
@@ -761,7 +799,7 @@ const TravelBuddyHub = () => {
             </motion.div> :
 
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch w-full">
               <AnimatePresence>
                 {trips?.map((trip, index) => {
                 const showHeader = trips.length >= 3 && trip.exploreSectionHeader && (index === 0 || trips[index - 1].exploreSection !== trip.exploreSection);
@@ -787,7 +825,6 @@ const TravelBuddyHub = () => {
             </div>}
 
 
-          {}
           {!loading && trips.length > 0 && hasMore &&
           <div ref={lastTripElementRef} className="h-1 w-full" />}
 
@@ -799,7 +836,7 @@ const TravelBuddyHub = () => {
 
         </div>
       </div>
-    </div>);
+    </main>);
 
 };
 

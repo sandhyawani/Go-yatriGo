@@ -7,13 +7,15 @@ const {
   resetpasswordrequest,
   resetpassword,
   checkEmailExists,
-  changePassword
+  changePassword,
+  getCurrentUser
 } = require("../controllers/authController");
 const { verifyToken } = require("../middleware/verifyToken");
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.post("/logout", logoutUser);
+router.get("/me", verifyToken, getCurrentUser);
 router.post("/forgot-password", resetpasswordrequest);
 router.post("/reset-password/:token", resetpassword);
 router.get("/check-email", checkEmailExists);

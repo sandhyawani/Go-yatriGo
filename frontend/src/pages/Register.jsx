@@ -184,15 +184,19 @@ const Register = () => {
     formData;
     const newErrors = {};
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedMobile = mobile.trim();
+
     if (!name.trim()) newErrors.name = "Name is required";
-    if (!email) newErrors.email = "Email is required";else
-    if (!validateEmail(email)) newErrors.email = "Invalid email format";
-    if (!mobile) newErrors.mobile = "Phone is required";else
-    if (!validatePhone(mobile)) newErrors.mobile = "Invalid phone format";
+    if (!normalizedEmail) newErrors.email = "Email is required";else
+    if (!validateEmail(normalizedEmail)) newErrors.email = "Invalid email format";
+    if (!normalizedMobile) newErrors.mobile = "Phone is required";else
+    if (!validatePhone(normalizedMobile)) newErrors.mobile = "Invalid phone format";
     if (!govIdType) newErrors.govIdType = "Document type is required";
     if (!state) newErrors.state = "State is required";
     if (!city) newErrors.city = "City is required";
     if (!password) newErrors.password = "Password is required";
+    else if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
     if (password && repeatPassword && password !== repeatPassword) {
       newErrors.repeatPassword = "Passwords do not match";
     } else if (password && !repeatPassword) {
@@ -260,6 +264,9 @@ const Register = () => {
       const { repeatPassword: _, ...payload } = formData;
       await axios.post("/auth/register", {
         ...payload,
+        name: payload.name.trim(),
+        email: payload.email.trim().toLowerCase(),
+        mobile: payload.mobile.trim(),
         img: imageUrl,
         govId: govIdUrl
       });
@@ -303,7 +310,7 @@ const Register = () => {
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
       <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] -translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] -translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
         {}

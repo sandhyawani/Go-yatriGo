@@ -14,7 +14,7 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
   }, [finalPic, finalImg]);
 
   const avatarUrl = getAvatarUrl(user || finalPic, finalImg, finalName);
-  const isUiAvatar = !avatarUrl || avatarUrl.includes('ui-avatars.com') || avatarUrl.includes('no-image-icon');
+  const isUiAvatar = !avatarUrl || avatarUrl.includes('ui-avatars.com') || avatarUrl.includes('no-image-icon') || avatarUrl.includes('icon-library');
   const showFallback = error || isUiAvatar;
 
   const getInitials = (str) => {

@@ -23,7 +23,7 @@ export const useStories = () => {
 
   const handleDeleteStory = useCallback(async (storyId, onComplete) => {
     const { isConfirmed } = await Swal.fire({
-      title: "Delete this story?",
+      title: "Delete this Dispatch?",
       text: "This cannot be undone.",
       icon: "warning",
       showCancelButton: true,
@@ -36,11 +36,11 @@ export const useStories = () => {
     try {
       const res = await homeService.deleteStory(storyId);
       if (res.data.success) {
-        showToast.success("Story deleted");
+        showToast.success("Dispatch deleted successfully!");
         if (onComplete) onComplete();
       }
     } catch (err) {
-      showToast.error("Failed to delete story");
+      showToast.error("Failed to delete Dispatch.");
     }
   }, []);
 

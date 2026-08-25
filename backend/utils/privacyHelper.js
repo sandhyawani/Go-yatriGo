@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const { isBlockedPair } = require("./blockHelper");
 
 const canInteractWithContent = async (authorId, requestingUser) => {
   if (!authorId || !requestingUser) return false;
@@ -9,16 +10,13 @@ const canInteractWithContent = async (authorId, requestingUser) => {
     return true;
   }
 
-  const author = await User.findById(authorId).select("privateAccount followers blockedUsers").lean();
+  const isBlocked = await isBlockedPair(authorId, currentUserId);
+  if (isBlocked) {
+    return false;
+  }
+
+  const author = await User.findById(authorId).select("privateAccount followers isPrivate").lean();
   if (!author) {
-    return false;
-  }
-
-  if (author.blockedUsers && author.blockedUsers.some((id) => id.toString() === currentUserId.toString())) {
-    return false;
-  }
-
-  if (requestingUser.blockedUsers && requestingUser.blockedUsers.some((id) => id.toString() === authorId.toString())) {
     return false;
   }
 

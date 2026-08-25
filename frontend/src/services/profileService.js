@@ -26,7 +26,7 @@ export const profileService = {
     axios.post(endpoint, {}, { withCredentials: true }),
 
   rateUser: (ratedUserId, rating) => 
-    axios.post("/users/rate", { ratedUserId, rating }, { withCredentials: true }),
+    axios.post(`/users/rate/${ratedUserId}`, { rating }, { withCredentials: true }),
 
   reportUser: (reportedUserId, reason) => 
     axios.post("/users/report", { reportedUserId, reason }, { withCredentials: true }),
@@ -65,10 +65,13 @@ export const profileService = {
     axios.get("/users/me", { withCredentials: true }),
 
   acceptFollowRequest: (userId) =>
-    axios.post(`/users/${userId}/accept`, {}, { withCredentials: true }),
+    axios.post(`/users/${userId}/follow-request/accept`, {}, { withCredentials: true }),
 
   declineFollowRequest: (userId) =>
-    axios.post(`/users/${userId}/decline`, {}, { withCredentials: true }),
+    axios.post(`/users/${userId}/follow-request/reject`, {}, { withCredentials: true }),
+
+  cancelFollowRequest: (userId) =>
+    axios.delete(`/users/follow-requests/${userId}`, { withCredentials: true }),
 };
 
 export default profileService;

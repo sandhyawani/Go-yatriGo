@@ -1,6 +1,6 @@
 export const getAvatarUrl = (...args) => {
   const checkUrl = (url) => {
-    return url && typeof url === "string" && url.trim() !== "" && !url.includes("no-image-icon") && !url.includes("undefined") && !url.includes("null") && (url.startsWith("http") || url.startsWith("/") || url.startsWith("data:image"));
+    return url && typeof url === "string" && url.trim() !== "" && !url.includes("no-image-icon") && !url.includes("icon-library") && !url.includes("undefined") && !url.includes("null") && (url.startsWith("http") || url.startsWith("/") || url.startsWith("data:image"));
   };
 
   let foundName = null;

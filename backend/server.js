@@ -49,6 +49,8 @@ const allowedClientOrigins = [
 ...new Set([...configuredClientOrigins, ...developmentClientOrigins])];
 
 
+const isDev = process.env.NODE_ENV !== "production";
+
 const corsOptions = {
   origin(origin, callback) {
     if (!origin) {
@@ -57,59 +59,78 @@ const corsOptions = {
 
     const normalizedOrigin = origin.replace(/\/$/, "");
 
-    if (allowedClientOrigins.includes(normalizedOrigin)) {
+    if (
+      allowedClientOrigins.includes(normalizedOrigin) ||
+      (isDev && (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)))
+    ) {
       return callback(null, true);
     }
 
-    return callback(new Error(`CORS blocked origin: ${origin}`));
+    if (isDev) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "Cache-Control",
+    "cache-control",
+    "Pragma",
+    "Expires",
+    "X-Requested-With",
+    "Accept",
+    "Origin"
+  ],
+  exposedHeaders: ["set-cookie"]
 };
+
+// 1. Enable CORS before all other middlewares and rate limiters
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(compression());
 
 app.use(requestIdMiddleware);
 
 app.use(
-helmet({
-  crossOriginEmbedderPolicy: false,
-  contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false
-})
+  helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: process.env.NODE_ENV === "production" ? undefined : false
+  })
 );
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 30,
+  max: isDev ? 1000 : 30,
   message: { message: "Too many login/register attempts. Please try again after 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) =>
-  req.path.startsWith("/socket.io") ||
-  req.path.startsWith("/health") ||
-  req.path.startsWith("/api/health")
+    req.path.startsWith("/socket.io") ||
+    req.path.startsWith("/health") ||
+    req.path.startsWith("/api/health")
 });
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 300,
+  max: isDev ? 10000 : 300,
   message: { message: "Too many requests from this IP, please try again after 15 minutes." },
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) =>
-  req.path.startsWith("/socket.io") ||
-  req.path.startsWith("/health") ||
-  req.path.startsWith("/api/health")
+    req.path.startsWith("/socket.io") ||
+    req.path.startsWith("/health") ||
+    req.path.startsWith("/api/health")
 });
 
 app.use("/api/auth", authLimiter);
 app.use("/api", apiLimiter);
 
 app.use(mongoSanitize());
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
 app.use(express.json({ limit: "25mb" }));
 app.use(express.urlencoded({ extended: true }));
@@ -213,6 +234,9 @@ app.use("/journeys", require("./routes/journeyRoutes"));
 app.use("/api/music", require("./routes/musicRoute"));
 app.use("/music", require("./routes/musicRoute"));
 
+app.use("/api/trip-mates", require("./routes/tripMateRoutes"));
+app.use("/trip-mates", require("./routes/tripMateRoutes"));
+
 app.use(notFound);
 app.use(errorHandler);
 
@@ -257,8 +281,6 @@ app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
 io.on("connection", (socket) => {
-  console.log("[SERVER] Connected:", socket.id);
-
   socket.on("go_online", async (userId) => {
     const authUserId = socket.userId;
     if (!authUserId) {
@@ -275,15 +297,6 @@ io.on("connection", (socket) => {
     onlineUsers.get(finalUserId).add(socket.id);
 
     socket.join(finalUserId);
-
-    console.log("[SERVER] go_online received", {
-      userId: finalUserId,
-      socketId: socket.id,
-      personalRoom: finalUserId,
-      totalSocketsForUser: onlineUsers.get(finalUserId).size,
-      isReconnect,
-      time: Date.now()
-    });
 
     if (!isReconnect) {
       socket.broadcast.emit("user_presence", {
@@ -311,12 +324,11 @@ io.on("connection", (socket) => {
         if (undeliveredMessages.length > 0) {
           const messageIds = undeliveredMessages.map((m) => m._id);
           await Message.updateMany(
-          { _id: { $in: messageIds } },
-          { $addToSet: { deliveredTo: finalUserId } }
+            { _id: { $in: messageIds } },
+            { $addToSet: { deliveredTo: finalUserId } }
           );
 
           undeliveredMessages.forEach((m) => {
-            console.log("[SERVER] EMIT message_delivered", { roomId: m.roomId.toString(), messageId: m._id.toString(), userId: finalUserId });
             io.to(m.roomId.toString()).emit("message_delivered", {
               roomId: m.roomId.toString(),
               messageId: m._id.toString(),
@@ -336,7 +348,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("join_room", async (roomId) => {
-    console.log("[SERVER] join_room:", roomId);
     const userId = socket.userId;
     if (!userId) {
       console.warn(`[SERVER] Blocked unauthenticated socket from joining room ${roomId}`);
@@ -351,11 +362,10 @@ io.on("connection", (socket) => {
         const journey = await Journey.findById(roomId);
         if (journey) {
           const isMember = journey.members.some(
-          (m) => (m.user?._id || m.user).toString() === userId.toString()
+            (m) => (m.user?._id || m.user).toString() === userId.toString()
           );
           if (isMember) {
             socket.join(roomId);
-            console.log(`[SERVER] Verified membership. User ${userId} joined Journey room ${roomId}`);
           } else {
             console.warn(`[SERVER] Blocked user ${userId} joining Journey room ${roomId}: Not a member`);
           }
@@ -368,18 +378,16 @@ io.on("connection", (socket) => {
             const journey = await Journey.findById(room.journeyId);
             if (journey) {
               const isMember = journey.members.some(
-              (m) => (m.user?._id || m.user).toString() === userId.toString()
+                (m) => (m.user?._id || m.user).toString() === userId.toString()
               );
               if (isMember) {
                 socket.join(roomId);
-                console.log(`[SERVER] Verified membership. User ${userId} joined Chat room ${roomId} (Journey)`);
               } else {
                 console.warn(`[SERVER] Blocked user ${userId} joining Chat room ${roomId}: Not a member of Journey`);
               }
             }
           } else if (room.members.some((m) => m.toString() === userId.toString())) {
             socket.join(roomId);
-            console.log(`[SERVER] Verified membership. User ${userId} joined Chat room ${roomId}`);
           } else {
             console.warn(`[SERVER] Blocked user ${userId} joining Chat room ${roomId}: Not a member of ChatRoom`);
           }
@@ -420,7 +428,7 @@ io.on("connection", (socket) => {
         if (!journey) return;
 
         const isMember = journey.members.some(
-        (m) => (m.user?._id || m.user).toString() === userId.toString()
+          (m) => (m.user?._id || m.user).toString() === userId.toString()
         );
         if (!isMember) {
           console.warn(`[SERVER] Blocked socket ${socket.id} (user ${userId}) joining journey chat room ${roomId}: Not a member`);
@@ -431,22 +439,22 @@ io.on("connection", (socket) => {
         return;
       }
 
+      if (room.type === "direct") {
+        const { isBlockedPair } = require("./utils/blockHelper");
+        const otherMember = room.members.find((m) => m.toString() !== userId.toString());
+        if (otherMember && (await isBlockedPair(userId, otherMember))) {
+          console.warn(`[SERVER] Blocked socket ${socket.id} (user ${userId}) joining blocked direct chat room ${roomId}`);
+          return;
+        }
+      }
+
       socket.join(roomId);
-      const roomSockets = io.sockets.adapter.rooms.get(roomId);
-      console.log("[SERVER] Authorized join_chat_room", {
-        roomId,
-        socketId: socket.id,
-        userId,
-        socketsInRoom: roomSockets ? roomSockets.size : 0,
-        time: Date.now()
-      });
     } catch (err) {
       console.error("Error in join_chat_room socket authorization:", err);
     }
   });
 
   socket.on("send_chat_message", (data) => {
-    console.log("RECEIVED send_chat_message (legacy/broadcast fallback):", data);
     socket.to(data.roomId).emit("receive_chat_message", data);
   });
 
@@ -459,19 +467,17 @@ io.on("connection", (socket) => {
   });
 
   socket.on("mark_messages_read", async (data) => {
-    console.log("RECEIVED mark_messages_read:", data);
     try {
       const Message = require("./models/Message");
       await Message.updateMany(
-      { roomId: data.roomId, unreadBy: data.userId },
-      {
-        $pull: { unreadBy: data.userId },
-        $addToSet: { seenBy: data.userId, deliveredTo: data.userId },
-        $set: { seenAt: new Date() }
-      }
+        { roomId: data.roomId, unreadBy: data.userId },
+        {
+          $pull: { unreadBy: data.userId },
+          $addToSet: { seenBy: data.userId, deliveredTo: data.userId },
+          $set: { seenAt: new Date() }
+        }
       );
 
-      console.log("[SERVER] EMIT messages_seen", data);
       socket.to(data.roomId).emit("messages_read", data);
       socket.to(data.roomId).emit("messages_seen", data);
     } catch (err) {
@@ -480,7 +486,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("message_delivered", async (data) => {
-    console.log("RECEIVED message_delivered:", data);
     try {
       const Message = require("./models/Message");
       const message = await Message.findById(data.messageId);
@@ -494,7 +499,6 @@ io.on("connection", (socket) => {
         await message.save();
       }
       if (message) {
-        console.log("[SERVER] EMIT message_delivered", { roomId: data.roomId, messageId: data.messageId, userId: data.userId });
         socket.to(data.roomId).emit("message_delivered", {
           roomId: data.roomId,
           messageId: data.messageId,
@@ -514,7 +518,6 @@ io.on("connection", (socket) => {
   socket.on("workspace_change", (data) => {
     if (data && data.journeyId) {
       if (socket.rooms.has(data.journeyId)) {
-        console.log("[SERVER] workspace_change received for journey:", data.journeyId);
         socket.to(data.journeyId).emit("workspace_changed", data);
       } else {
         console.warn(`[SERVER] Unauthorized workspace_change: Socket is not authorized in room ${data.journeyId}`);
@@ -539,18 +542,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", (reason) => {
-    const remainingSockets = socket.userId ?
-    (onlineUsers.get(socket.userId)?.size ?? 0) - 1 :
-    0;
-
-    console.log("[SERVER] socket disconnected", {
-      socketId: socket.id,
-      userId: socket.userId || "unknown",
-      reason,
-      remainingSocketsForUser: Math.max(remainingSockets, 0),
-      time: Date.now()
-    });
-
     if (socket.userId) {
       const socketIds = onlineUsers.get(socket.userId);
       if (socketIds) {
@@ -565,7 +556,6 @@ io.on("connection", (socket) => {
                 userId,
                 status: "offline"
               });
-              console.log("[SERVER] user fully offline", { userId, time: Date.now() });
             }
           }, 1500);
         }

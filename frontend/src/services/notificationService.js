@@ -1,8 +1,9 @@
 import axios from "../api/axios";
 
 export const notificationService = {
-  getNotifications: async () => {
-    const res = await axios.get("/notifications", { withCredentials: true });
+  getNotifications: async (category = "All") => {
+    const params = category && category !== "All" ? `?category=${category}` : "";
+    const res = await axios.get(`/notifications${params}`, { withCredentials: true });
     return res.data;
   },
 
@@ -41,56 +42,76 @@ export const notificationService = {
     return res.data;
   },
 
+  acceptJourneyInvitation: async (invitationId) => {
+    const res = await axios.post(
+      `/journeys/invitations/${invitationId}/accept`,
+      {},
+      { withCredentials: true }
+    );
+    return res.data;
+  },
+
+  rejectJourneyInvitation: async (invitationId) => {
+    const res = await axios.post(
+      `/journeys/invitations/${invitationId}/reject`,
+      {},
+      { withCredentials: true }
+    );
+    return res.data;
+  },
+
   acceptFollowRequest: async (requesterId) => {
     const res = await axios.post(
-    `/users/${requesterId}/follow-request/accept`,
-    {},
-    { withCredentials: true }
+      `/users/${requesterId}/follow-request/accept`,
+      {},
+      { withCredentials: true }
     );
     return res.data;
   },
 
   rejectFollowRequest: async (requesterId) => {
     const res = await axios.post(
-    `/users/${requesterId}/follow-request/reject`,
-    {},
-    { withCredentials: true }
+      `/users/${requesterId}/follow-request/reject`,
+      {},
+      { withCredentials: true }
     );
     return res.data;
   },
 
   acceptMessageRequest: async (roomId) => {
     const res = await axios.put(
-    `/chat/direct/${roomId}/accept`,
-    {},
-    { withCredentials: true }
+      `/chat/direct/${roomId}/accept`,
+      {},
+      { withCredentials: true }
     );
     return res.data;
   },
 
   rejectMessageRequest: async (roomId) => {
     const res = await axios.put(
-    `/chat/direct/${roomId}/decline`,
-    {},
-    { withCredentials: true }
+      `/chat/direct/${roomId}/decline`,
+      {},
+      { withCredentials: true }
     );
     return res.data;
   },
 
   manageJoinRequest: async (groupId, requestId, status) => {
     const res = await axios.post(
-    `/social/buddy/manage-request/${groupId}`,
-    { requestId, status },
-    { withCredentials: true }
+      `/social/buddy/manage-request/${groupId}`,
+      { requestId, status },
+      { withCredentials: true }
     );
     return res.data;
   },
 
   searchSocial: async (query) => {
     const res = await axios.get(
-    `/social/search?q=${encodeURIComponent(query)}`,
-    { withCredentials: true }
+      `/social/search?q=${encodeURIComponent(query)}`,
+      { withCredentials: true }
     );
     return res.data;
   }
 };
+
+export default notificationService;

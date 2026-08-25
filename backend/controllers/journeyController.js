@@ -13,113 +13,38 @@ const Post = require("../models/Post");
 const Story = require("../models/Story");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
+const imageService = require("../utils/imageService");
 
-const revokeSocketRoomAccess = (req, userId, roomId) => {
+exports.getAutoCoverPreview = async (req, res) => {
   try {
-    const io = req.app.get("io");
-    const onlineUsers = req.app.get("onlineUsers");
-    if (io && onlineUsers && userId && roomId) {
-      const uStr = userId.toString();
-      const rStr = roomId.toString();
-      const socketIds = onlineUsers.get(uStr);
-      if (socketIds) {
-        const socketIdArray = socketIds instanceof Set ? Array.from(socketIds) : Array.isArray(socketIds) ? socketIds : [socketIds];
-        socketIdArray.forEach((socketId) => {
-          const sock = io.sockets.sockets.get(socketId);
-          if (sock) {
-            sock.leave(rStr);
-            console.log(`[SOCKET] Revoked room ${rStr} access for user ${uStr} on socket ${socketId}`);
-          }
-        });
-      }
-      io.to(uStr).emit("room_access_revoked", { roomId: rStr });
+    const { destination, title, category } = req.query;
+    if (!destination) {
+      return res.status(400).json({ success: false, message: "Destination is required" });
     }
-  } catch (err) {
-    console.error("Error revoking socket room access:", err);
+    const imageUrls = await imageService.fetchAutoCoverImages({ destination, title, category });
+    res.json({ success: true, url: imageUrls[0], urls: imageUrls });
+  } catch (error) {
+    console.error("Error generating auto cover preview:", error);
+    res.status(500).json({ success: false, message: "Server error fetching auto cover" });
   }
 };
 
-const syncJourneyStatus = async (journey) => {
-  if (!journey || journey.status === "Cancelled") return journey;
+// Import domain sub-controllers
+const journeyLifecycleController = require("./journeyLifecycleController");
+const journeyHostController = require("./journeyHostController");
+const journeyCancellationController = require("./journeyCancellationController");
+const journeyMembershipController = require("./journeyMembershipController");
 
-  const now = new Date();
-  const start = new Date(journey.startDate);
-  const end = new Date(journey.endDate);
+const { syncJourneyStatus } = journeyLifecycleController;
 
-  let expectedStatus = "Upcoming";
-  if (now > end) {
-    expectedStatus = "Completed";
-  } else if (now >= start && now <= end) {
-    expectedStatus = "Ongoing";
-  }
-
-  if (journey.status !== expectedStatus) {
-    const oldStatus = journey.status;
-    journey.status = expectedStatus;
-
-    if (expectedStatus === "Completed" && !journey.completedAt) {
-      journey.completedAt = now;
-
-      if (!journey.aiSummary) {
-        const memberCount = journey.members?.length || 1;
-        journey.aiSummary = `Your ${journey.durationDays || 3}-day ${journey.destination} collaborative journey included ${memberCount} travelers, exploring local scenic highlights, sharing incredible memories, and building lifelong travel friendships.`;
-      }
-
-      await JourneyMemory.findOneAndUpdate(
-      { journeyId: journey._id },
-      {
-        $setOnInsert: {
-          journeyId: journey._id,
-          title: journey.title,
-          destination: journey.destination,
-          coverImage: journey.coverImage,
-          durationDays: journey.durationDays,
-          participantsCount: journey.members?.length || 1,
-          participants: journey.members?.map((m) => ({
-            userId: m.user?._id || m.user,
-            name: m.user?.name || "Traveler",
-            pic: m.user?.profilePic || "",
-            role: m.role
-          })),
-          aiSummary: journey.aiSummary,
-          highlights: [
-          { title: "Journey Created", eventType: "journey_created", createdAt: journey.createdAt },
-          { title: "Journey Started", eventType: "journey_started", createdAt: journey.startDate },
-          { title: "Journey Completed Successfully", eventType: "journey_completed", createdAt: now }]
-
-        }
-      },
-      { upsert: true, new: true }
-      );
-
-      await JourneyTimeline.create({
-        journeyId: journey._id,
-        userId: journey.creator,
-        userName: "System",
-        eventType: "journey_completed",
-        title: "Journey Completed",
-        description: `Congratulations on completing ${journey.title}!`
-      });
-    } else if (expectedStatus === "Ongoing" && oldStatus === "Upcoming") {
-      await JourneyTimeline.create({
-        journeyId: journey._id,
-        userId: journey.creator,
-        userName: "System",
-        eventType: "journey_started",
-        title: "Journey Started",
-        description: `The journey to ${journey.destination} has officially begun!`
-      });
-    }
-    await journey.save();
-  }
-  return journey;
-};
+// ==========================================
+// CORE JOURNEY CRUD & FETCHING
+// ==========================================
 
 exports.createJourney = async (req, res) => {
   const session = await mongoose.startSession();
+  session.startTransaction();
   try {
-    session.startTransaction();
-
     const {
       title,
       description,
@@ -131,32 +56,131 @@ exports.createJourney = async (req, res) => {
       endDate,
       privacy,
       journeyType,
+      maxMembers,
       sourceType,
       sourceId,
-      invitedUserIds
+      invitedUserIds,
+      category,
+      budget,
+      allowJoinAfterStart,
+      isExplorePrivate,
+      tags
     } = req.body;
 
+    const trimmedTitle = typeof title === "string" ? title.trim() : "";
+    if (!trimmedTitle) {
+      return res.status(400).json({ success: false, message: "Title is required" });
+    }
+
+    const trimmedDestination = typeof destination === "string" ? destination.trim() : "";
+    if (!trimmedDestination) {
+      return res.status(400).json({ success: false, message: "Destination is required" });
+    }
+
+    if (!startDate || isNaN(new Date(startDate).getTime())) {
+      return res.status(400).json({ success: false, message: "Valid start date is required" });
+    }
+
+    if (!endDate || isNaN(new Date(endDate).getTime())) {
+      return res.status(400).json({ success: false, message: "Valid end date is required" });
+    }
+
+    const parsedStartDate = new Date(startDate);
+    const parsedEndDate = new Date(endDate);
+
+    if (parsedEndDate < parsedStartDate) {
+      return res.status(400).json({ success: false, message: "End date cannot be earlier than start date" });
+    }
+
+    const validPrivacyEnums = ["Public", "Followers Only", "Friends Only", "Private"];
+    if (privacy && !validPrivacyEnums.includes(privacy)) {
+      return res.status(400).json({ success: false, message: "Invalid privacy setting" });
+    }
+
+    const validJourneyTypes = ["Solo", "Friends", "Group", "Solo Journey", "Shared Journey"];
+    if (journeyType && !validJourneyTypes.includes(journeyType)) {
+      return res.status(400).json({ success: false, message: "Invalid journey type" });
+    }
+
+    if (maxMembers !== undefined && (typeof maxMembers !== "number" || isNaN(maxMembers) || maxMembers < 1)) {
+      return res.status(400).json({ success: false, message: "Capacity must be a positive number" });
+    }
+
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId).session(session);
 
     const finalSourceType = sourceType || "manual";
+
+    // Guard 1: If sourceId is itself an existing Journey._id, do not create a duplicate; return existing Journey
+    if (sourceId && mongoose.isValidObjectId(sourceId)) {
+      const existingJourneyById = await Journey.findById(sourceId).session(session);
+      if (existingJourneyById) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(200).json({
+          success: true,
+          message: "Journey created successfully",
+          journey: existingJourneyById
+        });
+      }
+    }
+    
+    // Guard 2: If an existing Journey was already converted from this source entity (e.g. TravelGroup), return it
+    if (finalSourceType === "explore" && sourceId) {
+      const existingJourney = await Journey.findOne({
+        $or: [
+          { sourceType: "explore", sourceId: sourceId },
+          { sourceId: sourceId }
+        ]
+      }).session(session);
+      if (existingJourney) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(200).json({
+          success: true,
+          message: "Journey created successfully",
+          journey: existingJourney
+        });
+      }
+    }
+
+    const { idempotencyKey } = req.body;
+    if (idempotencyKey && mongoose.isValidObjectId(idempotencyKey)) {
+      const existingKeyJourney = await Journey.findById(idempotencyKey).session(session);
+      if (existingKeyJourney) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(200).json({
+          success: true,
+          message: "Journey created successfully",
+          journey: existingKeyJourney
+        });
+      }
+    }
+
+    const user = await User.findById(userId).session(session);
     let membersList = [{ user: userId, role: "Organizer", joinedAt: new Date() }];
     let chatMembers = [userId];
 
+    let exploreGroupCoverImage = null;
     if (finalSourceType === "explore" && sourceId) {
       const exploreGroup = await TravelGroup.findById(sourceId).session(session);
-      if (exploreGroup && exploreGroup.members) {
-        exploreGroup.members.forEach((m) => {
-          const mIdStr = (m.user?._id || m.user).toString();
-          if (mIdStr !== userId.toString()) {
-            membersList.push({
-              user: m.user?._id || m.user,
-              role: m.role === "cohost" ? "Co-Organizer" : "Member",
-              joinedAt: new Date()
-            });
-            chatMembers.push(m.user?._id || m.user);
-          }
-        });
+      if (exploreGroup) {
+        if (exploreGroup.coverImage) {
+          exploreGroupCoverImage = exploreGroup.coverImage;
+        }
+        if (exploreGroup.members) {
+          exploreGroup.members.forEach((m) => {
+            const mIdStr = (m.user?._id || m.user).toString();
+            if (mIdStr !== userId.toString()) {
+              membersList.push({
+                user: m.user?._id || m.user,
+                role: m.role === "cohost" ? "Co-Organizer" : "Member",
+                joinedAt: new Date()
+              });
+              chatMembers.push(m.user?._id || m.user);
+            }
+          });
+        }
       }
     }
 
@@ -167,27 +191,40 @@ exports.createJourney = async (req, res) => {
     }], { session });
     const chatRoomId = chatRoom[0]._id;
 
-    const newJourney = await Journey.create([{
+    const finalCoverImage = exploreGroupCoverImage || coverImage?.trim() || await imageService.fetchAutoCoverImage({ destination, title, category });
+
+    const journeyPayload = {
       title: title.trim(),
       description,
-      coverImage: coverImage?.trim() ||
-      "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1000&q=80",
+      coverImage: finalCoverImage,
       destination: destination.trim(),
       from: from ? from.trim() : "",
       destinationCoordinates,
       startDate,
       endDate,
-      privacy: privacy || "Public",
+      privacy: privacy ? privacy : (finalSourceType === "manual" ? "Private" : "Public"),
       journeyType: journeyType || (membersList.length > 1 ? "Friends" : "Solo"),
       status: "Planning",
       sourceType: finalSourceType,
       sourceId: sourceId || null,
       createdFrom: finalSourceType === "explore" ? "Explore Travel Squad" : "Manual Creation",
       creator: userId,
+      maxMembers: maxMembers || 50,
       members: membersList,
       memberCount: membersList.length,
-      chatRoomId: chatRoomId
-    }], { session });
+      chatRoomId: chatRoomId,
+      category: category || "Adventure",
+      budget: budget || 0,
+      allowJoinAfterStart: allowJoinAfterStart !== undefined ? allowJoinAfterStart : true,
+      isExplorePrivate: isExplorePrivate !== undefined ? isExplorePrivate : false,
+      tags: Array.isArray(tags) ? tags : []
+    };
+
+    if (idempotencyKey) {
+      journeyPayload._id = idempotencyKey;
+    }
+
+    const newJourney = await Journey.create([journeyPayload], { session });
 
     await ChatRoom.findByIdAndUpdate(chatRoomId, { journeyId: newJourney[0]._id }).session(session);
 
@@ -270,6 +307,47 @@ exports.createJourney = async (req, res) => {
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
+
+    // Check for duplicate key error OR TransientTransactionError (WriteConflict) during concurrent creation
+    const isDuplicateKey = error.code === 11000 && error.keyPattern && error.keyPattern.sourceType && error.keyPattern.sourceId;
+    const isWriteConflict = error.code === 112 || (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError'));
+    
+    if (isDuplicateKey || isWriteConflict) {
+      const { sourceType, sourceId } = req.body;
+      const finalSourceType = sourceType || "manual";
+      
+      if (sourceId) {
+        // The transaction is aborted and session ended; we can safely fetch the Journey that won the race
+        let existingJourney = await Journey.findOne({
+          $or: [
+            ...(mongoose.isValidObjectId(sourceId) ? [{ _id: sourceId }] : []),
+            { sourceType: finalSourceType, sourceId: sourceId },
+            { sourceId: sourceId }
+          ]
+        });
+        
+        // If WriteConflict aborted us but the winner hasn't committed yet, existingJourney will be null.
+        if (!existingJourney && isWriteConflict) {
+          await new Promise(resolve => setTimeout(resolve, 800));
+          existingJourney = await Journey.findOne({
+            $or: [
+              ...(mongoose.isValidObjectId(sourceId) ? [{ _id: sourceId }] : []),
+              { sourceType: finalSourceType, sourceId: sourceId },
+              { sourceId: sourceId }
+            ]
+          });
+        }
+
+        if (existingJourney) {
+          return res.status(200).json({
+            success: true,
+            message: "Journey created successfully",
+            journey: existingJourney
+          });
+        }
+      }
+    }
+
     console.error("Error creating journey:", error);
     res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
@@ -278,52 +356,44 @@ exports.createJourney = async (req, res) => {
 exports.getMyJourneys = async (req, res) => {
   try {
     const userId = req.user._id || req.user.id;
-    const { status } = req.query;
+    const { filter, status } = req.query;
 
-    let filter = {
-      $or: [{ creator: userId }, { "members.user": userId }]
+    let query = {
+      $or: [
+        { creator: userId },
+        { "members.user": userId }
+      ]
     };
 
     if (status && status !== "all") {
-      filter.status = status;
+      query.status = status;
     }
 
-    const journeys = await Journey.find(filter).
-    populate("creator", "name profilePic pic img avatar bio").
-    populate("members.user", "name profilePic pic img avatar bio").
+    let journeys = await Journey.find(query).
+    populate("creator", "name profilePic pic img avatar").
+    populate("members.user", "name profilePic pic img avatar").
     sort({ startDate: 1 });
 
     const syncedJourneys = await Promise.all(journeys.map((j) => syncJourneyStatus(j)));
-    const finalJourneys = status && status !== "all" ? syncedJourneys.filter((j) => j.status === status) : syncedJourneys;
-    const targetJourneyIds = finalJourneys.map((j) => j._id);
 
-    const invitationCounts = await JourneyInvitation.aggregate([
-    { $match: { journeyId: { $in: targetJourneyIds }, status: { $in: ["pending", "accepted"] } } },
-    { $group: { _id: { journeyId: "$journeyId", status: "$status" }, count: { $sum: 1 } } }]
-    );
-
-    const countMap = invitationCounts.reduce((acc, curr) => {
-      const jId = curr._id.journeyId.toString();
-      const stat = curr._id.status;
-      if (!acc[jId]) acc[jId] = { pending: 0, accepted: 0 };
-      acc[jId][stat] = curr.count;
-      return acc;
-    }, {});
-
-    const journeysWithCounts = finalJourneys.map((j) => {
-      const jobj = j.toObject ? j.toObject() : { ...j._doc };
-      jobj.pendingInvitationCount = countMap[j._id.toString()]?.pending || 0;
-      jobj.acceptedInvitationCount = countMap[j._id.toString()]?.accepted || 0;
-      return jobj;
-    });
+    let finalJourneys = syncedJourneys;
+    if (filter === "upcoming") {
+      finalJourneys = syncedJourneys.filter((j) => j.status === "Upcoming" || j.status === "Planning");
+    } else if (filter === "ongoing") {
+      finalJourneys = syncedJourneys.filter((j) => j.status === "Ongoing");
+    } else if (filter === "completed") {
+      finalJourneys = syncedJourneys.filter((j) => j.status === "Completed");
+    } else if (filter === "cancelled") {
+      finalJourneys = syncedJourneys.filter((j) => j.status === "Cancelled" || j.isCancelled);
+    }
 
     res.json({
       success: true,
-      count: journeysWithCounts.length,
-      journeys: journeysWithCounts
+      count: finalJourneys.length,
+      journeys: finalJourneys
     });
   } catch (error) {
-    console.error("Error fetching my journeys:", error);
+    console.error("Error fetching user journeys:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -331,6 +401,8 @@ exports.getMyJourneys = async (req, res) => {
 exports.getJourneyById = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user._id || req.user.id;
+
     let journey = await Journey.findById(id).
     populate("creator", "name profilePic pic img avatar bio").
     populate("members.user", "name profilePic pic img avatar bio");
@@ -339,150 +411,82 @@ exports.getJourneyById = async (req, res) => {
       return res.status(404).json({ success: false, message: "Journey not found" });
     }
 
+    const isMember = journey.members.some(
+      (m) => (m.user?._id || m.user).toString() === userId.toString()
+    ) || (journey.creator && (journey.creator._id || journey.creator).toString() === userId.toString());
+
+    if (journey.privacy === "Private" && !isMember) {
+      return res.status(403).json({ success: false, message: "Access denied. Private journey." });
+    }
+
     journey = await syncJourneyStatus(journey);
 
-    const [pendingCount, acceptedCount, timeline] = await Promise.all([
-    JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }),
-    JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }),
-    JourneyTimeline.find({ journeyId: journey._id }).sort({ createdAt: -1 })]
-    );
+    const timeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
+    const safetyState = computeSafetyState(journey, timeline);
 
-    const journeyObj = journey.toObject ? journey.toObject() : { ...journey._doc };
-    journeyObj.pendingInvitationCount = pendingCount;
-    journeyObj.acceptedInvitationCount = acceptedCount;
+    const journeyObj = journey.toObject ? journey.toObject() : { ...journey };
     journeyObj.timeline = timeline;
+    journeyObj.safetyState = safetyState;
 
-    res.json({ success: true, journey: journeyObj });
+    res.json({
+      success: true,
+      journey: journeyObj,
+      isMember,
+      safetyState
+    });
   } catch (error) {
-    console.error("Error fetching journey details:", error);
+    console.error("Error fetching journey by ID:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
 exports.updateJourney = async (req, res) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const { id } = req.params;
-    const userId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(id).session(session);
-    if (!journey) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(404).json({ success: false, message: "Journey not found" });
-    }
-
-    const isOrg = journey.members.some(
-    (m) =>
-    (m.user?.toString() === userId.toString() || m.user?._id?.toString() === userId.toString()) && (
-    m.role === "Organizer" || m.role === "Co-Organizer")
-    );
-    if (!isOrg && journey.creator.toString() !== userId.toString()) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(403).json({ success: false, message: "Not authorized to update this journey" });
-    }
-
-    const updatableFields = [
-      "title", "description", "coverImage", "destination", "from",
-      "destinationCoordinates", "startDate", "endDate", "privacy", "journeyType"
-    ];
-
-
-    let titleChanged = false;
-    let newTitle = "";
-
-    updatableFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        const newValue = typeof req.body[field] === "string" ? req.body[field].trim() : req.body[field];
-        if (field === "title" && journey.title !== newValue) {
-          titleChanged = true;
-          newTitle = newValue;
-        }
-        journey[field] = newValue;
-      }
-    });
-
-    await journey.save({ session });
-
-    if (titleChanged && journey.chatRoomId) {
-      const chatRoom = await ChatRoom.findById(journey.chatRoomId).session(session);
-      if (chatRoom && chatRoom.journeyId && chatRoom.journeyId.toString() === journey._id.toString()) {
-        chatRoom.name = newTitle;
-        await chatRoom.save({ session });
-      }
-    }
-
-    const user = await User.findById(userId).session(session);
-    await JourneyTimeline.create([{
-      journeyId: journey._id,
-      userId,
-      userName: user?.name || "Organizer",
-      userPic: user?.profilePic || "",
-      eventType: "journey_updated",
-      title: "Journey Updated",
-      description: `Updated travel details for ${journey.title}`
-    }], { session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    res.json({ success: true, message: "Journey updated successfully", journey });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error updating journey:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.cancelJourney = async (req, res) => {
   try {
     const { id } = req.params;
     const userId = req.user._id || req.user.id;
 
-    const journey = await Journey.findById(id);
+    let journey = await Journey.findById(id);
     if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
 
     if (journey.creator.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Only journey creator can cancel" });
+      return res.status(403).json({ success: false, message: "Only the journey creator can edit details" });
     }
 
-    journey.status = "Cancelled";
-    journey.cancelledAt = new Date();
-    await journey.save();
+    if (String(journey.status || "").toLowerCase() === "cancelled") {
+      return res.status(400).json({ success: false, message: "Cannot update a cancelled journey" });
+    }
 
-    const user = await User.findById(userId);
-    await JourneyTimeline.create({
-      journeyId: journey._id,
-      userId,
-      userName: user?.name || "Creator",
-      userPic: user?.profilePic || "",
-      eventType: "journey_cancelled",
-      title: "Journey Cancelled",
-      description: `${journey.title} has been cancelled`
+    const allowedUpdates = [
+      "title",
+      "description",
+      "coverImage",
+      "destination",
+      "from",
+      "destinationCoordinates",
+      "startDate",
+      "endDate",
+      "privacy",
+      "journeyType",
+      "maxMembers"
+    ];
+
+    allowedUpdates.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        journey[field] = req.body[field];
+      }
     });
 
-    const targetMembers = journey.members.
-    map((m) => m.user?._id || m.user).
-    filter((memId) => memId.toString() !== userId.toString());
-
-    if (targetMembers.length > 0) {
-      await Notification.create(
-      targetMembers.map((memId) => ({
-        sender: userId,
-        receiver: memId,
-        type: "journey_cancelled",
-        journey: journey._id,
-        message: `The journey "${journey.title}" has been cancelled by the organizer.`
-      }))
-      );
+    if (journey.members.length > (journey.maxMembers || 50)) {
+      return res.status(400).json({
+        success: false,
+        message: `Capacity cannot be lower than existing member count (${journey.members.length})`
+      });
     }
 
-    res.json({ success: true, message: "Journey cancelled successfully", journey });
+    await journey.save();
+    res.json({ success: true, message: "Journey updated successfully", journey });
   } catch (error) {
-    console.error("Error cancelling journey:", error);
+    console.error("Error updating journey:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -495,24 +499,20 @@ exports.deleteJourney = async (req, res) => {
     const userId = req.user._id || req.user.id;
 
     const journey = await Journey.findById(id).session(session);
-    if (!journey) {
-      return res.status(404).json({ success: false, message: "Journey not found" });
-    }
+    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
 
     if (journey.creator.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Only creator can delete journey" });
-    }
-
-    if (journey.status !== "Cancelled") {
-      return res.status(400).json({ success: false, message: "Journey must be cancelled before deletion" });
+      return res.status(403).json({ success: false, message: "Only the creator can delete this journey" });
     }
 
     await Journey.findByIdAndDelete(id).session(session);
     await JourneyMember.deleteMany({ journeyId: id }).session(session);
     await JourneyTimeline.deleteMany({ journeyId: id }).session(session);
     await JourneyWorkspace.deleteMany({ journeyId: id }).session(session);
-    await JourneyGallery.deleteMany({ journeyId: id }).session(session);
     await JourneyInvitation.deleteMany({ journeyId: id }).session(session);
+    await JourneyJoinRequest.deleteMany({ journeyId: id }).session(session);
+    await JourneyMemory.deleteMany({ journeyId: id }).session(session);
+    await JourneyGallery.deleteMany({ journeyId: id }).session(session);
 
     if (journey.chatRoomId) {
       await ChatRoom.findByIdAndDelete(journey.chatRoomId).session(session);
@@ -520,7 +520,8 @@ exports.deleteJourney = async (req, res) => {
 
     await session.commitTransaction();
     session.endSession();
-    res.json({ success: true, message: "Journey deleted permanently" });
+
+    res.json({ success: true, message: "Journey deleted successfully" });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -529,365 +530,17 @@ exports.deleteJourney = async (req, res) => {
   }
 };
 
-exports.inviteMembers = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { userIds, role } = req.body;
-    const userId = req.user._id || req.user.id;
-
-    if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({ success: false, message: "No valid members selected" });
-    }
-
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    // Validate sender permission: Only Organizer or Co-Organizer can invite
-    const isOrganizerOrCoHost = journey.members.some(
-      (m) => (m.user?._id || m.user).toString() === userId.toString() &&
-             (m.role === "Organizer" || m.role === "Co-Organizer")
-    ) || (journey.creator && journey.creator.toString() === userId.toString());
-
-    if (!isOrganizerOrCoHost) {
-      return res.status(403).json({ success: false, message: "Only organizers can send invitations" });
-    }
-
-    const inviter = await User.findById(userId);
-    const createdInvites = [];
-
-    for (const targetId of userIds) {
-      const isAlreadyMember = journey.members.some(
-        (m) => (m.user?._id || m.user).toString() === targetId.toString()
-      );
-      if (isAlreadyMember) {
-        return res.status(400).json({ success: false, message: "User is already a member of this journey" });
-      }
-
-      const existingPendingInvite = await JourneyInvitation.findOne({
-        journeyId: id,
-        inviteeId: targetId,
-        status: "pending"
-      });
-      if (existingPendingInvite) {
-        return res.status(400).json({ success: false, message: "User already has a pending invitation" });
-      }
-
-      const targetUser = await User.findById(targetId);
-      if (targetUser && targetUser.privacySettings) {
-        const mode = targetUser.privacySettings.journeyInvites || "everyone";
-        if (mode === "none") {
-          continue;
-        }
-        if (mode === "mates_only") {
-          const isMate = targetUser.following?.some((fid) => fid.toString() === userId.toString()) &&
-                         targetUser.followers?.some((fid) => fid.toString() === userId.toString());
-          if (!isMate) {
-            continue;
-          }
-        }
-      }
-
-      const invite = await JourneyInvitation.findOneAndUpdate(
-        { journeyId: id, inviteeId: targetId },
-        { inviterId: userId, type: "invitation", status: "pending", role: role || "Member" },
-        { upsert: true, new: true }
-      );
-      createdInvites.push(invite);
-
-      await Notification.create({
-        sender: userId,
-        receiver: targetId,
-        type: "journey_invitation",
-        journey: id,
-        message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
-      });
-    }
-
-    journey.pendingInvitationCount = await JourneyInvitation.countDocuments({ journeyId: id, status: "pending" });
-    await journey.save();
-
-    res.json({ success: true, message: "Invitations sent successfully", invites: createdInvites });
-  } catch (error) {
-    console.error("Error inviting members:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.acceptInvitation = async (req, res) => {
-  const maxRetries = 3;
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    let session = null;
-    try {
-      try {
-        session = await mongoose.startSession();
-        session.startTransaction();
-      } catch (e) {
-        session = null;
-      }
-      const sessionOpt = session ? { session } : {};
-
-      const invitationId = req.params.invitationId || req.params.id;
-      const userId = req.user._id || req.user.id;
-
-      const invitation = await JourneyInvitation.findById(invitationId).session(session || null);
-      if (!invitation) {
-        if (session) { await session.abortTransaction(); session.endSession(); }
-        return res.status(404).json({ success: false, message: "Invitation not found" });
-      }
-
-      if (invitation.status !== "pending") {
-        if (session) { await session.abortTransaction(); session.endSession(); }
-        return res.status(400).json({ success: false, message: "Invitation has already been processed" });
-      }
-
-      if (invitation.inviteeId.toString() !== userId.toString()) {
-        if (session) { await session.abortTransaction(); session.endSession(); }
-        return res.status(403).json({ success: false, message: "Not authorized for this invitation" });
-      }
-
-      const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
-      const journey = await Journey.findById(invitation.journeyId).session(session || null);
-
-      if (!journey) {
-        if (session) { await session.abortTransaction(); session.endSession(); }
-        return res.status(404).json({ success: false, message: "Journey not found" });
-      }
-
-      const maxCap = journey.maxMembers || 50;
-      if (journey.members && journey.members.length >= maxCap) {
-        invitation.status = "capacity_full";
-        await invitation.save(sessionOpt);
-        if (session) { await session.commitTransaction(); session.endSession(); }
-        return res.status(400).json({ success: false, message: "Journey capacity is full" });
-      }
-
-      const now = new Date();
-
-      if (journey.startDate && new Date(journey.startDate) <= now) {
-        invitation.status = "expired";
-        await invitation.save(sessionOpt);
-        if (session) { await session.commitTransaction(); session.endSession(); }
-        return res.status(400).json({ success: false, message: "Cannot accept invitation after the journey has started" });
-      }
-
-      if (journey.status === "Completed" || journey.status === "Cancelled") {
-        invitation.status = "expired";
-        await invitation.save(sessionOpt);
-        if (session) { await session.commitTransaction(); session.endSession(); }
-        return res.status(400).json({ success: false, message: `This journey is already ${journey.status.toLowerCase()}` });
-      }
-
-      invitation.status = "accepted";
-      await invitation.save(sessionOpt);
-
-      const alreadyIn = journey.members.some((m) => (m.user?._id || m.user).toString() === targetUserId.toString());
-      if (!alreadyIn) {
-        journey.members.push({ user: targetUserId, role: invitation.role, joinedAt: new Date() });
-
-        if (journey.journeyType === "Solo" && journey.members.length > 1) {
-          journey.journeyType = "Friends";
-        }
-        journey.memberCount = journey.members.length;
-
-        const [pCount, aCount] = await Promise.all([
-          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "pending" }).session(session || null),
-          JourneyInvitation.countDocuments({ journeyId: journey._id, status: "accepted" }).session(session || null)
-        ]);
-
-        journey.pendingInvitationCount = pCount;
-        journey.acceptedInvitationCount = aCount;
-        await journey.save(sessionOpt);
-
-        await JourneyMember.create([{ journeyId: journey._id, userId: targetUserId, role: invitation.role }], sessionOpt);
-
-        if (journey.chatRoomId) {
-          await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $addToSet: { members: targetUserId } }).session(session || null);
-        }
-
-        const user = await User.findById(targetUserId).session(session || null);
-        await JourneyTimeline.create([{
-          journeyId: journey._id,
-          userId: targetUserId,
-          userName: user?.name || "Traveler",
-          userPic: user?.profilePic || "",
-          eventType: "member_joined",
-          title: "Member Joined",
-          description: `${user?.name || "A traveler"} joined the squad!`
-        }], sessionOpt);
-
-        await Notification.create([{
-          sender: userId,
-          receiver: invitation.type === "request" ? targetUserId : journey.creator,
-          type: "journey_invite_accepted",
-          journey: journey._id,
-          message: `${user?.name || "A traveler"} accepted the invitation to join "${journey.title}".`
-        }], sessionOpt);
-      }
-
-      if (session) {
-        await session.commitTransaction();
-        session.endSession();
-      }
-
-      return res.json({ success: true, message: "Invitation accepted successfully", journey });
-    } catch (error) {
-      if (session) {
-        try { await session.abortTransaction(); session.endSession(); } catch (e) {}
-      }
-      if (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError') && attempt < maxRetries) {
-        continue; // Retry
-      }
-      console.error("Error accepting invitation:", error);
-      return res.status(500).json({ success: false, message: "Server Error" });
-    }
-  }
-};
-
-exports.rejectInvitation = async (req, res) => {
-  try {
-    const invitationId = req.params.invitationId || req.params.id;
-    
-    const inv = await JourneyInvitation.findById(invitationId);
-    if (!inv) {
-      return res.status(404).json({ success: false, message: "Invitation not found" });
-    }
-
-    if (inv.status !== "pending") {
-      return res.status(400).json({ success: false, message: `Cannot reject invitation that is already ${inv.status}` });
-    }
-
-    inv.status = "rejected";
-    await inv.save();
-
-    if (inv.journeyId) {
-      const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
-      await Journey.findByIdAndUpdate(inv.journeyId, { pendingInvitationCount: pendingCount });
-    }
-    res.json({ success: true, message: "Invitation declined" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.leaveJourney = async (req, res) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const { id } = req.params;
-    const userId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(id).session(session);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    if (journey.creator.toString() === userId.toString()) {
-      return res.status(400).json({ success: false, message: "Creator cannot leave; please cancel or transfer journey" });
-    }
-
-    journey.members = journey.members.filter((m) => (m.user?._id || m.user).toString() !== userId.toString());
-    journey.memberCount = journey.members.length;
-    await journey.save({ session });
-
-    await JourneyMember.findOneAndUpdate({ journeyId: id, userId }, { status: "left" }).session(session);
-
-    if (journey.chatRoomId) {
-      await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $pull: { members: userId } }).session(session);
-    }
-
-    const user = await User.findById(userId).session(session);
-    await JourneyTimeline.create([{
-      journeyId: id,
-      userId,
-      userName: user?.name || "Traveler",
-      userPic: user?.profilePic || "",
-      eventType: "member_left",
-      title: "Member Left",
-      description: `${user?.name || "A traveler"} left the journey.`
-    }], { session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    if (journey.chatRoomId) {
-      revokeSocketRoomAccess(req, userId, journey.chatRoomId);
-    }
-
-    res.json({ success: true, message: "Left journey successfully" });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error leaving journey:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.removeMember = async (req, res) => {
-  const session = await mongoose.startSession();
-  try {
-    session.startTransaction();
-    const { id, userId: targetUserId } = req.params;
-    const currentUserId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(id).session(session);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    const isOrganizerOrCoHost = journey.members.some(
-      (m) => (m.user?._id || m.user).toString() === currentUserId.toString() &&
-             (m.role === "Organizer" || m.role === "Co-Organizer")
-    ) || (journey.creator && journey.creator.toString() === currentUserId.toString());
-
-    if (!isOrganizerOrCoHost) {
-      return res.status(403).json({ success: false, message: "Only organizers can remove members" });
-    }
-
-    const targetMember = journey.members.find((m) => (m.user?._id || m.user).toString() === targetUserId.toString());
-    
-    // Prevent removing the creator
-    if (journey.creator && journey.creator.toString() === targetUserId.toString()) {
-      return res.status(403).json({ success: false, message: "Cannot remove the journey creator" });
-    }
-
-    // Optional: Prevent Co-Organizer from removing another Organizer/Co-Organizer
-    if (journey.creator.toString() !== currentUserId.toString()) {
-      if (targetMember && (targetMember.role === "Organizer" || targetMember.role === "Co-Organizer")) {
-         return res.status(403).json({ success: false, message: "Co-organizers cannot remove other organizers" });
-      }
-    }
-
-    journey.members = journey.members.filter((m) => (m.user?._id || m.user).toString() !== targetUserId.toString());
-    journey.memberCount = journey.members.length;
-    await journey.save({ session });
-
-    await JourneyMember.findOneAndUpdate({ journeyId: id, userId: targetUserId }, { status: "removed" }).session(session);
-    if (journey.chatRoomId) {
-      await ChatRoom.findByIdAndUpdate(journey.chatRoomId, { $pull: { members: targetUserId } }).session(session);
-    }
-
-    await session.commitTransaction();
-    session.endSession();
-
-    if (journey.chatRoomId) {
-      revokeSocketRoomAccess(req, targetUserId, journey.chatRoomId);
-    }
-
-    res.json({ success: true, message: "Member removed successfully", journey });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+// ==========================================
+// WORKSPACE & TIMELINE & CHECKIN
+// ==========================================
 
 exports.getWorkspaceItems = async (req, res) => {
   try {
     const { id } = req.params;
-    const { category } = req.query;
-
-    let filter = { journeyId: id };
-    if (category && category !== "All") filter.category = category;
-
-    const notes = await JourneyWorkspace.find(filter).sort({ isPinned: -1, updatedAt: -1 });
-    res.json({ success: true, notes });
+    const items = await JourneyWorkspace.find({ journeyId: id }).populate("creatorId", "name profilePic").sort({ isPinned: -1, updatedAt: -1 });
+    res.json({ success: true, items });
   } catch (error) {
+    console.error(error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
@@ -897,23 +550,24 @@ exports.addWorkspaceItem = async (req, res) => {
     const { id } = req.params;
     const { category, title, content, items, isPinned } = req.body;
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId);
+    const userName = req.user.name || req.user.username || "Traveler";
+    const userPic = req.user.profilePic || req.user.pic || req.user.avatar || "";
 
-    const note = await JourneyWorkspace.create({
+    const item = await JourneyWorkspace.create({
       journeyId: id,
       creatorId: userId,
-      creatorName: user?.name || "Member",
-      creatorPic: user?.profilePic || "",
-      category: category || "Squad Notes",
-      title: title ? title.trim() : "",
+      creatorName: userName,
+      creatorPic: userPic,
+      category,
+      title,
       content,
-      items: items || [],
+      items: Array.isArray(items) ? items : [],
       isPinned: Boolean(isPinned)
     });
 
-    res.status(201).json({ success: true, note });
+    res.status(201).json({ success: true, note: item, item });
   } catch (error) {
-    console.error("Error adding workspace note:", error);
+    console.error(error);
     res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
@@ -921,11 +575,11 @@ exports.addWorkspaceItem = async (req, res) => {
 exports.updateWorkspaceItem = async (req, res) => {
   try {
     const { itemId } = req.params;
-    if (req.body.title) req.body.title = req.body.title.trim();
-    const note = await JourneyWorkspace.findByIdAndUpdate(itemId, req.body, { new: true });
-    res.json({ success: true, note });
+    const item = await JourneyWorkspace.findByIdAndUpdate(itemId, req.body, { new: true });
+    res.json({ success: true, note: item, item });
   } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
+    console.error(error);
+    res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
 
@@ -933,76 +587,488 @@ exports.deleteWorkspaceItem = async (req, res) => {
   try {
     const { itemId } = req.params;
     await JourneyWorkspace.findByIdAndDelete(itemId);
-    res.json({ success: true, message: "Note deleted" });
+    res.json({ success: true, message: "Item deleted" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
+const JOURNEY_MILESTONES = [
+  "Started Journey",
+  "Reached Destination",
+  "Reached Accommodation",
+  "Returning Home",
+  "Reached Home Safely"
+];
+exports.JOURNEY_MILESTONES = JOURNEY_MILESTONES;
+
+const computeSafetyState = (journey, timelineEvents = []) => {
+  if (!journey) return null;
+
+  // Filter timeline events for milestone checkins
+  const milestoneEvents = timelineEvents
+    .filter(e => e.eventType === "safe_checkin" && JOURNEY_MILESTONES.includes(e.checkInType))
+    .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+
+  // Extract unique ordered completed milestones
+  const completedMilestones = [];
+  const completedMilestoneDetails = {};
+  for (const ev of milestoneEvents) {
+    if (!completedMilestones.includes(ev.checkInType)) {
+      completedMilestones.push(ev.checkInType);
+      completedMilestoneDetails[ev.checkInType] = {
+        time: ev.createdAt,
+        location: ev.locationName || ev.location || "",
+        userId: ev.userId,
+        userName: ev.userName
+      };
+    }
+  }
+
+  const nextIndex = completedMilestones.length;
+  const nextExpectedMilestone = nextIndex < JOURNEY_MILESTONES.length ? JOURNEY_MILESTONES[nextIndex] : null;
+  const isSafetyComplete = completedMilestones.length === JOURNEY_MILESTONES.length || journey.status === "Completed";
+  const canCheckIn = !isSafetyComplete && journey.status !== "Cancelled" && journey.status !== "Archived" && journey.isCancelled !== true;
+
+  // All safe check-in events (milestone OR safe_confirmation)
+  const allCheckInEvents = timelineEvents
+    .filter(e => e.eventType === "safe_checkin")
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  const lastCheckIn = allCheckInEvents[0] ? {
+    id: allCheckInEvents[0]._id,
+    type: allCheckInEvents[0].checkInType || "safe_confirmation",
+    title: allCheckInEvents[0].title,
+    time: allCheckInEvents[0].createdAt,
+    location: allCheckInEvents[0].locationName || allCheckInEvents[0].location || "",
+    userName: allCheckInEvents[0].userName,
+    isQuickSafe: allCheckInEvents[0].checkInType === "safe_confirmation" || !allCheckInEvents[0].checkInType
+  } : null;
+
+  // Check if SOS is active on journey or timeline
+  const isSosActive = journey.isEmergencyActive === true || journey.safetyStatus === "SOS_ACTIVE" || timelineEvents.some(e => e.eventType === "emergency_alert" && !e.isResolved);
+
+  // Status calculation: 🟢 SAFE, 🟡 CHECK-IN DUE, 🟠 CHECK-IN OVERDUE, 🔴 SOS ACTIVE
+  let safetyStatus = "SAFE";
+  let safetyStatusText = "Recently confirmed";
+  let safetyStatusSubtext = "All good with your travel squad.";
+  let safetyStatusColor = "emerald";
+
+  if (isSosActive) {
+    safetyStatus = "SOS_ACTIVE";
+    safetyStatusText = "SOS Active";
+    safetyStatusSubtext = "Emergency alert is active.";
+    safetyStatusColor = "rose";
+  } else if (journey.status === "Ongoing") {
+    if (lastCheckIn) {
+      const hoursSince = (Date.now() - new Date(lastCheckIn.time).getTime()) / (1000 * 60 * 60);
+      if (hoursSince > 24) {
+        safetyStatus = "CHECK_IN_OVERDUE";
+        safetyStatusText = "Check-in overdue";
+        safetyStatusSubtext = "We haven't received a safety check-in recently. Check in when convenient.";
+        safetyStatusColor = "orange";
+      } else if (hoursSince > 12) {
+        safetyStatus = "CHECK_IN_DUE";
+        safetyStatusText = "Check-in due";
+        safetyStatusSubtext = "A routine safety check-in is due.";
+        safetyStatusColor = "amber";
+      } else {
+        safetyStatus = "SAFE";
+        safetyStatusText = "Recently confirmed";
+        safetyStatusSubtext = "All good with your travel squad.";
+        safetyStatusColor = "emerald";
+      }
+    } else {
+      const journeyStartTime = new Date(journey.startDate || journey.updatedAt || journey.createdAt || Date.now()).getTime();
+      const hoursSinceStart = (Date.now() - journeyStartTime) / (1000 * 60 * 60);
+      if (hoursSinceStart > 24) {
+        safetyStatus = "CHECK_IN_OVERDUE";
+        safetyStatusText = "Check-in overdue";
+        safetyStatusSubtext = "We haven't received a safety check-in recently. Check in when convenient.";
+        safetyStatusColor = "orange";
+      } else {
+        safetyStatus = "CHECK_IN_DUE";
+        safetyStatusText = "Check-in due";
+        safetyStatusSubtext = "No check-in recorded yet.";
+        safetyStatusColor = "amber";
+      }
+    }
+  } else if (journey.status === "Completed") {
+    safetyStatus = "COMPLETED";
+    safetyStatusText = "Journey safely completed";
+    safetyStatusSubtext = "All milestones completed.";
+    safetyStatusColor = "emerald";
+  } else if (journey.status === "Cancelled" || journey.isCancelled) {
+    safetyStatus = "CANCELLED";
+    safetyStatusText = "Journey cancelled";
+    safetyStatusSubtext = "Trip has been cancelled.";
+    safetyStatusColor = "slate";
+  } else {
+    safetyStatus = "STANDBY";
+    safetyStatusText = "Pre-trip standby";
+    safetyStatusSubtext = "Journey has not started yet.";
+    safetyStatusColor = "sky";
+  }
+
+  return {
+    completedMilestones,
+    completedMilestoneDetails,
+    nextExpectedMilestone,
+    isSafetyComplete,
+    canCheckIn,
+    lastCheckIn,
+    safetyStatus,
+    safetyStatusText,
+    safetyStatusSubtext,
+    safetyStatusColor,
+    allMilestones: JOURNEY_MILESTONES
+  };
+};
+
+exports.computeSafetyState = computeSafetyState;
+
 exports.getTimeline = async (req, res) => {
   try {
     const { id } = req.params;
+    const journey = await Journey.findById(id);
     const timeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
-    res.json({ success: true, timeline });
+    const safetyState = journey ? computeSafetyState(journey, timeline) : null;
+    res.json({ success: true, timeline, safetyState });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
 exports.safeCheckIn = async (req, res) => {
+  let session = null;
+  let useTransaction = false;
+  try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+    useTransaction = true;
+  } catch (e) {
+    session = null;
+    useTransaction = false;
+  }
+
   try {
     const { id } = req.params;
-    const { checkInType, location, message } = req.body;
+    const { checkInType, location, message, locationName, note, isQuickSafe, coordinates } = req.body;
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId);
 
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+    const userQuery = User.findById(userId);
+    if (useTransaction) userQuery.session(session);
+    const user = await userQuery;
 
-    const entryTitle = `Safe Check-in: ${checkInType}`;
-    const desc = `${user?.name || "Traveler"} checked in: "${checkInType}" ${location ? `at ${location}` : ""} ${message ? `(${message})` : ""}`;
-
-    const timelineEntry = await JourneyTimeline.create({
-      journeyId: id,
-      userId,
-      userName: user?.name || "Traveler",
-      userPic: user?.profilePic || "",
-      eventType: "safe_checkin",
-      title: entryTitle,
-      description: desc,
-      checkInType
-    });
-
-    journey.stats.checkInsCount = (journey.stats.checkInsCount || 0) + 1;
-    await journey.save();
-
-    const targetMembers = journey.members.
-    map((m) => m.user?._id || m.user).
-    filter((memId) => memId.toString() !== userId.toString());
-
-    if (targetMembers.length > 0) {
-      await Notification.create(
-      targetMembers.map((memId) => ({
-        sender: userId,
-        receiver: memId,
-        type: "safe_checkin",
-        journey: id,
-        message: `${user?.name || "A travel buddy"} checked in safely: ${checkInType}`
-      }))
-      );
+    if (!user) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.json({ success: true, message: "Safe check-in broadcasted!", timelineEntry });
+    const journeyQuery = Journey.findById(id);
+    if (useTransaction) journeyQuery.session(session);
+    const journey = await journeyQuery;
+
+    if (!journey) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(404).json({ success: false, message: "Journey not found" });
+    }
+
+    // 1. Membership Authorization (Creator or Member)
+    const isMember = journey.members?.some(
+      (m) => (m.user?._id || m.user).toString() === userId.toString()
+    ) || (journey.creator && (journey.creator._id || journey.creator).toString() === userId.toString());
+
+    if (!isMember) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(403).json({ success: false, code: "NOT_JOURNEY_MEMBER", message: "Only journey members can broadcast check-ins." });
+    }
+
+    // 2. Journey Status Checks
+    if (journey.status === "Cancelled" || journey.isCancelled) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(400).json({ success: false, code: "JOURNEY_NOT_ACTIVE", message: "Cannot check in to a cancelled journey." });
+    }
+
+    const finalLocation = location || locationName || journey.destination || "Current Location";
+    const finalNote = message || note || "";
+
+    // 3. Determine if Quick Safety or Milestone Check-In
+    const isExplicitQuickSafe = isQuickSafe === true || checkInType === "safe_confirmation" || checkInType === "Safety Confirmation" || !checkInType;
+
+    if (isExplicitQuickSafe) {
+      // BRANCH A: QUICK "I'M SAFE" SAFETY CONFIRMATION
+      // Does NOT advance milestones, does NOT alter journey status.
+      const createPayload = {
+        journeyId: id,
+        userId,
+        userName: user.name || "Traveler",
+        userPic: user.profilePic || user.pic || user.avatar || "",
+        eventType: "safe_checkin",
+        title: "Safety Confirmation",
+        checkInType: "safe_confirmation",
+        description: finalNote || `${user.name || "Traveler"} checked in as safe at ${finalLocation}`,
+        locationName: finalLocation,
+        coordinates: coordinates || null
+      };
+
+      let checkIn;
+      if (useTransaction) {
+        const created = await JourneyTimeline.create([createPayload], { session });
+        checkIn = created[0];
+      } else {
+        checkIn = await JourneyTimeline.create(createPayload);
+      }
+
+      journey.stats = journey.stats || {};
+      journey.stats.checkInsCount = (journey.stats.checkInsCount || 0) + 1;
+      if (useTransaction) {
+        await journey.save({ session });
+      } else {
+        await journey.save();
+      }
+
+      // Notify other members
+      const recipientIds = (journey.members || [])
+        .map(m => (m.user?._id || m.user).toString())
+        .filter(uId => uId !== userId.toString());
+
+      if (recipientIds.length > 0) {
+        const notifPayload = recipientIds.map(rId => ({
+          sender: userId,
+          receiver: rId,
+          type: "safe_checkin",
+          journey: journey._id,
+          message: `🛡️ ${user.name || "A buddy"} confirmed they are safe at ${finalLocation}.`
+        }));
+        if (useTransaction) {
+          await Notification.create(notifPayload, { session });
+        } else {
+          await Notification.create(notifPayload);
+        }
+      }
+
+      if (useTransaction) {
+        await session.commitTransaction();
+        session.endSession();
+      }
+
+      const allTimeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
+      const safetyState = computeSafetyState(journey, allTimeline);
+
+      return res.status(201).json({
+        success: true,
+        message: "You're marked safe.",
+        checkIn,
+        timelineEntry: checkIn,
+        isQuickSafe: true,
+        safetyState
+      });
+    }
+
+    // BRANCH B: SEQUENTIAL JOURNEY MILESTONE
+    if (!JOURNEY_MILESTONES.includes(checkInType)) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(400).json({
+        success: false,
+        code: "MILESTONE_OUT_OF_ORDER",
+        message: `Invalid check-in type: '${checkInType}'. Valid milestones: ${JOURNEY_MILESTONES.join(", ")}`
+      });
+    }
+
+    if (journey.status === "Completed") {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(400).json({
+        success: false,
+        code: "JOURNEY_NOT_ACTIVE",
+        message: "Journey is already completed. No further milestone check-ins can be recorded."
+      });
+    }
+
+    // Query existing milestones to ensure sequential progression and duplicate prevention
+    const timelineQuery = JourneyTimeline.find({
+      journeyId: id,
+      eventType: "safe_checkin",
+      checkInType: { $in: JOURNEY_MILESTONES }
+    }).sort({ createdAt: 1 });
+    if (useTransaction) timelineQuery.session(session);
+    const existingMilestoneEvents = await timelineQuery;
+
+    const completedMilestones = [];
+    for (const ev of existingMilestoneEvents) {
+      if (!completedMilestones.includes(ev.checkInType)) {
+        completedMilestones.push(ev.checkInType);
+      }
+    }
+
+    // Rule: Duplicate check -> 409 Conflict
+    if (completedMilestones.includes(checkInType)) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(409).json({
+        success: false,
+        code: "MILESTONE_ALREADY_COMPLETED",
+        message: `'${checkInType}' has already been recorded for this journey.`
+      });
+    }
+
+    // Rule: Next expected check
+    const nextExpectedIndex = completedMilestones.length;
+    const nextExpectedMilestone = JOURNEY_MILESTONES[nextExpectedIndex];
+
+    if (!nextExpectedMilestone) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(400).json({
+        success: false,
+        code: "MILESTONE_OUT_OF_ORDER",
+        message: "All journey milestones have already been completed."
+      });
+    }
+
+    if (checkInType !== nextExpectedMilestone) {
+      if (useTransaction) await session.abortTransaction();
+      if (session) session.endSession();
+      return res.status(400).json({
+        success: false,
+        code: "MILESTONE_OUT_OF_ORDER",
+        message: `Cannot check in to '${checkInType}'. Next required milestone is '${nextExpectedMilestone}'.`
+      });
+    }
+
+
+    // Create the milestone event
+    const createPayload = {
+      journeyId: id,
+      userId,
+      userName: user.name || "Traveler",
+      userPic: user.profilePic || user.pic || user.avatar || "",
+      eventType: "safe_checkin",
+      title: checkInType,
+      checkInType: checkInType,
+      description: finalNote || `Milestone reached: ${checkInType} at ${finalLocation}`,
+      locationName: finalLocation,
+      coordinates: coordinates || null
+    };
+
+    let checkIn;
+    if (useTransaction) {
+      const created = await JourneyTimeline.create([createPayload], { session });
+      checkIn = created[0];
+    } else {
+      checkIn = await JourneyTimeline.create(createPayload);
+    }
+
+    // Status progressions
+    if (checkInType === "Started Journey" && (journey.status === "Planning" || journey.status === "Upcoming")) {
+      journey.status = "Ongoing";
+    }
+
+    if (checkInType === "Reached Home Safely") {
+      journey.status = "Completed";
+      journey.completedAt = new Date();
+    }
+
+    journey.stats = journey.stats || {};
+    journey.stats.checkInsCount = (journey.stats.checkInsCount || 0) + 1;
+    if (useTransaction) {
+      await journey.save({ session });
+    } else {
+      await journey.save();
+    }
+
+    // Notify other members
+    const recipientIds = (journey.members || [])
+      .map(m => (m.user?._id || m.user).toString())
+      .filter(uId => uId !== userId.toString());
+
+    if (recipientIds.length > 0) {
+      const notifPayload = recipientIds.map(rId => ({
+        sender: userId,
+        receiver: rId,
+        type: "safe_checkin",
+        journey: journey._id,
+        message: `📍 ${user.name || "A buddy"} checked in: ${checkInType} at ${finalLocation}.`
+      }));
+      if (useTransaction) {
+        await Notification.create(notifPayload, { session });
+      } else {
+        await Notification.create(notifPayload);
+      }
+    }
+
+    if (useTransaction) {
+      await session.commitTransaction();
+      session.endSession();
+    }
+
+    const allTimeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
+    const safetyState = computeSafetyState(journey, allTimeline);
+
+    return res.status(201).json({
+      success: true,
+      message: `Checked in: ${checkInType}!`,
+      checkIn,
+      timelineEntry: checkIn,
+      isQuickSafe: false,
+      safetyState
+    });
   } catch (error) {
-    console.error("Error in safe check-in:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    if (useTransaction && session) {
+      try { await session.abortTransaction(); } catch (e) {}
+      try { session.endSession(); } catch (e) {}
+    }
+    const isWriteConflict = error.code === 112 || (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError'));
+    if (isWriteConflict) {
+      try {
+        const { checkInType } = req.body || {};
+        if (checkInType) {
+          const existing = await JourneyTimeline.findOne({
+            journeyId: req.params.id,
+            eventType: "safe_checkin",
+            checkInType
+          });
+          if (existing) {
+            return res.status(409).json({
+              success: false,
+              code: "MILESTONE_ALREADY_COMPLETED",
+              message: `'${checkInType}' has already been recorded for this journey.`
+            });
+          }
+        }
+        return res.status(409).json({
+          success: false,
+          code: "MILESTONE_ALREADY_COMPLETED",
+          message: "Another check-in request is being processed. Please retry."
+        });
+      } catch (err) {
+
+        // fallback
+      }
+    }
+    console.error("Error doing safe check-in:", error);
+    res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
+
+// ==========================================
+// GALLERY & MEMORIES
+// ==========================================
 
 exports.getGallery = async (req, res) => {
   try {
     const { id } = req.params;
-    const gallery = await JourneyGallery.find({ journeyId: id }).sort({ createdAt: -1 });
+    const journey = await Journey.findById(id);
+    if (journey) {
+      await syncJourneyStatus(journey);
+    }
+    const gallery = await JourneyGallery.find({ journeyId: id }).populate("uploadedBy", "name profilePic").sort({ createdAt: -1 });
     res.json({ success: true, gallery });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -1012,37 +1078,15 @@ exports.getGallery = async (req, res) => {
 exports.addGalleryItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const { mediaUrl, mediaType, itemType, caption } = req.body;
+    const { url, caption, type } = req.body;
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId);
 
     const item = await JourneyGallery.create({
       journeyId: id,
-      uploaderId: userId,
-      uploaderName: user?.name || "Member",
-      uploaderPic: user?.profilePic || "",
-      mediaUrl,
-      mediaType: mediaType || "image",
-      itemType: itemType || "photo",
-      caption
-    });
-
-    const journey = await Journey.findById(id);
-    if (journey) {
-      if (mediaType === "video") journey.stats.videosCount = (journey.stats.videosCount || 0) + 1;else
-      journey.stats.photosCount = (journey.stats.photosCount || 0) + 1;
-      await journey.save();
-    }
-
-    await JourneyTimeline.create({
-      journeyId: id,
-      userId,
-      userName: user?.name || "Member",
-      userPic: user?.profilePic || "",
-      eventType: "photo_uploaded",
-      title: "Photo Uploaded",
-      description: `Uploaded new memory capture`,
-      mediaUrl
+      url,
+      caption,
+      mediaType: type || "image",
+      uploadedBy: userId
     });
 
     res.status(201).json({ success: true, item });
@@ -1054,42 +1098,30 @@ exports.addGalleryItem = async (req, res) => {
 exports.getMemories = async (req, res) => {
   try {
     const { id } = req.params;
-    const journey = await Journey.findById(id).populate("members.user", "name profilePic pic img avatar");
+    const journey = await Journey.findById(id);
     if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
 
     await syncJourneyStatus(journey);
 
-    if (journey.status !== "Completed") {
+    const isUnlocked = journey.status === "Completed";
+    if (!isUnlocked) {
       return res.json({
         success: true,
         unlocked: false,
-        journeyStatus: journey.status,
-        endDate: journey.endDate,
-        message: journey.status === "Cancelled" ?
-        "Scrapbook is unavailable because this journey was cancelled." :
-        "Your Scrapbook will unlock after the journey"
+        message: "Your Scrapbook will unlock after the journey is completed",
+        endDate: journey.endDate
       });
     }
 
-    let mem = await JourneyMemory.findOne({ journeyId: id }).populate("participants.userId", "name profilePic pic img avatar");
-    if (!mem) {
-      mem = await JourneyMemory.create({
-        journeyId: journey._id,
-        title: journey.title,
-        destination: journey.destination,
-        coverImage: journey.coverImage,
-        durationDays: journey.durationDays,
-        participantsCount: journey.members?.length || 1,
-        participants: journey.members?.map((m) => ({
-          userId: m.user?._id || m.user,
-          name: m.user?.name || "Traveler",
-          pic: m.user?.profilePic || "",
-          role: m.role
-        })),
-        aiSummary: journey.aiSummary
-      });
-    }
-    res.json({ success: true, unlocked: true, memory: mem });
+    const memory = await JourneyMemory.findOne({ journeyId: id }).
+    populate("comments.userId", "name profilePic");
+
+    res.json({
+      success: true,
+      unlocked: true,
+      memory,
+      memories: memory ? [memory] : []
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
@@ -1098,35 +1130,21 @@ exports.getMemories = async (req, res) => {
 exports.addMemoryComment = async (req, res) => {
   try {
     const { id } = req.params;
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    await syncJourneyStatus(journey);
-    if (journey.status !== "Completed") {
-      return res.status(403).json({ success: false, message: "Scrapbook comments are locked until the journey is completed." });
-    }
-
     const { text } = req.body;
     const userId = req.user._id || req.user.id;
-    const user = await User.findById(userId);
 
-    const mem = await JourneyMemory.findOneAndUpdate(
-    { journeyId: id },
-    {
-      $push: {
-        comments: {
-          userId,
-          userName: user?.name || "Traveler",
-          userPic: user?.profilePic || "",
-          text,
-          createdAt: new Date()
-        }
-      }
-    },
-    { new: true }
-    );
+    const journey = await Journey.findById(id);
+    if (journey) {
+      await syncJourneyStatus(journey);
+    }
 
-    res.json({ success: true, memory: mem });
+    const memory = await JourneyMemory.findOneAndUpdate(
+      { journeyId: id },
+      { $push: { comments: { userId, text, createdAt: new Date() } } },
+      { new: true }
+    ).populate("comments.userId", "name profilePic");
+
+    res.json({ success: true, memory });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
@@ -1135,225 +1153,142 @@ exports.addMemoryComment = async (req, res) => {
 exports.reactToMemory = async (req, res) => {
   try {
     const { id } = req.params;
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    await syncJourneyStatus(journey);
-    if (journey.status !== "Completed") {
-      return res.status(403).json({ success: false, message: "Scrapbook reactions are locked until the journey is completed." });
-    }
-
-    const { emoji } = req.body;
+    const { reactionType } = req.body;
     const userId = req.user._id || req.user.id;
 
-    const mem = await JourneyMemory.findOneAndUpdate(
-    { journeyId: id },
-    { $push: { reactions: { userId, emoji, createdAt: new Date() } } },
-    { new: true }
-    );
+    const journey = await Journey.findById(id);
+    if (journey) {
+      await syncJourneyStatus(journey);
+    }
 
-    res.json({ success: true, memory: mem });
+    const memory = await JourneyMemory.findOne({ journeyId: id });
+    if (!memory) return res.status(404).json({ success: false, message: "Memory not found" });
+
+    const existingIndex = memory.reactions.findIndex((r) => r.userId.toString() === userId.toString());
+    if (existingIndex > -1) {
+      if (memory.reactions[existingIndex].type === reactionType) {
+        memory.reactions.splice(existingIndex, 1);
+      } else {
+        memory.reactions[existingIndex].type = reactionType;
+      }
+    } else {
+      memory.reactions.push({ userId, type: reactionType || "love" });
+    }
+
+    await memory.save();
+    res.json({ success: true, memory });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
+// ==========================================
+// STATISTICS & COMPANIONS
+// ==========================================
+
 exports.getUserStatistics = async (req, res) => {
   try {
-    const targetUserId = req.params.id || req.params.userId || req.user._id || req.user.id;
+    const userId = req.params.id || req.user._id || req.user.id;
 
-    const [journeys, buddyTrips] = await Promise.all([
-    Journey.find({
-      $or: [{ creator: targetUserId }, { "members.user": targetUserId }]
-    }),
-    TravelGroup.find({
-      $or: [{ host: targetUserId }, { "members.user": targetUserId }]
-    })]
-    );
-
-    let completed = 0;
-    let upcoming = 0;
-    let ongoing = 0;
-    let cancelled = 0;
-    let travelDays = 0;
-    let destMap = {};
-    const now = new Date();
-
-    const journeySourceIds = new Set(
-      journeys
-        .filter((j) => (j.sourceType === "explore" || j.sourceType === "travel_group") && j.sourceId)
-        .map((j) => j.sourceId.toString())
-    );
-
-    const filteredBuddyTrips = buddyTrips.filter(
-      (trip) => !journeySourceIds.has((trip._id || trip.id).toString())
-    );
-
-    journeys.forEach((j) => {
-      const s = (j.status || "").toLowerCase();
-      const isPast = j.endDate && new Date(j.endDate) < now;
-      if (s === "completed" || s === "cancelled" || (isPast && s !== "cancelled")) {
-        if (s === "completed" || (isPast && s !== "cancelled")) {
-          completed++;
-          travelDays += j.durationDays || 1;
-        } else {
-          cancelled++;
-        }
-      } else if (s === "ongoing" || s === "active" || s === "active now") {
-        ongoing++;
-      } else if (s === "upcoming" || s === "planning") {
-        upcoming++;
-      }
-
-      if (j.destination) {
-        destMap[j.destination] = (destMap[j.destination] || 0) + 1;
-      }
+    const allJourneys = await Journey.find({
+      $or: [{ creator: userId }, { "members.user": userId }]
     });
 
-    filteredBuddyTrips.forEach((trip) => {
-      const s = (trip.status || "").toLowerCase();
-      const isCompleted = s === "completed" || trip.endDate && new Date(trip.endDate) < now;
-      const isOngoing = s === "active" || s === "active now" || s === "ongoing" || (trip.startDate && new Date(trip.startDate) <= now && (!trip.endDate || new Date(trip.endDate) >= now) && s !== "cancelled" && s !== "completed");
-      const isUpcoming = s === "upcoming" || s === "planning" || trip.startDate && new Date(trip.startDate) > now && s !== "cancelled";
-      const isCancelled = s === "cancelled";
+    const activeJourneys = allJourneys.filter((j) => !j.isCancelled && String(j.status || "").toLowerCase() !== "cancelled");
+    const completedJourneys = activeJourneys.filter((j) => j.status === "Completed");
 
-      if (isCompleted) {
-        completed++;
-        const start = new Date(trip.startDate);
-        const end = new Date(trip.endDate);
-        const diffTime = Math.abs(end - start);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-        travelDays += diffDays;
-      } else if (isOngoing) {
-        ongoing++;
-      } else if (isUpcoming) {
-        upcoming++;
-      } else if (isCancelled) {
-        cancelled++;
-      }
-
-      if (trip.destination) {
-        destMap[trip.destination] = (destMap[trip.destination] || 0) + 1;
-      }
-    });
-
+    let totalDurationDays = 0;
+    const uniqueDestinations = new Set();
     const companionIds = new Set();
 
-    journeys.forEach(j => {
-      if (j.creator && j.creator.toString() !== targetUserId.toString()) {
-        companionIds.add(j.creator.toString());
+    activeJourneys.forEach((j) => {
+      if (j.destination) uniqueDestinations.add(j.destination.trim().toLowerCase());
+      if (j.startDate && j.endDate) {
+        const start = new Date(j.startDate);
+        const end = new Date(j.endDate);
+        const days = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+        totalDurationDays += days;
+      } else if (j.durationDays) {
+        totalDurationDays += j.durationDays;
       }
+
       if (j.members && Array.isArray(j.members)) {
-        j.members.forEach(m => {
-          if (m.user && m.user.toString() !== targetUserId.toString()) {
-            companionIds.add(m.user.toString());
+        j.members.forEach((m) => {
+          const memId = (m.user?._id || m.user).toString();
+          if (memId !== userId.toString()) {
+            companionIds.add(memId);
           }
         });
       }
     });
 
-    filteredBuddyTrips.forEach(t => {
-      if (t.host && t.host.toString() !== targetUserId.toString()) {
-        companionIds.add(t.host.toString());
-      }
-      if (t.members && Array.isArray(t.members)) {
-        t.members.forEach(m => {
-          if (m.user && m.user.toString() !== targetUserId.toString()) {
-            companionIds.add(m.user.toString());
-          }
-        });
-      }
-    });
+    const totalPostsCount = await Post.countDocuments({ userId: userId });
+    const totalStoriesCount = await Story.countDocuments({ userId: userId });
+    const userDoc = await User.findById(userId).select("followers following reputationPoints verified");
 
-    const companionsCount = companionIds.size;
+    const tripMateController = require("./tripMateController");
+    const validTripMates = await tripMateController.getValidTripMates(userId);
+    const tripMatesCount = validTripMates.length;
 
-    const total = completed + ongoing + upcoming;
-
-    let mostVisited = "None";
-    let maxCount = 0;
-    Object.keys(destMap).forEach((d) => {
-      if (destMap[d] > maxCount) {
-        maxCount = destMap[d];
-        mostVisited = d;
-      }
-    });
-
-    const [postsShared, storiesShared] = await Promise.all([
-    Post.countDocuments({ userId: targetUserId }),
-    Story.countDocuments({ userId: targetUserId })]
-    );
-
-    const badges = [];
-    if (total >= 1) {
-      badges.push({ id: "first_journey", title: "First Journey", icon: "Milestone", desc: "Started your travel legacy on Go yatriGo" });
-    }
-    if (journeys.some((j) => (j.durationDays || 1) <= 3 && j.status === "Completed")) {
-      badges.push({ id: "weekend_traveler", title: "Weekend Traveler", icon: "Compass", desc: "Mastered quick weekend escapes" });
-    }
-    if (journeys.some((j) => /beach|goa|andaman|bali|gokarna/i.test(j.destination))) {
-      badges.push({ id: "beach_lover", title: "Beach Lover", icon: "Sun", desc: "Sun, sand, and ocean vibes" });
-    }
-    if (journeys.some((j) => /manali|leh|ladakh|shimla|mountain|ooty/i.test(j.destination))) {
-      badges.push({ id: "mountain_explorer", title: "Mountain Explorer", icon: "Mountain", desc: "Conquered the high altitudes" });
-    }
-    if (journeys.some((j) => (j.members?.length || 1) >= 4)) {
-      badges.push({ id: "community_traveler", title: "Community Traveler", icon: "Users", desc: "Traveled with a thriving squad" });
-    }
-    if (storiesShared >= 3) {
-      badges.push({ id: "storyteller", title: "Storyteller", icon: "Sparkles", desc: "Shared inspiring visual memories" });
-    }
-    if (postsShared >= 5) {
-      badges.push({ id: "memory_collector", title: "Memory Collector", icon: "Camera", desc: "Documented the journey beautifully" });
-    }
+    const ongoing = activeJourneys.filter((j) => {
+      const s = String(j.status || "").toLowerCase();
+      return s === "ongoing" || s === "active" || s === "active now" || s === "open";
+    }).length;
+    const upcoming = activeJourneys.filter((j) => {
+      const s = String(j.status || "").toLowerCase();
+      return s === "upcoming" || s === "planning" || s === "pending" || (!["ongoing", "active", "active now", "open", "completed"].includes(s));
+    }).length;
 
     res.json({
       success: true,
       stats: {
-        totalJourneys: total,
-        completed,
-        upcoming,
+        totalJourneys: activeJourneys.length,
+        completedJourneysCount: completedJourneys.length,
+        destinationsExploredCount: uniqueDestinations.size,
+        totalTravelDays: totalDurationDays,
+        totalCompanionsMet: companionIds.size,
+        totalPostsCount,
+        totalStoriesCount,
+        followersCount: userDoc?.followers?.length || 0,
+        followingCount: userDoc?.following?.length || 0,
+        tripMatesCount,
+        reputationPoints: userDoc?.reputationPoints || 100,
+        isVerified: userDoc?.verified || false,
+        // ExplorerDashboardWidget expected fields
         ongoing,
-        cancelled,
-        travelDays,
-        photosShared: 0,
-        storiesShared,
-        postsShared,
-        mostVisitedDestination: mostVisited,
-        achievements: badges,
-        companionsCount
+        upcoming,
+        postsShared: totalPostsCount,
+        companionsCount: companionIds.size,
+        achievements: (() => {
+          const badges = [];
+          if (completedJourneys.length >= 1) {
+            badges.push({ title: "First Steps", desc: "Completed your first collaborative journey." });
+          }
+          if (completedJourneys.length >= 5) {
+            badges.push({ title: "Seasoned Traveler", desc: "Successfully completed 5 trips." });
+          }
+          if (totalDurationDays >= 30) {
+            badges.push({ title: "Globetrotter", desc: "Spent over a month traveling the world." });
+          }
+          if (companionIds.size >= 3) {
+            badges.push({ title: "Social Butterfly", desc: "Traveled with 3 or more mates." });
+          }
+          if (uniqueDestinations.size >= 3) {
+            badges.push({ title: "Explorer", desc: "Visited at least 3 distinct destinations." });
+          }
+          return badges;
+        })()
       }
     });
   } catch (error) {
-    console.error("Error fetching stats:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.getMyInvitations = async (req, res) => {
-  try {
-    const userId = req.user._id || req.user.id;
-    const { status } = req.query;
-
-    const filter = { inviteeId: userId };
-    if (status && status !== "all") {
-      filter.status = status;
-    }
-
-    const invitations = await JourneyInvitation.find(filter).
-    populate("journeyId", "title coverImage destination startDate endDate journeyType members creator status").
-    populate("inviterId", "name profilePic pic img avatar").
-    sort({ createdAt: -1 });
-
-    res.json({ success: true, count: invitations.length, invitations });
-  } catch (error) {
-    console.error("Error loading user invitations:", error);
+    console.error("Error generating user statistics:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
 
 exports.getPreviousCompanions = async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id;
+    const userId = req.query.userId || req.user._id || req.user.id;
     const search = req.query.search || "";
     const limit = parseInt(req.query.limit) || 50;
 
@@ -1512,336 +1447,32 @@ exports.getPreviousCompanions = async (req, res) => {
   }
 };
 
-exports.getJourneyInvitations = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const invitations = await JourneyInvitation.find({ journeyId: id }).
-    populate("inviteeId", "name profilePic pic img avatar email").
-    populate("inviterId", "name profilePic pic img avatar").
-    sort({ createdAt: -1 });
+// ==========================================
+// RE-EXPORTS FOR BACKWARD COMPATIBILITY
+// ==========================================
 
-    res.json({ success: true, count: invitations.length, invitations });
-  } catch (error) {
-    console.error("Error loading journey invitations:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.syncJourneyStatus = journeyLifecycleController.syncJourneyStatus;
+exports.syncJourneyStatusHandler = journeyLifecycleController.syncJourneyStatusHandler;
 
-exports.resendInvitation = async (req, res) => {
-  try {
-    const invitationId = req.params.invitationId || req.params.id;
-    const inv = await JourneyInvitation.findById(invitationId).populate("journeyId", "title");
-    if (!inv) return res.status(404).json({ success: false, message: "Invitation not found" });
+exports.transferHost = journeyHostController.transferHost;
 
-    inv.status = "pending";
-    inv.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-    await inv.save();
+exports.cancelJourney = journeyCancellationController.cancelJourney;
+exports.evaluateCancellationRules = journeyCancellationController.evaluateCancellationRules;
 
-    try {
-      const recipientId = inv.inviteeId?._id || inv.inviteeId;
-      if (recipientId) {
-        await Notification.create({
-          sender: req.user._id || req.user.id,
-          receiver: recipientId,
-          type: "journey_invitation",
-          journey: inv.journeyId?._id || inv.journeyId,
-          message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`
-        });
-      }
-    } catch (notifErr) {
-      console.error("Error creating resend notification:", notifErr);
-    }
-
-    res.json({ success: true, message: "Invitation resent successfully", invitation: inv });
-  } catch (error) {
-    console.error("Error resending invitation:", error);
-    res.status(500).json({ success: false, message: error.message || "Failed to resend invitation" });
-  }
-};
-
-exports.cancelInvitation = async (req, res) => {
-  try {
-    const invitationId = req.params.invitationId || req.params.id;
-    const inv = await JourneyInvitation.findById(invitationId);
-    if (!inv) return res.status(404).json({ success: false, message: "Invitation not found" });
-
-    inv.status = "cancelled";
-    await inv.save();
-
-    const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
-    await Journey.findByIdAndUpdate(inv.journeyId, { pendingInvitationCount: pendingCount });
-
-    res.json({ success: true, message: "Invitation revoked successfully" });
-  } catch (error) {
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.updateMemberRole = async (req, res) => {
-  try {
-    const { id, userId } = req.params;
-    const { role } = req.body;
-    const requesterId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    if (journey.creator.toString() !== requesterId.toString()) {
-      return res.status(403).json({ success: false, message: "Only the Organizer can manage member roles" });
-    }
-
-    const memIndex = journey.members.findIndex((m) => (m.user?._id || m.user).toString() === userId.toString());
-    if (memIndex === -1) {
-      return res.status(404).json({ success: false, message: "Member not found in squad" });
-    }
-
-    journey.members[memIndex].role = role;
-
-    if (role === "Organizer") {
-      const oldOwnerIndex = journey.members.findIndex((m) => (m.user?._id || m.user).toString() === requesterId.toString());
-      if (oldOwnerIndex !== -1) {
-        journey.members[oldOwnerIndex].role = "Co-Organizer";
-      }
-      journey.creator = userId;
-    }
-
-    await journey.save();
-    await JourneyMember.findOneAndUpdate({ journeyId: id, userId }, { role });
-
-    res.json({ success: true, message: `Member role updated to ${role}`, journey });
-  } catch (error) {
-    console.error("Error updating role:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.requestToJoinJourney = async (req, res) => {
-  try {
-    const journeyId = req.params.id;
-    const userId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(journeyId);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    if (!["Planning", "Upcoming", "Ongoing"].includes(journey.status)) {
-      return res.status(400).json({ success: false, message: "Can only request to join active journeys" });
-    }
-
-    if (journey.creator.toString() === userId.toString()) {
-      return res.status(400).json({ success: false, message: "Creator cannot request to join their own journey" });
-    }
-
-    const isMember = journey.members.some(m => (m.user?._id || m.user).toString() === userId.toString());
-    if (isMember) {
-      return res.status(400).json({ success: false, message: "Already a member" });
-    }
-
-    const existingPendingInvite = await JourneyInvitation.findOne({ journeyId, inviteeId: userId, status: "pending" });
-    if (existingPendingInvite) {
-      return res.status(400).json({ success: false, message: "You already have a pending invitation" });
-    }
-
-    if (journey.members.length >= journey.maxMembers) {
-      return res.status(400).json({ success: false, message: "Journey is at full capacity" });
-    }
-
-    const newRequest = await JourneyJoinRequest.create({
-      journeyId,
-      userId,
-      status: "pending",
-      message: req.body.message || ""
-    });
-
-    await Notification.create({
-      sender: userId,
-      receiver: journey.creator,
-      type: "journey_join_request",
-      journey: journeyId,
-      journeyJoinRequest: newRequest._id,
-      message: `${req.user.name || "A user"} requested to join your journey "${journey.title}"`
-    });
-
-    res.status(201).json({ success: true, message: "Request sent successfully", joinRequest: newRequest });
-  } catch (error) {
-    if (error.code === 11000) {
-      return res.status(400).json({ success: false, message: "You already have a pending join request" });
-    }
-    console.error("Error creating join request:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.getJourneyJoinRequests = async (req, res) => {
-  try {
-    const journeyId = req.params.id;
-    const userId = req.user._id || req.user.id;
-
-    const journey = await Journey.findById(journeyId);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    if (journey.creator.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to view join requests" });
-    }
-
-    const requests = await JourneyJoinRequest.find({ journeyId }).populate("userId", "name profilePic username");
-    res.json({ success: true, requests });
-  } catch (error) {
-    console.error("Error fetching join requests:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.cancelJourneyJoinRequest = async (req, res) => {
-  try {
-    const requestId = req.params.requestId;
-    const userId = req.user._id || req.user.id;
-
-    const joinRequest = await JourneyJoinRequest.findById(requestId);
-    if (!joinRequest) return res.status(404).json({ success: false, message: "Request not found" });
-
-    if (joinRequest.userId.toString() !== userId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized to cancel this request" });
-    }
-
-    joinRequest.status = "cancelled";
-    await joinRequest.save();
-
-    res.json({ success: true, message: "Request cancelled successfully" });
-  } catch (error) {
-    console.error("Error cancelling join request:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.acceptJourneyJoinRequest = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
-  try {
-    const requestId = req.params.requestId;
-    const hostId = req.user._id || req.user.id;
-
-    const joinRequest = await JourneyJoinRequest.findById(requestId).session(session);
-    if (!joinRequest) throw new Error("Request not found");
-    
-    if (joinRequest.status !== "pending") {
-      throw new Error("Request is not pending");
-    }
-
-    const journey = await Journey.findById(joinRequest.journeyId).session(session);
-    if (!journey) throw new Error("Journey not found");
-
-    if (journey.creator.toString() !== hostId.toString()) {
-      throw new Error("Not authorized");
-    }
-
-    // Atomic capacity check & update
-    const updatedJourney = await Journey.findOneAndUpdate(
-      {
-        _id: journey._id,
-        status: { $in: ["Planning", "Upcoming", "Ongoing"] },
-        "members.user": { $ne: joinRequest.userId },
-        $expr: { $lt: [{ $size: "$members" }, "$maxMembers"] }
-      },
-      {
-        $push: { members: { user: joinRequest.userId, role: "Member", joinedAt: new Date() } },
-        $inc: { memberCount: 1 }
-      },
-      { new: true, session }
-    );
-
-    if (!updatedJourney) {
-      // Could be full, already a member, or journey not active
-      const currentJourney = await Journey.findById(journey._id).session(session);
-      if (currentJourney && currentJourney.members.length >= currentJourney.maxMembers) {
-        joinRequest.status = "capacity_full";
-        await joinRequest.save({ session });
-        await session.commitTransaction();
-        session.endSession();
-        
-        await Notification.create({
-          sender: hostId,
-          receiver: joinRequest.userId,
-          type: "journey_join_request_rejected",
-          journey: journey._id,
-          message: `Your request to join "${journey.title}" was not accepted because the journey has reached its capacity.`
-        });
-        
-        return res.status(400).json({ success: false, message: "Journey is at full capacity" });
-      } else {
-        throw new Error("Could not add member (might already be member or journey inactive)");
-      }
-    }
-
-    joinRequest.status = "accepted";
-    await joinRequest.save({ session });
-    
-    await JourneyMember.create([{
-      journeyId: journey._id,
-      userId: joinRequest.userId,
-      role: "Member"
-    }], { session });
-
-    await session.commitTransaction();
-    session.endSession();
-
-    await Notification.create({
-      sender: hostId,
-      receiver: joinRequest.userId,
-      type: "journey_join_request_accepted",
-      journey: journey._id,
-      message: `Your request to join "${journey.title}" was accepted!`
-    });
-
-    res.json({ success: true, message: "Request accepted successfully", journey: updatedJourney });
-  } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error accepting join request:", error);
-    res.status(error.message === "Not authorized" ? 403 : 400).json({ success: false, message: error.message || "Server Error" });
-  }
-};
-
-exports.rejectJourneyJoinRequest = async (req, res) => {
-  try {
-    const requestId = req.params.requestId;
-    const hostId = req.user._id || req.user.id;
-
-    const joinRequest = await JourneyJoinRequest.findById(requestId);
-    if (!joinRequest) return res.status(404).json({ success: false, message: "Request not found" });
-
-    const journey = await Journey.findById(joinRequest.journeyId);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
-
-    if (journey.creator.toString() !== hostId.toString()) {
-      return res.status(403).json({ success: false, message: "Not authorized" });
-    }
-
-    joinRequest.status = "rejected";
-    await joinRequest.save();
-
-    await Notification.create({
-      sender: hostId,
-      receiver: joinRequest.userId,
-      type: "journey_join_request_rejected",
-      journey: journey._id,
-      message: `Your request to join "${journey.title}" was rejected.`
-    });
-
-    res.json({ success: true, message: "Request rejected successfully" });
-  } catch (error) {
-    console.error("Error rejecting join request:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
-
-exports.getMyJoinRequest = async (req, res) => {
-  try {
-    const journeyId = req.params.id;
-    const userId = req.user._id || req.user.id;
-    const joinRequest = await JourneyJoinRequest.findOne({ journeyId, userId, status: "pending" });
-    res.json({ success: true, joinRequest });
-  } catch (error) {
-    console.error("Error fetching my join request:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
-  }
-};
+exports.inviteMembers = journeyMembershipController.inviteMembers;
+exports.acceptInvitation = journeyMembershipController.acceptInvitation;
+exports.rejectInvitation = journeyMembershipController.rejectInvitation;
+exports.leaveJourney = journeyMembershipController.leaveJourney;
+exports.removeMember = journeyMembershipController.removeMember;
+exports.getMyInvitations = journeyMembershipController.getMyInvitations;
+exports.getJourneyInvitations = journeyMembershipController.getJourneyInvitations;
+exports.resendInvitation = journeyMembershipController.resendInvitation;
+exports.cancelInvitation = journeyMembershipController.cancelInvitation;
+exports.updateMemberRole = journeyMembershipController.updateMemberRole;
+exports.requestToJoinJourney = journeyMembershipController.requestToJoinJourney;
+exports.getJourneyJoinRequests = journeyMembershipController.getJourneyJoinRequests;
+exports.cancelJourneyJoinRequest = journeyMembershipController.cancelJourneyJoinRequest;
+exports.acceptJourneyJoinRequest = journeyMembershipController.acceptJourneyJoinRequest;
+exports.rejectJourneyJoinRequest = journeyMembershipController.rejectJourneyJoinRequest;
+exports.getMyJoinRequest = journeyMembershipController.getMyJoinRequest;
+exports.revokeSocketRoomAccess = journeyMembershipController.revokeSocketRoomAccess;

@@ -2,7 +2,7 @@ import React from "react";
 import { MapContainer, TileLayer, Marker, Popup, Polyline } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, Navigation } from "lucide-react";
+import { Navigation } from "lucide-react";
 
 
 const markerIcon = new L.Icon({
@@ -85,7 +85,7 @@ const TravelMapCard = ({ journey }) => {
     <div className="card p-5 bg-white border border-slate-100 relative overflow-hidden flex flex-col h-[320px]">
       <div className="flex items-center justify-between mb-3 shrink-0">
         <div className="flex items-center gap-2">
-          <div className="p-1.5 rounded-lg bg-indigo-50 text-indigo-600">
+          <div className="p-1.5 rounded-lg bg-brand-50 text-brand-600">
             <Navigation className="w-4 h-4 animate-pulse" />
           </div>
           <div>
@@ -98,7 +98,7 @@ const TravelMapCard = ({ journey }) => {
           </div>
         </div>
 
-        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-indigo-50 text-indigo-600 border border-indigo-100">
+        <span className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest bg-brand-50 text-brand-600 border border-brand-100">
           Interactive Map
         </span>
       </div>
@@ -151,7 +151,7 @@ const TravelMapCard = ({ journey }) => {
               {status !== "Planning" &&
             <Polyline
             positions={routePath}
-            color="#6366f1"
+            color="#7c3aed"
             weight={3}
             dashArray={status === "Upcoming" ? "5, 5" : undefined} />}
 

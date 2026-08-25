@@ -79,7 +79,6 @@ const StoryViewer = ({
           `Reply sent to ${activeStoryGroup.userName.split(" ")[0]}! 💬`,
         );
         setStoryReplyText("");
-        // socket.emit("send_chat_message", res.data.chatMessage);
         window.dispatchEvent(new CustomEvent("refresh_chats"));
         if (res.data.chatMessage) {
           window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));
@@ -92,7 +91,6 @@ const StoryViewer = ({
     }
   };
 
-  // Story reaction
   const handleStoryReaction = async (emoji) => {
     if (!activeStoryGroup) return;
     try {
@@ -104,7 +102,6 @@ const StoryViewer = ({
       );
       if (res.data.success) {
         showToast.success(`${emoji} Sent!`);
-        // socket.emit("send_chat_message", res.data.chatMessage);
         window.dispatchEvent(new CustomEvent("refresh_chats"));
         if (res.data.chatMessage) {
           window.dispatchEvent(new CustomEvent("message_sent", { detail: res.data.chatMessage }));
@@ -401,7 +398,7 @@ const StoryViewer = ({
         {/* Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 via-fuchsia-500 to-indigo-500 shrink-0">
+            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 via-fuchsia-500 to-brand-600 shrink-0">
               <div className="w-full h-full rounded-full border-[1.5px] border-black overflow-hidden bg-zinc-800">
                 <img
                   src={getAvatarUrl(
@@ -659,8 +656,8 @@ const StoryViewer = ({
                     setReportModal({ isOpen: true });
                   }}
                   className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-rose-500/80 text-white border border-white/20 rounded-full transition-all shrink-0"
-                  aria-label="Report Story"
-                  title="Report Story"
+                  aria-label="Report Dispatch"
+                  title="Report Dispatch"
                 >
                   <ShieldAlert className="w-4 h-4" />
                 </button>
@@ -680,7 +677,7 @@ const StoryViewer = ({
                 <button
                   onClick={handleStoryReply}
                   disabled={replyingToStory || !storyReplyText.trim()}
-                  className="w-10 h-10 flex items-center justify-center bg-gradient-to-tr from-rose-500 to-indigo-500 text-white rounded-full disabled:opacity-40 transition-all shrink-0"
+                  className="w-10 h-10 flex items-center justify-center bg-gradient-to-tr from-rose-500 to-brand-600 text-white rounded-full disabled:opacity-40 transition-all shrink-0"
                   aria-label="Send"
                 >
                   {replyingToStory ? (
@@ -720,7 +717,7 @@ const StoryViewer = ({
                       inputValue: currentStory?.caption || "",
                       inputPlaceholder: "Enter your caption...",
                       showCancelButton: true,
-                      confirmButtonColor: "#6C4DF6",
+                      confirmButtonColor: "#7C3AED",
                       cancelButtonColor: "#ef4444",
                       confirmButtonText: "Save",
                       background: document.documentElement.classList.contains(
@@ -737,7 +734,7 @@ const StoryViewer = ({
                         title:
                           "text-xl font-black text-slate-800 dark:text-white",
                         input:
-                          "rounded-xl border-slate-200 dark:border-slate-600 focus:border-[#6C4DF6] focus:ring-[#6C4DF6]",
+                          "rounded-xl border-slate-200 dark:border-slate-600 focus:border-[#7C3AED] focus:ring-[#7C3AED]",
                         confirmButton: "rounded-xl font-bold px-6 py-2.5",
                         cancelButton: "rounded-xl font-bold px-6 py-2.5",
                       },
@@ -774,7 +771,7 @@ const StoryViewer = ({
                     handleDeleteStory(currentStory._id);
                   }}
                   className="w-9 h-9 flex items-center justify-center bg-rose-500/70 hover:bg-rose-500/90 border border-rose-400/40 rounded-full text-white transition-all"
-                  aria-label="Delete story"
+                  aria-label="Delete Dispatch"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -872,7 +869,7 @@ const StoryViewer = ({
                                 onError={(e) => handleAvatarError(e, v.userId?.name)}
                               />
                               <div>
-                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-[#6C4DF6] transition-colors">
+                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-[#7C3AED] transition-colors">
                                   {v.userId?.name}
                                 </p>
                                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">

@@ -24,6 +24,8 @@ export const SOCKET_EVENTS = {
   FOLLOW_REQUEST_RECEIVED: "follow_request_received",
   FOLLOW_REQUEST_ACCEPTED: "follow_request_accepted",
   FOLLOW_REQUEST_REJECTED: "follow_request_rejected",
+  USER_BLOCKED: "user_blocked",
+  USER_UNBLOCKED: "user_unblocked",
 
   STORY_VIEWER_UPDATE: "story_viewer_update",
   STORY_REACTION_UPDATE: "story_reaction_update",

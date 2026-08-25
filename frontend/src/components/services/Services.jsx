@@ -9,7 +9,7 @@ const categories = [
   icon: <Hotel className="w-6 h-6" />,
   path: "/hotelhome",
   description: "Discover curated stays from boutique heritage homes to 5-star resorts.",
-  color: "bg-blue-50 text-blue-600",
+  color: "bg-brand-50 text-brand-600",
   action: "View Stays"
 },
 {

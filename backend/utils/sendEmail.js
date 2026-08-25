@@ -3,13 +3,7 @@ const nodemailer = require("nodemailer");
 const sendEmail = async (options) => {
 
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
-    console.warn(
-    "⚠️ EMAIL_USER or EMAIL_PASS not set in environment variables."
-    );
-    console.warn("Email Details:");
-    console.warn(`To: ${options.to}`);
-    console.warn(`Subject: ${options.subject}`);
-    console.warn(`Text: ${options.text}`);
+    console.warn("EMAIL_USER or EMAIL_PASS not set in environment variables.");
     return;
   }
 
@@ -27,13 +21,13 @@ const sendEmail = async (options) => {
   });
 
   const message = {
-    from: `${process.env.FROM_NAME || "Go Go YatriGo"} <${process.env.EMAIL_USER}>`,
+    from: `${process.env.FROM_NAME || "Go YatriGo"} <${process.env.EMAIL_USER}>`,
     to: options.to,
     subject: options.subject,
     text: options.text
   };
 
-  const info = await transporter.sendMail(message);
+  await transporter.sendMail(message);
 };
 
 module.exports = sendEmail;

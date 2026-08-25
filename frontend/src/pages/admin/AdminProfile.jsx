@@ -2,22 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/authContext";
 import { motion } from "framer-motion";
-import {
-ShieldCheck,
-Mail,
-Calendar,
-Phone,
-Globe,
-Edit,
-User,
-Activity,
-Key,
-Lock,
-Clock,
-MapPin,
-ChevronRight,
-AlertTriangle } from
-"lucide-react";
+import { ShieldCheck, Mail, Calendar, Phone, Edit, User, Activity, Key, Lock, Clock, MapPin, ChevronRight, AlertTriangle } from "lucide-react";
 import moment from "moment";
 
 const AdminProfile = () => {

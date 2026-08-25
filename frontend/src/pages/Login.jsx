@@ -1,5 +1,4 @@
 import { showToast } from "../utils/showToast";
-import axios from "../api/axios";
 import React, { useContext, useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
@@ -19,7 +18,7 @@ ShieldCheck,
 AlertCircle } from
 "lucide-react";
 
-import { FaGithub, FaGoogle } from "react-icons/fa";
+
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/login.jpg";
 import travelBg from "../assets/images/bg.jpg";
@@ -30,7 +29,7 @@ const Login = () => {
   const [capsLockOn, setCapsLockOn] = useState(false);
   const [errors, setErrors] = useState({ email: "", password: "" });
 
-  const { user, loading, dispatch } = useContext(AuthContext);
+  const { user, loading, login } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const isMounted = useRef(true);
@@ -62,11 +61,12 @@ const Login = () => {
 
     let hasError = false;
     const newErrors = { email: "", password: "" };
+    const email = credentials.email.trim();
 
-    if (!credentials.email) {
+    if (!email) {
       newErrors.email = "Email is required";
       hasError = true;
-    } else if (!validateEmail(credentials.email)) {
+    } else if (!validateEmail(email)) {
       newErrors.email = "Invalid email format";
       hasError = true;
     }
@@ -80,24 +80,15 @@ const Login = () => {
       return;
     }
 
-    dispatch({ type: "LOGIN_START" });
+    const result = await login({
+      email,
+      password: credentials.password
+    });
 
-    try {
-      const res = await axios.post("/auth/login", credentials, {
-        withCredentials: true
-      });
-      const loggedInUser = {
-        ...res.data.details,
-        isAdmin: res.data.isAdmin,
-        token: res.data.token
-      };
+    if (!isMounted.current) return;
 
-
-      if (!isMounted.current) return;
-
-      dispatch({ type: "LOGIN_SUCCESS", payload: loggedInUser });
-      localStorage.setItem("user", JSON.stringify(loggedInUser));
-
+    if (result.success) {
+      const loggedInUser = result.user;
 
       if (loggedInUser.isAdmin === true) {
         navigate("/admin", { replace: true });
@@ -107,38 +98,17 @@ const Login = () => {
         navigate("/", { replace: true });
       }
 
-
       showToast.success("Welcome Back");
-    } catch (err) {
-      if (!isMounted.current) return;
-
-
-      const isDbDown = err.response?.data?.isDbDown;
-      const message =
-      typeof err.response?.data === "string" ?
-      err.response.data :
-      err.response?.data?.message ||
-      "Login failed. Please check your credentials.";
-
-      dispatch({ type: "LOGIN_FAILURE", payload: message });
-
-      if (isDbDown && process.env.NODE_ENV === "development") {
-
-        console.warn(
-        "[DEV] DB offline � use local bypass credentials from .env.local"
-        );
-      }
-
-      Swal.fire({
-        icon: isDbDown ? "warning" : "error",
-        title: isDbDown ? "System Offline" : "Access Denied",
-        text: isDbDown ?
-        "The server is currently unreachable. Please try again later." :
-        message,
-        confirmButtonColor: "#7c3aed",
-        customClass: { popup: "rounded-[1.5rem]" }
-      });
+      return;
     }
+
+    Swal.fire({
+      icon: "error",
+      title: "Access Denied",
+      text: result.error || "Login failed. Please check your credentials.",
+      confirmButtonColor: "#7c3aed",
+      customClass: { popup: "rounded-[1.5rem]" }
+    });
   };
 
 
@@ -161,7 +131,7 @@ const Login = () => {
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
         {}
@@ -242,7 +212,7 @@ const Login = () => {
                 htmlFor="email"
                 className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
 
-                  Identity
+                  Email
                 </label>
                 <div className="relative group">
                   <Mail
@@ -287,7 +257,7 @@ const Login = () => {
                   htmlFor="password"
                   className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
 
-                    Secret
+                    Password
                   </label>
                   <Link
                   to="/forgot-password"
@@ -305,7 +275,7 @@ const Login = () => {
                   type={showPassword ? "text" : "password"}
                   id="password"
                   autoComplete="current-password"
-                  placeholder="��������"
+                  placeholder="••••••••"
                   value={credentials.password}
                   onChange={handleChange}
                   onKeyUp={handleKeyUp}
@@ -386,12 +356,12 @@ const Login = () => {
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-3">
               <p className="text-center text-[11px] font-bold text-slate-500">
-                New traveler?
+                New user?
                 <Link
                 to="/register"
                 className="ml-2 text-brand-600 font-black hover:text-brand-700 transition-colors hover:underline underline-offset-4 decoration-2">
 
-                  Create ID
+                  Create Account
                 </Link>
               </p>
               <Link

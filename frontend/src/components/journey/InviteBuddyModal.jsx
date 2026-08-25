@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { UserPlus, X, Link2, Check } from "lucide-react";
 import axiosInstance from "../../api/axios";
 import MemberSelector from "./MemberSelector";
+import { showToast } from "../../utils/showToast";
 
 const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
   const [selectedIds, setSelectedIds] = useState([]);
@@ -31,13 +32,18 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
       });
 
       if (res.data.success) {
-        alert(`Invited ${selectedIds.length} trip mate(s)!`);
+        const inviteCount = res.data.invites ? res.data.invites.length : selectedIds.length;
+        if (inviteCount > 0) {
+          showToast.success(`Invited ${inviteCount} ${inviteCount === 1 ? "companion" : "companions"}!`);
+        } else {
+          showToast.success("Selected users are already members or have pending invites.");
+        }
         if (onInvited) onInvited();
         onClose();
       }
     } catch (err) {
       console.error("Invite error:", err);
-      alert("Failed to send invites");
+      showToast.error(err.response?.data?.message || "Failed to send invites");
     } finally {
       setLoading(false);
     }
@@ -46,16 +52,16 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full sm:max-w-lg bg-white dark:bg-slate-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[88vh]">
-        {}
+        {/* Header */}
         <div className="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#7C3AED] rounded-2xl">
+            <div className="p-2.5 bg-[#7C3AED] rounded-2xl shadow-md shadow-[#7C3AED]/20">
               <UserPlus className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-lg font-bold">Invite Trip Mates</h3>
+              <h3 className="text-lg font-bold">Invite Companions</h3>
               <p className="text-xs text-slate-400">
-                Add buddies to "{journey.title}"
+                Add travel companions to "{journey.title}"
               </p>
             </div>
           </div>
@@ -67,7 +73,7 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
           </button>
         </div>
 
-        {}
+        {/* Member Selector Content */}
         <div className="p-4 overflow-y-auto flex-1">
           <MemberSelector
           selectedIds={selectedIds}
@@ -76,7 +82,7 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
 
         </div>
 
-        {}
+        {/* External Invitation Link */}
         <div className="px-4 py-3 bg-brand-50/70 dark:bg-brand-950/40 border-t border-brand-100 dark:border-brand-900/60 flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-extrabold text-slate-800 dark:text-slate-200 truncate">
@@ -109,12 +115,12 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
           </button>
         </div>
 
-        {}
+        {/* Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between gap-3">
           <span className="text-xs font-black text-slate-500 dark:text-slate-400 truncate">
             {selectedIds.length > 0 ?
-            `${selectedIds.length} ${selectedIds.length === 1 ? "buddy" : "buddies"} selected` :
-            "No buddies selected"}
+            `${selectedIds.length} ${selectedIds.length === 1 ? "companion" : "companions"} selected` :
+            "No companions selected"}
           </span>
           <div className="flex items-center gap-2 shrink-0">
             <button
@@ -126,7 +132,7 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
             <button
             onClick={handleSendInvites}
             disabled={selectedIds.length === 0 || loading}
-            className="px-5 py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/20 transition-all disabled:opacity-50 active:scale-95">
+            className="px-5 py-2.5 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/20 transition-all disabled:opacity-50 active:scale-95">
 
               {loading ?
               "Sending..." :

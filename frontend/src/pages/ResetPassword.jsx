@@ -3,18 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { showToast } from "../utils/showToast";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-Lock,
-ArrowRight,
-Eye,
-EyeOff,
-ShieldCheck,
-AlertCircle,
-Fingerprint,
-Sparkles,
-ChevronLeft } from
-"lucide-react";
-import Spinner from "../components/spinner/LoadingSpinner";
+import { Lock, ArrowRight, Eye, EyeOff, AlertCircle, Fingerprint, Sparkles, ChevronLeft } from "lucide-react";
 import travelBg from "../assets/images/bg.jpg";
 import stickerPack from "../assets/images/login.jpg";
 
@@ -123,7 +112,7 @@ const ResetPassword = () => {
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
         {}

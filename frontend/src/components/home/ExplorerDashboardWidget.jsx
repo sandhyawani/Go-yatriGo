@@ -1,117 +1,102 @@
 import React, { useState, useEffect } from "react";
-import { Compass, Map, Users, Camera, Award, Plane } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Compass, BookOpen, Users, Award, Plane } from "lucide-react";
 import axios from "../../api/axios";
 import DashboardStatCard from "./cards/DashboardStatCard";
 import SectionHeader from "../common/SectionHeader";
-import EmptyState from "../common/EmptyState";
+import { useTripMates } from "../../hooks/useTripMates";
 
-const ExplorerDashboardWidget = ({ user, memoriesCount: fallbackMemories, activeJourneysCount }) => {
+const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick }) => {
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   const userId = user?._id || user?.id;
+  const { tripMatesCount } = useTripMates(userId);
 
   useEffect(() => {
     if (!userId) return;
-    const fetchStats = async () => {
+    const fetchDashboardData = async () => {
+      setIsLoading(true);
       try {
-        const statsRes = await axios.get(`/journeys/stats/user/${userId}`, { withCredentials: true });
-
+        const statsRes = await axios.get(`/journeys/stats/user/${userId}`, { withCredentials: true }).catch(() => ({ data: {} }));
         if (statsRes.data?.success && statsRes.data.stats) {
           setStats(statsRes.data.stats);
         }
       } catch (err) {
         console.error("Failed to sync dashboard stats", err);
+      } finally {
+        setIsLoading(false);
       }
     };
-    fetchStats();
+    fetchDashboardData();
   }, [userId]);
 
   const journeys = stats ? ((stats.ongoing || 0) + (stats.upcoming || 0)) : (activeJourneysCount ?? 0);
   const upcomingTrips = stats?.upcoming ?? 0;
-  const memories = stats?.postsShared ?? fallbackMemories ?? 0;
-  const buddies = stats?.companionsCount ?? 0;
-  const stamps = stats?.achievements?.length ?? 0;
+  const badgesCount = stats?.achievements?.length ?? 0;
 
   return (
-    <div className="mb-[var(--spacing-section)]">
+    <div className="mb-5">
       <SectionHeader
-      title="Travel Dashboard"
-      subtitle="Your Activity Summary"
-      icon={Compass} />
+        title="Travel Dashboard"
+        subtitle="Your Real-time Activity Summary"
+        icon={Compass}
+      />
 
-      
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {journeys > 0 ?
-        <DashboardStatCard
-        icon={Map}
-        title="Journeys"
-        value={journeys}
-        accent="primary"
-        description="Active" /> :
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, idx) => (
+            <div key={idx} className="card h-[88px] animate-pulse bg-slate-100/70" />
+          ))
+        ) : (
+          <>
+            <DashboardStatCard
+              icon={BookOpen}
+              title="Journeys"
+              value={journeys}
+              accent="primary"
+              description={journeys > 0 ? "Active & Planning" : "No active trips"}
+              onClick={() => navigate("/social/journeys")}
+            />
 
+            <DashboardStatCard
+              icon={Plane}
+              title="Upcoming Trips"
+              value={upcomingTrips}
+              accent="warning"
+              description={upcomingTrips > 0 ? "Next departure soon" : "Plan next adventure"}
+              onClick={() => {
+                if (onUpcomingClick) {
+                  onUpcomingClick();
+                } else {
+                  navigate("/social/journeys");
+                }
+              }}
+            />
 
-        <EmptyState
-        title="0 Journeys"
-        subtitle="Plan your first trip"
-        actionLabel="Explore"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="h-full" />}
+            <DashboardStatCard
+              icon={Users}
+              title="Trip Mates"
+              value={tripMatesCount}
+              accent="info"
+              description={tripMatesCount > 0 ? "Active connections" : "From active journeys"}
+              onClick={() => navigate("/social/explore")}
+            />
 
-
-
-        {upcomingTrips > 0 ?
-          <DashboardStatCard
-          icon={Plane}
-          title="Upcoming Trips"
-          value={upcomingTrips}
-          accent="warning"
-          description="Next trip" /> :
-  
-          <EmptyState
-          title="0 Upcoming"
-          subtitle="Plan your next trip"
-          actionLabel="Explore"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="h-full" />}
-
-
-
-        {buddies > 0 ?
-        <DashboardStatCard
-        icon={Users}
-        title="Trip Mates"
-        value={buddies}
-        accent="info"
-        description="Network" /> :
-
-
-        <EmptyState
-        title="0 Mates"
-        subtitle="Connect with travelers"
-        actionLabel="Find Buddies"
-        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-        className="h-full" />}
-
-
-
-        {stamps > 0 ?
-        <DashboardStatCard
-        icon={Award}
-        title="Badges"
-        value={stamps}
-        accent="success"
-        description="Earned" /> :
-
-
-        <EmptyState
-        title="0 Badges"
-        subtitle="Unlock your first badge"
-        className="h-full" />}
-
-
+            <DashboardStatCard
+              icon={Award}
+              title="Badges"
+              value={badgesCount}
+              accent="success"
+              description={badgesCount > 0 ? "Earned milestones" : "Explore to unlock"}
+              onClick={() => navigate("/profile")}
+            />
+          </>
+        )}
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default ExplorerDashboardWidget;

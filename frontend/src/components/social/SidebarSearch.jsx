@@ -178,7 +178,7 @@ export const SidebarSearch = ({
                           <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider shrink-0 ${
                   trip.status === "open" ? "bg-emerald-50 text-emerald-650" :
                   trip.status === "full" ? "bg-amber-50 text-amber-650" :
-                  trip.status === "completed" ? "bg-blue-50 text-blue-655" :
+                  trip.status === "completed" ? "bg-emerald-50 text-emerald-700" :
                   "bg-rose-50 text-rose-650"
                   }`}>
                             {trip.status || "open"}

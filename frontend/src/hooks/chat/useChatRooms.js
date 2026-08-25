@@ -47,7 +47,6 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
 
       if (targetUserId) {
         roomRes = await chatService.getDirectRoom(targetUserId);
-        window.history.replaceState({}, document.title);
       }
 
       const res = await chatService.getRooms();
@@ -60,7 +59,6 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
           const matched = res.rooms.find((r) => r._id === roomRes.room._id);
           if (matched) selectRoom(matched);
         } else if (targetGroupId) {
-          window.history.replaceState({}, document.title);
           const matched = res.rooms.find((r) => {
             const rGroupId = typeof r.travelGroupId === "object" ? r.travelGroupId?._id : r.travelGroupId;
             const rJourneyId = typeof r.journeyId === "object" ? r.journeyId?._id : r.journeyId;
@@ -141,8 +139,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
     }
   };
 
-  const handleDeleteChat = async (roomToDelete = activeRoom, e) => {
-    if (e) e.stopPropagation();
+  const handleDeleteChat = async (roomToDelete = activeRoom) => {
     if (!roomToDelete) return;
 
     const result = await Swal.fire({
@@ -188,7 +185,7 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
 
     const result = await Swal.fire({
       title: `Delete ${selectedRoomIds.size} chat${selectedRoomIds.size > 1 ? "s" : ""}?`,
-      text: "Messages will be cleared and selected conversations will be removed from your chat list.",
+      text: "Messages will be cleared and selected conversations will be removed.",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#ef4444",
@@ -200,46 +197,61 @@ export const useChatRooms = (currentUserId, locationState, roomIdFromParams) => 
 
     try {
       toast.loading("Deleting selected chats...", { id: "delete-selected-chats" });
-      const deletePromises = Array.from(selectedRoomIds).map((roomId) =>
-      chatService.deleteChat(roomId)
-      );
-
-      await Promise.all(deletePromises);
-
-      Array.from(selectedRoomIds).forEach((id) => {
-        dispatch({ type: "REMOVE_ROOM", payload: id });
+      const deletePromises = Array.from(selectedRoomIds).map(async (roomId) => {
+        try {
+          await chatService.deleteChat(roomId);
+          return { roomId, success: true };
+        } catch {
+          return { roomId, success: false };
+        }
       });
 
-      setIsDeleteSelectionMode(false);
-      setSelectedRoomIds(new Set());
-      showToast.success("Selected chats deleted", { id: "delete-selected-chats" });
+      const results = await Promise.allSettled(deletePromises);
+      const successfulRoomIds = new Set();
+      results.forEach((res) => {
+        if (res.status === "fulfilled" && res.value?.success) {
+          successfulRoomIds.add(res.value.roomId);
+        }
+      });
+
+      if (successfulRoomIds.size > 0) {
+        successfulRoomIds.forEach((id) => {
+          dispatch({ type: "REMOVE_ROOM", payload: id });
+        });
+        setIsDeleteSelectionMode(false);
+        setSelectedRoomIds(new Set());
+        showToast.success("Selected chats deleted", { id: "delete-selected-chats" });
+      } else {
+        showToast.error("Failed to delete selected chats", { id: "delete-selected-chats" });
+      }
     } catch (err) {
       showToast.error("Failed to delete some chats", { id: "delete-selected-chats" });
     }
   };
 
-  const handleAcceptFollow = async (e, requesterId) => {
-    e.stopPropagation();
+  const handleAcceptFollow = async (requesterId, notificationId) => {
+    if (!requesterId) return;
     try {
       await notificationService.acceptFollowRequest(requesterId);
       setNotifications((prev) =>
-      prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
+        prev.filter((n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId)))
       );
-      showToast.success("Trip Mate request accepted");
+      showToast.success("Follow request accepted");
     } catch (err) {
-      showToast.error("Failed to accept request");
+      showToast.error(err.response?.data?.message || "Failed to accept request");
     }
   };
 
-  const handleRejectFollow = async (e, requesterId) => {
-    e.stopPropagation();
+  const handleRejectFollow = async (requesterId, notificationId) => {
+    if (!requesterId) return;
     try {
       await notificationService.rejectFollowRequest(requesterId);
       setNotifications((prev) =>
-      prev.filter((n) => !(n.type === "follow_request" && n.sender._id === requesterId))
+        prev.filter((n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId)))
       );
+      showToast.success("Follow request declined");
     } catch (err) {
-      console.error(err);
+      showToast.error(err.response?.data?.message || "Failed to decline request");
     }
   };
 

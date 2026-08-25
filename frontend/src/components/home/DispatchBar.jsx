@@ -1,6 +1,7 @@
 import React, { useRef, useCallback } from "react";
 import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { getAvatarUrl } from "../../utils/avatar";
+import Card from "../common/Card";
 
 const StorySkeleton = () =>
 <div className="w-20 h-20 rounded-full bg-slate-100 relative overflow-hidden shrink-0 animate-pulse border-2 border-slate-200">
@@ -32,6 +33,39 @@ const DispatchBar = ({
       });
     }
   }, []);
+
+  const hasMyStories = Boolean(myStoryGroup && myStoryGroup.stories && myStoryGroup.stories.length > 0);
+  const hasOtherStories = Boolean(sortedStories && sortedStories.length > 0);
+  const hasAnyDispatches = hasMyStories || hasOtherStories;
+
+  if (!loadingStories && !hasAnyDispatches) {
+    return (
+      <Card
+        variant="default"
+        padding="md"
+        className="border-slate-200/80 shadow-xs !p-4 sm:!p-5 rounded-2xl select-none"
+      >
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+          <div>
+            <h4 className="text-sm sm:text-base font-extrabold text-slate-900 font-heading">
+              No dispatches yet
+            </h4>
+            <p className="text-xs font-medium text-slate-500 mt-1">
+              Share a travel update to start your dispatch.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowStoryModal(true)}
+            className="btn-primary !py-2 !px-4 text-xs font-bold shadow-sm inline-flex items-center gap-1.5 shrink-0"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Dispatch</span>
+          </button>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <div className="relative group/storybar w-full max-w-full min-w-0">
@@ -222,40 +256,29 @@ const DispatchBar = ({
                   </div>
 
                   <div className="flex flex-col items-center">
-                    <span className={`text-[10px] font-black uppercase tracking-wider truncate max-w-[80px] text-center ${hasUnviewed ? 'text-slate-800' : 'text-slate-500'}`}>
+                    <span className={`text-[11px] font-bold tracking-tight truncate max-w-[80px] text-center font-heading ${hasUnviewed ? 'text-slate-800' : 'text-slate-500'}`}>
                       {group.userName.split(" ")[0]}
                     </span>
                     {(() => {
-                  const firstStory = group.stories[0];
-                  const location = firstStory?.journeyId?.destination || firstStory?.journeyId?.title || firstStory?.location;
-                  if (location) {
-                    return (
-                      <span className="text-[8px] font-bold text-[#7C3AED] uppercase truncate max-w-[80px] text-center">
+                      const firstStory = group.stories[0];
+                      const location = firstStory?.journeyId?.destination || firstStory?.journeyId?.title || firstStory?.location;
+                      if (location) {
+                        return (
+                          <span className="text-[9px] font-semibold text-[#7C3AED] uppercase tracking-[0.08em] truncate max-w-[80px] text-center font-sans">
                             {location.split(",")[0].trim()}
-                          </span>);
-
-                  }
-                  return null;
-                })()}
+                          </span>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
-                </div>);
-
-        }) :
-
-        <div className="flex items-center gap-2.5 px-4 py-2 text-slate-400 select-none border-l border-slate-200 ml-2 shrink-0 h-16">
-              <div className="flex flex-col justify-center space-y-1">
-                <p className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                  No Dispatches Yet
-                </p>
-                <p className="text-[9px] font-bold text-slate-400 tracking-wider">
-                  Follow explorers to see updates
-                </p>
-              </div>
-            </div>}
-
+                </div>
+              );
+            })
+          : null}
       </div>
-    </div>);
-
+    </div>
+  );
 };
 
 export default DispatchBar;

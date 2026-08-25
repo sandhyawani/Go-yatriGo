@@ -1,31 +1,16 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "../../api/axios";
 import { useParams, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import {
-Users,
-MapPin,
-Calendar,
-ArrowLeft,
-MessageSquare,
-MoreVertical,
-AlertTriangle,
-UserCheck,
-UserPlus,
-ShieldCheck,
-Clock,
-Lock,
-Globe,
-Heart,
-Award,
-Star,
-ShieldAlert,
-AlertCircle } from
-"lucide-react";
+import { motion } from "framer-motion";
+import { Users, MapPin, Calendar, ArrowLeft, MessageSquare, MoreVertical, AlertTriangle, UserCheck, UserPlus, ShieldCheck, Clock, Lock, Globe, BookOpen, Award, Star, ShieldAlert, AlertCircle } from "lucide-react";
 import { showToast } from "../../utils/showToast";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
+import { getJourneyLifecycle, getEligibilityErrorMessage, getNormalizedMembers, checkIsJourneyMember, checkTripOverlapConflict } from "../../utils/journeyLifecycle";
 import ReportModal from "../../components/modals/ReportModal";
+import SendWarningModal from "../../components/journey/SendWarningModal";
+import TripOverlapConflictModal from "../../components/journey/TripOverlapConflictModal";
+import TripOverlapConflictBanner from "../../components/journey/TripOverlapConflictBanner";
 
 const TravelBuddyDetails = () => {
   const { id } = useParams();
@@ -37,6 +22,8 @@ const TravelBuddyDetails = () => {
   const [loading, setLoading] = useState(true);
   const [requestMessage, setRequestMessage] = useState("");
   const [submittingRequest, setSubmittingRequest] = useState(false);
+  const [cancellingRequest, setCancellingRequest] = useState(false);
+  const [localJoinRequestStatus, setLocalJoinRequestStatus] = useState(null);
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [cancellationReason, setCancellationReason] = useState("");
@@ -49,51 +36,165 @@ const TravelBuddyDetails = () => {
   const [manageAction, setManageAction] = useState(null);
   const [warningMsg, setWarningMsg] = useState("");
   const [openDropdownId, setOpenDropdownId] = useState(null);
+  const [hasActiveJourneyConflict, setHasActiveJourneyConflict] = useState(false);
+  const [overlapConflict, setOverlapConflict] = useState({
+    hasConflict: false,
+    conflictType: null,
+    conflictingTrip: null,
+    message: ""
+  });
+  const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
+
+  const latestFetchIdRef = useRef(id);
 
   useEffect(() => {
-    fetchTripDetails();
-  }, [id]);
+    // Reset journey-scoped request and conflict state immediately on ID or user switch
+    latestFetchIdRef.current = id;
+    setTrip(null);
+    setLocalJoinRequestStatus(null);
+    setHasActiveJourneyConflict(false);
+    setOverlapConflict({ hasConflict: false, conflictType: null, conflictingTrip: null, message: "" });
+    setIsConflictModalOpen(false);
+    setRequestMessage("");
+    setSubmittingRequest(false);
+    setCancellingRequest(false);
+    setLoading(true);
+    fetchTripDetails(id);
+  }, [id, user]);
 
-  const fetchTripDetails = async () => {
+  const fetchTripDetails = async (targetId = id) => {
     try {
-      const res = await axios.get(`/social/buddy/${id}`, {
+      const res = await axios.get(`/social/buddy/${targetId}`, {
         withCredentials: true
       });
-      setTrip(res.data.trip);
+
+      // Guard against race conditions when user quickly navigates between journeys
+      if (latestFetchIdRef.current !== targetId) return;
+
+      const fetchedTrip = res.data.trip;
+      setTrip(fetchedTrip);
+
+      // Once authoritative fresh API state arrives, clear temporary optimistic local override
+      setLocalJoinRequestStatus(null);
+
+      // Check if current user is actively participating in another journey that overlaps with this trip
+      if (user) {
+        try {
+          const myJourneysRes = await axios.get("/journeys/my", { withCredentials: true });
+          if (latestFetchIdRef.current !== targetId) return;
+
+          const myJourneys = myJourneysRes.data?.journeys || [];
+          const conflictResult = checkTripOverlapConflict(myJourneys, fetchedTrip, user);
+          setOverlapConflict(conflictResult);
+          setHasActiveJourneyConflict(conflictResult.hasConflict);
+        } catch (myJourneysErr) {
+          console.warn("Could not check user active journeys:", myJourneysErr);
+        }
+      }
     } catch (err) {
-      showToast.error("Failed to load group details");
-      navigate("/social/buddy");
+      if (latestFetchIdRef.current === targetId) {
+        showToast.error("Failed to load group details");
+        navigate("/social/buddy");
+      }
     } finally {
-      setLoading(false);
+      if (latestFetchIdRef.current === targetId) {
+        setLoading(false);
+      }
     }
   };
 
   const handleSendRequest = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (!user) {
       showToast.error("Please login to submit join requests");
       navigate("/login");
       return;
     }
 
+    if (submittingRequest || isPending || isMember) {
+      return;
+    }
+
     setSubmittingRequest(true);
     try {
       const res = await axios.post(
-      `/social/buddy/join-request/${id}`,
-      { message: requestMessage },
-      { withCredentials: true }
+        `/social/buddy/join-request/${id}`,
+        { message: requestMessage, note: requestMessage },
+        { withCredentials: true }
       );
       setRequestMessage("");
-      showToast.success(res.data.message || "Request submitted successfully!");
+      if (res.data?.status === "accepted") {
+        setLocalJoinRequestStatus("accepted");
+        showToast.success(res.data.message || "Joined group successfully!");
+      } else {
+        setLocalJoinRequestStatus("pending");
+        showToast.success(res.data.message || "Request submitted successfully!");
+      }
       await fetchTripDetails();
     } catch (err) {
-      const errorMsg = err.response?.data?.message || "Submit failed";
-      showToast.error(errorMsg);
-      if (errorMsg === "You are already a member of this group") {
-        await fetchTripDetails();
+      const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
+      const errorMsg = err.response?.data?.message || "";
+
+      if (errorCode === "ACTIVE_JOURNEY_CONFLICT" || errorCode === "OVERLAPPING_JOURNEY") {
+        const displayMsg = getEligibilityErrorMessage(err);
+        setOverlapConflict({
+          hasConflict: true,
+          conflictType: errorCode,
+          conflictingTrip: err.response?.data?.conflictingJourney || null,
+          message: displayMsg
+        });
+        setHasActiveJourneyConflict(true);
+        setIsConflictModalOpen(true);
+        showToast.warning(displayMsg);
+        return;
       }
+
+      if (
+        errorCode === "ALREADY_PENDING" ||
+        errorCode === "JOIN_REQUEST_ALREADY_PENDING" ||
+        /already\s*pending/i.test(errorMsg)
+      ) {
+        setLocalJoinRequestStatus("pending");
+        setRequestMessage("");
+        showToast.info("Your join request is already pending.");
+        await fetchTripDetails();
+        return;
+      }
+
+      if (
+        errorCode === "ALREADY_MEMBER" ||
+        /already\s*(a\s*)?member/i.test(errorMsg)
+      ) {
+        setLocalJoinRequestStatus("accepted");
+        showToast.info("You are already a member of this journey.");
+        await fetchTripDetails();
+        return;
+      }
+
+      const displayError = getEligibilityErrorMessage(err, "Submit failed");
+      showToast.error(displayError);
     } finally {
       setSubmittingRequest(false);
+    }
+  };
+
+  const handleCancelJoinRequest = async () => {
+    try {
+      setCancellingRequest(true);
+      await axios.post(
+        `/social/buddy/cancel-request/${id}`,
+        {},
+        { withCredentials: true }
+      );
+      showToast.success("Join request cancelled");
+      setLocalJoinRequestStatus("none");
+      setShowCancelJoinModal(false);
+      await fetchTripDetails();
+    } catch (err) {
+      showToast.error(err.response?.data?.message || "Failed to cancel request");
+      setShowCancelJoinModal(false);
+    } finally {
+      setCancellingRequest(false);
     }
   };
 
@@ -190,25 +291,62 @@ const TravelBuddyDetails = () => {
       return;
     }
 
+    const cleanTripId = (id?._id || id?.id || id)?.toString();
+    if (!cleanTripId) return;
+
+    const currentUserId = (user._id || user.id)?.toString();
+
+    let prevTripSnapshot = trip;
+    setTrip((prev) => {
+      prevTripSnapshot = prev;
+      if (!prev) return prev;
+      const currentLikes = Array.isArray(prev.likes) ? prev.likes : [];
+      const hasLiked = currentLikes.some(
+        (lid) => (lid?._id || lid)?.toString() === currentUserId
+      );
+      const updatedLikes = hasLiked
+        ? currentLikes.filter((lid) => (lid?._id || lid)?.toString() !== currentUserId)
+        : [...currentLikes, user._id || user.id];
+      return {
+        ...prev,
+        likes: updatedLikes,
+        likesCount: updatedLikes.length,
+      };
+    });
+
     try {
       const res = await axios.post(
-      `/social/buddy/like/${id}`,
-      {},
-      { withCredentials: true }
+        `/social/buddy/like/${cleanTripId}`,
+        {},
+        { withCredentials: true }
       );
-      setTrip((prev) => ({
-        ...prev,
-        likes: res.data.isLiked ?
-        [...(prev.likes || []), user._id] :
-        (prev.likes || []).filter(
-        (lid) => lid?.toString() !== user._id?.toString()
-        )
-      }));
-      showToast.success(
-      res.data.isLiked ? "You felt this vibe!" : "Removed from Felt Vibes"
-      );
+      if (res.data && res.data.success) {
+        const isLikedNow = res.data.isLiked;
+        const serverLikes = res.data.likes;
+        setTrip((prev) => {
+          if (!prev) return prev;
+          if (Array.isArray(serverLikes)) {
+            return { ...prev, likes: serverLikes, likesCount: serverLikes.length };
+          }
+          const currentLikes = Array.isArray(prev.likes) ? prev.likes : [];
+          const updatedLikes = isLikedNow
+            ? currentLikes.some((lid) => (lid?._id || lid)?.toString() === currentUserId)
+              ? currentLikes
+              : [...currentLikes, user._id || user.id]
+            : currentLikes.filter((lid) => (lid?._id || lid)?.toString() !== currentUserId);
+          return {
+            ...prev,
+            likes: updatedLikes,
+            likesCount: updatedLikes.length,
+          };
+        });
+        showToast.success(
+          isLikedNow ? "You felt this vibe!" : "Removed from Felt Vibes"
+        );
+      }
     } catch (err) {
-      showToast.error("Action failed");
+      setTrip(prevTripSnapshot);
+      showToast.error(err.response?.data?.message || "Failed to update reaction");
     }
   };
 
@@ -253,7 +391,7 @@ const TravelBuddyDetails = () => {
         if (openChatDirectly && res.data.journey.chatRoomId) {
           navigate(`/social/chat/${res.data.journey.chatRoomId}`);
         } else {
-          navigate(`/social/journeys/${res.data.journey._id}?welcome=true`);
+          navigate(`/social/journeys/${res.data.journey._id}`);
         }
       }
     } catch (err) {
@@ -263,7 +401,7 @@ const TravelBuddyDetails = () => {
 
   if (loading) {
     return (
-      <div className="bg-[#FAFAFA] text-slate-800 flex items-center justify-center">
+      <div className="bg-[#FAFAFA] text-slate-800 flex items-center justify-center min-h-[50vh]">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-600"></div>
       </div>);
 
@@ -271,39 +409,80 @@ const TravelBuddyDetails = () => {
 
   if (!trip) return null;
 
-  const currentUserId = (user?._id || user?.id || "").toString();
-  const isHost =
-  user && (trip.host?._id || trip.host)?.toString() === currentUserId;
-  const myMemberObj = trip?.members?.find(
-  (m) => (m?.user?._id || m?.user)?.toString() === currentUserId
-  );
-  const myRole = isHost ? "host" : myMemberObj?.role || "member";
-  const isCompanion =
-  user && (
-  trip.companions?.some(
-  (c) => (c?._id || c)?.toString() === currentUserId
-  ) ||
-  trip.members?.some((m) => (m?._id || m)?.toString() === currentUserId));
-  const userRequest =
-  user &&
-  trip.joinRequests?.find(
-  (r) => (r?.userId?._id || r?.userId)?.toString() === currentUserId
-  );
-  const isPending = userRequest && userRequest.status === "Pending";
-  const isApproved = userRequest && userRequest.status === "Approved";
-  const isRejected = userRequest && userRequest.status === "Rejected";
+  // Single authoritative source of lifecycle state
+  const lifecycle = getJourneyLifecycle(trip);
+  const isOngoing = lifecycle.isOngoing;
+  const isUpcoming = lifecycle.isUpcoming || lifecycle.isPlanning;
+  const isCompleted = lifecycle.isCompleted;
+  const isCancelled = lifecycle.isCancelled || trip.status === "cancelled";
 
-  const showChat = isHost || isCompanion || isApproved;
-  const routeFrom = trip.from || trip.startLocation || "Anywhere";
+  // Single authoritative source of membership
+  const normalizedMembers = getNormalizedMembers(trip);
+  const memberCount = normalizedMembers.length;
   const rawMax = trip.maxMembers || trip.maxCompanions || 8;
-  const maxMembers = rawMax > 20 ? 8 : rawMax;
-  const memberCount = Math.max(1, (trip.companions?.length || 0) + 1);
+  const maxMembers = Math.max(memberCount, rawMax > 20 ? 8 : rawMax);
   const slotsOpen = Math.max(0, maxMembers - memberCount);
-  const pendingRequests =
-  trip.joinRequests?.filter((r) => r.status === "Pending") || [];
-  const hasFelt = trip.likes?.some(
-  (likeId) => likeId?.toString() === currentUserId
+
+  const currentUserId = (user?._id || user?.id || "").toString();
+  const isHost = user && ((trip.host?._id || trip.host || trip.creator?._id || trip.creator)?.toString() === currentUserId);
+  const isMember = user && checkIsJourneyMember(trip, user);
+
+  const myMemberObj = normalizedMembers.find(
+    (m) => (m.user?._id || m.user?.id || m.user)?.toString() === currentUserId
   );
+  const myStandardRole = isHost ? "Host" : (myMemberObj?.standardRole || "Member");
+
+  // Single authoritative request status state machine:
+  // Priority:
+  // 1. Current membership -> "accepted"
+  // 2. Fresh trip.joinRequestStatus from backend -> authoritative
+  // 3. trip.joinRequests array (for current user) -> fallback
+  // 4. localJoinRequestStatus -> temporary optimistic state while waiting for API refresh
+  const getDerivedRequestStatus = () => {
+    if (!user) return "none";
+    if (isMember) return "accepted";
+
+    // 2. Fresh backend trip.joinRequestStatus (authoritative)
+    if (trip.joinRequestStatus !== undefined && trip.joinRequestStatus !== null) {
+      const s = String(trip.joinRequestStatus).toLowerCase();
+      if (s === "pending") return "pending";
+      if (s === "approved" || s === "accepted") return "accepted";
+      if (s === "rejected") return "rejected";
+      if (s === "cancelled") return "none";
+    }
+
+    // 3. Fallback to trip.joinRequests if present
+    if (Array.isArray(trip.joinRequests) && trip.joinRequests.length > 0) {
+      const currentReq = trip.joinRequests.find(
+        (r) => (r?.userId?._id || r?.userId)?.toString() === currentUserId
+      );
+      if (currentReq) {
+        const s = String(currentReq.status).toLowerCase();
+        if (s === "pending") return "pending";
+        if (s === "approved" || s === "accepted") return "accepted";
+        if (s === "rejected") return "rejected";
+        if (s === "cancelled") return "none";
+      }
+    }
+
+    // 4. Temporary optimistic local state
+    if (localJoinRequestStatus) return localJoinRequestStatus;
+
+    return "none";
+  };
+
+  const requestStatus = getDerivedRequestStatus();
+  const isPending = !isMember && requestStatus === "pending";
+  const isApproved = isMember || requestStatus === "accepted";
+  const isRejected = !isMember && requestStatus === "rejected";
+
+  const showChat = isMember;
+  const routeFrom = trip.from || trip.startLocation || "Anywhere";
+  const pendingRequests = trip.joinRequests?.filter((r) => r.status === "Pending") || [];
+  const hasFelt = trip.likes?.some(
+    (likeId) => likeId?.toString() === currentUserId
+  );
+
 
   const startD = new Date(trip.startDate);
   const endD = new Date(trip.endDate);
@@ -372,6 +551,16 @@ const TravelBuddyDetails = () => {
           </div>
         </div>
 
+        {overlapConflict.hasConflict && !isMember && isUpcoming && (
+          <div className="mb-4">
+            <TripOverlapConflictBanner
+              conflictType={overlapConflict.conflictType}
+              customMessage={overlapConflict.message}
+              onOpenDetails={() => setIsConflictModalOpen(true)}
+            />
+          </div>
+        )}
+
         {}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
           {}
@@ -382,34 +571,37 @@ const TravelBuddyDetails = () => {
             animate={{ opacity: 1, y: 0 }}
             className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
 
-              {}
-              <div className="w-full h-[220px] sm:h-64 bg-slate-200 relative">
-                {trip.coverImage ?
-                <>
-                    {!imgLoaded && !imgError &&
-                  <div className="absolute inset-0 bg-slate-200 animate-pulse" />}
-
+              {/* Hero Image Section */}
+              <div className="w-full h-48 sm:h-56 bg-slate-200 relative">
+                {trip.coverImage ? (
+                  <>
+                    {!imgLoaded && !imgError && (
+                      <div className="absolute inset-0 bg-slate-200 animate-pulse" />
+                    )}
                     <img
-                  src={trip.coverImage}
-                  alt={`${trip.title} group cover photo`}
-                  onLoad={() => setImgLoaded(true)}
-                  onError={() => setImgError(true)}
-                  className={`w-full h-full object-cover transition-opacity ${imgLoaded ? "opacity-100" : "opacity-0"} ${imgError ? "hidden" : ""}`} />
-
-                    {imgError &&
-                  <div className="absolute inset-0 bg-[#EEEDFE] flex items-center justify-center">
+                      src={trip.coverImage}
+                      alt={`${trip.title} group cover photo`}
+                      onLoad={() => setImgLoaded(true)}
+                      onError={() => setImgError(true)}
+                      className={`w-full h-full object-cover transition-opacity ${
+                        imgLoaded ? "opacity-100" : "opacity-0"
+                      } ${imgError ? "hidden" : ""}`}
+                    />
+                    {imgError && (
+                      <div className="absolute inset-0 bg-[#EEEDFE] flex items-center justify-center">
                         <MapPin className="w-12 h-12 text-[#AFA9EC]" />
-                      </div>}
-
-                  </> :
-
-                <div className="w-full h-full bg-[#7C3AED]/20 flex items-center justify-center">
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-full bg-[#7C3AED]/20 flex items-center justify-center">
                     <MapPin className="w-12 h-12 text-[#7C3AED]/40" />
-                  </div>}
+                  </div>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                 <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
-                  <h1 className="text-2xl sm:text-4xl font-black text-white leading-tight drop-shadow-md">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-white leading-tight drop-shadow-md font-heading">
                     {trip.title}
                   </h1>
                 </div>
@@ -418,48 +610,47 @@ const TravelBuddyDetails = () => {
                 <div className="flex items-center justify-between flex-wrap gap-3 mb-4 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="bg-[#7C3AED]/10 border border-[#7C3AED]/15 text-[#7C3AED] text-[10px] font-black px-2.5 py-1 rounded-full">
-                      {trip.category}
+                      {trip.category || "Adventure"}
                     </span>
-                    {trip.isPrivate ?
-                    <span className="bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3 text-purple-600" /> Approval Required
-                      </span> :
 
-                    <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
-                        <Globe className="w-3 h-3 text-emerald-600" /> Open Group
-                      </span>}
-
-                    {trip.status === "cancelled" &&
-                    <span
-                    className="text-xs font-medium px-2.5 py-1 rounded-full bg-rose-100 text-rose-700"
-                    role="status">
-
-                        Cancelled by host
-                      </span>}
-
-                    {trip.lifecycleStatus && trip.status !== "cancelled" &&
-                    <span
-                    role="status"
-                    className={`text-xs font-medium capitalize px-2.5 py-1 rounded-full ${
-                    trip.lifecycleStatus === "active" ?
-                    "bg-emerald-100 text-emerald-700" :
-                    trip.lifecycleStatus === "upcoming" ?
-                    "bg-blue-100 text-blue-700" :
-                    trip.lifecycleStatus === "completed" ?
-                    "bg-slate-100 text-slate-500" :
-                    "bg-rose-100 text-rose-700"
-                    }`}>
-
-                        {trip.lifecycleStatus}
-                      </span>}
-
+                    {isCancelled ? (
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-rose-100 text-rose-700" role="status">
+                        Trip Cancelled
+                      </span>
+                    ) : isOngoing ? (
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1.5" role="status">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" /> Journey in Progress
+                      </span>
+                    ) : isCompleted ? (
+                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-600" role="status">
+                        Journey Complete
+                      </span>
+                    ) : (
+                      <>
+                        {trip.isPrivate ? (
+                          <span className="bg-purple-50 border border-purple-200 text-purple-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                            <ShieldCheck className="w-3 h-3 text-purple-600" /> Approval Required
+                          </span>
+                        ) : (
+                          <span className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-black px-2.5 py-1 rounded-full inline-flex items-center gap-1">
+                            <Globe className="w-3 h-3 text-emerald-600" /> Open Group
+                          </span>
+                        )}
+                        <span className="text-xs font-bold text-brand-700 bg-brand-50 border border-brand-200 px-2.5 py-1 rounded-full">
+                          {lifecycle.status}
+                        </span>
+                      </>
+                    )}
                   </div>
-                  <span
-                  className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-xl"
-                  aria-live="polite">
 
-                    {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
-                  </span>
+                  {isUpcoming && (
+                    <span
+                      className="text-xs font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-xl"
+                      aria-live="polite"
+                    >
+                      {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
+                    </span>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 mb-4">
@@ -513,121 +704,131 @@ const TravelBuddyDetails = () => {
                   </p>
                 </div>
 
-                {}
-                {trip.tags && trip.tags.length > 0 &&
-                <div className="mt-4 flex flex-wrap gap-2">
-                    {trip.tags?.map((tag) =>
-                  <span
-                  key={tag}
-                  className="bg-[#EEEDFE] text-[#534AB7] rounded-full px-3 py-1 text-[13px] lowercase">
-
+                {trip.tags && trip.tags.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {trip.tags?.map((tag) => (
+                      <span
+                        key={tag}
+                        className="bg-[#EEEDFE] text-[#534AB7] rounded-full px-3 py-1 text-[13px] lowercase"
+                      >
                         #{tag}
                       </span>
-                  )}
-                  </div>}
-
+                    ))}
+                  </div>
+                )}
               </div>
             </motion.div>
 
-            {}
+            {/* Group Chat Card */}
             <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4">
-
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4"
+            >
               <h3 className="text-sm font-medium text-[#1E293B] flex items-center gap-2 border-b border-slate-100 pb-3">
                 <MessageSquare className="w-4 h-4 text-[#7C3AED]" /> Group Chat
               </h3>
 
-              {showChat ?
-              <div className="bg-[#FAFAFA] p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              {showChat ? (
+                <div className="bg-[#FAFAFA] p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
-                    <h4 className="text-sm font-black text-emerald-600 flex items-center gap-1.5">
-                      <UserCheck className="w-4 h-4" /> You're in!
+                    <h4 className="text-sm font-black text-[#1E293B] flex items-center gap-1.5">
+                      <UserCheck className="w-4 h-4 text-emerald-600" /> Group Chat
                     </h4>
                     <p className="text-xs text-slate-500 font-medium mt-1">
-                      You have access to group chat. Coordinate plans, meetups, and updates.
+                      Coordinate plans, updates and check-ins with your travel companions.
                     </p>
                   </div>
-                  <div className="shrink-0 flex items-center gap-2">
-                    {!isHost &&
-                  <button
-                  onClick={() => setShowLeaveModal(true)}
-                  className="px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-[10px] font-black transition-all border border-rose-200">
-
+                  <div className="shrink-0 flex flex-wrap sm:flex-nowrap items-stretch sm:items-center gap-2">
+                    {!isHost && isUpcoming && (
+                      <button
+                        onClick={() => setShowLeaveModal(true)}
+                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-[10px] font-black transition-all border border-rose-200 text-center"
+                      >
                         Leave Group
-                      </button>}
-
+                      </button>
+                    )}
                     <button
-                  onClick={() => handleOpenJourneyWorkspace(false)}
-                  className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 rounded-xl text-xs font-bold transition-all shadow-sm border border-indigo-200 flex items-center gap-1.5">
-
-                      <Globe className="w-3.5 h-3.5" /> Open Journey Hub
+                      onClick={() => handleOpenJourneyWorkspace(false)}
+                      className="flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-xl text-xs font-bold transition-all shadow-sm border border-brand-200 flex items-center justify-center gap-1.5"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" /> Open Journey Hub
                     </button>
                     <button
-                  onClick={() => handleOpenJourneyWorkspace(true)}
-                  className="px-4 py-2 bg-[#7C3AED] hover:bg-[#7c3aed] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center gap-1.5">
-
-                      <MessageSquare className="w-3.5 h-3.5" /> Open Chat
+                      onClick={() => handleOpenJourneyWorkspace(true)}
+                      className="w-full sm:w-auto px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" /> Open Group Chat
                     </button>
                   </div>
-                </div> :
-              isPending ?
-              <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
+                </div>
+              ) : isPending ? (
+                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
                   <Clock className="w-7 h-7 text-amber-500 mx-auto" />
                   <h4 className="text-sm font-black text-[#1E293B]">
-                    Request pending
+                    Join request pending
                   </h4>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    You'll get access to group chat after approval.
+                    You'll get access after the host approves your request.
                   </p>
-                </div> :
-
-              <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
+                </div>
+              ) : isOngoing ? (
+                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
                   <Lock className="w-7 h-7 text-slate-400 mx-auto" />
                   <h4 className="text-sm font-black text-[#1E293B]">
                     Group chat is private
                   </h4>
                   <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    You'll get access after the host approves your join request.
+                    This journey is in progress. Group chat is exclusive to active members.
                   </p>
-                </div>}
+                </div>
+              ) : (
+                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
+                  <Lock className="w-7 h-7 text-slate-400 mx-auto" />
+                  <h4 className="text-sm font-black text-[#1E293B]">
+                    Group chat is private
+                  </h4>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+                    Join this journey to access the group chat.
+                  </p>
+                </div>
+              )}
 
-
-              {trip.status === "cancelled" && trip.cancellationReason &&
-              <div className="p-4 sm:p-5 bg-rose-50 border-t border-rose-100 text-rose-700 text-xs font-semibold">
+              {isCancelled && trip.cancellationReason && (
+                <div className="p-4 sm:p-5 bg-rose-50 border-t border-rose-100 text-rose-700 text-xs font-semibold rounded-xl">
                   <span className="font-black text-[10px] block mb-1">
                     Reason for Cancellation
                   </span>
                   "{trip.cancellationReason}"
-                </div>}
-
+                </div>
+              )}
             </motion.div>
           </div>
 
-          {}
+          {/* Right Column */}
           <div className="lg:col-span-4 space-y-4">
-            {}
+            {/* Host Profile Card */}
             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
               <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider border-b border-slate-100 pb-2 flex items-center gap-1.5">
-                <Award className="w-4 h-4 text-[#7C3AED]" /> Host
+                <Award className="w-4 h-4 text-[#7C3AED]" /> Journey Host
               </h3>
 
               <div className="flex items-center gap-3">
                 <img
-                onClick={() => navigate(`/profile/${trip.host?._id}`)}
-                src={getAvatar(trip.host)}
-                alt={trip.host?.name}
-                className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm cursor-pointer hover:opacity-80 transition-opacity" />
+                  onClick={() => navigate(`/profile/${trip.host?._id}`)}
+                  src={getAvatar(trip.host)}
+                  alt={trip.host?.name}
+                  className="w-12 h-12 rounded-xl object-cover border border-slate-100 shadow-sm cursor-pointer hover:opacity-80 transition-opacity"
+                />
 
                 <div className="min-w-0 flex-1">
                   <h4
-                  onClick={() => navigate(`/profile/${trip.host?._id}`)}
-                  className="text-sm font-black text-[#1E293B] truncate cursor-pointer hover:text-[#7C3AED] transition-colors">
-
+                    onClick={() => navigate(`/profile/${trip.host?._id}`)}
+                    className="text-sm font-bold text-[#1E293B] truncate cursor-pointer hover:text-[#7C3AED] transition-colors font-heading"
+                  >
                     {trip.host?.name || "Travel Host"}
                   </h4>
-                  <span className="text-[10px] font-bold text-slate-400 capitalize block">
+                  <span className="text-[10px] font-semibold text-slate-400 capitalize block font-sans">
                     {trip.host?.type || "Verified Member"}
                   </span>
                 </div>
@@ -662,136 +863,156 @@ const TravelBuddyDetails = () => {
               </div>
 
               <button
-              onClick={() => navigate(`/profile/${trip.host?._id}`)}
-              className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all border border-slate-200/60 flex items-center justify-center gap-1 mt-1">
-
+                onClick={() => navigate(`/profile/${trip.host?._id}`)}
+                className="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl transition-all border border-slate-200/60 flex items-center justify-center gap-1 mt-1"
+              >
                 View Profile
               </button>
             </div>
 
-            {}
-            {!isHost &&
-            <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+            {/* Participation / Join Status Card (Non-Host) */}
+            {!isHost && (
+              <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                   <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    Join this trip
+                    {isMember ? "Your Status" : "Join this trip"}
                   </h3>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
-                    {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
-                  </span>
+                  {isUpcoming && !isMember && (
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-100">
+                      {slotsOpen > 0 ? `${slotsOpen} ${slotsOpen === 1 ? "spot" : "spots"} remaining` : "Group full"}
+                    </span>
+                  )}
                 </div>
 
-                {isCompanion || isApproved ?
-              <div className="flex items-center justify-between bg-slate-50 p-2.5 rounded-xl border border-slate-200/60">
-                    <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      <span className="text-xs font-bold text-slate-700">Member Status</span>
+                {isOngoing ? (
+                  <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse mt-1 shrink-0" />
+                    <div>
+                      <span className="font-extrabold text-xs block text-emerald-900">Journey in Progress</span>
+                      <span className="text-[11px] text-emerald-700/90 leading-tight block mt-0.5">
+                        This journey has started and is no longer accepting new travelers.
+                      </span>
                     </div>
-                    <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
-                      Joined ✓
+                  </div>
+                ) : isCompleted || isCancelled ? (
+                  <div className="bg-slate-50 border border-slate-200 text-slate-600 p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span>
+                      {isCancelled ? "This journey was cancelled." : "This journey has been completed."}
                     </span>
-                  </div> :
-              isPending ?
-              <div className="bg-amber-50 border border-amber-100 text-amber-800 p-3 rounded-xl text-xs font-semibold space-y-1">
-                    <div className="flex items-center gap-1.5 font-bold text-amber-900">
-                      <Clock className="w-4 h-4 text-amber-600" /> Request pending
+                  </div>
+                ) : isMember ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between bg-emerald-50/80 p-3 rounded-xl border border-emerald-200/80">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span className="text-xs font-bold text-emerald-900">
+                          {myStandardRole === "Co-Leader" ? "Co-Leader" : "Active Member"}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-extrabold text-emerald-700 bg-white px-2.5 py-0.5 rounded-full border border-emerald-200">
+                        Joined ✓
+                      </span>
                     </div>
-                    <p className="text-[11px] text-amber-700">
-                      You'll get access to group chat after approval.
+                    <p className="text-xs text-slate-500 font-medium px-1">
+                      You're a member of this journey.
                     </p>
-                  </div> :
-              trip.lifecycleStatus === "completed" ||
-              trip.lifecycleStatus === "cancelled" ?
-              <div className="bg-slate-50 border border-slate-100 text-slate-500 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" />
-                    <span>
-                      This group is no longer active and cannot be joined.
-                    </span>
-                  </div> :
-              trip.status === "full" || slotsOpen <= 0 ?
-              <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Group Full. This trip is no longer accepting new members.
-                    </span>
-                  </div> :
-              trip.lifecycleStatus === "active" && trip.allowJoinAfterStart === false ?
-              <div className="bg-amber-50 border border-amber-100 text-amber-800 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-                    <span>
-                      Joining Closed. The host has closed joining for this active trip.
-                    </span>
-                  </div> :
-              isRejected ?
-              <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
-                    <Lock className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" />
-                    <span>Your join request was declined by the host.</span>
-                  </div> :
-
-              <form onSubmit={handleSendRequest} className="space-y-3">
-                    {trip.lifecycleStatus === "active" &&
-                <div className="bg-amber-50/80 border border-amber-200/80 p-3.5 rounded-xl text-amber-900 text-xs font-medium space-y-1">
-                        <div className="font-bold flex items-center gap-1.5 text-amber-900">
-                          <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                          Trip already in progress
-                        </div>
-                        <p className="text-amber-800 text-[11px] leading-relaxed">
-                          This journey has started. If approved, you'll be joining an active group.
-                        </p>
-                      </div>}
-
+                  </div>
+                ) : isPending ? (
+                  <div className="bg-amber-50/80 border border-amber-200/80 p-3.5 rounded-xl space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1.5 font-bold text-xs text-amber-900">
+                        <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span>Request Pending ✓</span>
+                      </div>
+                      <span className="text-[10px] font-extrabold text-amber-700 bg-white px-2.5 py-0.5 rounded-full border border-amber-200">
+                        Pending
+                      </span>
+                    </div>
+                    <p className="text-xs text-amber-800/90 leading-relaxed font-medium">
+                      Your request is waiting for the host's approval.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowCancelJoinModal(true)}
+                      disabled={cancellingRequest}
+                      className="w-full py-2 bg-white hover:bg-rose-50 text-rose-600 border border-rose-200 hover:border-rose-300 font-bold text-xs rounded-xl transition-all shadow-xs flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      {cancellingRequest ? "Cancelling..." : "Cancel Request"}
+                    </button>
+                  </div>
+                ) : slotsOpen <= 0 ? (
+                  <div className="bg-rose-50 border border-rose-100 text-rose-700 p-3 rounded-xl text-xs font-semibold flex items-start gap-2">
+                    <Lock className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                    <span>Group Full. This trip is no longer accepting new members.</span>
+                  </div>
+                ) : (
+                  <form onSubmit={handleSendRequest} className="space-y-3">
+                    {isRejected && (
+                      <div className="p-2.5 bg-rose-50 border border-rose-100 rounded-xl text-[11px] text-rose-700 font-medium flex items-center gap-2">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <span>Your previous request was declined. You can submit a new introduction below.</span>
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <label className="text-xs font-bold text-slate-700 block">
                         Introduce yourself:
                       </label>
                       <textarea
-                  placeholder="Describe your travel style, why you want to join..."
-                  value={requestMessage}
-                  onChange={(e) => setRequestMessage(e.target.value)}
-                  className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all resize-none h-20 shadow-inner" />
-
+                        placeholder="Describe your travel style, why you want to join..."
+                        value={requestMessage}
+                        onChange={(e) => setRequestMessage(e.target.value)}
+                        disabled={submittingRequest}
+                        className="w-full bg-[#FAFAFA] border border-slate-200 rounded-xl p-3 text-slate-800 text-xs outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/10 transition-all resize-none h-20 shadow-inner disabled:opacity-60"
+                      />
                     </div>
                     <button
-                type="submit"
-                disabled={submittingRequest}
-                className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-sm">
-
+                      type="submit"
+                      disabled={submittingRequest || !user}
+                      className="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 shadow-sm"
+                    >
                       <UserPlus className="w-4 h-4" />{" "}
-                      {submittingRequest ?
-                  "Submitting..." :
-                  trip.lifecycleStatus === "active" ?
-                  "Request to Join Active Trip" :
-                  "Request to Join"}
+                      {submittingRequest ? "Submitting..." : "Request to Join"}
                     </button>
-                  </form>}
+                    {overlapConflict.hasConflict && (
+                      <button
+                        type="button"
+                        onClick={() => setIsConflictModalOpen(true)}
+                        className="text-[11px] font-bold text-amber-700 hover:text-amber-800 hover:underline flex items-center justify-center gap-1 mt-1.5 w-full text-center"
+                      >
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        Schedule conflict note — View details
+                      </button>
+                    )}
+                  </form>
+                )}
+              </div>
+            )}
 
-              </div>}
-
-
-            {}
-            {(isHost || myRole === "cohost") &&
-            <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
+            {/* Pending Requests for Host & Co-Leaders (Upcoming Only) */}
+            {(isHost || myStandardRole === "Co-Leader") && isUpcoming && (
+              <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
                 <h3 className="text-[10px] font-black text-slate-500 border-b border-slate-100 pb-2">
                   Pending Requests ({pendingRequests.length})
                 </h3>
 
                 <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar">
-                  {pendingRequests.length === 0 ?
-                <p className="text-xs text-slate-400 font-semibold py-3 text-center">
+                  {pendingRequests.length === 0 ? (
+                    <p className="text-xs text-slate-400 font-semibold py-3 text-center">
                       No pending requests.
-                    </p> :
-
-                pendingRequests.map((req) =>
-                <div
-                key={req._id}
-                className="bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 space-y-2">
-
+                    </p>
+                  ) : (
+                    pendingRequests.map((req) => (
+                      <div
+                        key={req._id}
+                        className="bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 space-y-2"
+                      >
                         <div className="flex items-center gap-2">
                           <img
-                    src={getAvatar(req.userId)}
-                    alt={req.userId?.name}
-                    className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm" />
-
+                            src={getAvatar(req.userId)}
+                            alt={req.userId?.name}
+                            className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm"
+                          />
                           <div className="min-w-0">
                             <span className="text-xs font-black text-[#1E293B] block truncate">
                               {req.userId?.name || "Traveler"}
@@ -801,172 +1022,199 @@ const TravelBuddyDetails = () => {
                             </span>
                           </div>
                         </div>
-                        {req.message &&
-                  <p className="text-[11px] text-slate-500 italic bg-white border border-slate-100 p-2 rounded-lg leading-relaxed">
+                        {req.message && (
+                          <p className="text-[11px] text-slate-500 italic bg-white border border-slate-100 p-2 rounded-lg leading-relaxed">
                             "{req.message}"
-                          </p>}
-
+                          </p>
+                        )}
                         <div className="flex gap-1.5 pt-1">
                           <button
-                    onClick={() =>
-                    handleManageRequest(req._id, "Approved")}
-
-                    disabled={trip.status === "cancelled"}
-                    className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all ${trip.status === "cancelled" ? "bg-slate-200 text-slate-400 cursor-not-allowed" : "bg-emerald-600 hover:bg-emerald-700 text-white"}`}>
-
+                            onClick={() => handleManageRequest(req._id, "Approved")}
+                            disabled={isCancelled}
+                            className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all ${
+                              isCancelled
+                                ? "bg-slate-200 text-slate-400 cursor-not-allowed"
+                                : "bg-emerald-600 hover:bg-emerald-700 text-white"
+                            }`}
+                          >
                             Approve
                           </button>
                           <button
-                    onClick={() =>
-                    handleManageRequest(req._id, "Rejected")}
-
-                    disabled={trip.status === "cancelled"}
-                    className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all border ${trip.status === "cancelled" ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed" : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"}`}>
-
+                            onClick={() => handleManageRequest(req._id, "Rejected")}
+                            disabled={isCancelled}
+                            className={`flex-1 py-1.5 font-extrabold text-[9px] rounded-lg transition-all border ${
+                              isCancelled
+                                ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
+                                : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200"
+                            }`}
+                          >
                             Decline
                           </button>
                         </div>
                       </div>
-                )}
-
+                    ))
+                  )}
                 </div>
-              </div>}
+              </div>
+            )}
 
-
-            {}
+            {/* Standardized Members List Card */}
             <div className="bg-white border border-slate-100 p-4 rounded-2xl shadow-sm space-y-3">
               <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                 <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                   Members ({memberCount})
                 </h3>
-                <span className="text-[10px] font-bold text-slate-400">
-                  {maxMembers - memberCount > 0 ? `${maxMembers - memberCount} spots left` : "Full"}
-                </span>
+                {isUpcoming && (
+                  <span className="text-[10px] font-bold text-slate-400">
+                    {slotsOpen > 0 ? `${slotsOpen} spots left` : "Full"}
+                  </span>
+                )}
               </div>
 
-              <div className="space-y-3 max-h-[288px] overflow-y-auto custom-scrollbar pr-2 pb-2">
-                {trip.members?.map((memberObj) => {
+              <div className="space-y-3 max-h-[320px] overflow-y-auto custom-scrollbar pr-1 pb-1">
+                {normalizedMembers.map((memberObj) => {
                   const mUser = memberObj.user || {};
-                  if (!mUser._id) return null;
-                  const mId = mUser._id.toString();
-                  const isTargetHost = memberObj.role === "host";
+                  if (!mUser._id && !mUser.id) return null;
+                  const mId = (mUser._id || mUser.id).toString();
+                  const isTargetHost = memberObj.standardRole === "Host";
                   const isMe = mId === currentUserId;
                   const canManage =
-                  (myRole === "host" || myRole === "cohost") &&
-                  !isMe &&
-                  !isTargetHost;
+                    (isHost || myStandardRole === "Co-Leader") &&
+                    !isMe &&
+                    !isTargetHost;
 
                   return (
                     <div
-                    key={mId}
-                    className="flex items-center justify-between bg-[#FAFAFA] p-3 rounded-xl border border-slate-100 relative group">
-
-                      <div className="flex items-center gap-3">
-                        <img
-                        onClick={() => navigate(`/profile/${mId}`)}
-                        src={getAvatar(mUser)}
-                        alt={mUser.name}
-                        className="w-9 h-9 rounded-lg object-cover border border-slate-100 shadow-sm cursor-pointer" />
-
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-1">
-                            <h4
+                      key={mId}
+                      className="bg-[#FAFAFA] dark:bg-slate-800/60 p-3 rounded-2xl border border-slate-100 dark:border-slate-700/60 transition-all flex flex-col justify-between"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <img
                             onClick={() => navigate(`/profile/${mId}`)}
-                            className="text-xs font-bold text-[#1E293B] leading-tight truncate cursor-pointer hover:text-brand-600">
+                            src={getAvatar(mUser)}
+                            alt={mUser.name}
+                            className="w-9 h-9 rounded-xl object-cover border border-slate-100 dark:border-slate-700 shadow-xs cursor-pointer shrink-0"
+                          />
 
-                              {mUser.name || "User"}
-                            </h4>
-                            <span
-                            className={`text-[8px] font-black px-1.5 py-0.5 rounded ${memberObj.role === "host" ? "bg-brand-50 text-brand-600" : memberObj.role === "cohost" ? "bg-emerald-100 text-emerald-600" : "bg-slate-100 text-slate-500"}`}>
-
-                              {memberObj.role}
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <h4
+                                onClick={() => navigate(`/profile/${mId}`)}
+                                className="text-xs font-bold text-[#1E293B] dark:text-slate-100 leading-tight truncate cursor-pointer hover:text-[#7C3AED]"
+                              >
+                                {mUser.name || "User"}
+                              </h4>
+                              {memberObj.standardRole === "Host" ? (
+                                <span className="bg-amber-50 border border-amber-200 text-amber-700 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                  <Award className="w-2.5 h-2.5 text-amber-500" /> Host
+                                </span>
+                              ) : memberObj.standardRole === "Co-Leader" ? (
+                                <span className="bg-purple-50 border border-purple-200 text-purple-700 text-[8px] font-black px-1.5 py-0.5 rounded flex items-center gap-0.5">
+                                  <ShieldAlert className="w-2.5 h-2.5 text-purple-500" /> Co-Leader
+                                </span>
+                              ) : (
+                                <span className="bg-slate-100 dark:bg-slate-700 text-slate-500 dark:text-slate-300 text-[8px] font-black px-1.5 py-0.5 rounded">
+                                  Member
+                                </span>
+                              )}
+                            </div>
+                            <span className="text-[9px] text-slate-500 dark:text-slate-400 font-semibold block">
+                              Rating {mUser.rating || "4.5"}
                             </span>
                           </div>
-                          <span className="text-[9px] text-slate-500 font-semibold">
-                            Rating {mUser.rating || "4.5"}
-                          </span>
                         </div>
-                      </div>
 
-                      {canManage &&
-                      <div className="relative">
+                        {canManage && (
                           <button
-                        onClick={() =>
-                        setOpenDropdownId(
-                        openDropdownId === mId ? null : mId
-                        )}
-
-                        className="p-1.5 text-slate-400 hover:text-slate-800 rounded-lg hover:bg-slate-200 transition-colors">
-
+                            onClick={() =>
+                              setOpenDropdownId(
+                                openDropdownId === mId ? null : mId
+                              )
+                            }
+                            className="p-1.5 text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors shrink-0"
+                            title="Manage Member"
+                          >
                             <MoreVertical className="w-4 h-4" />
                           </button>
+                        )}
+                      </div>
 
-                          {openDropdownId === mId &&
-                        <div className="absolute right-0 top-full mt-1 w-40 bg-white/90 backdrop-blur-xl border border-slate-200 rounded-xl shadow-lg z-50 overflow-hidden">
-                              <button
-                          onClick={() => {
-                            setManageAction({
-                              type: "warn",
-                              memberId: mId,
-                              memberName: mUser.name
-                            });
-                            setOpenDropdownId(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-amber-600 hover:bg-slate-50">
-
-                                Send Warning
-                              </button>
-                              {myRole === "host" &&
+                      {canManage && openDropdownId === mId && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-200/80 dark:border-slate-700 space-y-1 animate-fade-in text-[11px] font-semibold">
+                          {/* Send Warning (Always available to Host & Co-Leader) */}
                           <button
-                          onClick={() => {
-                            setManageAction({
-                              type: "promote",
-                              memberId: mId,
-                              memberName: mUser.name
-                            });
-                            setOpenDropdownId(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-brand-600 hover:bg-slate-50">
+                            onClick={() => {
+                              setManageAction({
+                                type: "warn",
+                                memberId: mId,
+                                memberName: mUser.name
+                              });
+                              setOpenDropdownId(null);
+                            }}
+                            className="w-full text-left px-3 py-1.5 rounded-lg text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 flex items-center gap-2 transition-colors font-bold"
+                          >
+                            <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                            <span>Send Warning</span>
+                          </button>
 
-                                  {memberObj.role === "cohost" ?
-                            "Demote to Member" :
-                            "Make Co-host"}
-                                </button>}
+                          {/* Promote/Demote Co-Leader (Host only) */}
+                          {isHost && (
+                            <button
+                              onClick={() => {
+                                setManageAction({
+                                  type: "promote",
+                                  memberId: mId,
+                                  memberName: mUser.name
+                                });
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-1.5 rounded-lg text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 flex items-center gap-2 transition-colors"
+                            >
+                              <Award className="w-3.5 h-3.5 text-[#7C3AED] shrink-0" />
+                              <span>{memberObj.standardRole === "Co-Leader" ? "Demote to Member" : "Make Co-Leader"}</span>
+                            </button>
+                          )}
 
-                              <button
-                          onClick={() => {
-                            setManageAction({
-                              type: "remove",
-                              memberId: mId,
-                              memberName: mUser.name
-                            });
-                            setOpenDropdownId(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-semibold text-rose-500 hover:bg-slate-50 border-t border-slate-100">
+                          {/* Remove Member (Host only, Upcoming only — Roster locked on Ongoing) */}
+                          {isHost && isUpcoming && (
+                            <button
+                              onClick={() => {
+                                setManageAction({
+                                  type: "remove",
+                                  memberId: mId,
+                                  memberName: mUser.name
+                                });
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-1.5 rounded-lg text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-900/40 flex items-center gap-2 transition-colors font-bold"
+                            >
+                              <ShieldAlert className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                              <span>Remove Member</span>
+                            </button>
+                          )}
 
-                                Remove Member
-                              </button>
-                              {myRole === "host" &&
-                          <button
-                          onClick={() => {
-                            setManageAction({
-                              type: "ban",
-                              memberId: mId,
-                              memberName: mUser.name
-                            });
-                            setOpenDropdownId(null);
-                          }}
-                          className="w-full text-left px-4 py-2 text-xs font-black text-rose-600 hover:bg-rose-50">
-
-                                  Ban User
-                                </button>}
-
-                            </div>}
-
-                        </div>}
-
-                    </div>);
-
+                          {/* Ban User (Host only) */}
+                          {isHost && (
+                            <button
+                              onClick={() => {
+                                setManageAction({
+                                  type: "ban",
+                                  memberId: mId,
+                                  memberName: mUser.name
+                                });
+                                setOpenDropdownId(null);
+                              }}
+                              className="w-full text-left px-3 py-1.5 rounded-lg text-rose-700 dark:text-rose-300 bg-rose-100 dark:bg-rose-950/50 hover:bg-rose-200 dark:hover:bg-rose-900/60 flex items-center gap-2 transition-colors font-black"
+                            >
+                              <ShieldAlert className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                              <span>Ban User</span>
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
                 })}
               </div>
             </div>
@@ -974,8 +1222,25 @@ const TravelBuddyDetails = () => {
         </div>
       </div>
 
-      {}
-      {manageAction &&
+      {/* Manage Action Modals */}
+      {manageAction?.type === "warn" && (
+        <SendWarningModal
+          isOpen={true}
+          targetMember={{
+            userId: manageAction.memberId,
+            name: manageAction.memberName
+          }}
+          journeyId={id}
+          isBuddyTrip={true}
+          onClose={() => setManageAction(null)}
+          onSuccess={() => {
+            setManageAction(null);
+            fetchTripDetails();
+          }}
+        />
+      )}
+
+      {manageAction && manageAction.type !== "warn" &&
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
@@ -986,9 +1251,7 @@ const TravelBuddyDetails = () => {
               <AlertTriangle
             className={`w-5 h-5 ${manageAction.type === "remove" || manageAction.type === "ban" ? "text-rose-500" : "text-amber-500"}`} />
 
-              {manageAction.type === "warn" ?
-            "Send Warning" :
-            manageAction.type === "ban" ?
+              {manageAction.type === "ban" ?
             "Ban User" :
             manageAction.type === "remove" ?
             "Remove Member" :
@@ -996,8 +1259,6 @@ const TravelBuddyDetails = () => {
             </h3>
 
             <p className="text-xs font-semibold text-slate-500 mb-4">
-              {manageAction.type === "warn" &&
-            `Send a warning to ${manageAction.memberName}.`}
               {manageAction.type === "remove" &&
             `Are you sure you want to remove ${manageAction.memberName}? They will lose access to the group chat.`}
               {manageAction.type === "ban" &&
@@ -1006,20 +1267,10 @@ const TravelBuddyDetails = () => {
             `Change the role of ${manageAction.memberName}.`}
             </p>
 
-            {manageAction.type === "warn" &&
-          <textarea
-          className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm font-semibold text-[#1E293B] outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 placeholder:text-slate-400 resize-none h-24 mb-4"
-          placeholder="Warning message..."
-          value={warningMsg}
-          onChange={(e) => setWarningMsg(e.target.value)} />}
-
-
-
             <div className="flex justify-end gap-3 mt-4">
               <button
             onClick={() => {
               setManageAction(null);
-              setWarningMsg("");
             }}
             className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-sm hover:bg-slate-200">
 
@@ -1027,7 +1278,7 @@ const TravelBuddyDetails = () => {
               </button>
               <button
             onClick={handleManageMember}
-            className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "warn" ? "bg-amber-500 hover:bg-amber-600" : manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-brand-600 hover:bg-brand-700"}`}>
+            className={`px-4 py-2 text-white font-bold rounded-xl text-sm shadow-md transition-all active:scale-95 ${manageAction.type === "remove" || manageAction.type === "ban" ? "bg-rose-500 hover:bg-rose-600" : "bg-brand-600 hover:bg-brand-700"}`}>
 
                 Confirm
               </button>
@@ -1097,41 +1348,36 @@ const TravelBuddyDetails = () => {
         </div>}
 
 
-      {showCancelJoinModal &&
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+      {showCancelJoinModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-2xl relative">
-            <h3 className="text-xl font-bold text-[#1E293B] mb-2">
-              Cancel your join request?
+            <h3 className="text-lg font-black text-[#1E293B] mb-2">
+              Cancel Join Request?
             </h3>
-            <div className="flex justify-end gap-3 mt-6">
+            <p className="text-xs font-semibold text-slate-500 leading-relaxed mb-6">
+              Are you sure you want to cancel your join request for this trip?
+            </p>
+            <div className="flex justify-end gap-3">
               <button
-            onClick={() => setShowCancelJoinModal(false)}
-            className="px-4 py-2 bg-slate-100 text-slate-600 font-medium rounded-lg text-sm hover:bg-slate-200 transition-colors">
-
-                Keep request
+                type="button"
+                disabled={cancellingRequest}
+                onClick={() => setShowCancelJoinModal(false)}
+                className="px-4 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors"
+              >
+                Keep Request
               </button>
               <button
-            onClick={async () => {
-              try {
-                await axios.post(
-                `/social/buddy/manage-request/${id}`,
-                { requestId: userRequest._id, status: "Cancelled" },
-                { withCredentials: true }
-                );
-                fetchTripDetails();
-                setShowCancelJoinModal(false);
-              } catch (e) {
-                setShowCancelJoinModal(false);
-                fetchTripDetails();
-              }
-            }}
-            className="px-4 py-2 bg-rose-500 hover:bg-rose-600 text-white font-medium rounded-lg text-sm shadow-md transition-all active:scale-95">
-
-                Cancel request
+                type="button"
+                disabled={cancellingRequest}
+                onClick={handleCancelJoinRequest}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl text-xs shadow-md transition-all active:scale-95 disabled:opacity-50"
+              >
+                {cancellingRequest ? "Cancelling..." : "Cancel Request"}
               </button>
             </div>
           </div>
-        </div>}
+        </div>
+      )}
 
 
       {showMembersModal &&
@@ -1191,6 +1437,15 @@ const TravelBuddyDetails = () => {
       targetId={trip._id}
       targetType="group"
       reportedUserId={trip.creator?._id || trip.creator} />}
+
+      <TripOverlapConflictModal
+        isOpen={isConflictModalOpen}
+        onClose={() => setIsConflictModalOpen(false)}
+        conflictType={overlapConflict.conflictType || "ACTIVE_JOURNEY_CONFLICT"}
+        conflictingTrip={overlapConflict.conflictingTrip}
+        currentTrip={trip}
+        customMessage={overlapConflict.message}
+      />
 
 
     </div>);

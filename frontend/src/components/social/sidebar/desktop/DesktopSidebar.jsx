@@ -11,10 +11,10 @@ const DesktopSidebar = () => {
   const { user } = useSidebar();
 
   const navItemClass = (isActive) =>
-    `relative flex items-center gap-3 py-3 transition-all duration-200 group w-full select-none text-sm font-semibold ${
+    `relative flex items-center gap-3 py-2.5 transition-all duration-200 group w-full select-none text-sm font-semibold ${
       isActive
-        ? "bg-brand-50 text-brand-700 border-l-4 border-brand-600 rounded-r-2xl rounded-l-none pl-3 pr-4 shadow-sm"
-        : "text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium hover:-translate-y-0.5 px-4 rounded-2xl"
+        ? "bg-brand-50 text-brand-700 border-l-4 border-brand-600 rounded-r-xl rounded-l-none pl-3 pr-3.5 shadow-xs"
+        : "text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-medium hover:-translate-y-0.5 px-3.5 rounded-xl"
     }`;
 
   const iconClass = (isActive) =>
@@ -23,24 +23,31 @@ const DesktopSidebar = () => {
     }`;
 
   return (
-    <div className="hidden lg:block w-64 shrink-0 h-screen sticky top-0 z-50">
-      <nav className="flex flex-col h-full bg-white border-r border-slate-100 shadow-sm py-6 px-4 justify-between transition-colors duration-300">
+    <div className="hidden lg:block w-[280px] shrink-0 h-screen sticky top-0 z-50">
+      <nav className="flex flex-col h-full bg-white border-r border-slate-150 shadow-xs py-5 px-3.5 justify-between transition-colors duration-300">
         
-        <DesktopNav />
-
-        <CreateDropdown />
-
-        <div className="flex flex-col gap-1 mt-auto pb-4">
-          <Link
-            to="/profile"
-            className={navItemClass(location.pathname === "/profile")}
-          >
-            <ICONS.User className={iconClass(location.pathname === "/profile")} />
-            Profile
-          </Link>
+        <div className="flex flex-col gap-3">
+          <DesktopNav />
+          <CreateDropdown />
         </div>
 
-        <div className="border-t border-slate-200 pt-5">
+        <div className="flex flex-col gap-1 mt-auto pt-3 pb-2">
+          {(() => {
+            const myId = user?._id || user?.id;
+            const isProfileActive = location.pathname === "/profile" || Boolean(myId && location.pathname === `/profile/${myId}`);
+            return (
+              <Link
+                to="/profile"
+                className={navItemClass(isProfileActive)}
+              >
+                <ICONS.User className={iconClass(isProfileActive)} />
+                Profile
+              </Link>
+            );
+          })()}
+        </div>
+
+        <div className="border-t border-slate-100 pt-3">
           {user ? (
             <ProfileMenu />
           ) : (

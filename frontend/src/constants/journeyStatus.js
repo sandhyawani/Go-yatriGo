@@ -6,8 +6,8 @@ export const JOURNEY_STATUS = {
     description: "Acclimatizing notes, checklists, and group budgets setup"
   },
   Upcoming: {
-    color: "bg-sky-50 text-sky-700 border-sky-200",
-    themeColor: "sky",
+    color: "bg-brand-50 text-brand-700 border-brand-200",
+    themeColor: "brand",
     label: "Confirmed Upcoming",
     description: "Itinerary confirmed. Preparing gear and countdown tracker"
   },

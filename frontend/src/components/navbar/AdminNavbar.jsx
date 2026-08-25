@@ -1,19 +1,7 @@
 import React, { Fragment, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Menu, Transition } from "@headlessui/react";
-import {
-Bell,
-ChevronDown,
-FileWarning,
-LogOut,
-Menu as MenuIcon,
-Plus,
-Search,
-Settings,
-ShieldCheck,
-User,
-UserPlus } from
-"lucide-react";
+import { ChevronDown, LogOut, Menu as MenuIcon, Search, Settings, ShieldCheck, User } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 
 const AdminNavbar = ({ onOpenMenu }) => {

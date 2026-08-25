@@ -15,9 +15,13 @@ MapPin,
 UserX } from
 "lucide-react";
 import { showToast } from "../../utils/showToast";
+import SosConfirmModal from "../../components/journey/SosConfirmModal";
 
 const EmergencyContacts = () => {
   const { user, updateUser } = useContext(AuthContext);
+  const [showSosModal, setShowSosModal] = useState(false);
+  const [sosLoading, setSosLoading] = useState(false);
+
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
@@ -140,7 +144,12 @@ const EmergencyContacts = () => {
     setIsAdding(true);
   };
 
-  const handleSOSToggle = async () => {
+  const handleSOSToggle = () => {
+    setShowSosModal(true);
+  };
+
+  const handleConfirmSOS = async () => {
+    setSosLoading(true);
     try {
       const res = await axios.post("/emergency/sos", {}, { withCredentials: true });
       if (res.data.success) {
@@ -149,19 +158,20 @@ const EmergencyContacts = () => {
           updateUser({ sosActive: res.data.sosActive });
         }
         if (res.data.sosActive) {
-          showToast.error(
-          "SOS Alert Activated! Emergency contacts have been notified.",
-          { icon: "🚨" }
-          );
+          showToast.success("SOS Alert Sent! Emergency contacts notified.");
         } else {
-          showToast.success("SOS Alert Deactivated.");
+          showToast.success("SOS Cancelled. Status updated to Safe.");
         }
+        setShowSosModal(false);
       }
     } catch (err) {
       showToast.error("Failed to update SOS status.");
       console.error(err);
+    } finally {
+      setSosLoading(false);
     }
   };
+
 
   return (
     <div className=" bg-slate-50 pt-14 md:pt-0 pb-20">
@@ -446,8 +456,18 @@ const EmergencyContacts = () => {
 
         </div>
       </div>
-    </div>);
 
+      {/* Redesigned Emergency SOS Confirmation Modal */}
+      <SosConfirmModal
+        isOpen={showSosModal}
+        isActivating={!sosActive}
+        onClose={() => setShowSosModal(false)}
+        onConfirm={handleConfirmSOS}
+        loading={sosLoading}
+      />
+    </div>
+  );
 };
+
 
 export default EmergencyContacts;

@@ -1,23 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-Sparkles,
-Heart,
-MessageCircle,
-Send,
-Users,
-Calendar,
-MapPin,
-Share2,
-Award,
-Clock,
-Lock,
-Loader2,
-Trophy,
-Compass,
-Flag,
-CheckCircle2,
-MessageSquare } from
-"lucide-react";
+import { Sparkles, Send, Users, Calendar, MapPin, Award, Clock, Lock, Trophy, Compass, Flag, CheckCircle2, MessageSquare } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axiosInstance from "../../api/axios";
 
@@ -156,7 +138,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
             </motion.div>
 
             <div className="space-y-2">
-              <h3 className="text-2xl font-black text-slate-800 dark:text-slate-100 tracking-tight font-heading">
+              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight font-heading">
                 {isCancelled ?
                 "Scrapbook Archived" :
                 "Your Journey Scrapbook"}
@@ -166,7 +148,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                 {lockedMessage || (
                 isCancelled ?
                 "This journey was cancelled, so the scrapbook archive is not active." :
-                "Once this trip is completed, your photos, memories, and journey highlights will come together in a beautiful retrospective page.")}
+                "Once this trip is completed, your photos, memories, and journey milestones will appear in the scrapbook archive.")}
               </p>
             </div>
 
@@ -259,8 +241,8 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     if (lowerTitle.includes("started") || lowerTitle.includes("active")) {
       return {
         icon: Compass,
-        bgColor: "bg-sky-100 dark:bg-sky-950/60 text-sky-600 dark:text-sky-400",
-        borderColor: "border-sky-200 dark:border-sky-800"
+        bgColor: "bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400",
+        borderColor: "border-brand-200 dark:border-brand-800"
       };
     }
     return {
@@ -275,7 +257,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     const len = name ? name.length : 0;
     const gradients = [
     "from-violet-500 to-fuchsia-500",
-    "from-sky-500 to-indigo-500",
+    "from-brand-500 to-brand-700",
     "from-rose-500 to-orange-500",
     "from-emerald-500 to-teal-500",
     "from-amber-500 to-yellow-500"];
@@ -290,32 +272,34 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     transition={{ duration: 0.4 }}
     className="space-y-6 pb-12 max-w-5xl mx-auto px-1">
 
-      {}
       <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 shadow-soft hover:shadow-hover transition-all duration-300 relative overflow-hidden">
-        {}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary-500/5 rounded-full blur-2xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary-50 dark:bg-primary-950/40 text-[10px] font-extrabold uppercase text-primary-600 dark:text-primary-400 border border-primary-100/50 dark:border-primary-800/40 mb-3">
-            <Sparkles className="w-3.5 h-3.5 text-primary-500 dark:text-primary-400 shrink-0" /> 
-            <span>AI Journey Retrospective</span>
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-800/40 mb-3">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" /> 
+            <span>Journey Complete</span>
           </div>
           
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 font-heading mb-3">
-            Reliving {journey.title}
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 font-heading mb-1">
+            {journey.title}
           </h2>
-          
-          <div className="relative border-l-4 border-primary-500/70 pl-4 py-1.5 my-3 bg-slate-50/60 dark:bg-slate-800/30 rounded-r-xl">
-            <span className="absolute -top-2 left-1 text-2xl text-primary-500/20 font-serif leading-none">“</span>
-            <p className="text-xs sm:text-sm font-medium text-slate-600 dark:text-slate-300 leading-relaxed font-body italic">
-              {memData?.aiSummary ||
-              journey.aiSummary ||
-              `Your collaborative journey to ${journey.destination} brought together incredible travelers sharing unforgettable moments.`}
-            </p>
-            <span className="absolute -bottom-6 right-2 text-2xl text-primary-500/20 font-serif leading-none">”</span>
-          </div>
 
-          {}
+          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            {journey.destination} • {(() => {
+              const d = journey.durationDays || memData?.durationDays;
+              if (d) return `${d} ${d === 1 ? "Day" : "Days"}`;
+              if (journey.startDate && journey.endDate) {
+                const days = Math.max(1, Math.ceil((new Date(journey.endDate) - new Date(journey.startDate)) / (1000 * 60 * 60 * 24)));
+                return `${days} ${days === 1 ? "Day" : "Days"}`;
+              }
+              return "Completed Trip";
+            })()} • {(() => {
+              const count = memData?.participantsCount ?? journey.members?.length ?? (journey.userId || journey.host ? 1 : 0);
+              return `${count} ${count === 1 ? "Traveler" : "Travelers"}`;
+            })()}
+          </p>
+
           <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
               <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
@@ -323,12 +307,28 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
               <Calendar className="w-3.5 h-3.5 text-violet-500 shrink-0" />
-              <span>{journey.durationDays || memData?.durationDays || 3} Days</span>
+              <span>
+                {(() => {
+                  const d = journey.durationDays || memData?.durationDays;
+                  if (d) return `${d} ${d === 1 ? "Day" : "Days"}`;
+                  if (journey.startDate && journey.endDate) {
+                    const days = Math.max(1, Math.ceil((new Date(journey.endDate) - new Date(journey.startDate)) / (1000 * 60 * 60 * 24)));
+                    return `${days} ${days === 1 ? "Day" : "Days"}`;
+                  }
+                  return "Completed Trip";
+                })()}
+              </span>
             </span>
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
               <Users className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>{memData?.participantsCount || journey.members?.length || 1} Travelers</span>
+              <span>
+                {(() => {
+                  const count = memData?.participantsCount ?? journey.members?.length ?? (journey.userId || journey.host ? 1 : 0);
+                  return `${count} ${count === 1 ? "Traveler" : "Travelers"}`;
+                })()}
+              </span>
             </span>
+
             <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
               <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>Completed Milestone</span>

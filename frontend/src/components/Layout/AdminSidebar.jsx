@@ -35,10 +35,10 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             <ShieldAlert className="h-4 w-4" />
           </span>
           <span>
-            <span className="block text-xs font-semibold uppercase tracking-wider text-brand-600">
+            <span className="block text-xs font-bold uppercase tracking-wider text-brand-600 font-heading">
               Go YatriGo
             </span>
-            <span className="block text-[15px] font-semibold tracking-tight text-slate-900">
+            <span className="block text-[15px] font-semibold tracking-tight text-slate-900 font-sans">
               Admin Console
             </span>
           </span>

@@ -47,13 +47,13 @@ const Layout = () => {
     );
   }
 
-  if (hasNavigation && !isChatPage) {
+  if (hasNavigation) {
     return (
       <SocialSidebar>
-        <div className="px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6">
+        <div className={isChatPage ? "w-full h-full p-0" : "px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6"}>
           <RouteTour />
         </div>
-        {!isBuddyDetailPage && <Footer />}
+        {!isBuddyDetailPage && !isChatPage && <Footer />}
       </SocialSidebar>
     );
   }

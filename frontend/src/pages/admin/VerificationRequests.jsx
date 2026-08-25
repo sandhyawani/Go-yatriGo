@@ -220,7 +220,7 @@ const VerificationRequests = () => {
           </div> :
         requests.length === 0 ?
         <div className="bg-white rounded-3xl border border-slate-200 p-16 text-center shadow-lg shadow-slate-200/50 max-w-2xl mx-auto mt-10">
-            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-cyan-50 text-brand-600 mb-6 border-8 border-cyan-50/50">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-brand-50 text-brand-600 mb-6 border-8 border-brand-50/50">
               <CheckCircle className="h-10 w-10" />
             </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">

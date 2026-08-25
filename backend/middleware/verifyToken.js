@@ -37,13 +37,31 @@ const protect = asyncHandler(async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, getJwtSecret());
+    const userId = decoded.id || decoded._id;
 
-    const user = await User.findById(decoded.id || decoded._id).select("-password");
+    const [user, session] = await Promise.all([
+    User.findById(userId),
+    Session.findOne({ token, user: userId, status: "active" }).select("_id")]
+    );
 
     if (!user) {
       return res.status(401).json({
         success: false,
         message: "User not found."
+      });
+    }
+
+    if (!session) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized. Session is no longer active."
+      });
+    }
+
+    if (user.isDeleted || user.isDeactivated) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authorized. Account is not active."
       });
     }
 
@@ -124,8 +142,12 @@ const optionalVerifyToken = asyncHandler(async (req, res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, getJwtSecret());
-      const user = await User.findById(decoded.id || decoded._id).select("-password");
-      if (user && !user.isSuspended) {
+      const userId = decoded.id || decoded._id;
+      const [user, session] = await Promise.all([
+      User.findById(userId),
+      Session.findOne({ token, user: userId, status: "active" }).select("_id")]
+      );
+      if (user && session && !user.isSuspended && !user.isDeleted && !user.isDeactivated) {
         req.user = user;
         req.token = token;
         markSessionActive(token);

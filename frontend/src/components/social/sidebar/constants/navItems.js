@@ -21,7 +21,7 @@ export const navItems = [
   },
   {
     label: "Journey Hub",
-    icon: ICONS.Navigation,
+    icon: ICONS.BookOpen,
     path: ROUTES.JOURNEYS,
     matchPrefix: true,
   },

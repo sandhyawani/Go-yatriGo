@@ -15,6 +15,11 @@ export const chatService = {
     return res.data;
   },
 
+  getDirectRoomId: async (targetUserId) => {
+    const data = await chatService.getDirectRoom(targetUserId);
+    return data?.room?._id || data?.room?.id || null;
+  },
+
   getRoomMessages: async (roomId, page, limit = 50) => {
     const res = await axios.get(
     `/chat/room/${roomId}/messages?page=${page}&limit=${limit}`,

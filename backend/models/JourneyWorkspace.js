@@ -37,7 +37,8 @@ const journeyWorkspaceSchema = new mongoose.Schema(
     "Notes",
     "Packing",
     "Emergency",
-    "Travel Tip"],
+    "Travel Tip",
+    "Shared Notes"],
 
     default: "Squad Notes",
     index: true

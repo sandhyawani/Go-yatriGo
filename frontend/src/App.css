@@ -17,9 +17,9 @@ body,
 }
 
 body {
-  font-family: "Poppins", sans-serif;
-  background: #f8f7ff;
-  color: #111827;
+  font-family: var(--font-body, "Inter", sans-serif);
+  background: #f8fafc;
+  color: #172033;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -30,7 +30,7 @@ h3,
 h4,
 h5,
 h6 {
-  color: #0b2727;
+  color: #172033;
 }
 
 img,

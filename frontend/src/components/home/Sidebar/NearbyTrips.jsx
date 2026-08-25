@@ -1,8 +1,9 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { MapPin } from "lucide-react";
 
 export const NearbyTrips = ({ nearbyTrips }) => {
+  const navigate = useNavigate();
   if (!nearbyTrips || nearbyTrips.length === 0) return null;
 
   return (
@@ -13,53 +14,64 @@ export const NearbyTrips = ({ nearbyTrips }) => {
         </h3>
         <Link
           to="/social/buddy"
-          className="text-[10px] font-bold text-slate-400 hover:text-[#6C4DF6] transition-colors"
+          className="text-[10px] font-bold text-slate-400 hover:text-[#7C3AED] transition-colors"
         >
           See All
         </Link>
       </div>
-      <div className="flex flex-col gap-3.5 max-h-[300px] overflow-y-auto pr-2 overflow-x-hidden scrollbar-none [&::-webkit-scrollbar]:hidden">
-        {nearbyTrips.map((trip) => (
-          <div
-            key={trip._id}
-            className="flex items-start gap-3 group cursor-pointer"
-            onClick={() => {
-              window.location.href = `/social/buddy/${trip._id}`;
-            }}
-          >
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#6C4DF6] flex items-center justify-center font-bold text-sm shrink-0">
-              {trip.destination
-                ? trip.destination.substring(0, 2).toUpperCase()
-                : "TR"}
-            </div>
-            <div className="min-w-0 flex-1">
-              <p
-                className="text-[12px] font-semibold text-slate-800 truncate"
-                title={trip.title}
-              >
-                {trip.title}
-              </p>
-              <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5 truncate">
-                <MapPin className="w-3 h-3 text-slate-300" />{" "}
-                {trip.destination}
-              </p>
-              <p className="text-[9px] font-semibold text-[#6C4DF6] mt-0.5">
-                {Math.max(0, (trip.maxMembers || trip.maxCompanions || 5) - (trip.members?.length || trip.companions?.length || 0))}{" "}
-                slots open
-              </p>
-            </div>
-            <Link
-              to={`/social/buddy/${trip._id}`}
-              className="text-[10px] font-bold text-[#6C4DF6] bg-[#6C4DF6]/10 hover:bg-[#6C4DF6] hover:text-white px-3 py-1.5 rounded-xl transition-colors shrink-0"
-              onClick={(e) => e.stopPropagation()}
+      <div className="flex flex-col gap-3.5 max-h-[300px] overflow-y-auto pr-2 overflow-x-hidden">
+        {nearbyTrips.map((trip) => {
+          const maxCap = trip.maxMembers || trip.maxCompanions || 0;
+          const currentCount = trip.members?.length || trip.companions?.length || 0;
+          const slotsOpen = maxCap > 0 ? Math.max(0, maxCap - currentCount) : null;
+
+          return (
+            <div
+              key={trip._id}
+              className="flex items-start gap-3 group cursor-pointer"
+              onClick={() => {
+                navigate(`/social/buddy/${trip._id}`);
+              }}
             >
-              Join
-            </Link>
-          </div>
-        ))}
+              <div className="w-9 h-9 rounded-xl bg-purple-50 text-[#7C3AED] flex items-center justify-center font-bold text-sm shrink-0">
+                {trip.destination
+                  ? trip.destination.substring(0, 2).toUpperCase()
+                  : "TR"}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p
+                  className="text-[12px] font-semibold text-slate-800 truncate"
+                  title={trip.title}
+                >
+                  {trip.title}
+                </p>
+                <p className="text-[10px] text-slate-400 font-medium flex items-center gap-1 mt-0.5 truncate">
+                  <MapPin className="w-3 h-3 text-slate-300" />{" "}
+                  {trip.destination}
+                </p>
+                {slotsOpen !== null && (
+                  <p className="text-[9px] font-semibold text-[#7C3AED] mt-0.5">
+                    {slotsOpen} {slotsOpen === 1 ? "slot" : "slots"} open
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                className="text-[10px] font-bold text-[#7C3AED] bg-[#7C3AED]/10 hover:bg-[#7C3AED] hover:text-white px-3 py-1.5 rounded-xl transition-colors shrink-0"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/social/buddy/${trip._id}`);
+                }}
+              >
+                Join
+              </button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
 
 export default NearbyTrips;
+

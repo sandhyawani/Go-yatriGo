@@ -29,7 +29,7 @@ export const EditPostModal = ({
       >
         <div className="flex justify-between items-center px-5 py-4 border-b border-slate-100 dark:border-slate-700">
           <h3 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-wider">
-            Edit Post
+            Edit Travel Memory
           </h3>
           <button
             onClick={() => {
@@ -56,7 +56,7 @@ export const EditPostModal = ({
                 })
               }
               rows="3"
-              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-[#6C4DF6] focus:ring-4 focus:ring-[#6C4DF6]/10 transition-all resize-none"
+              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all resize-none"
             />
           </div>
           <div className="space-y-1.5">
@@ -73,7 +73,7 @@ export const EditPostModal = ({
                   location: e.target.value,
                 })
               }
-              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-[#6C4DF6] focus:ring-4 focus:ring-[#6C4DF6]/10 transition-all"
+              className="w-full bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-2xl p-4 text-sm text-slate-700 dark:text-slate-300 outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all"
             />
           </div>
           <div className="pt-2 flex items-center justify-end gap-3">
@@ -90,7 +90,7 @@ export const EditPostModal = ({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-6 py-2.5 bg-[#111827] dark:bg-[#6C4DF6] text-white text-sm font-bold rounded-xl hover:bg-black dark:hover:bg-[#5b3ce0] transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-6 py-2.5 bg-[#111827] dark:bg-[#7C3AED] text-white text-sm font-bold rounded-xl hover:bg-black dark:hover:bg-[#5b3ce0] transition-colors shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
               Save Changes

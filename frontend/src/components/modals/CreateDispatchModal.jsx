@@ -1,39 +1,12 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-X,
-Upload,
-Image as ImageIcon,
-Music,
-Type,
-Check,
-Crop,
-Play,
-Pause,
-Send,
-Loader2,
-Sparkles,
-Music2,
-Compass,
-ImagePlus,
-MapPin,
-Smile,
-AlignLeft,
-AlignCenter,
-AlignRight,
-Palette,
-Globe,
-Users,
-Lock,
-ArrowLeft } from
-"lucide-react";
-import Cropper from "react-easy-crop";
+import { X, Music, Type, Check, Play, Pause, Send, Loader2, ImagePlus, MapPin, Smile, Palette, Globe, Users, Lock, ArrowLeft } from "lucide-react";
 import axios from "../../api/axios";
 import { showToast } from "../../utils/showToast";
 import { Search } from "lucide-react";
 import { useAuth } from "../../context/authContext";
-import { detectImageMood } from "../../utils/imageMoodDetector";
+
 import AudioManager from "../../utils/AudioManager";
 import StorySticker from "../story/StorySticker";
 import Avatar from "../common/Avatar";
@@ -55,10 +28,9 @@ const travelEmojis = [
 "\u{1F682}"];
 
 const fonts = [
-{ name: "Clean", family: "Inter, sans-serif" },
-{ name: "Bold", family: "Montserrat, sans-serif" },
-{ name: "Travel", family: '"Playfair Display", serif' },
-{ name: "Handwritten", family: '"Caveat", cursive' }];
+  { name: "Clean", family: "Inter, sans-serif" },
+  { name: "Brand", family: "Outfit, sans-serif" }
+];
 
 
 const textColors = [
@@ -82,19 +54,6 @@ const popularLanguages = [
 { label: "English Pop", value: "English" },
 { label: "K-Pop", value: "K-Pop" },
 { label: "Spanish", value: "Spanish" }];
-
-
-const popularDestinations = [
-{ label: "🏖️ Goa", value: "Goa" },
-{ label: "🏔️ Manali", value: "Manali" },
-{ label: "🏰 Jaipur", value: "Jaipur" },
-{ label: "🏍️ Ladakh", value: "Ladakh" },
-{ label: "🌴 Kerala", value: "Kerala" },
-{ label: "🌃 Mumbai", value: "Mumbai" },
-{ label: "🧘 Rishikesh", value: "Rishikesh" },
-{ label: "🏰 Udaipur", value: "Udaipur" },
-{ label: "🛕 Varanasi", value: "Varanasi" },
-{ label: "☕ Coorg", value: "Coorg" }];
 
 
 const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
@@ -287,13 +246,14 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
   useEffect(() => {
     if (activeOverlay !== "location") return;
     const query = locationQuery.trim();
-    if (!query) {
+    if (!query || query.length < 2) {
       setLocationResults([]);
+      setIsSearchingLocation(false);
       return;
     }
     let isCancelled = false;
+    setIsSearchingLocation(true);
     const timeout = setTimeout(async () => {
-      setIsSearchingLocation(true);
       let results = [];
       try {
         const res = await fetch(
@@ -337,7 +297,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
         setLocationResults(results);
         setIsSearchingLocation(false);
       }
-    }, 600);
+    }, 400);
     return () => {
       isCancelled = true;
       clearTimeout(timeout);
@@ -692,7 +652,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       );
 
       if (visibility === "private" && allowedUsers.length === 0) {
-        showToast.error("Please select at least one user for a private story");
+        showToast.error("Please select at least one user for a private Dispatch");
         setIsSubmitting(false);
         return;
       }
@@ -742,13 +702,13 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       );
 
       if (res.data.success) {
-        showToast.success("Story published!");
+        showToast.success("Dispatch published successfully!");
         onSuccess();
         handleClose();
       }
     } catch (err) {
       console.error("Story publish error:", err);
-      showToast.error(err.response?.data?.message || "Failed to publish story");
+      showToast.error(err.response?.data?.message || "Failed to publish Dispatch.");
     } finally {
       setIsSubmitting(false);
     }
@@ -800,7 +760,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="w-full max-w-[400px] bg-white rounded-3xl shadow-2xl flex flex-col p-6 m-4"
+      className="w-full max-w-[400px] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl flex flex-col p-4 sm:p-6 m-2 sm:m-4"
       onDragOver={(e) => {
         e.preventDefault();
       }}
@@ -814,41 +774,41 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
               {}
               <div
-        className="flex-1 border-2 border-dashed border-brand-200 rounded-2xl flex flex-col items-center justify-center p-8 text-center hover:bg-brand-50/50 hover:border-brand-300 transition-all cursor-pointer group min-h-[220px] active:bg-brand-50"
+        className="flex-1 border-2 border-dashed border-brand-200 rounded-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center hover:bg-brand-50/50 hover:border-brand-300 transition-all cursor-pointer group min-h-[190px] sm:min-h-[220px] active:bg-brand-50"
         onClick={() => fileInputRef.current?.click()}>
 
-                <div className="w-16 h-16 bg-brand-100 rounded-full flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-200">
-                  <ImagePlus className="w-8 h-8 text-brand-600" />
+                <div className="w-14 h-14 sm:w-16 sm:h-16 bg-brand-100 rounded-full flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-200">
+                  <ImagePlus className="w-7 h-7 sm:w-8 sm:h-8 text-brand-600" />
                 </div>
-                <h3 className="text-xl font-bold text-slate-800 mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-1.5 sm:mb-2">
                   Share Your Journey
                 </h3>
-                <p className="text-sm text-slate-500 mb-4">
+                <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">
                   Tap to pick from gallery, or use the buttons below.
                 </p>
-                <div className="text-[11px] font-bold text-slate-400 bg-slate-100 px-4 py-1.5 rounded-full uppercase tracking-wider">
-                  JPG Â· PNG Â· MP4 (MAX 1 MIN)
+                <div className="text-[10px] sm:text-[11px] font-bold text-slate-400 bg-slate-100 px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wider">
+                  JPG · PNG · MP4 (MAX 1 MIN)
                 </div>
               </div>
 
               {}
-              <div className="mt-5 flex gap-2 shrink-0">
+              <div className="mt-4 sm:mt-5 flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
                 <button
           onClick={handleClose}
-          className="py-3.5 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors">
+          className="w-full sm:w-auto py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors order-3 sm:order-1">
 
                   Cancel
                 </button>
                 {}
                 <button
           onClick={() => cameraInputRef.current?.click()}
-          className="flex-1 py-3.5 rounded-xl font-bold text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-2">
+          className="flex-1 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-1.5 order-1 sm:order-2">
 
                   Camera
                 </button>
                 <button
           onClick={() => fileInputRef.current?.click()}
-          className="flex-1 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all">
+          className="flex-1 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-white bg-gradient-to-r from-brand-600 to-brand-600 shadow-md hover:-translate-y-0.5 transition-all order-2 sm:order-3">
 
                   Gallery
                 </button>
@@ -1233,7 +1193,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                             Add Location
                           </h3>
                           <p className="text-[11px] font-semibold text-slate-400 leading-tight">
-                            Tag where this story happened
+                            Tag where this Dispatch happened
                           </p>
                         </div>
                       </div>
@@ -1277,111 +1237,65 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
-                      {isSearchingLocation ?
-              <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
-                          <Loader2 className="h-6 w-6 animate-spin" />
-                          <span className="text-xs font-bold text-slate-500">
-                            Searching destinations...
+                      {isSearchingLocation ? (
+                        <div className="flex h-36 flex-col items-center justify-center gap-2 text-brand-600">
+                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <span className="text-xs font-semibold text-slate-500">
+                            Searching locations...
                           </span>
-                        </div> :
+                        </div>
+                      ) : (
+                        <>
+                          {locationQuery.trim().length >= 2 && locationResults.length > 0 && (
+                            <div className="flex flex-col gap-1.5">
+                              {locationResults.map((res, i) => {
+                                const placeName = res.display_name.split(",")[0].trim();
+                                const secondaryText = res.display_name
+                                  .split(",")
+                                  .slice(1)
+                                  .join(", ")
+                                  .trim();
 
-              <>
-                          {!locationQuery.trim() &&
-                <div className="mb-2">
-                              <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                🔥 Popular Destinations
-                              </p>
-                              <div className="flex flex-col gap-1.5">
-                                {popularDestinations.map((dest) =>
-                    <button
-                    key={dest.value}
-                    type="button"
-                    onClick={() =>
-                    handleSaveLocation(dest.value)}
-
-                    className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/60 hover:shadow-2xs active:scale-[0.99]">
-
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-2xs group-hover:scale-110 transition-transform">
-                                      {dest.label.split(" ")[0]}
+                                return (
+                                  <button
+                                    type="button"
+                                    key={`${res.place_id || i}`}
+                                    onClick={() => handleSaveLocation(placeName)}
+                                    className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
+                                  >
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
+                                      <MapPin className="h-4 w-4" />
                                     </div>
-                                    <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-brand-900">
-                                      {dest.label.split(" ").slice(1).join(" ")}
+                                    <span className="min-w-0 flex-1">
+                                      <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
+                                        {placeName}
+                                      </span>
+                                      {secondaryText && (
+                                        <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
+                                          {secondaryText}
+                                        </span>
+                                      )}
                                     </span>
                                   </button>
-                    )}
-                              </div>
-                            </div>}
+                                );
+                              })}
+                            </div>
+                          )}
 
-
-                          {locationQuery.trim() &&
-                locationResults.length > 0 &&
-                <div className="flex flex-col gap-1.5">
-                                <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                  SEARCH RESULTS
+                          {locationQuery.trim().length >= 2 &&
+                            locationResults.length === 0 &&
+                            !isSearchingLocation && (
+                              <div className="flex flex-col items-center justify-center py-10 text-center">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-2">
+                                  <MapPin className="h-5 w-5" />
+                                </div>
+                                <p className="text-xs font-bold text-slate-500">
+                                  No locations found
                                 </p>
-                                {locationResults.map((res, i) => {
-                    const placeName = res.display_name.
-                    split(",")[0].
-                    trim();
-                    const secondaryText = res.display_name.
-                    split(",").
-                    slice(1).
-                    join(", ").
-                    trim();
-
-                    return (
-                      <button
-                      type="button"
-                      key={`${res.place_id || i}`}
-                      onClick={() =>
-                      handleSaveLocation(placeName)}
-
-                      className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]">
-
-                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
-                                        <MapPin className="h-4 w-4" />
-                                      </div>
-                                      <span className="min-w-0 flex-1">
-                                        <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
-                                          {placeName}
-                                        </span>
-                                        <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
-                                          {secondaryText || res.display_name}
-                                        </span>
-                                      </span>
-                                    </button>);
-
-                  })}
-                              </div>}
-
-
-                          {locationQuery.trim() &&
-                locationResults.length === 0 &&
-                !isSearchingLocation &&
-                <div className="flex flex-col gap-2">
-                                <button
-                  type="button"
-                  onClick={() =>
-                  handleSaveLocation(locationQuery.trim())}
-
-                  className="group flex w-full items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50 p-3 text-left transition-all hover:bg-brand-100 shadow-2xs active:scale-[0.99]">
-
-                                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-2xs">
-                                    <MapPin className="h-5 w-5" />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-bold text-brand-900">
-                                      Use "{locationQuery}"
-                                    </p>
-                                    <p className="text-[11px] font-semibold text-brand-600">
-                                      Tap to add custom location sticker
-                                    </p>
-                                  </div>
-                                </button>
-                              </div>}
-
-                        </>}
-
+                              </div>
+                            )}
+                        </>
+                      )}
                     </div>
                   </motion.div>}
 
@@ -1602,7 +1516,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[80vh]">
                       <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
                         <h3 className="text-slate-800 font-black text-lg">
-                          {isSelectingUsers ? "Select Users" : "Story Privacy"}
+                          {isSelectingUsers ? "Select Users" : "Dispatch Privacy"}
                         </h3>
                         <button
                 onClick={() => {

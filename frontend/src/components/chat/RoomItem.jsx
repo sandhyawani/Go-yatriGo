@@ -19,7 +19,11 @@ export const RoomItem = ({
   );
   const isOnline = otherMember && onlineUsers.has(otherMember._id || otherMember);
   const isTyping = typingUsers[room._id];
-  const isBlockedByMe = otherMember && user?.blockedUsers?.includes(otherMember._id || otherMember);
+  const otherMemberId = (otherMember?._id || otherMember)?.toString();
+  const isBlockedByMe = Boolean(
+    otherMemberId &&
+    user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherMemberId)
+  );
 
   return (
     <div

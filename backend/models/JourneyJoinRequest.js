@@ -16,7 +16,7 @@ const journeyJoinRequestSchema = new mongoose.Schema(
   },
   status: {
     type: String,
-    enum: ["pending", "accepted", "rejected", "cancelled", "capacity_full"],
+    enum: ["pending", "accepted", "rejected", "cancelled", "expired", "capacity_full"],
     default: "pending",
     index: true
   },

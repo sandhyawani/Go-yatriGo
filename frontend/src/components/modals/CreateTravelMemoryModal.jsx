@@ -2,26 +2,12 @@ import { showToast } from "../../utils/showToast";
 import React, { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-X,
-ArrowLeft,
-ImagePlus,
-Loader2,
-Smile,
-MapPin,
-Sparkles,
-Music2,
-Play,
-Pause,
-Compass,
-RotateCcw,
-Sliders } from
-"lucide-react";
+import { X, ArrowLeft, ImagePlus, Loader2, Smile, MapPin, Navigation, Sparkles, Music2, Play, Pause, RotateCcw, Sliders } from "lucide-react";
 import axios from "../../api/axios";
 import Cropper from "react-easy-crop";
 import getCroppedImg from "../../utils/cropImage";
 import EmojiPicker from "emoji-picker-react";
-import { detectImageMood } from "../../utils/imageMoodDetector";
+
 import AudioManager from "../../utils/AudioManager";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
@@ -82,6 +68,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
   const [locationQuery, setLocationQuery] = useState("");
   const [locationResults, setLocationResults] = useState([]);
   const [searchingLocation, setSearchingLocation] = useState(false);
+  const [isLocatingCurrent, setIsLocatingCurrent] = useState(false);
 
   const [showMusicPicker, setShowMusicPicker] = useState(false);
   const [selectedMusic, setSelectedMusic] = useState(null);
@@ -427,6 +414,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
     setLocationQuery("");
     setLocationResults([]);
     setShowLocationPicker(false);
+    setIsLocatingCurrent(false);
     setShowMusicPicker(false);
     setSelectedMusic(null);
     setMusicQuery("");
@@ -457,12 +445,110 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
     onClose();
   };
 
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      showToast.error("Geolocation is not supported by your browser");
+      return;
+    }
+
+    setIsLocatingCurrent(true);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          let resolvedLocation = "";
+
+          try {
+            const res = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=14&addressdetails=1`
+            );
+            if (res.ok) {
+              const data = await res.json();
+              const addr = data?.address || {};
+              const placeName =
+                addr.city ||
+                addr.town ||
+                addr.village ||
+                addr.suburb ||
+                addr.neighbourhood ||
+                addr.county ||
+                "";
+              const stateName = addr.state || "";
+              const countryName = addr.country || "";
+              const parts = [placeName, stateName, countryName].filter(Boolean);
+              if (parts.length > 0) {
+                resolvedLocation = parts.join(", ");
+              } else if (data?.display_name) {
+                resolvedLocation = data.display_name;
+              }
+            }
+          } catch (geoErr) {
+            console.warn("Nominatim reverse geocode failed:", geoErr);
+          }
+
+          if (!resolvedLocation) {
+            try {
+              const photonRes = await fetch(
+                `https://photon.komoot.io/reverse?lat=${latitude}&lon=${longitude}`
+              );
+              if (photonRes.ok) {
+                const photonData = await photonRes.json();
+                if (photonData?.features?.length > 0) {
+                  const props = photonData.features[0].properties || {};
+                  const parts = [
+                    props.name || props.city || props.district,
+                    props.state,
+                    props.country
+                  ].filter(Boolean);
+                  if (parts.length > 0) {
+                    resolvedLocation = parts.join(", ");
+                  }
+                }
+              }
+            } catch (photonErr) {
+              console.warn("Photon reverse geocode failed:", photonErr);
+            }
+          }
+
+          if (resolvedLocation) {
+            setLocation(resolvedLocation);
+            setShowLocationPicker(false);
+            setLocationQuery("");
+            setLocationResults([]);
+            showToast.success(`Location set: ${resolvedLocation}`);
+          } else {
+            showToast.error("Could not determine address name from coordinates.");
+          }
+        } catch (err) {
+          console.error("GPS location error:", err);
+          showToast.error("Failed to resolve current location.");
+        } finally {
+          setIsLocatingCurrent(false);
+        }
+      },
+      (err) => {
+        setIsLocatingCurrent(false);
+        console.warn("Geolocation permission/hardware error:", err);
+        if (err.code === 1) {
+          showToast.error("Location permission denied. Please allow location access or type manually.");
+        } else if (err.code === 2) {
+          showToast.error("Location unavailable. Please check your GPS or type manually.");
+        } else if (err.code === 3) {
+          showToast.error("Location request timed out. Please try again or type manually.");
+        } else {
+          showToast.error("Failed to retrieve current location.");
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    );
+  };
+
   const handleLocationSearch = (query) => {
     setLocationQuery(query);
 
     if (!query.trim()) {
       if (locationSearchTimeoutRef.current)
-      clearTimeout(locationSearchTimeoutRef.current);
+        clearTimeout(locationSearchTimeoutRef.current);
       setLocationResults([]);
       setSearchingLocation(false);
       return;
@@ -470,15 +556,15 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
     setSearchingLocation(true);
     if (locationSearchTimeoutRef.current)
-    clearTimeout(locationSearchTimeoutRef.current);
+      clearTimeout(locationSearchTimeoutRef.current);
 
     locationSearchTimeoutRef.current = setTimeout(async () => {
       let results = [];
       try {
         const res = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
-        query
-        )}&countrycodes=in`
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+            query
+          )}&addressdetails=1`
         );
 
         if (res.ok) {
@@ -492,7 +578,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       if (results.length === 0) {
         try {
           const photonRes = await fetch(
-          `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
+            `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=5`
           );
           if (photonRes.ok) {
             const photonData = await photonRes.json();
@@ -500,10 +586,10 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
               results = photonData.features.map((f) => {
                 const props = f.properties || {};
                 const parts = [
-                props.name,
-                props.city || props.state,
-                props.country].
-                filter(Boolean);
+                  props.name,
+                  props.city || props.state,
+                  props.country
+                ].filter(Boolean);
                 return { display_name: parts.join(", ") || query };
               });
             }
@@ -515,7 +601,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
       setLocationResults(results);
       setSearchingLocation(false);
-    }, 600);
+    }, 500);
   };
 
   const handleSubmit = async () => {
@@ -605,15 +691,17 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       });
 
       if (res.data?.success) {
-        showToast.success("Memory shared successfully!");
+        showToast.success("Travel Memory created successfully!");
         onSuccess?.(res.data.post || res.data.memory);
         handleClose();
       } else {
-        showToast.error(res.data?.message || "Failed to create post.");
+        showToast.error(res.data?.message || "Failed to create Travel Memory.");
       }
     } catch (err) {
       console.error(err);
-      showToast.error("Failed to share memory");
+      showToast.error(
+        err.response?.data?.message || err.message || "Failed to save Travel Memory."
+      );
     } finally {
       setLoading(false);
       setUploadProgress(0);
@@ -663,7 +751,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.96 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="relative flex w-full lg:max-w-[980px] max-h-[90dvh] lg:max-h-[92vh] min-h-[560px] flex-col overflow-y-auto lg:overflow-visible rounded-t-3xl lg:rounded-[32px] border border-white/50 bg-white/95 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+      className="relative flex w-full lg:max-w-[980px] max-h-[90dvh] lg:max-h-[92vh] min-h-0 sm:min-h-[480px] flex-col overflow-y-auto lg:overflow-visible rounded-t-3xl lg:rounded-[32px] border border-white/50 bg-white/95 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
 
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200/70 px-4">
               <div className="flex flex-1 justify-start">
@@ -1097,136 +1185,168 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             </button>
                           </div>
 
+                          <button
+                            type="button"
+                            onClick={handleUseCurrentLocation}
+                            disabled={isLocatingCurrent}
+                            className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/80 p-2.5 text-left transition-all hover:border-brand-300 hover:bg-brand-100/70 hover:shadow-xs active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 shrink-0"
+                          >
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-xs">
+                              {isLocatingCurrent ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Navigation className="h-4 w-4 fill-current" />
+                              )}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <span className="block truncate text-xs font-extrabold text-brand-900">
+                                {isLocatingCurrent ? "Locating you..." : "Use my current location"}
+                              </span>
+                              <span className="block truncate text-[11px] font-medium text-brand-600">
+                                {isLocatingCurrent ? "Fetching coordinates & address..." : "Detect your current city using GPS"}
+                              </span>
+                            </div>
+                          </button>
+
                           <div className="relative mb-3 shrink-0">
                             <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
                             <input
-                    autoFocus
-                    type="text"
-                    placeholder="Search city, state, or landmark..."
-                    value={locationQuery}
-                    onChange={(e) =>
-                    handleLocationSearch(e.target.value)}
+                              autoFocus
+                              type="text"
+                              placeholder="Search city, state, or type custom location..."
+                              value={locationQuery}
+                              onChange={(e) => handleLocationSearch(e.target.value)}
+                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs"
+                            />
 
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs" />
-
-                            {locationQuery &&
-                    <button
-                    type="button"
-                    onClick={() => handleLocationSearch("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
-
+                            {locationQuery && (
+                              <button
+                                type="button"
+                                onClick={() => handleLocationSearch("")}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                              >
                                 <X className="h-3.5 w-3.5" />
-                              </button>}
-
+                              </button>
+                            )}
                           </div>
 
                           <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
-                            {searchingLocation ?
-                    <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
+                            {locationQuery.trim() && (
+                              <div className="mb-2.5">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setLocation(locationQuery.trim());
+                                    setShowLocationPicker(false);
+                                    setLocationQuery("");
+                                    setLocationResults([]);
+                                  }}
+                                  className="group flex w-full items-center gap-3 rounded-2xl border border-brand-300 bg-brand-50/90 p-2.5 text-left transition-all hover:bg-brand-100 hover:shadow-xs active:scale-[0.99]"
+                                >
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-transform group-hover:scale-105">
+                                    <MapPin className="h-4 w-4" />
+                                  </div>
+                                  <div className="min-w-0 flex-1">
+                                    <span className="block truncate text-xs font-extrabold text-brand-900">
+                                      Use "{locationQuery.trim()}"
+                                    </span>
+                                    <span className="block truncate text-[11px] font-medium text-brand-600">
+                                      Select this custom location
+                                    </span>
+                                  </div>
+                                </button>
+                              </div>
+                            )}
+
+                            {searchingLocation ? (
+                              <div className="flex h-36 flex-col items-center justify-center gap-2.5 text-brand-600">
                                 <Loader2 className="h-6 w-6 animate-spin" />
                                 <span className="text-xs font-bold text-slate-500">
                                   Searching destinations...
                                 </span>
-                              </div> :
-
-                    <>
-                                {!locationQuery.trim() &&
-                      <div className="mb-2">
+                              </div>
+                            ) : (
+                              <>
+                                {!locationQuery.trim() && (
+                                  <div className="mb-2">
                                     <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
                                       🔥 Popular Destinations
                                     </p>
                                     <div className="flex flex-col gap-1.5">
-                                      {popularDestinations.map((dest) =>
-                          <button
-                          key={dest.value}
-                          type="button"
-                          onClick={() => {
-                            setLocation(dest.value);
-                            setShowLocationPicker(false);
-                            setLocationQuery("");
-                            setLocationResults([]);
-                          }}
-                          className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/60 hover:shadow-2xs active:scale-[0.99]">
-
+                                      {popularDestinations.map((dest) => (
+                                        <button
+                                          key={dest.value}
+                                          type="button"
+                                          onClick={() => {
+                                            setLocation(dest.value);
+                                            setShowLocationPicker(false);
+                                            setLocationQuery("");
+                                            setLocationResults([]);
+                                          }}
+                                          className="group flex w-full items-center gap-3 rounded-2xl border border-transparent bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/60 hover:shadow-2xs active:scale-[0.99]"
+                                        >
                                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-2xs group-hover:scale-110 transition-transform">
                                             {dest.label.split(" ")[0]}
                                           </div>
                                           <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-brand-900">
-                                            {dest.label.
-                              split(" ").
-                              slice(1).
-                              join(" ")}
+                                            {dest.label.split(" ").slice(1).join(" ")}
                                           </span>
                                         </button>
-                          )}
+                                      ))}
                                     </div>
-                                  </div>}
+                                  </div>
+                                )}
 
+                                {locationQuery.trim() && locationResults.length > 0 && (
+                                  <div className="flex flex-col gap-1.5">
+                                    <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                      MATCHING PLACES
+                                    </p>
+                                    {locationResults.map((res, i) => {
+                                      const placeName = res.display_name.split(",")[0].trim();
+                                      const secondaryText = res.display_name.split(",").slice(1).join(", ").trim();
 
-                                {locationQuery.trim() &&
-                      locationResults.length > 0 &&
-                      <div className="flex flex-col gap-1.5">
-                                      <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
-                                        SEARCH RESULTS
-                                      </p>
-                                      {locationResults.map((res, i) => {
-                          const placeName = res.display_name.
-                          split(",")[0].
-                          trim();
-                          const secondaryText = res.display_name.
-                          split(",").
-                          slice(1).
-                          join(", ").
-                          trim();
-
-                          return (
-                            <button
-                            type="button"
-                            key={`${res.place_id || i}`}
-                            onClick={() => {
-                              setLocation(res.display_name);
-                              setShowLocationPicker(false);
-                              setLocationQuery("");
-                              setLocationResults([]);
-                            }}
-                            className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]">
-
-                                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
-                                              <MapPin className="h-4 w-4" />
-                                            </div>
-                                            <span className="min-w-0 flex-1">
-                                              <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
-                                                {placeName}
-                                              </span>
-                                              <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
-                                                {secondaryText ||
-                                  res.display_name}
-                                              </span>
+                                      return (
+                                        <button
+                                          type="button"
+                                          key={`${res.place_id || i}`}
+                                          onClick={() => {
+                                            setLocation(res.display_name);
+                                            setShowLocationPicker(false);
+                                            setLocationQuery("");
+                                            setLocationResults([]);
+                                          }}
+                                          className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
+                                        >
+                                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
+                                            <MapPin className="h-4 w-4" />
+                                          </div>
+                                          <span className="min-w-0 flex-1">
+                                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
+                                              {placeName}
                                             </span>
-                                          </button>);
+                                            <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
+                                              {secondaryText || res.display_name}
+                                            </span>
+                                          </span>
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                )}
 
-                        })}
-                                    </div>}
-
-
-                                {locationQuery.trim() &&
-                      locationResults.length === 0 &&
-                      !searchingLocation &&
-                      <div className="flex h-40 flex-col items-center justify-center text-center">
-                                      <div className="mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                                        <MapPin className="h-5 w-5" />
-                                      </div>
-                                      <p className="text-xs font-bold text-slate-800">
-                                        No destination found
-                                      </p>
-                                      <p className="mt-0.5 text-[11px] font-medium text-slate-400">
-                                        Try searching for a city or famous
-                                        landmark
-                                      </p>
-                                    </div>}
-
-                              </>}
-
+                                {locationQuery.trim() && locationResults.length === 0 && !searchingLocation && (
+                                  <div className="flex h-32 flex-col items-center justify-center text-center px-4">
+                                    <p className="text-xs font-bold text-slate-700">
+                                      No exact matching map results
+                                    </p>
+                                    <p className="mt-1 text-[11px] font-medium text-slate-400">
+                                      You can click <span className="font-bold text-brand-600">"Use '{locationQuery.trim()}'"</span> above to save this custom location.
+                                    </p>
+                                  </div>
+                                )}
+                              </>
+                            )}
                           </div>
                         </motion.div>}
 
@@ -1573,14 +1693,14 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 10, scale: 0.96 }}
                         transition={{ duration: 0.16 }}
-                        className="absolute bottom-full mb-3 left-0 z-[99999] overflow-hidden rounded-3xl border border-white/30 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.25)]">
+                        className="absolute bottom-full mb-3 left-0 z-[99999] overflow-hidden rounded-3xl border border-white/30 bg-white shadow-[0_25px_70px_rgba(15,23,42,0.25)] max-w-[calc(100vw-2rem)]">
 
                                   <EmojiPicker
                           onEmojiClick={(emojiObj) => {
                             setCaption((c) => c + emojiObj.emoji);
                           }}
                           height={390}
-                          width={320}
+                          width={typeof window !== 'undefined' ? Math.min(320, window.innerWidth - 32) : 320}
                           theme="light"
                           previewConfig={{ showPreview: false }}
                           searchDisabled={false}

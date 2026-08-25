@@ -1,10 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronDown, Search, Check, X } from 'lucide-react';
 
 const CustomSelect = ({
   id,
+  name,
   value,
   onChange,
   options = [],
@@ -53,33 +54,46 @@ const CustomSelect = ({
   }, [filteredOptions, searchQuery]);
 
   const updateDropdownPosition = useCallback(() => {
-    if (!isOpen || !containerRef.current) return;
+    if (!containerRef.current) return;
     
     const rect = containerRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
     
-    const maxDropdownHeight = 256; // max-h-64 (16rem = 256px) + some padding
+    const minDropdownHeight = 150;
+    
     let openDirection = placement === "auto" 
-      ? (spaceBelow < maxDropdownHeight && spaceAbove > spaceBelow ? "up" : "down")
+      ? (spaceBelow < minDropdownHeight && spaceAbove > spaceBelow ? "up" : "down")
       : placement;
       
     setDirection(openDirection);
+
+    const availableSpace = openDirection === "down" ? spaceBelow - 20 : spaceAbove - 20;
+    const maxDropdownHeight = Math.max(availableSpace, minDropdownHeight);
 
     setDropdownStyle({
       position: 'fixed',
       width: `${rect.width}px`,
       left: `${rect.left}px`,
-      top: openDirection === "down" ? `${rect.bottom + 8}px` : 'auto',
-      bottom: openDirection === "up" ? `${window.innerHeight - rect.top + 8}px` : 'auto',
-      zIndex: 9999
+      top: openDirection === "down" ? `${rect.bottom + 6}px` : 'auto',
+      bottom: openDirection === "up" ? `${window.innerHeight - rect.top + 6}px` : 'auto',
+      maxHeight: `${Math.min(maxDropdownHeight, 350)}px`,
+      zIndex: 99999
     });
-  }, [isOpen, placement]);
+  }, [placement]);
 
-  useEffect(() => {
+
+  useLayoutEffect(() => {
     if (isOpen) {
       updateDropdownPosition();
-      window.addEventListener('scroll', updateDropdownPosition, true);
+      
+      const handleScroll = (e) => {
+        // If scrolling the dropdown itself, don't update position
+        if (listboxRef.current && listboxRef.current.contains(e.target)) return;
+        updateDropdownPosition();
+      };
+
+      window.addEventListener('scroll', handleScroll, true);
       window.addEventListener('resize', updateDropdownPosition);
       
       // Auto focus search if searchable
@@ -93,16 +107,13 @@ const CustomSelect = ({
       const selectedIdx = flatOptions.findIndex(opt => getOptionValue(opt) === value);
       setHighlightedIndex(selectedIdx !== -1 ? selectedIdx : 0);
       
+      return () => {
+        window.removeEventListener('scroll', handleScroll, true);
+        window.removeEventListener('resize', updateDropdownPosition);
+      };
     } else {
-      window.removeEventListener('scroll', updateDropdownPosition, true);
-      window.removeEventListener('resize', updateDropdownPosition);
       setSearchQuery("");
     }
-    
-    return () => {
-      window.removeEventListener('scroll', updateDropdownPosition, true);
-      window.removeEventListener('resize', updateDropdownPosition);
-    };
   }, [isOpen, updateDropdownPosition, searchable, value, flatOptions]);
 
   // Handle clicking outside
@@ -174,14 +185,14 @@ const CustomSelect = ({
 
   const handleSelect = (opt) => {
     if (opt.disabled) return;
-    onChange({ target: { id, value: getOptionValue(opt) } }, opt);
+    onChange({ target: { id, name: name || id, value: getOptionValue(opt) } }, opt);
     setIsOpen(false);
     buttonRef.current?.focus();
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
-    onChange({ target: { id, value: "" } });
+    onChange({ target: { id, name: name || id, value: "" } });
     buttonRef.current?.focus();
   };
 
@@ -218,10 +229,10 @@ const CustomSelect = ({
           e.stopPropagation();
           handleSelect(opt);
         }}
-        className={`w-full flex items-center justify-between text-left px-4 min-h-[44px] py-2.5 text-[15px] font-medium transition-colors outline-none
+        className={`w-full flex items-center justify-between text-left px-4 min-h-[44px] py-2 text-xs sm:text-sm font-medium transition-colors outline-none
           ${opt.disabled ? 'opacity-50 cursor-not-allowed text-slate-400' : 'cursor-pointer'}
-          ${isSelected ? 'bg-[#7C3AED]/10 text-[#7C3AED] font-semibold' : 'text-slate-700 hover:bg-[#7C3AED]/5 hover:text-[#6D28D9]'}
-          ${isHighlighted && !isSelected ? 'bg-[#7C3AED]/5 text-[#6D28D9]' : ''}
+          ${isSelected ? 'bg-[#7C3AED]/10 text-[#7C3AED] dark:bg-[#7C3AED]/20 dark:text-purple-300 font-bold' : 'text-slate-700 dark:text-slate-200 hover:bg-[#7C3AED]/5 dark:hover:bg-slate-800/80 hover:text-[#6D28D9]'}
+          ${isHighlighted && !isSelected ? 'bg-[#7C3AED]/5 dark:bg-slate-800/60 text-[#6D28D9] dark:text-purple-300' : ''}
         `}
       >
         <span className="truncate pr-4">
@@ -246,18 +257,18 @@ const CustomSelect = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
         className={`
-          w-full flex items-center justify-between text-left h-[44px] pl-4 pr-4 bg-white border rounded-xl text-sm font-bold outline-none transition-all shadow-sm group focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/20
-          ${disabled || loading ? 'opacity-60 cursor-not-allowed bg-slate-50' : 'hover:border-[#C4B5FD]'}
-          ${isOpen ? 'border-[#7C3AED] ring-4 ring-[#7C3AED]/20 bg-white' : error ? 'border-red-300' : 'border-slate-200 bg-slate-50'}
+          w-full flex items-center justify-between text-left h-[44px] pl-4 pr-4 bg-white dark:bg-slate-800/90 border rounded-xl text-xs sm:text-sm font-bold outline-none transition-all shadow-xs group focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20
+          ${disabled || loading ? 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-900' : 'hover:border-[#C4B5FD] dark:hover:border-slate-600'}
+          ${isOpen ? 'border-[#7C3AED] ring-2 ring-[#7C3AED]/20 bg-white dark:bg-slate-800' : error ? 'border-red-300 dark:border-red-800' : 'border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-800/50'}
         `}
       >
         <div className="flex items-center gap-3 min-w-0 truncate">
           {icon && (
-            <div className={`shrink-0 transition-colors ${isOpen ? 'text-[#7C3AED]' : (value !== "" && value !== undefined && value !== null) ? 'text-slate-700' : 'text-slate-500'}`}>
+            <div className={`shrink-0 transition-colors ${isOpen ? 'text-[#7C3AED]' : (value !== "" && value !== undefined && value !== null) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-500'}`}>
               {icon}
             </div>
           )}
-          <span className={`truncate ${(value !== "" && value !== undefined && value !== null) ? 'text-slate-900' : 'text-slate-500 font-semibold'}`}>
+          <span className={`truncate ${(value !== "" && value !== undefined && value !== null) ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 font-semibold'}`}>
             {loading ? 'Loading...' : displayLabel}
           </span>
         </div>
@@ -267,7 +278,7 @@ const CustomSelect = ({
             <div 
               role="button"
               tabIndex={0}
-              className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors"
+              className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
               onClick={handleClear}
               onKeyDown={(e) => { if(e.key === 'Enter' || e.key === ' ') handleClear(e); }}
             >
@@ -281,7 +292,7 @@ const CustomSelect = ({
       {error && <p className="mt-1.5 px-1 text-[10px] font-bold text-red-500">{error}</p>}
       {helperText && !error && <p className="mt-1.5 px-1 text-[10px] font-bold text-slate-500">{helperText}</p>}
 
-      {isOpen && typeof window !== 'undefined' && createPortal(
+      {typeof window !== 'undefined' && createPortal(
         <AnimatePresence>
           {isOpen && (
             <motion.div
@@ -289,20 +300,20 @@ const CustomSelect = ({
               initial={{ opacity: 0, scale: 0.95, y: direction === "down" ? -10 : 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: direction === "down" ? -10 : 10 }}
-              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
               style={dropdownStyle}
-              className={`bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col ${dropdownClassName}`}
+              className={`bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col ${dropdownClassName}`}
               role="listbox"
               onKeyDown={handleKeyDown}
             >
               {searchable && (
-                <div className="p-2 border-b border-slate-100 bg-white sticky top-0 z-10">
+                <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10">
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                     <input
                       ref={searchInputRef}
                       type="text"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border-none rounded-xl text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#7C3AED]/20 text-slate-800 dark:text-slate-100"
                       placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -317,7 +328,8 @@ const CustomSelect = ({
                 </div>
               )}
 
-              <div className="overflow-y-auto max-h-64 py-1 overscroll-contain">
+              <div className="overflow-y-auto py-1 overscroll-contain flex-1 min-h-0">
+
                 {filteredOptions.length === 0 ? (
                   <div className="px-4 py-6 text-center text-sm text-slate-500">
                     No options found

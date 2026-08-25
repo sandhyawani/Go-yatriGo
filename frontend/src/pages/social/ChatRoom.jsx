@@ -2,32 +2,12 @@ import { showToast } from "../../utils/showToast";
 import { toast } from "sonner";
 import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "../../api/axios";
-import { Link, useNavigate, useLocation, useParams } from "react-router-dom";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
 import { SOCKET_EVENTS } from "../../constants/socketEvents";
-import {
-MessageSquare,
-Send,
-Users,
-Compass,
-ArrowLeft,
-Search,
-Smile,
-MoreVertical,
-Paperclip,
-Phone,
-Video,
-Mic,
-X,
-ChevronDown,
-Square,
-Trash2,
-Home } from
-"lucide-react";
+import { MessageSquare, Video, Loader2 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { getAvatarUrl } from "../../utils/avatar";
-import EmojiPicker from "emoji-picker-react";
-import ChatBubble from "../../components/chat/ChatBubble";
 import DispatchViewer from "../../components/story/DispatchViewer";
 import ChatSidebar from "../../components/chat/ChatSidebar";
 import ChatHeader from "../../components/chat/ChatHeader";
@@ -35,6 +15,7 @@ import ChatMessages from "../../components/chat/ChatMessages";
 import ChatInput from "../../components/chat/ChatInput";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
+import { chatService } from "../../services/chatService";
 
 const getRoomIdString = (roomField) => {
   if (!roomField) return "";
@@ -87,6 +68,8 @@ const ChatRoom = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { roomId } = useParams();
+  const legacyTargetUserId = location.state?.targetUserId;
+  const legacyGroupId = location.state?.groupId;
   const isEmbedded = new URLSearchParams(location.search).get("embed") === "true";
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -127,6 +110,8 @@ const ChatRoom = () => {
   const [hasMoreMessages, setHasMoreMessages] = useState(false);
   const [messagesPage, setMessagesPage] = useState(1);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [processingRequestIds, setProcessingRequestIds] = useState(new Set());
+  const [isProcessingAction, setIsProcessingAction] = useState(false);
 
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
@@ -164,7 +149,6 @@ const ChatRoom = () => {
     fetchChannels();
     const handleRefresh = () => fetchChannels();
     const handleMessageSent = (e) => {
-      console.log("CUSTOM EVENT message_sent received:", e.detail);
       const detailRoomId = getRoomIdString(e.detail?.roomId);
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (detailRoomId && activeId && detailRoomId === activeId) {
@@ -181,7 +165,7 @@ const ChatRoom = () => {
       window.removeEventListener("message_sent", handleMessageSent);
     };
 
-  }, [roomId, location.state]);
+  }, [roomId, legacyTargetUserId, legacyGroupId]);
 
   const showScrollBottomRef = useRef(showScrollBottom);
   useEffect(() => {
@@ -192,41 +176,24 @@ const ChatRoom = () => {
     if (!socket) return;
     setSocketConnected(socket.connected);
 
-
     const userId = currentUserId;
 
     const onConnect = () => {
-
-
-      console.log("[SOCKET RECEIVED] ChatRoom — connect", {
-        socketId: socket.id,
-        userId,
-        isReconnect: socket.recovered ?? false,
-        time: Date.now()
-      });
       setSocketConnected(true);
       const activeId = getRoomIdString(activeRoomRef.current?._id);
       if (activeId) {
-        console.log("[SOCKET RECEIVED] ChatRoom — rejoining room on reconnect:", activeId);
         socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, activeId);
         syncRoomMessages(activeRoomRef.current);
       }
     };
 
-    const onDisconnect = (reason) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — disconnect", {
-        socketId: socket.id,
-        userId,
-        reason,
-        time: Date.now()
-      });
+    const onDisconnect = () => {
       setSocketConnected(false);
     };
 
     if (socket.connected) onConnect();
 
     const onUserPresence = ({ userId, status }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — user_presence:", { userId, status });
       setOnlineUsers((prev) => {
         const s = new Set(prev);
         status === "online" ? s.add(userId) : s.delete(userId);
@@ -235,45 +202,24 @@ const ChatRoom = () => {
     };
 
     const onInitialOnlineUsers = (userIds) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — initial_online_users, count:", userIds.length);
       setOnlineUsers(new Set(userIds));
     };
 
-    console.log("[SOCKET REGISTER] ChatRoom — REGISTER receive_chat_message listener", { userId, socketId: socket.id, time: Date.now() });
-
     const onReceiveChatMessage = (message) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — receive_chat_message", {
-        id: message._id,
-        roomId: message.roomId,
-        time: Date.now()
-      });
-
       const msgSenderId = typeof message.sender === "object" ? message.sender?._id || message.sender?.id : message.sender;
       const isSelf = msgSenderId?.toString() === currentUserId?.toString();
 
-
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
-
       const incomingMsgId = message._id?.toString?.() ?? message._id;
-
-      console.log("[SOCKET RECEIVED] ChatRoom — room guard", {
-        incomingRoomId,
-        activeRoomId,
-        matched: incomingRoomId === activeRoomId
-      });
 
       if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
         if (showScrollBottomRef.current && !isSelf) {
           setUnreadNewMessagesCount((prev) => prev + 1);
         }
 
-        console.log("[SOCKET RECEIVED] ChatRoom — updating messages");
-
         setMessages((prev) => {
-          console.log("[SOCKET RECEIVED] ChatRoom — setMessages updater — previous count", prev.length);
           let updatedMessages = [...prev];
-
 
           if (message.clientMsgId) {
             const idx = prev.findIndex((m) => m._id === message.clientMsgId);
@@ -287,7 +233,6 @@ const ChatRoom = () => {
               return updatedMessages;
             }
           }
-
 
           const isReaction =
           (message.text || "").startsWith("Reacted to your Dispatch:") ||
@@ -310,7 +255,6 @@ const ChatRoom = () => {
             }
           }
 
-
           const isDuplicate = prev.some((m) => m._id?.toString?.() === incomingMsgId);
           if (isDuplicate) {
             updatedMessages = prev.map((m) =>
@@ -321,12 +265,6 @@ const ChatRoom = () => {
           }
 
           return updatedMessages;
-        });
-      } else {
-        console.warn("[SOCKET RECEIVED] ChatRoom — room guard REJECTED", {
-          incomingRoomId,
-          activeRoomId,
-          messageId: incomingMsgId
         });
       }
 
@@ -352,21 +290,16 @@ const ChatRoom = () => {
           return r;
         });
 
-
         return [...updatedRooms].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
       });
 
-
-
       if (socket && socket.connected && !isSelf) {
         if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
-          console.log("[SOCKET RECEIVED] ChatRoom — emitting mark_messages_read for room:", incomingRoomId);
           socket.emit(SOCKET_EVENTS.EMIT_MARK_MESSAGES_READ, {
             roomId: message.roomId,
             userId: currentUserId
           });
         } else {
-          console.log("[SOCKET RECEIVED] ChatRoom — emitting message_delivered for:", message._id);
           socket.emit(SOCKET_EVENTS.EMIT_MESSAGE_DELIVERED, {
             roomId: message.roomId,
             messageId: message._id,
@@ -377,7 +310,6 @@ const ChatRoom = () => {
     };
 
     const onMessageSent = ({ roomId, messageId, clientMsgId, message }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — message_sent", { roomId, messageId, clientMsgId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
       const normalizedMsgId = messageId?.toString?.() ?? messageId;
@@ -407,7 +339,6 @@ const ChatRoom = () => {
     };
 
     const onMessageDelivered = ({ roomId, messageId, userId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — message_delivered", { roomId, messageId, userId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
@@ -424,7 +355,6 @@ const ChatRoom = () => {
     };
 
     const onMessagesSeen = ({ roomId, userId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — messages_seen", { roomId, userId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
@@ -441,14 +371,12 @@ const ChatRoom = () => {
     };
 
     const onMessagesRead = ({ roomId, userId, readByUserId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — messages_read", { roomId, userId, readByUserId });
       const targetUserId = userId || readByUserId;
       if (!targetUserId) return;
       onMessagesSeen({ roomId, userId: targetUserId });
     };
 
     const onStoryReactionMessageUpdated = (message) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — story_reaction_message_updated", message);
       const incomingRoomId = getRoomIdString(message.roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
@@ -475,12 +403,10 @@ const ChatRoom = () => {
     };
 
     const onIsTyping = ({ roomId, userName }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — is_typing:", { roomId, userName });
       setTypingUsers((prev) => ({ ...prev, [roomId]: userName }));
     };
 
     const onNotTyping = ({ roomId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — not_typing:", roomId);
       setTypingUsers((prev) => {
         const s = { ...prev };
         delete s[roomId];
@@ -489,7 +415,6 @@ const ChatRoom = () => {
     };
 
     const onMessageUnsent = ({ roomId, messageId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — message:unsent:", { roomId, messageId });
       const incomingRoomId = getRoomIdString(roomId);
       const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
 
@@ -506,7 +431,6 @@ const ChatRoom = () => {
       room,
       updatedBy
     }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — request_status_updated:", { roomId, requestStatus, updatedBy });
       setRooms((prev) =>
       prev.map((r) =>
       r._id === roomId ? { ...r, ...room, requestStatus } : r
@@ -526,7 +450,6 @@ const ChatRoom = () => {
     };
 
     const onRoomAccessRevoked = ({ roomId }) => {
-      console.log("[SOCKET RECEIVED] ChatRoom — room_access_revoked:", roomId);
       const revokedId = getRoomIdString(roomId);
       setRooms((prev) => prev.filter((r) => getRoomIdString(r._id) !== revokedId));
       if (getRoomIdString(activeRoomRef.current?._id) === revokedId) {
@@ -535,8 +458,28 @@ const ChatRoom = () => {
       }
     };
 
+    const onNewNotification = (notification) => {
+      if (notification && notification.type === "follow_request") {
+        setNotifications((prev) => {
+          if (prev.some((n) => n._id === notification._id)) return prev;
+          return [notification, ...prev];
+        });
+      }
+    };
 
-    console.log("[SOCKET REGISTER] ChatRoom — registering all chat listeners", { socketId: socket.id, time: Date.now() });
+    const onFollowRequestResolved = ({ userId }) => {
+      if (!userId) return;
+      setNotifications((prev) =>
+        prev.filter(
+          (n) => !(n.type === "follow_request" && String(n.sender?._id || n.sender) === String(userId))
+        )
+      );
+    };
+
+    const onChatUnhidden = ({ roomId }) => {
+      fetchChannels();
+    };
+
     socket.on(SOCKET_EVENTS.CONNECT, onConnect);
     socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect);
     socket.on(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
@@ -553,9 +496,12 @@ const ChatRoom = () => {
     socket.on(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
     socket.on(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
     socket.on("room_access_revoked", onRoomAccessRevoked);
+    socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, onNewNotification);
+    socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, onFollowRequestResolved);
+    socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, onFollowRequestResolved);
+    socket.on("chat_unhidden", onChatUnhidden);
 
     return () => {
-      console.log("[SOCKET CLEANUP] ChatRoom — removing all chat listeners", { socketId: socket.id, time: Date.now() });
       socket.off(SOCKET_EVENTS.CONNECT, onConnect);
       socket.off(SOCKET_EVENTS.DISCONNECT, onDisconnect);
       socket.off(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
@@ -572,6 +518,10 @@ const ChatRoom = () => {
       socket.off(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
       socket.off(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
       socket.off("room_access_revoked", onRoomAccessRevoked);
+      socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, onNewNotification);
+      socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, onFollowRequestResolved);
+      socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, onFollowRequestResolved);
+      socket.off("chat_unhidden", onChatUnhidden);
     };
 
   }, [socket, currentUserId]);
@@ -586,17 +536,12 @@ const ChatRoom = () => {
   const fetchChannels = async () => {
     try {
       setLoading(true);
-      const targetUserId = location.state?.targetUserId;
-      const targetGroupId = location.state?.groupId || roomId;
+      const targetUserId = roomId ? null : legacyTargetUserId;
+      const targetGroupId = legacyGroupId || roomId;
       let roomRes;
 
       if (targetUserId) {
-        roomRes = await axios.post(
-        `/chat/room/direct/${targetUserId}`,
-        {},
-        { withCredentials: true }
-        );
-        window.history.replaceState({}, document.title);
+        roomRes = await chatService.getDirectRoom(targetUserId);
       }
 
       const res = await axios.get("/chat/rooms", { withCredentials: true });
@@ -609,14 +554,19 @@ const ChatRoom = () => {
 
 
 
-        if (targetUserId && roomRes?.data?.room) {
-          if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, roomRes.data.room._id);
+        if (targetUserId && roomRes?.room) {
+          const targetRoom = roomRes.room;
+          if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, targetRoom._id);
           const matched = res.data.rooms.find(
-          (r) => r._id === roomRes.data.room._id
+          (r) => r._id === targetRoom._id
           );
-          if (matched) selectRoom(matched);
+          if (matched) {
+            selectRoom(matched);
+          } else {
+            setRooms((prev) => [targetRoom, ...prev]);
+            selectRoom(targetRoom);
+          }
         } else if (targetGroupId) {
-          window.history.replaceState({}, document.title);
           const matched = res.data.rooms.find((r) => {
             const rGroupId =
               typeof r.travelGroupId === "object" ?
@@ -666,11 +616,24 @@ const ChatRoom = () => {
   };
 
   const selectRoom = async (room) => {
+    const selectedRoomId = getRoomIdString(room?._id);
+    if (!selectedRoomId) return;
+
+    if (roomId !== selectedRoomId) {
+      navigate(`/social/chat/${selectedRoomId}`);
+    }
+
     setActiveRoom(room);
     setMessages([]);
     setInputText("");
     setMessagesPage(1);
     setHasMoreMessages(false);
+
+    // Reset unread count locally for this room
+    setRooms((prev) =>
+      prev.map((r) => (r._id === room._id ? { ...r, unreadCount: 0 } : r))
+    );
+
     if (room.type === "direct") {
       setActiveTab(
       room.requestStatus === "pending" && !isMyRequest(room) ?
@@ -681,7 +644,9 @@ const ChatRoom = () => {
       setActiveTab("groups");
     }
     try {
-      socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, room._id);
+      if (socket && socket.connected) {
+        socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, room._id);
+      }
       setLoadingMessages(true);
       const res = await axios.get(`/chat/room/${room._id}/messages?page=1&limit=50`, {
         withCredentials: true
@@ -702,24 +667,22 @@ const ChatRoom = () => {
   const handleSelectGlobalUser = async (targetUser) => {
     try {
       setLoading(true);
-      const res = await axios.post(
-      `/chat/room/direct/${targetUser._id}`,
-      {},
-      { withCredentials: true }
-      );
-      if (res.data.success) {
-        const newRoom = res.data.room;
+      const roomRes = await chatService.getDirectRoom(targetUser._id);
+      if (roomRes.success && roomRes.room) {
+        const newRoom = roomRes.room;
         const existingRoom = rooms.find((r) => r._id === newRoom._id);
         if (!existingRoom) {
           setRooms((prev) => [newRoom, ...prev]);
-          if (socket) socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoom._id);
+          if (socket && socket.connected) {
+            socket.emit(SOCKET_EVENTS.EMIT_JOIN_CHAT_ROOM, newRoom._id);
+          }
         }
         setSearchQuery("");
         setGlobalUsers([]);
         selectRoom(existingRoom || newRoom);
       }
     } catch (err) {
-      showToast.error("Failed to start conversation");
+      showToast.error(err.response?.data?.message || "Failed to start conversation");
     } finally {
       setLoading(false);
     }
@@ -1017,6 +980,8 @@ const ChatRoom = () => {
   };
 
   const handleRequestAction = async (action) => {
+    if (!activeRoom || isProcessingAction) return;
+    setIsProcessingAction(true);
     try {
       toast.loading(`Processing...`, { id: "req" });
       const res = await axios.put(
@@ -1025,15 +990,16 @@ const ChatRoom = () => {
       { withCredentials: true }
       );
       if (res.data.success) {
-        showToast.success(`Request ${action}ed!`, { id: "req" });
-        setActiveRoom((prev) => ({
+        const updatedStatus = res.data.room?.requestStatus || (action === "accept" ? "accepted" : "declined");
+        showToast.success(action === "accept" ? "Chat request accepted!" : "Chat request declined!", { id: "req" });
+        setActiveRoom((prev) => (prev ? {
           ...prev,
-          requestStatus: res.data.room.requestStatus
-        }));
+          requestStatus: updatedStatus
+        } : null));
         setRooms((prev) =>
         prev.map((r) =>
         r._id === activeRoom._id ?
-        { ...r, requestStatus: res.data.room.requestStatus } :
+        { ...r, requestStatus: updatedStatus } :
         r
         )
         );
@@ -1041,44 +1007,71 @@ const ChatRoom = () => {
         setActiveRoom(null);
       }
     } catch (err) {
-      showToast.error(`Error: ${err.message}`, { id: "req" });
+      showToast.error(err.response?.data?.message || `Failed to ${action} request`, { id: "req" });
+    } finally {
+      setIsProcessingAction(false);
     }
   };
 
-  const handleAcceptFollow = async (e, requesterId) => {
-    e.stopPropagation();
+  const handleAcceptFollow = async (requesterId, notificationId) => {
+    if (!requesterId) return;
+    const key = notificationId || requesterId;
+    if (processingRequestIds.has(key)) return;
+    setProcessingRequestIds((prev) => new Set(prev).add(key));
+
     try {
-      await axios.post(
+      const res = await axios.post(
       `/users/${requesterId}/follow-request/accept`,
       {},
       { withCredentials: true }
       );
-      setNotifications((prev) =>
-      prev.filter(
-      (n) => !(n.type === "follow_request" && n.sender._id === requesterId)
-      )
-      );
-      showToast.success("Follow request accepted");
+      if (res.data?.success || res.status === 200) {
+        setNotifications((prev) =>
+        prev.filter(
+        (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId))
+        )
+        );
+        showToast.success("Follow request accepted");
+      }
     } catch (err) {
-      showToast.error("Failed to accept request");
+      showToast.error(err.response?.data?.message || "Failed to accept request");
+    } finally {
+      setProcessingRequestIds((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
     }
   };
 
-  const handleRejectFollow = async (e, requesterId) => {
-    e.stopPropagation();
+  const handleRejectFollow = async (requesterId, notificationId) => {
+    if (!requesterId) return;
+    const key = notificationId || requesterId;
+    if (processingRequestIds.has(key)) return;
+    setProcessingRequestIds((prev) => new Set(prev).add(key));
+
     try {
-      await axios.post(
+      const res = await axios.post(
       `/users/${requesterId}/follow-request/reject`,
       {},
       { withCredentials: true }
       );
-      setNotifications((prev) =>
-      prev.filter(
-      (n) => !(n.type === "follow_request" && n.sender._id === requesterId)
-      )
-      );
+      if (res.data?.success || res.status === 200) {
+        setNotifications((prev) =>
+        prev.filter(
+        (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId))
+        )
+        );
+        showToast.success("Follow request declined");
+      }
     } catch (err) {
-      console.error(err);
+      showToast.error(err.response?.data?.message || "Failed to decline request");
+    } finally {
+      setProcessingRequestIds((prev) => {
+        const next = new Set(prev);
+        next.delete(key);
+        return next;
+      });
     }
   };
 
@@ -1145,8 +1138,8 @@ const ChatRoom = () => {
       );
       if (!otherUser) return;
 
-      const otherUserId = otherUser._id || otherUser;
-      const isBlocked = user?.blockedUsers?.includes(otherUserId);
+      const otherUserId = (otherUser._id || otherUser)?.toString();
+      const isBlocked = user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherUserId);
 
       if (!isBlocked) {
         setShowBlockModal(true);
@@ -1227,7 +1220,8 @@ const ChatRoom = () => {
     }
   };
 
-  const handleDeleteChat = async (roomToDelete = activeRoom, e) => {
+  const handleDeleteChat = async (roomToDelete = activeRoom) => {
+    if (!roomToDelete) return;
     const isJourneyGroup = !!roomToDelete.journeyId;
     let result;
 
@@ -1414,22 +1408,35 @@ const ChatRoom = () => {
 
     try {
       toast.loading("Processing selected chats...", { id: "delete-selected-chats" });
-      const deletePromises = Array.from(selectedRoomIds).map((roomId) =>
-      axios.delete(`/chat/room/${roomId}/delete-chat`, { withCredentials: true })
-      );
+      const deletePromises = Array.from(selectedRoomIds).map(async (roomId) => {
+        try {
+          const res = await axios.delete(`/chat/room/${roomId}/delete-chat`, { withCredentials: true });
+          return { roomId, success: res.data?.success };
+        } catch {
+          return { roomId, success: false };
+        }
+      });
 
-      await Promise.all(deletePromises);
+      const results = await Promise.allSettled(deletePromises);
+      const successfulRoomIds = new Set();
+      results.forEach((res) => {
+        if (res.status === "fulfilled" && res.value?.success) {
+          successfulRoomIds.add(res.value.roomId);
+        }
+      });
 
-      setRooms((prev) => prev.filter((r) => !selectedRoomIds.has(r._id)));
-
-      if (activeRoom && selectedRoomIds.has(activeRoom._id)) {
-        setActiveRoom(null);
-        setMessages([]);
+      if (successfulRoomIds.size > 0) {
+        setRooms((prev) => prev.filter((r) => !successfulRoomIds.has(r._id)));
+        if (activeRoom && successfulRoomIds.has(activeRoom._id)) {
+          setActiveRoom(null);
+          setMessages([]);
+        }
+        setIsDeleteSelectionMode(false);
+        setSelectedRoomIds(new Set());
+        showToast.success("Action completed", { id: "delete-selected-chats" });
+      } else {
+        showToast.error("Failed to process selected chats", { id: "delete-selected-chats" });
       }
-
-      setIsDeleteSelectionMode(false);
-      setSelectedRoomIds(new Set());
-      showToast.success("Action completed", { id: "delete-selected-chats" });
     } catch (err) {
       showToast.error("Failed to process some chats", { id: "delete-selected-chats" });
     }
@@ -1589,7 +1596,8 @@ const ChatRoom = () => {
       globalUsers={globalUsers}
       handleSelectGlobalUser={handleSelectGlobalUser}
       handleAcceptFollowRequest={handleAcceptFollow}
-      handleDeclineFollowRequest={handleRejectFollow} />}
+      handleDeclineFollowRequest={handleRejectFollow}
+      processingRequestIds={processingRequestIds} />}
 
 
 
@@ -1657,13 +1665,16 @@ const ChatRoom = () => {
                   <div className="flex justify-center gap-3">
                     <button
               onClick={() => handleRequestAction("accept")}
-              className="px-5 py-2 bg-brand-600 text-white rounded-full text-sm font-bold hover:bg-brand-700 transition-all">
+              disabled={isProcessingAction}
+              className="px-5 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs">
 
+                      {isProcessingAction && <Loader2 className="w-4 h-4 animate-spin" />}
                       Accept
                     </button>
                     <button
               onClick={() => handleRequestAction("decline")}
-              className="px-5 py-2 bg-slate-100 text-slate-600 rounded-full text-sm font-bold hover:bg-slate-200 transition-all">
+              disabled={isProcessingAction}
+              className="px-5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 rounded-full text-sm font-bold transition-all">
 
                       Decline
                     </button>
@@ -1673,27 +1684,104 @@ const ChatRoom = () => {
           activeRoom.type === "direct" &&
           (() => {
             const otherUser = activeRoom.members?.find(
-            (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
             );
-            const isBlockedByMe =
-            otherUser && user?.blockedUsers?.includes(otherUser._id || otherUser);
-            return (
-              isBlockedByMe ||
-              activeRoom.requestStatus === "declined" ||
-              activeRoom.requestStatus === "blocked");
+            const otherUserId = (otherUser?._id || otherUser)?.toString();
+            const isBlockedByMe = Boolean(
+              otherUserId &&
+              user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherUserId)
+            );
+            const isBlocked = isBlockedByMe || activeRoom.requestStatus === "blocked";
+            const isDeclined = activeRoom.requestStatus === "declined";
 
-          })() ?
-          <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
-                  🔒 You blocked this user.{" "}
-                  <button
-              onClick={handleBlockUser}
-              className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors">
-
-                    Unblock
-                  </button>
+            if (isBlockedByMe) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    🔒 You blocked this user.{" "}
+                    <button
+                      onClick={handleBlockUser}
+                      className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors"
+                    >
+                      Unblock
+                    </button>
+                  </div>
                 </div>
-              </div> :
+              );
+            }
+
+            if (isBlocked) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    🔒 This conversation is unavailable.
+                  </div>
+                </div>
+              );
+            }
+
+            if (isDeclined) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    Message request was declined.
+                  </div>
+                </div>
+              );
+            }
+
+            return null;
+          })() ?
+          (() => {
+            const otherUser = activeRoom.members?.find(
+              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+            );
+            const otherUserId = (otherUser?._id || otherUser)?.toString();
+            const isBlockedByMe = Boolean(
+              otherUserId &&
+              user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherUserId)
+            );
+            const isBlocked = isBlockedByMe || activeRoom.requestStatus === "blocked";
+            const isDeclined = activeRoom.requestStatus === "declined";
+
+            if (isBlockedByMe) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    🔒 You blocked this user.{" "}
+                    <button
+                      onClick={handleBlockUser}
+                      className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors"
+                    >
+                      Unblock
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+
+            if (isBlocked) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    🔒 This conversation is unavailable.
+                  </div>
+                </div>
+              );
+            }
+
+            if (isDeclined) {
+              return (
+                <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                    Message request was declined.
+                  </div>
+                </div>
+              );
+            }
+
+            return null;
+          })() :
 
           <ChatInput
           activeRoom={activeRoom}

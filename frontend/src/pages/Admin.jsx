@@ -13,20 +13,7 @@ Tooltip,
 XAxis,
 YAxis } from
 "recharts";
-import {
-Activity,
-AlertTriangle,
-ArrowRight,
-CheckCircle2,
-Clock,
-FileText,
-RefreshCw,
-ShieldAlert,
-TrendingUp,
-UserCheck,
-Users,
-XCircle } from
-"lucide-react";
+import { Activity, AlertTriangle, ArrowRight, CheckCircle2, Clock, FileText, RefreshCw, ShieldAlert, TrendingUp, Users, XCircle } from "lucide-react";
 import axios from "../api/axios";
 import { useAuth } from "../context/authContext";
 

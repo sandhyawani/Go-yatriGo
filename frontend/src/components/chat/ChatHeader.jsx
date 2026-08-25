@@ -60,11 +60,14 @@ export const ChatHeader = ({
   `/social/journeys`;
 
   return (
-    <div className="h-16 px-5 bg-white/90 backdrop-blur-md border-b border-slate-100 flex justify-between items-center shrink-0 z-50 sticky top-0 shadow-[0_2px_10px_-5px_rgba(0,0,0,0.02)]">
-      <div className="flex items-center gap-3">
+    <div className="h-14 sm:h-16 px-3 sm:px-5 bg-white/90 backdrop-blur-md border-b border-slate-100 flex justify-between items-center shrink-0 z-50 sticky top-0 shadow-[0_2px_10px_-5px_rgba(0,0,0,0.02)]">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
-        onClick={() => setActiveRoom(null)}
-        className="p-1.5 -ml-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors lg:hidden">
+        onClick={() => {
+          setActiveRoom(null);
+          navigate("/social/chat");
+        }}
+        className="p-1 sm:p-1.5 -ml-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors lg:hidden shrink-0">
 
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -75,7 +78,7 @@ export const ChatHeader = ({
           <img
           src={getAvatar(activeRoom, activeRoom.name)}
           alt=""
-          className={`w-9 h-9 rounded-full object-cover ${
+          className={`w-8 h-8 sm:w-9 sm:h-9 rounded-full object-cover ${
           activeRoom.type === "direct" ? "cursor-pointer hover:opacity-80 transition-opacity" : ""
           }`}
           onClick={handleProfileNavigation} />}
@@ -92,14 +95,14 @@ export const ChatHeader = ({
           <div className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full" />}
 
         </div>
-        <div>
+        <div className="min-w-0">
           <h3
-          className={`text-[14px] font-bold text-slate-900 flex items-center gap-1.5 truncate max-w-[200px] ${
+          className={`text-[13px] sm:text-[14px] font-bold text-slate-900 flex items-center gap-1.5 truncate max-w-[130px] sm:max-w-[200px] ${
           activeRoom.type === "direct" ? "cursor-pointer hover:text-[#7C3AED] transition-colors" : ""
           }`}
           onClick={handleProfileNavigation}>
 
-            {activeRoom.name}
+            <span className="truncate">{activeRoom.name}</span>
             {activeRoom.type === "group" &&
             <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider shrink-0">
                 Group
@@ -107,7 +110,7 @@ export const ChatHeader = ({
 
           </h3>
           <div
-          className={`text-[11px] font-medium mt-0.5 ${
+          className={`text-[11px] font-medium mt-0.5 truncate ${
           activeRoom.type === "group" ?
           "text-slate-400" :
           (() => {
@@ -126,30 +129,25 @@ export const ChatHeader = ({
               const other = activeRoom.members?.find(
               (member) => (member._id || member)?.toString() !== currentUserId?.toString()
               );
-              const otherId = other?._id || other;
-              return otherId && user?.blockedUsers?.includes(otherId);
-            })() ?
-            <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
-                🔒 Blocked
-              </span> :
-            activeRoom.type === "group" ?
-            `${activeRoom.memberCount || activeRoom.members?.length || 0} travelers · Journey Group` :
-            (() => {
-              const other = activeRoom.members?.find(
-              (member) => (member._id || member)?.toString() !== currentUserId?.toString()
+              const otherId = (other?._id || other)?.toString();
+              const isBlocked = otherId && user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherId);
+              return isBlocked ? (
+                <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
+                  🔒 Blocked
+                </span>
+              ) : activeRoom.type === "group" ? (
+                `${activeRoom.memberCount || activeRoom.members?.length || 0} travelers · Journey Group`
+              ) : otherId && onlineUsers.has(otherId) ? (
+                "Online"
+              ) : (
+                "Offline"
               );
-              const otherId = other?._id || other;
-              return otherId && onlineUsers.has(otherId);
-            })() ?
-            "Online" :
-
-            "Offline"}
-
+            })()}
           </div>
         </div>
       </div>
 
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 shrink-0">
         {activeRoom.type === "group" &&
         <Link
         to={journeyLink}
@@ -163,30 +161,31 @@ export const ChatHeader = ({
           <button
           onClick={() => setShowHeaderOptions(!showHeaderOptions)}
           aria-label="More options"
-          className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all">
+          className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all">
 
             <MoreVertical className="w-4 h-4" />
           </button>
           {showHeaderOptions &&
-          <div className="absolute right-4 top-10 z-[9999] w-56 bg-white rounded-xl shadow-soft border border-[#E5E7EB]/60 overflow-hidden py-1 flex flex-col">
+          <div className="absolute right-0 top-10 z-[9999] w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-soft border border-[#E5E7EB]/60 overflow-hidden py-1 flex flex-col">
               {activeRoom.type === "direct" &&
             (() => {
               const otherUser = activeRoom.members?.find(
               (member) => (member._id || member)?.toString() !== currentUserId?.toString()
               );
+              const otherId = (otherUser?._id || otherUser)?.toString();
               const isBlocked =
-              otherUser &&
-              user?.blockedUsers?.includes(otherUser._id || otherUser);
+                otherId &&
+                user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherId);
               return (
                 <>
                       <button
-                  onClick={handleReportUser}
+                  onClick={(e) => { e.stopPropagation(); handleReportUser(); }}
                   className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
 
                         <Flag className="w-4 h-4 text-slate-500" /> Report User
                       </button>
                       <button
-                  onClick={handleBlockUser}
+                  onClick={(e) => { e.stopPropagation(); handleBlockUser(); }}
                   className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
 
                         <Ban className="w-4 h-4 text-slate-500" /> {isBlocked ? "Unblock User" : "Block User"}
@@ -196,13 +195,13 @@ export const ChatHeader = ({
 
             })()}
               <button
-            onClick={handleClearChat}
+            onClick={(e) => { e.stopPropagation(); handleClearChat(); }}
             className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
 
                 <Eraser className="w-4 h-4 text-slate-500" /> Clear Chat
               </button>
               <button
-            onClick={(e) => handleDeleteChat(activeRoom, e)}
+            onClick={(e) => { e.stopPropagation(); handleDeleteChat(activeRoom); }}
             className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${
             activeRoom.journeyId ? "text-slate-700 hover:bg-slate-50" : "text-red-500 hover:bg-red-50"
             }`}>

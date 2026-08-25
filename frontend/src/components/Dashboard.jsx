@@ -122,7 +122,7 @@ const PanelHeader = ({ title }) => (
     <button
       type="button"
       aria-label={`More options for ${title}`}
-      className="p-1 rounded hover:bg-gray-200 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+      className="p-1 rounded hover:bg-gray-200 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-500"
     >
       <FaEllipsisV color="gray" aria-hidden="true" />
     </button>

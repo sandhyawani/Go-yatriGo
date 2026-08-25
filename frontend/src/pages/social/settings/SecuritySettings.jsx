@@ -495,7 +495,7 @@ const SecuritySettings = () => {
             width: "36px",
             height: "36px",
             border: "3px solid #e2e8f0",
-            borderTopColor: "#6366f1",
+            borderTopColor: "#7c3aed",
             borderRadius: "50%",
             margin: "0 auto 12px",
             animation: "spin 0.8s linear infinite"
@@ -782,7 +782,7 @@ const SecuritySettings = () => {
               style={{
                 width: "100%",
                 padding: "11px",
-                background: "#6366f1",
+                background: "#7c3aed",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "14px",
@@ -823,8 +823,8 @@ const SecuritySettings = () => {
           <Card>
               <SectionHeader
             icon={Activity}
-            iconBg="#eff6ff"
-            iconColor="#2563eb"
+            iconBg="#f3e8ff"
+            iconColor="#7c3aed"
             title="Active sessions"
             subtitle={`${sessions.length} device${sessions.length !== 1 ? "s" : ""} currently signed in`} />
 

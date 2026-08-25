@@ -1,16 +1,22 @@
 import React from "react";
 import CommentItem from "./CommentItem";
 
-const CommentList = ({ comments, myUserId, isCreator, postId, handleDeleteComment }) => {
-  if (!comments.length) return null;
+const CommentList = ({
+  comments,
+  myUserId,
+  isCreator,
+  postId,
+  handleDeleteComment,
+}) => {
+  if (!Array.isArray(comments) || !comments.length) return null;
 
   return (
     <>
       <div className="mt-3 border-t border-slate-100" />
       <div className="mt-2 space-y-1.5 px-1">
-        {comments.map((comment) => (
+        {comments.map((comment, index) => (
           <CommentItem
-            key={comment._id}
+            key={comment._id || comment.id || `${postId}-comment-${index}`}
             comment={comment}
             myUserId={myUserId}
             isCreator={isCreator}

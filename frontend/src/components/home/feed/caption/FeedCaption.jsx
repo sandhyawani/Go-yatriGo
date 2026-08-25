@@ -13,11 +13,11 @@ const FeedCaption = ({ post }) => {
         </div>
 
         <div className="min-w-0">
-          <p className="mb-1 text-[9px] font-black uppercase tracking-[0.15em] text-brand-600">
+          <p className="mb-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-brand-600 font-sans">
             Explorer Log
           </p>
 
-          <p className="text-[13px] leading-relaxed text-slate-700">
+          <p className="text-[13px] leading-relaxed text-slate-700 font-sans font-normal">
             {renderClickableText(post.caption || post.title)}
           </p>
         </div>

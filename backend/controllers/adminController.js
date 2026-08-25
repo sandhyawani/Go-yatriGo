@@ -42,97 +42,97 @@ const getStats = async (req, res) => {
     const userScope = { isDeleted: { $ne: true } };
 
     const [
-    totalUsers,
-    activeUserSessions,
-    postCount,
-    storyCount,
-    groupCount,
-    reportsPending,
-    suspendedUsers,
-    newPostsToday,
-    recentReports,
-    priorityReports,
-    postTrend,
-    reportTrend,
-    reportStatusDistribution] =
-    await Promise.all([
-    User.countDocuments(userScope),
-    Session.aggregate([
-    { $match: { status: "active", lastActive: { $gte: activeSince } } },
-    { $group: { _id: "$user" } },
-    {
-      $lookup: {
-        from: User.collection.name,
-        localField: "_id",
-        foreignField: "_id",
-        as: "user"
-      }
-    },
-    { $unwind: "$user" },
-    { $match: { "user.isDeleted": { $ne: true } } },
-    { $count: "value" }]
-    ),
-    Post.countDocuments(),
-    Story.countDocuments(),
-    TravelGroup.countDocuments(),
-    Report.countDocuments({ status: { $in: PENDING_REPORT_STATUSES } }),
-    User.countDocuments({ ...userScope, isSuspended: true }),
-    Post.countDocuments({ createdAt: { $gte: todayStart } }),
-    Report.find().
-    populate("reporter", "name username pic img").
-    populate("reportedUser", "name username pic img").
-    sort({ createdAt: -1 }).
-    limit(6),
-    Report.find({ status: { $in: PENDING_REPORT_STATUSES } }).
-    populate("reporter", "name username pic img").
-    populate("reportedUser", "name username pic img").
-    sort({ createdAt: -1 }).
-    limit(4),
-    Post.aggregate([
-    { $match: { createdAt: { $gte: trendStart } } },
-    {
-      $group: {
-        _id: {
-          $dateToString: {
-            format: "%Y-%m-%d",
-            date: "$createdAt",
-            timezone: PLATFORM_TIME_ZONE
-          }
-        },
-        value: { $sum: 1 }
-      }
-    }]
-    ),
-    Report.aggregate([
-    { $match: { createdAt: { $gte: trendStart } } },
-    {
-      $group: {
-        _id: {
-          $dateToString: {
-            format: "%Y-%m-%d",
-            date: "$createdAt",
-            timezone: PLATFORM_TIME_ZONE
-          }
-        },
-        value: { $sum: 1 }
-      }
-    }]
-    ),
-    Report.aggregate([
-    {
-      $group: {
-        _id: { $toLower: "$status" },
-        value: { $sum: 1 }
-      }
-    }]
-    )]
-    );
+      totalUsers,
+      activeUserSessions,
+      postCount,
+      storyCount,
+      groupCount,
+      reportsPending,
+      suspendedUsers,
+      newPostsToday,
+      recentReports,
+      priorityReports,
+      postTrend,
+      reportTrend,
+      reportStatusDistribution] =
+      await Promise.all([
+        User.countDocuments(userScope),
+        Session.aggregate([
+          { $match: { status: "active", lastActive: { $gte: activeSince } } },
+          { $group: { _id: "$user" } },
+          {
+            $lookup: {
+              from: User.collection.name,
+              localField: "_id",
+              foreignField: "_id",
+              as: "user"
+            }
+          },
+          { $unwind: "$user" },
+          { $match: { "user.isDeleted": { $ne: true } } },
+          { $count: "value" }]
+        ),
+        Post.countDocuments(),
+        Story.countDocuments(),
+        TravelGroup.countDocuments(),
+        Report.countDocuments({ status: { $in: PENDING_REPORT_STATUSES } }),
+        User.countDocuments({ ...userScope, isSuspended: true }),
+        Post.countDocuments({ createdAt: { $gte: todayStart } }),
+        Report.find().
+          populate("reporter", "name username pic img").
+          populate("reportedUser", "name username pic img").
+          sort({ createdAt: -1 }).
+          limit(6),
+        Report.find({ status: { $in: PENDING_REPORT_STATUSES } }).
+          populate("reporter", "name username pic img").
+          populate("reportedUser", "name username pic img").
+          sort({ createdAt: -1 }).
+          limit(4),
+        Post.aggregate([
+          { $match: { createdAt: { $gte: trendStart } } },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: "$createdAt",
+                  timezone: PLATFORM_TIME_ZONE
+                }
+              },
+              value: { $sum: 1 }
+            }
+          }]
+        ),
+        Report.aggregate([
+          { $match: { createdAt: { $gte: trendStart } } },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: "%Y-%m-%d",
+                  date: "$createdAt",
+                  timezone: PLATFORM_TIME_ZONE
+                }
+              },
+              value: { $sum: 1 }
+            }
+          }]
+        ),
+        Report.aggregate([
+          {
+            $group: {
+              _id: { $toLower: "$status" },
+              value: { $sum: 1 }
+            }
+          }]
+        )]
+      );
 
     const indexByDay = (items) =>
-    items.reduce((lookup, item) => {
-      lookup[item._id] = item.value;
-      return lookup;
-    }, {});
+      items.reduce((lookup, item) => {
+        lookup[item._id] = item.value;
+        return lookup;
+      }, {});
 
     const postsByDay = indexByDay(postTrend);
     const reportsByDay = indexByDay(reportTrend);
@@ -159,10 +159,10 @@ const getStats = async (req, res) => {
         reports: reportsPending
       },
       distribution: [
-      { name: "Travelers", value: totalUsers },
-      { name: "Posts", value: postCount },
-      { name: "Stories", value: storyCount },
-      { name: "Groups", value: groupCount }],
+        { name: "Travelers", value: totalUsers },
+        { name: "Posts", value: postCount },
+        { name: "Stories", value: storyCount },
+        { name: "Groups", value: groupCount }],
 
       activityTrend,
       reportStatusDistribution: reportStatusDistribution.map((status) => ({
@@ -185,9 +185,9 @@ const getStats = async (req, res) => {
 const getAllReports = async (req, res) => {
   try {
     const reports = await Report.find().
-    populate("reporter", "name username pic img").
-    populate("reportedUser", "name username pic img").
-    sort({ createdAt: -1 });
+      populate("reporter", "name username pic img").
+      populate("reportedUser", "name username pic img").
+      sort({ createdAt: -1 });
 
     res.status(200).json({ success: true, reports });
   } catch (error) {
@@ -267,8 +267,8 @@ const unsuspendUser = async (req, res) => {
 const getPendingVerifications = async (req, res) => {
   try {
     const pendingUsers = await User.find({ verificationStatus: "pending" }).
-    select("-password").
-    sort({ updatedAt: -1 });
+      select("-password").
+      sort({ updatedAt: -1 });
     res.status(200).json(pendingUsers);
   } catch (err) {
     res.status(500).json({ message: "Server error", error: err.message });

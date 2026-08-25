@@ -1,7 +1,8 @@
 import React from "react";
-import { Star } from "lucide-react";
+import { Star, Ban, Trash2, Edit3 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import ReportModal from "../modals/ReportModal";
+import CustomSelect from "../ui/CustomSelect";
 
 export const ActionModals = ({
   showBlockModal,
@@ -40,30 +41,33 @@ export const ActionModals = ({
 }) => {
   return (
     <>
-      {/* BLOCK CONFIRMATION MODAL */}
+      {/* ─── 1. BLOCK CONFIRMATION MODAL ────────────────────────────────────── */}
       <AnimatePresence>
         {showBlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowBlockModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
             >
-              <h3 className="text-sm font-black mb-2 text-rose-600">
-                {isBlockedByMe ? "Unblock User?" : "Block User?"}
+              <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
+                <Ban className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-black uppercase tracking-wider mb-2 text-danger">
+                {isBlockedByMe ? "Unblock Traveler?" : "Block Traveler?"}
               </h3>
-              <p className="text-xs text-slate-500 mb-6">
+              <p className="text-xs text-muted font-medium leading-relaxed mb-6">
                 {isBlockedByMe
-                  ? "They will be able to see your profile and interact with you again."
-                  : "They won't be able to find your profile, posts, or story on Go YatriGo. They won't be notified that you blocked them."}
+                  ? "They will be able to see your profile, trips, and interact with you again on Go YatriGo."
+                  : "They won't be able to find your profile, posts, or chat with you. They won't be notified that you blocked them."}
               </p>
-              <div className="flex gap-2 justify-center">
+              <div className="flex gap-2.5 justify-center">
                 <button
                   type="button"
                   onClick={() => setShowBlockModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
+                  className="px-5 py-2.5 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-full text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
@@ -73,7 +77,7 @@ export const ActionModals = ({
                     handleBlockUser();
                     setShowBlockModal(false);
                   }}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
+                  className="px-6 py-2.5 bg-danger hover:bg-red-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-danger/20 active:scale-95"
                 >
                   {isBlockedByMe ? "Unblock" : "Block"}
                 </button>
@@ -83,21 +87,21 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* RATE USER MODAL */}
+      {/* ─── 2. RATE USER MODAL ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {showRateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowRateModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white border border-slate-100 p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
+              className="bg-surface border border-border p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl relative z-10 text-center"
             >
-              <h3 className="text-xs font-black text-[#111827] flex items-center gap-2 mb-2 uppercase tracking-wider">
-                <Star className="w-5 h-5 text-amber-500 fill-amber-500" /> Rate Companion
+              <h3 className="text-xs font-black text-dark flex items-center justify-center gap-2 mb-2 uppercase tracking-widest">
+                <Star className="w-4 h-4 text-warning fill-warning" /> Rate Companion
               </h3>
-              <p className="text-[10px] text-slate-400 mb-6 leading-relaxed font-bold">
+              <p className="text-[11px] text-muted mb-6 leading-relaxed font-medium">
                 Provide travel feedback based on shared route planning, expenses sharing, and reliability.
               </p>
 
@@ -108,23 +112,24 @@ export const ActionModals = ({
                     type="button"
                     onClick={() => setRatingVal(star)}
                     className="transition-transform active:scale-90"
+                    aria-label={`Rate ${star} stars`}
                   >
                     <Star
                       className={`w-8 h-8 ${
                         star <= ratingVal
-                          ? "fill-amber-400 text-amber-400"
-                          : "text-slate-200"
+                          ? "fill-warning text-warning drop-shadow-sm"
+                          : "text-secondary-200"
                       }`}
                     />
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-2.5 justify-end pt-2 border-t border-slate-50">
+              <div className="flex gap-2.5 justify-center pt-2 border-t border-border">
                 <button
                   type="button"
                   onClick={() => setShowRateModal(false)}
-                  className="px-4 py-2.5 bg-slate-50 border border-slate-100 hover:bg-slate-100 rounded-xl text-slate-500 font-extrabold text-[9px] uppercase tracking-widest transition-colors"
+                  className="px-5 py-2.5 text-muted hover:text-dark rounded-full font-bold text-[10px] uppercase tracking-widest transition-colors"
                 >
                   Cancel
                 </button>
@@ -133,7 +138,7 @@ export const ActionModals = ({
                     handleRateUser();
                     setShowRateModal(false);
                   }}
-                  className="px-5 py-2.5 bg-[#6C4DF6] hover:bg-[#5b3ee0] text-white rounded-xl font-extrabold text-[9px] uppercase tracking-widest transition-colors shadow-sm active:scale-95"
+                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full font-bold text-[10px] uppercase tracking-widest transition-all shadow-md shadow-primary-600/25 active:scale-95"
                 >
                   Submit Rating
                 </button>
@@ -143,7 +148,7 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* REPORT SAFETY DIALOG MODAL */}
+      {/* ─── 3. REPORT SAFETY MODAL ─────────────────────────────────────────── */}
       <AnimatePresence>
         {showReportModal && (
           <ReportModal
@@ -156,18 +161,20 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* EDIT POST MODAL */}
+      {/* ─── 4. EDIT POST MODAL ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {showEditPostModal && editPostData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditPostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
+              className="bg-surface p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10"
             >
-              <h3 className="text-sm font-black mb-4">Edit Post</h3>
+              <h3 className="text-sm font-bold text-dark mb-4 flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-primary-600" /> Edit Travel Memory
+              </h3>
               <form onSubmit={handleEditPost} className="space-y-3">
                 <input
                   type="text"
@@ -179,7 +186,7 @@ export const ActionModals = ({
                       location: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-[#6C4DF6]"
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
                 />
                 <textarea
                   placeholder="Caption"
@@ -191,20 +198,20 @@ export const ActionModals = ({
                     })
                   }
                   rows="3"
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-[#6C4DF6] resize-none"
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
                 />
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     type="button"
                     onClick={() => setShowEditPostModal(false)}
-                    className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold"
+                    className="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 rounded-full text-xs font-bold text-muted"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-4 py-2 bg-[#6C4DF6] text-white rounded-xl text-xs font-bold"
+                    className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-bold shadow-md shadow-primary-600/20 transition-all"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -215,28 +222,31 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* DELETE POST MODAL */}
+      {/* ─── 5. DELETE POST MODAL ───────────────────────────────────────────── */}
       <AnimatePresence>
         {showDeletePostModal && postToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeletePostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
             >
-              <h3 className="text-sm font-black mb-2 text-rose-600">
-                Delete Post?
+              <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-black mb-2 text-danger uppercase tracking-wider">
+                Delete Travel Memory?
               </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                Are you sure you want to delete this post? This cannot be undone.
+              <p className="text-xs text-muted font-medium leading-relaxed mb-6">
+                Are you sure you want to delete this Travel Memory? This cannot be undone.
               </p>
-              <div className="flex gap-2 justify-center">
+              <div className="flex gap-2.5 justify-center">
                 <button
                   type="button"
                   onClick={() => setShowDeletePostModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
+                  className="px-5 py-2.5 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-full text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -244,7 +254,7 @@ export const ActionModals = ({
                   type="button"
                   onClick={handleDeletePost}
                   disabled={isSaving}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
+                  className="px-6 py-2.5 bg-danger hover:bg-red-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-danger/20 active:scale-95"
                 >
                   {isSaving ? "Deleting..." : "Delete"}
                 </button>
@@ -254,18 +264,18 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* EDIT STORY MODAL */}
+      {/* ─── 6. EDIT STORY MODAL ────────────────────────────────────────────── */}
       <AnimatePresence>
         {showEditStoryModal && editStoryData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10"
+              className="bg-surface p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10"
             >
-              <h3 className="text-sm font-black mb-4">Edit Story</h3>
+              <h3 className="text-sm font-bold text-dark mb-4">Edit Dispatch</h3>
               <form onSubmit={handleEditStory} className="space-y-3">
                 <textarea
                   placeholder="Caption"
@@ -277,9 +287,9 @@ export const ActionModals = ({
                     })
                   }
                   rows="2"
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-[#6C4DF6] resize-none"
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
                 />
-                <select
+                <CustomSelect
                   value={editStoryData.captionPosition || "center"}
                   onChange={(e) =>
                     setEditStoryData({
@@ -287,13 +297,14 @@ export const ActionModals = ({
                       captionPosition: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-[#6C4DF6]"
-                >
-                  <option value="top">Top</option>
-                  <option value="center">Center</option>
-                  <option value="bottom">Bottom</option>
-                </select>
-                <select
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
+                  options={[
+                    { label: "Top", value: "top" },
+                    { label: "Center", value: "center" },
+                    { label: "Bottom", value: "bottom" },
+                  ]}
+                />
+                <CustomSelect
                   value={editStoryData.captionColor || "white"}
                   onChange={(e) =>
                     setEditStoryData({
@@ -301,24 +312,25 @@ export const ActionModals = ({
                       captionColor: e.target.value,
                     })
                   }
-                  className="w-full bg-slate-50 border border-slate-150 rounded-xl p-3 text-xs outline-none focus:border-[#6C4DF6]"
-                >
-                  <option value="white">White</option>
-                  <option value="black">Black</option>
-                  <option value="purple">Purple</option>
-                </select>
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
+                  options={[
+                    { label: "White", value: "white" },
+                    { label: "Black", value: "black" },
+                    { label: "Purple", value: "purple" },
+                  ]}
+                />
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     type="button"
                     onClick={() => setShowEditStoryModal(false)}
-                    className="px-4 py-2 bg-slate-100 rounded-xl text-xs font-bold"
+                    className="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-muted rounded-full text-xs font-bold"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-4 py-2 bg-[#6C4DF6] text-white rounded-xl text-xs font-bold"
+                    className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-bold shadow-md shadow-primary-600/20 transition-all"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>
@@ -329,28 +341,31 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* DELETE STORY MODAL */}
+      {/* ─── 7. DELETE STORY MODAL ──────────────────────────────────────────── */}
       <AnimatePresence>
         {showDeleteStoryModal && storyToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeleteStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white p-6 rounded-3xl w-full max-w-sm shadow-xl relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
             >
-              <h3 className="text-sm font-black mb-2 text-rose-600">
-                Delete Story?
+              <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
+                <Trash2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-black mb-2 text-danger uppercase tracking-wider">
+                Delete Dispatch?
               </h3>
-              <p className="text-xs text-slate-500 mb-6">
-                Are you sure you want to delete this story? This cannot be undone.
+              <p className="text-xs text-muted font-medium leading-relaxed mb-6">
+                Are you sure you want to delete this Dispatch? This cannot be undone.
               </p>
-              <div className="flex gap-2 justify-center">
+              <div className="flex gap-2.5 justify-center">
                 <button
                   type="button"
                   onClick={() => setShowDeleteStoryModal(false)}
-                  className="px-6 py-2 bg-slate-100 rounded-xl text-xs font-bold"
+                  className="px-5 py-2.5 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-full text-xs font-bold"
                 >
                   Cancel
                 </button>
@@ -358,7 +373,7 @@ export const ActionModals = ({
                   type="button"
                   onClick={handleDeleteStory}
                   disabled={isSaving}
-                  className="px-6 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold"
+                  className="px-6 py-2.5 bg-danger hover:bg-red-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-danger/20 active:scale-95"
                 >
                   {isSaving ? "Deleting..." : "Delete"}
                 </button>

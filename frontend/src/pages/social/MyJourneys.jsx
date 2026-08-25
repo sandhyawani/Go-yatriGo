@@ -1,26 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-Compass,
-Plus,
-Sparkles,
-Mail,
-Calendar,
-Navigation,
-BookOpen,
-Layers,
-Map,
-ChevronRight,
-ChevronDown,
-MapPin } from
-"lucide-react";
+import { Compass, Plus, Sparkles, Mail, Calendar, Navigation, BookOpen, Layers, ChevronRight, ChevronDown, MapPin, XCircle } from "lucide-react";
 import moment from "moment";
 import axiosInstance from "../../api/axios";
 import JourneyCard from "../../components/journey/JourneyCard";
 import JourneyInvitationCard from "../../components/journey/JourneyInvitationCard";
-import CreateJourneyModal from "../../components/journey/CreateJourneyModal";
 import SafeCheckInModal from "../../components/journey/SafeCheckInModal";
 import { useAuth } from "../../context/authContext";
+
+import { useSidebar } from "../../components/social/sidebar/SidebarProvider";
+
 
 const MyJourneys = () => {
   const { user } = useAuth();
@@ -36,8 +25,15 @@ const MyJourneys = () => {
   const [sourceFilter, setSourceFilter] = useState("all");
 
 
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const { openCreateJourney } = useSidebar() || {};
   const [checkInJourney, setCheckInJourney] = useState(null);
+
+  const handleOpenCreateJourney = (e) => {
+    if (e && e.stopPropagation) e.stopPropagation();
+    if (openCreateJourney) {
+      openCreateJourney();
+    }
+  };
 
   useEffect(() => {
     axiosInstance.
@@ -62,100 +58,23 @@ const MyJourneys = () => {
       return;
     }
 
-
-    const normaliseBuddyTrip = (trip, status) => {
-      const diffDays = Math.round(
-      Math.abs(new Date(trip.endDate) - new Date(trip.startDate)) / (1000 * 60 * 60 * 24)
-      );
-      const durationDays = Math.max(1, diffDays + 1);
-      return {
-        _id: trip._id,
-        title: trip.title,
-        destination: trip.destination,
-        from: trip.from || "",
-        coverImage: trip.coverImage,
-        startDate: trip.startDate,
-        endDate: trip.endDate,
-        durationDays: durationDays,
-        status,
-        isBuddyTrip: true,
-        sourceType: "explore",
-        journeyType: "Explore Group",
-        members: [
-        { user: trip.host, role: "Host" },
-        ...(trip.members || []).map((m) => ({ user: m.user, role: m.role || "Member" }))]
-
-      };
-    };
-
-
-    const buddyLifecycle =
-    activeTab === "Completed" || activeTab === "Scrapbooks" ? "completed" :
-    activeTab === "Ongoing" ? "active" :
-    activeTab === "Upcoming" ? "upcoming" :
-    null;
-
-    const buddyUrl = myUserId ?
-    `/social/buddy?userId=${myUserId}${buddyLifecycle ? `&lifecycleStatus=${buddyLifecycle}` : ""}` :
-    null;
-
-    const journeyQuery =
-    activeTab === "all" ? "" :
-    activeTab === "Completed" || activeTab === "Scrapbooks" ? "?status=Completed" :
-    `?status=${activeTab}`;
-
-    Promise.allSettled([
-    axiosInstance.get(`/journeys/my${journeyQuery}`),
-    buddyUrl ? axiosInstance.get(buddyUrl) : Promise.resolve({ data: { success: false } })]
-    ).then((results) => {
+    axiosInstance.get(`/journeys/my`)
+    .then((result) => {
       let privateJourneys = [];
-      let exploreTrips = [];
 
-      if (results[0].status === "fulfilled" && results[0].value.data?.success) {
-        privateJourneys = results[0].value.data.journeys || [];
-      }
-      if (results[1].status === "fulfilled" && results[1].value.data?.success) {
-        const raw = results[1].value.data.trips || [];
-        const statusLabel =
-        activeTab === "Completed" || activeTab === "Scrapbooks" ? "Completed" :
-        activeTab === "Ongoing" ? "Ongoing" :
-        activeTab === "Upcoming" ? "Upcoming" :
-        null;
-        exploreTrips = raw.map((t) => normaliseBuddyTrip(t, statusLabel || t.lifecycleStatus || "Upcoming"));
+      if (result.data?.success) {
+        privateJourneys = result.data.journeys || [];
       }
 
-      const activeSourceIds = new Set(
-        privateJourneys
-          .filter((j) => (j.sourceType === "explore" || j.sourceType === "travel_group") && j.sourceId)
-          .map((j) => j.sourceId.toString())
-      );
-      const filteredExploreTrips = exploreTrips.filter(
-        (trip) => !activeSourceIds.has((trip._id || trip.id)?.toString())
-      );
-
-      let combined = [...privateJourneys, ...filteredExploreTrips];
-
-      // Deduplicate combined list by ID and title/destination signature to eliminate duplicate cards
-      const seenIds = new Set();
-      const deduplicated = [];
-
-      for (const item of combined) {
-        const id = (item._id || item.id)?.toString();
-
-        if (id && seenIds.has(id)) continue;
-
-        if (id) seenIds.add(id);
-        deduplicated.push(item);
-      }
+      let combined = [...privateJourneys];
 
       if (activeTab === "all") {
         const now = moment();
-        deduplicated.sort((a, b) => {
+        combined.sort((a, b) => {
           const getPriority = (j) => {
             const s = (j.status || "").toLowerCase();
             if (s === "cancelled") return 5;
-            const isHappeningNow = j.startDate && moment(j.startDate).isSameOrBefore(now, 'day') && (!j.endDate || moment(j.endDate).isSameOrAfter(now, 'day'));
-            if (isHappeningNow || s === "ongoing" || s === "active") return 1;
+            if (s === "ongoing") return 1;
             if (s === "upcoming" || s === "planning") return 2;
             if (s === "completed") return 3;
             return 4;
@@ -166,10 +85,10 @@ const MyJourneys = () => {
           return new Date(a.startDate) - new Date(b.startDate);
         });
       } else if (activeTab === "Completed") {
-        deduplicated.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
+        combined.sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
       }
 
-      setJourneys(deduplicated);
+      setJourneys(combined);
     }).catch((err) => {
       console.error("Error loading journeys:", err);
     }).finally(() => setLoading(false));
@@ -186,49 +105,43 @@ const MyJourneys = () => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  const isInvitationExpired = (inv) => {
+    if (inv.status === "expired") return true;
+    if (!inv.journeyId?.startDate) return false;
+    const diffMs = new Date(inv.journeyId.startDate) - new Date();
+    const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+    return daysLeft <= 0;
+  };
+
   const activeInvitations = invitations.filter((inv) => {
     if (!inv.journeyId) return false;
     const isPending = inv.status === "pending";
     const notCompleted =
       inv.journeyId?.status !== "Completed" &&
       inv.journeyId?.status !== "Cancelled";
-    return isPending && notCompleted;
+    const notExpired = !isInvitationExpired(inv);
+    return isPending && notCompleted && notExpired;
   });
 
-  const [journeyStats, setJourneyStats] = useState(null);
+  const getJourneyStatusKey = (journey) => {
+    const s = String(journey?.status || "").trim().toLowerCase();
+    if (s === "cancelled" || journey?.isCancelled) return "cancelled";
+    if (s === "ongoing") return "active";
+    if (s === "completed") return "completed";
+    return "upcoming";
+  };
 
-  useEffect(() => {
-    if (!myUserId) return;
-    axiosInstance.get(`/journeys/stats/me`, { withCredentials: true })
-      .then(res => {
-        if (res.data?.success && res.data.stats) {
-          setJourneyStats(res.data.stats);
-        }
-      })
-      .catch(err => console.error("Failed to fetch journey stats", err));
-  }, [myUserId]);
+  // Derive ALL counts from the same journeys array used to render cards
+  const upcomingCount = journeys.filter(j => getJourneyStatusKey(j) === "upcoming").length;
+  const activeCount = journeys.filter(j => getJourneyStatusKey(j) === "active").length;
+  const completedCount = journeys.filter(j => getJourneyStatusKey(j) === "completed").length;
+  const cancelledCount = journeys.filter(j => getJourneyStatusKey(j) === "cancelled").length;
 
-  const upcomingCount = journeyStats ? journeyStats.upcoming : journeys.filter(j => {
-    const s = (j.status || "").toLowerCase();
-    const lcs = (j.lifecycleStatus || "").toLowerCase();
-    return s === "upcoming" || s === "planning" || lcs === "upcoming" || lcs === "planning";
-  }).length;
-  
-  const activeCount = journeyStats ? journeyStats.ongoing : journeys.filter(j => {
-    const s = (j.status || "").toLowerCase();
-    const lcs = (j.lifecycleStatus || "").toLowerCase();
-    return s === "ongoing" || s === "active" || s === "active now" || lcs === "active";
-  }).length;
-  
-  const completedCount = journeyStats ? journeyStats.completed : journeys.filter(j => {
-    const s = (j.status || "").toLowerCase();
-    const lcs = (j.lifecycleStatus || "").toLowerCase();
-    return s === "completed" || s === "cancelled" || lcs === "completed";
-  }).length;
-
-  const journeySummary = (journeyStats?.totalJourneys > 0 || journeys.length > 0) 
-    ? `${upcomingCount} Upcoming · ${activeCount} Active · ${completedCount} Completed`
-    : "Plan your next adventure";
+  const journeySummary = loading 
+    ? "Loading your journeys..." 
+    : (journeys.length > 0
+      ? `${upcomingCount} Upcoming · ${activeCount} Active · ${completedCount} Completed${cancelledCount ? ` · ${cancelledCount} Cancelled` : ""}`
+      : "Plan your next adventure");
 
   const pastInvitations = invitations.filter((inv) => {
     if (!inv.journeyId) return false;
@@ -236,7 +149,8 @@ const MyJourneys = () => {
     const isCompleted =
       inv.journeyId?.status === "Completed" ||
       inv.journeyId?.status === "Cancelled";
-    return isProcessed || isCompleted;
+    const isExpired = isInvitationExpired(inv);
+    return isProcessed || isCompleted || isExpired;
   });
 
   const tabs = [
@@ -256,151 +170,168 @@ const MyJourneys = () => {
   {
     id: "Upcoming",
     label: "Upcoming",
+    count: upcomingCount,
     icon: <Calendar className="w-3.5 h-3.5" />
   },
   {
     id: "Ongoing",
     label: "Active",
+    count: activeCount,
     icon: <Navigation className="w-3.5 h-3.5" />
   },
   {
     id: "Completed",
     label: "Completed",
+    count: completedCount,
     icon: <BookOpen className="w-3.5 h-3.5" />
+  },
+  {
+    id: "Cancelled",
+    label: "Cancelled",
+    count: cancelledCount,
+    icon: <XCircle className="w-3.5 h-3.5" />
   }];
-
-
-  const handleCreated = (newJ) => {
-    setJourneys((prev) => [newJ, ...prev]);
-  };
 
   return (
     <div className="min-h-screen bg-[#F7F6FB] dark:bg-slate-950 pb-24 lg:pb-8">
-
-      {}
-      <div className="lg:hidden relative overflow-hidden bg-gradient-to-br from-[#7C3AED] via-[#7c5df8] to-[#9D88F9] px-5 pt-5 pb-8">
-        {}
-        <div className="absolute -top-6 -right-6 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-        <div className="absolute bottom-0 left-4 w-20 h-20 bg-white/5 rounded-full blur-xl" />
-
-        <div className="relative z-10 flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-              <Map className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h1 className="text-lg font-black text-white tracking-tight leading-none">
-                Journey Hub
-              </h1>
-              <p className="text-[10px] text-white/80 font-semibold mt-1">
-                {journeySummary}
-              </p>
-            </div>
-          </div>
-          <Link
-          to="/profile"
-          className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold border border-white/25 active:scale-95 transition-transform">
-
-            <Sparkles className="w-3 h-3" />
-            Profile
-          </Link>
-        </div>
-
-        {}
-        <button
-        onClick={() => setIsCreateModalOpen(true)}
-        className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-white text-[#7C3AED] font-extrabold text-sm shadow-lg shadow-[#7C3AED]/20 active:scale-[0.98] transition-transform">
-
-          <span className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center">
-              <Plus className="w-4 h-4 stroke-[3]" />
-            </div>
-            Launch New Journey
-          </span>
-          <ChevronRight className="w-4 h-4 text-[#7C3AED]/60" />
-        </button>
-      </div>
-
-      {}
-      <div className="hidden lg:flex max-w-7xl mx-auto px-6 pt-6 items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-brand-50 dark:bg-brand-900/60 text-[#7C3AED] flex items-center justify-center border border-brand-100 dark:border-brand-800/60 shadow-xs">
-            <Map className="w-6 h-6 text-[#7C3AED] stroke-[2]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
-                Journey Hub
-              </h1>
-              <span className="bg-slate-100 dark:bg-slate-800 text-slate-400 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
-                {journeys.length} {journeys.length === 1 ? "Journey" : "Journeys"}
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              {journeySummary}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Link
-          to="/profile"
-          className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold hover:bg-slate-200 transition-all">
-
-            <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" /> My Profile
-          </Link>
-          <button
-          onClick={() => setIsCreateModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#7C3AED] hover:bg-[#7c3aed] text-white font-extrabold text-xs rounded-xl shadow-md shadow-[#7C3AED]/20 transition-all active:scale-95 shrink-0">
-
-            <Plus className="w-4 h-4 stroke-[3]" /> Launch Journey
-          </button>
-        </div>
-      </div>
-
-      {}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-5 space-y-4">
-
-        {}
-        <div className="sticky top-0 lg:top-auto z-20 pt-3 lg:pt-0 bg-[#F8FAFC] lg:bg-transparent -mx-4 sm:mx-0">
-          <div className="w-full overflow-x-auto scrollbar-none pb-1">
-            <div className="flex w-max min-w-full px-4 sm:px-0 sm:justify-center">
-              <div className="flex flex-nowrap gap-2 p-1.5 bg-slate-50/80 rounded-xl relative select-none border border-[#E5E7EB] shadow-soft shrink-0">
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-200 whitespace-nowrap select-none shrink-0 ${
-                isActive ?
-                "bg-[#7C3AED] text-white shadow-sm" :
-                "bg-white text-[#64748B] hover:text-[#1E293B] border border-[#E5E7EB] hover:bg-slate-50"
-                }`}>
-
-                  <span className={isActive ? "text-white" : "text-[#64748B]"}>
-                    {tab.icon}
+      {/* Mobile Header Card */}
+      <div className="lg:hidden px-4 pt-3 pb-1">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs space-y-2.5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#7C3AED] to-[#9D88F9] text-white flex items-center justify-center shadow-xs shrink-0">
+                <BookOpen className="w-5 h-5 stroke-[2]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-base font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    Journey Hub
+                  </h1>
+                  <span className="bg-purple-50 text-[#7C3AED] text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full border border-purple-200/60">
+                    {journeys.length} {journeys.length === 1 ? "Trip" : "Trips"}
                   </span>
-                  <span>{tab.label}</span>
-                  {tab.count !== undefined &&
-                  <span
-                  className={`px-1.5 py-0.5 text-[9px] rounded-md font-semibold ${
-                  tab.highlightCount ?
-                  "bg-[#EF4444] text-white animate-pulse" :
-                  isActive ?
-                  "bg-white/25 text-white" :
-                  "bg-[#F3E8FF] text-[#7C3AED]"
-                  }`}>
+                </div>
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 font-semibold mt-0.5">
+                  {upcomingCount} Upcoming • {activeCount} Active • {completedCount} Done
+                </p>
+              </div>
+            </div>
 
-                      {tab.count}
-                    </span>}
+            <button
+              onClick={handleOpenCreateJourney}
+              className="inline-flex items-center gap-1 px-3 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-transform shrink-0 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[3]" />
+              <span>Plan</span>
+            </button>
+          </div>
+        </div>
+      </div>
 
-                </button>);
+      {/* Desktop Header Hero */}
+      <div className="hidden lg:block max-w-7xl mx-auto px-6 pt-7">
+        <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/80 dark:border-slate-800 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-purple-200/20 via-violet-100/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
-            })}
+          <div className="relative z-10 flex items-center justify-between gap-6">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7C3AED] to-[#9D88F9] text-white flex items-center justify-center shadow-[0_8px_20px_rgba(124,58,237,0.25)] shrink-0">
+                <BookOpen className="w-7 h-7 stroke-[2]" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2.5">
+                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight font-heading">
+                    Journey Hub
+                  </h1>
+                  <span className="bg-purple-50 text-[#7C3AED] text-[10px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full border border-purple-200/60 font-sans shadow-xs">
+                    {journeys.length} {journeys.length === 1 ? "Journey" : "Journeys"}
+                  </span>
+                </div>
+
+                {/* Quick Status Stats Chips */}
+                <div className="flex flex-wrap items-center gap-2 mt-2 font-sans">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/40 dark:text-amber-300 px-2.5 py-0.5 rounded-full border border-amber-200/60">
+                    ⏳ {upcomingCount} Upcoming
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/40 dark:text-emerald-300 px-2.5 py-0.5 rounded-full border border-emerald-200/60">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    {activeCount} Active
+                  </span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 bg-slate-100 dark:bg-slate-800 dark:text-slate-300 px-2.5 py-0.5 rounded-full border border-slate-200/60">
+                    ✓ {completedCount} Completed
+                  </span>
+                  {cancelledCount > 0 && (
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-700 bg-rose-50 dark:bg-rose-950/40 dark:text-rose-300 px-2.5 py-0.5 rounded-full border border-rose-200/60">
+                      ✕ {cancelledCount} Cancelled
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 shrink-0 font-sans">
+              <Link
+                to="/profile"
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200/80 text-slate-700 dark:text-slate-300 text-xs font-bold transition-all border border-slate-200/60 dark:border-slate-700"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" /> My Profile
+              </Link>
+              <button
+                onClick={handleOpenCreateJourney}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-[0_4px_16px_rgba(124,58,237,0.3)] transition-all active:scale-95 shrink-0 cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[3]" /> Launch Journey
+              </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-6 space-y-5">
+
+        {/* Tab Navigation Pill Bar */}
+        <div className="sticky top-0 lg:top-auto z-20 pt-3 lg:pt-0 bg-[#F7F6FB]/90 lg:bg-transparent backdrop-blur-md -mx-4 sm:mx-0">
+          <div className="w-full overflow-x-auto scrollbar-none pb-1">
+            <div className="flex w-max min-w-full px-4 sm:px-0 sm:justify-start">
+              <div className="flex flex-nowrap gap-1.5 p-1.5 bg-white/90 dark:bg-slate-900/90 rounded-2xl relative select-none border border-slate-200/80 dark:border-slate-800 shadow-sm shrink-0">
+                {tabs.map((tab) => {
+                  const isActive = activeTab === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap select-none shrink-0 cursor-pointer ${
+                        isActive
+                          ? "bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] text-white shadow-[0_2px_8px_rgba(124,58,237,0.3)]"
+                          : "text-slate-600 dark:text-slate-300 hover:text-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800"
+                      }`}
+                    >
+                      <span className={isActive ? "text-white" : "text-slate-400"}>
+                        {tab.icon}
+                      </span>
+                      <span>{tab.label}</span>
+                      {tab.count !== undefined && (
+                        <span
+                          className={`px-1.5 py-0.5 text-[9.5px] rounded-md font-extrabold ${
+                            tab.highlightCount
+                              ? "bg-rose-500 text-white animate-pulse"
+                              : isActive
+                              ? "bg-white/20 text-white"
+                              : "bg-purple-50 text-[#7C3AED] dark:bg-purple-950/60"
+                          }`}
+                        >
+                          {tab.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </div>
 
         {}
         {loading ?
@@ -409,7 +340,7 @@ const MyJourneys = () => {
               <Compass className="w-6 h-6 text-[#7C3AED] animate-spin" />
             </div>
             <p className="text-xs font-semibold text-[#64748B]">
-              Loading squad workspaces...
+              Loading journey workspaces...
             </p>
           </div> :
         activeTab === "Invites" ?
@@ -427,7 +358,7 @@ const MyJourneys = () => {
                 </p>
               </div> :
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {activeInvitations.map((inv) =>
             <JourneyInvitationCard
             key={inv._id}
@@ -449,8 +380,8 @@ const MyJourneys = () => {
               </div>}
 
 
-            {pastInvitations.length > 0 &&
-          <div className="mt-6 border-t border-[#E5E7EB] pt-6">
+            {pastInvitations.length > 0 && (
+              <div className="mt-6 border-t border-[#E5E7EB] pt-6">
                 <button
             type="button"
             onClick={() => setShowPastInvites(!showPastInvites)}
@@ -461,35 +392,36 @@ const MyJourneys = () => {
 
                   <span>Past Invitations ({pastInvitations.length})</span>
                 </button>
-                {showPastInvites &&
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-3">
-                    {pastInvitations.map((inv) =>
-              <JourneyInvitationCard
-              key={inv._id}
-              invitation={inv}
-              onAction={(id, action) => {
-                setInvitations((prev) =>
-                prev.map((i) =>
-                i._id === id ?
-                { ...i, status: action === "accepted" ? "accepted" : "rejected" } :
-                i
-                )
-                );
-                if (action === "accepted") {
-                  fetchJourneys();
-                }
-              }} />
-
-              )}
-                  </div>}
-
-              </div>}
+                {showPastInvites && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+                    {pastInvitations.map((inv) => (
+                      <JourneyInvitationCard
+                        key={inv._id}
+                        invitation={inv}
+                        onAction={(id, action) => {
+                          setInvitations((prev) =>
+                            prev.map((i) =>
+                              i._id === id
+                                ? { ...i, status: action === "accepted" ? "accepted" : "rejected" }
+                                : i
+                            )
+                          );
+                          if (action === "accepted") {
+                            fetchJourneys();
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
           </> :
         journeys.length === 0 ?
         <div className="py-14 text-center bg-white rounded-3xl border border-[#E5E7EB]/60 p-6 max-w-sm mx-auto space-y-3 shadow-soft">
             <div className="w-12 h-12 bg-[#F3E8FF] text-[#7C3AED] rounded-xl flex items-center justify-center mx-auto text-xl">
-              🧭
+              🗺️
             </div>
             <h3 className="text-base font-semibold text-[#1E293B]">
               {activeTab === "Ongoing" ?
@@ -503,10 +435,10 @@ const MyJourneys = () => {
             <p className="text-[11px] text-[#64748B] max-w-xs mx-auto leading-relaxed">
               {activeTab === "Ongoing" ?
             "You don't have any active journeys right now. Launch a new journey to get started." :
-            "Create your collaborative journey workspace and invite your squad to plan together."}
+            "Create your collaborative journey workspace and invite your travel group to plan together."}
             </p>
             <button
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={handleOpenCreateJourney}
           className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-xs rounded-xl shadow-soft transition-all duration-200">
 
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> Launch Journey
@@ -531,20 +463,20 @@ const MyJourneys = () => {
             <div className="space-y-4">
               <div>
                 <h3 className="text-base font-black text-slate-800 dark:text-white flex items-center gap-2">
-                  👥 Trips with Strangers
+                  👥 Explore Trips
                 </h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                  Trips you joined or hosted via public Travel travel groups
+                  Trips you joined or hosted via Explore Travel Groups
                 </p>
               </div>
 
-              {journeys.filter((j) => j.isBuddyTrip).length === 0 ?
+              {journeys.filter((j) => j.sourceType === "explore").length === 0 ?
             <div className="py-10 text-center bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6">
-                  <p className="text-xs text-slate-400 font-semibold">No completed trips with strangers yet.</p>
+                  <p className="text-xs text-slate-400 font-semibold">No completed explore trips yet.</p>
                 </div> :
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 font-sans">
-                  {journeys.filter((j) => j.isBuddyTrip).map((j) =>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                  {journeys.filter((j) => j.sourceType === "explore").map((j) =>
               <JourneyCard
               key={j._id}
               journey={j}
@@ -566,13 +498,13 @@ const MyJourneys = () => {
                 </p>
               </div>
 
-              {journeys.filter((j) => !j.isBuddyTrip).length === 0 ?
+              {journeys.filter((j) => j.sourceType !== "explore").length === 0 ?
             <div className="py-10 text-center bg-slate-50/50 dark:bg-slate-800/40 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 p-6">
                   <p className="text-xs text-slate-400 font-semibold">No completed journeys with trip mates yet.</p>
                 </div> :
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 font-sans">
-                  {journeys.filter((j) => !j.isBuddyTrip).map((j) =>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+                  {journeys.filter((j) => j.sourceType !== "explore").map((j) =>
               <JourneyCard
               key={j._id}
               journey={j}
@@ -601,41 +533,54 @@ const MyJourneys = () => {
                         </span>
                       </div>
                       <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white m-0">
-                        {journeys[0].title} is Underway · Day {Math.min(Math.ceil((Date.now() - new Date(journeys[0].startDate).getTime()) / (1000 * 60 * 60 * 24)) || 1, journeys[0].durationDays || 1)} of {journeys[0].durationDays || 1}
+                        {(() => {
+                          const j0 = journeys[0];
+                          const durationDays = j0.durationDays || (j0.startDate && j0.endDate ? Math.max(1, Math.ceil((new Date(j0.endDate) - new Date(j0.startDate)) / (1000 * 60 * 60 * 24))) : 1);
+                          const currentDay = j0.startDate ? Math.max(1, Math.ceil((Date.now() - new Date(j0.startDate).getTime()) / (1000 * 60 * 60 * 24))) : 1;
+                          return `${j0.title} is Underway · Day ${Math.min(currentDay, durationDays)} of ${durationDays}`;
+                        })()}
                       </h2>
                       <p className="text-xs text-slate-300 font-semibold flex items-center gap-2 m-0">
                         <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
                         <span>{journeys[0].from ? `${journeys[0].from} ` : ""}{journeys[0].from && "→"} {journeys[0].destination}</span>
                         <span className="opacity-40">•</span>
-                        <span className="text-slate-400">Next check-in: 7:00 PM</span>
+                        <span className="text-slate-400">
+                          {journeys[0].safetyState?.nextExpectedMilestone
+                            ? `Next: ${journeys[0].safetyState.nextExpectedMilestone}`
+                            : journeys[0].safetyState?.isSafetyComplete
+                            ? "All milestones completed"
+                            : "Safety check-in ready"}
+                        </span>
                       </p>
                     </div>
                     <div className="flex items-center gap-2.5 shrink-0">
                       <Link
-                  to={`/social/journeys/${journeys[0]._id}`}
-                  className="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5">
-
+                        to={`/social/journeys/${journeys[0]._id}`}
+                        className="px-5 py-2.5 bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-sm transition-all active:scale-95 flex items-center gap-1.5"
+                      >
                         Open Journey
                       </Link>
                       <button
-                  onClick={() => setCheckInJourney(journeys[0])}
-                  className="px-5 py-2.5 bg-[#7C3AED] hover:bg-[#7c3aed] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-[#7C3AED]/20 transition-all active:scale-95 flex items-center gap-1.5">
-
+                        onClick={() => setCheckInJourney(journeys[0])}
+                        className="px-5 py-2.5 bg-[#7C3AED] hover:bg-[#7c3aed] text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-[#7C3AED]/20 transition-all active:scale-95 flex items-center gap-1.5"
+                      >
                         Check In
                       </button>
                     </div>
                   </div>
                 </div>
 
-                {}
+                {/* Live Underway Safety & Progress Counters */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-6">
                   <div className="bg-white dark:bg-slate-900 rounded-2xl p-3.5 border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-lg shrink-0">
                       ⏰
                     </div>
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Next Check-In</span>
-                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0">7:00 PM Today</p>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Next Milestone</span>
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0 truncate max-w-[180px]">
+                        {journeys[0].safetyState?.nextExpectedMilestone || (journeys[0].safetyState?.isSafetyComplete ? "Complete" : "Ready")}
+                      </p>
                     </div>
                   </div>
 
@@ -645,7 +590,9 @@ const MyJourneys = () => {
                     </div>
                     <div>
                       <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Safety Checkpoints</span>
-                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0">2/4 Completed</p>
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0">
+                        {journeys[0].safetyState?.completedMilestones?.length ?? 0}/5 Completed
+                      </p>
                     </div>
                   </div>
 
@@ -654,51 +601,95 @@ const MyJourneys = () => {
                       💬
                     </div>
                     <div>
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Squad Activity</span>
-                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0">3 New Updates</p>
+                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-wide">Journey Activity</span>
+                      <p className="text-xs font-black text-slate-800 dark:text-slate-100 m-0">
+                        {journeys[0].timeline?.length ?? 0} {journeys[0].timeline?.length === 1 ? "Update" : "Updates"}
+                      </p>
                     </div>
                   </div>
                 </div>
               </>}
 
+
             {}
             {(() => {
-            const hasExplore = journeys.some((j) => j.isBuddyTrip || j.sourceType === "explore");
-            const hasPrivate = journeys.some((j) => !j.isBuddyTrip && j.sourceType !== "explore");
+            const hasExplore = journeys.some((j) => j.sourceType === "explore");
+            const hasPrivate = journeys.some((j) => j.sourceType !== "explore");
             const showFilter = hasExplore && hasPrivate;
 
             const filteredJourneys = journeys.filter((j) => {
-              if (sourceFilter === "explore") return j.isBuddyTrip || j.sourceType === "explore";
-              if (sourceFilter === "friends") return !j.isBuddyTrip && j.sourceType !== "explore" && (j.members?.length > 1 || j.journeyType?.toLowerCase().includes("shared"));
-              if (sourceFilter === "solo") return !j.isBuddyTrip && j.sourceType !== "explore" && (j.journeyType?.toLowerCase().includes("solo") || j.members?.length <= 1 && !j.journeyType?.toLowerCase().includes("shared"));
+              if (activeTab !== "all" && activeTab !== "Scrapbooks") {
+                const statusKey = getJourneyStatusKey(j);
+                const tabKey = activeTab.toLowerCase();
+                if (tabKey === "ongoing" && statusKey !== "active") return false;
+                if (tabKey === "upcoming" && statusKey !== "upcoming") return false;
+                if (tabKey === "completed" && statusKey !== "completed") return false;
+                if (tabKey === "cancelled" && statusKey !== "cancelled") return false;
+              } else if (activeTab === "Scrapbooks") {
+                const statusKey = getJourneyStatusKey(j);
+                if (statusKey !== "completed") return false;
+              }
+
+              const isSolo = j.journeyType === "Solo Journey" || j.journeyType === "Solo" || (j.members?.length <= 1 && !j.journeyType?.toLowerCase().includes("shared"));
+              if (sourceFilter === "explore") return j.sourceType === "explore";
+              if (sourceFilter === "friends") return j.sourceType !== "explore" && !isSolo;
+              if (sourceFilter === "solo") return j.sourceType !== "explore" && isSolo;
               return true;
             });
 
             const displayList = activeTab === "Completed" || !viewAllJourneys ?
-            filteredJourneys.slice(0, 4) :
+            filteredJourneys.slice(0, 3) :
             filteredJourneys;
+
+            if (filteredJourneys.length === 0) {
+              return (
+                <div className="py-14 text-center bg-white rounded-3xl border border-[#E5E7EB]/60 p-6 max-w-sm mx-auto space-y-3 shadow-soft">
+                  <div className="w-12 h-12 bg-[#F3E8FF] text-[#7C3AED] rounded-xl flex items-center justify-center mx-auto text-xl">
+                    🗺️
+                  </div>
+                  <h3 className="text-base font-semibold text-[#1E293B]">
+                    {activeTab === "Ongoing" ? "No active journeys right now" :
+                     activeTab === "Upcoming" ? "No upcoming journeys" :
+                     activeTab === "Completed" ? "No completed journeys" :
+                     activeTab === "Cancelled" ? "No cancelled journeys" :
+                     "No journeys found"}
+                  </h3>
+                  <p className="text-[11px] text-[#64748B] max-w-xs mx-auto leading-relaxed">
+                    {activeTab === "Ongoing" ? "You don't have any active journeys right now." :
+                     activeTab === "Completed" ? "You haven't completed any journeys yet." :
+                     "Try adjusting your filters or create a new journey."}
+                  </p>
+                  <button
+                    onClick={handleOpenCreateJourney}
+                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-xs rounded-xl shadow-soft transition-all duration-200"
+                  >
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> Launch Journey
+                  </button>
+                </div>
+              );
+            }
 
             return (
               <>
                   {showFilter &&
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                       <p className="text-xs font-bold text-slate-500 dark:text-slate-400">
                         {filteredJourneys.length} {filteredJourneys.length === 1 ? "journey" : "journeys"}
                       </p>
-                      <div className="flex items-center gap-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-1 py-1 shadow-xs">
+                      <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1 -mx-4 px-4 sm:mx-0 sm:px-0">
                         {[
                           { key: "all", label: "All" },
-                          { key: "friends", label: "👥 Friends Journey" },
-                          { key: "explore", label: "🌍 Explore Groups" },
-                          { key: "solo", label: "👤 Solo Expedition" },
+                          { key: "friends", label: "👥 Friends" },
+                          { key: "explore", label: "🌍 Explore" },
+                          { key: "solo", label: "👤 Solo" },
                         ].map(opt => (
                           <button
                             key={opt.key}
                             onClick={() => setSourceFilter(opt.key)}
-                            className={`px-2.5 py-1 rounded-lg text-[10px] font-black transition-all ${
+                            className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
                               sourceFilter === opt.key
-                                ? "bg-[#F3E8FF] text-[#7C3AED] shadow-sm border border-[#E9D5FF]"
-                                : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 border border-transparent"
+                                ? "bg-[#7C3AED] text-white shadow-xs"
+                                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-800 hover:bg-slate-50"
                             }`}
                           >
                             {opt.label}
@@ -708,71 +699,57 @@ const MyJourneys = () => {
                     </div>}
 
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {displayList.map((j) =>
                   <JourneyCard
                   key={j._id}
                   journey={j}
                   onCheckInClick={(item) => setCheckInJourney(item)} />
-
                   )}
                   </div>
                 </>);
 
           })()}
-            {activeTab === "Completed" && journeys.length > 4 &&
-          <div className="flex justify-center pt-2">
+            {activeTab === "Completed" && journeys.length > 3 && (
+              <div className="flex justify-center pt-2">
                 <button
-            onClick={() => setViewAllCompleted(true)}
-            className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 font-bold text-xs uppercase tracking-wider rounded-2xl shadow-xs transition-all active:scale-95 flex items-center gap-2">
-
+                  onClick={() => setViewAllCompleted(true)}
+                  className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 font-bold text-xs uppercase tracking-wider rounded-2xl shadow-xs transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                >
                   <span>View All Completed Trips</span>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </button>
-              </div>}
+              </div>
+            )}
 
-            {activeTab !== "Completed" && journeys.length > 4 && !viewAllJourneys &&
-          <div className="flex justify-center pt-2">
+            {activeTab !== "Completed" && journeys.length > 3 && !viewAllJourneys && (
+              <div className="flex justify-center pt-2">
                 <button
-            onClick={() => setViewAllJourneys(true)}
-            className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 font-bold text-xs uppercase tracking-wider rounded-2xl shadow-xs transition-all active:scale-95 flex items-center gap-2">
-
-                  <span>View More Journeys</span>
+                  onClick={() => setViewAllJourneys(true)}
+                  className="px-6 py-3 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/80 font-bold text-xs uppercase tracking-wider rounded-2xl shadow-xs transition-all active:scale-95 flex items-center gap-2 cursor-pointer"
+                >
+                  <span>View More Journeys ({journeys.length - 3} more)</span>
                   <ChevronRight className="w-4 h-4 text-slate-400" />
                 </button>
-              </div>}
+              </div>
+            )}
 
           </div>}
 
       </div>
 
-      {}
-      {!loading && journeys.length > 0 && activeTab !== "Invites" &&
-      <button
-      onClick={() => setIsCreateModalOpen(true)}
-      className="lg:hidden fixed bottom-20 right-4 z-30 flex items-center gap-2 px-4 py-3 bg-[#7C3AED] text-white font-extrabold text-sm rounded-2xl shadow-xl shadow-[#7C3AED]/30 active:scale-95 transition-transform">
-
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>New Journey</span>
-        </button>}
-
-
-      {}
-      <CreateJourneyModal
-      isOpen={isCreateModalOpen}
-      onClose={() => setIsCreateModalOpen(false)}
-      onCreated={handleCreated} />
-
 
       {}
       <SafeCheckInModal
-      journey={checkInJourney}
-      isOpen={Boolean(checkInJourney)}
-      onClose={() => setCheckInJourney(null)}
-      onSuccess={() => {
-        alert("Safe check-in broadcasted to squad!");
-        fetchJourneys();
-      }} />
+        journey={checkInJourney}
+        isOpen={Boolean(checkInJourney)}
+        onClose={() => setCheckInJourney(null)}
+        onCheckedIn={() => fetchJourneys()}
+        onSuccess={() => {
+          fetchJourneys();
+        }}
+      />
+
 
     </div>);
 
