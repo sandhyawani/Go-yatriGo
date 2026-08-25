@@ -5,6 +5,9 @@ import { MapPin, Calendar, Compass } from "lucide-react";
 import { getAvatarUrl } from "../../utils/avatar";
 import { normalizeJourneyStatus } from "../../utils/journeyLifecycle";
 
+const DEFAULT_COVER =
+  "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=800&q=80";
+
 const TripCard = ({ trip, user, handleFelt }) => {
   const navigate = useNavigate();
 
@@ -94,16 +97,16 @@ const TripCard = ({ trip, user, handleFelt }) => {
       }`}
     >
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
-        {trip.coverImage ? (
-          <img
-            src={trip.coverImage}
-            alt={trip.title}
-            loading="lazy"
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-          />
-        ) : (
-          <Compass className="w-14 h-14 text-slate-300" />
-        )}
+        <img
+          src={trip.coverImage || DEFAULT_COVER}
+          alt={trip.title || "Trip"}
+          loading="lazy"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = DEFAULT_COVER;
+          }}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+        />
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-500"></div>
         
