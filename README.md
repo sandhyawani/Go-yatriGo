@@ -25,11 +25,10 @@ Experience Go YatriGo live in action:
 
 | Environment | Link | Status |
 | :--- | :--- | :--- |
-| **🌐 Live Web App** | [https://goyatrigo.vercel.app](https://github.com/sandhyawani/Go-yatriGo) | ![Deployment](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square) |
-| **📡 Backend API** | [https://api.goyatrigo.com](https://github.com/sandhyawani/Go-yatriGo) | ![API Status](https://img.shields.io/badge/API-Online-blue?style=flat-square) |
-| **📁 Repository** | [github.com/sandhyawani/Go-yatriGo](https://github.com/sandhyawani/Go-yatriGo) | ![GitHub Stars](https://img.shields.io/github/stars/sandhyawani/Go-yatriGo?style=social) |
+| **🌐 Live Web App** | [go-yatri-go.vercel.app](https://go-yatri-go.vercel.app/) | ![Deployment](https://img.shields.io/badge/Status-Active-brightgreen?style=flat-square) |
+| **📁 GitHub Repository** | [github.com/sandhyawani/Go-yatriGo](https://github.com/sandhyawani/Go-yatriGo) | ![GitHub Stars](https://img.shields.io/github/stars/sandhyawani/Go-yatriGo?style=social) |
 
-> 💡 **Demo Credentials**: Register a new account or explore public journeys, memories, and travel buddy squads directly from the homepage.
+> 💡 **Explore**: Register a new account or explore public journeys, travel memories, and travel buddy squads directly from the live platform.
 
 ---
 
