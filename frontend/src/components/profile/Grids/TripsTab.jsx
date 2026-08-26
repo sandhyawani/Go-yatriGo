@@ -101,8 +101,9 @@ export const TripsTab = ({
 
     // Upcoming
     const maxCompanions = Number(trip.maxCompanions);
-    const companionCount = Array.isArray(trip.companions)
-      ? trip.companions.length
+    const membersList = trip.companions || trip.members || [];
+    const companionCount = Array.isArray(membersList)
+      ? membersList.length
       : 0;
 
     // Do not show "0 Slots Left" when the backend

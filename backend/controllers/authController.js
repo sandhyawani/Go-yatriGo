@@ -560,6 +560,13 @@ const changePassword = async (req, res, next) => {
 const getCurrentUser = async (req, res) => {
   const token = getRequestToken(req);
 
+  if (!req.user) {
+    return res.status(200).json({
+      success: false,
+      message: "Not authenticated"
+    });
+  }
+
   res.status(200).json({
     success: true,
     details: serializeUser(req.user),

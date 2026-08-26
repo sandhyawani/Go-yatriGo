@@ -107,13 +107,13 @@ const JourneyWorkspaceView = ({ journeyId }) => {
     setEmergencyPhone("");
     setItems([]);
     setIsPinned(false);
-    setCategory("Notes");
+    setCategory("Packing");
   };
 
   const handleEditClick = (note) => {
     setEditingNoteId(note._id);
     
-    let mappedCategory = "Notes";
+    let mappedCategory = "Packing";
     const foundCat = categories.find(c => c.match.includes(note.category) || c.name === note.category);
     if (foundCat) mappedCategory = foundCat.name;
     
@@ -704,23 +704,17 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </div>
               )}
 
-              {/* General Notes / Travel Tips */}
-              {(category === "Notes" || category === "Travel Tips" || category === "Travel Tip") && (
+              {/* Travel Tips */}
+              {(category === "Travel Tips" || category === "Travel Tip") && (
                 <div>
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
-                    {category === "Travel Tips" || category === "Travel Tip"
-                      ? "Tip Details & Useful Links"
-                      : "Notes / Instructions"}
+                    Tip Details & Useful Links
                   </label>
                   <textarea
                     rows="4"
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
-                    placeholder={
-                      category === "Travel Tips" || category === "Travel Tip"
-                        ? "e.g. Take the 7:30 AM ferry to avoid peak queue. Book tickets at..."
-                        : "Enter important instructions, booking links, or shared notes..."
-                    }
+                    placeholder="e.g. Take the 7:30 AM ferry to avoid peak queue. Book tickets at..."
                     className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all resize-none"
                   />
                 </div>

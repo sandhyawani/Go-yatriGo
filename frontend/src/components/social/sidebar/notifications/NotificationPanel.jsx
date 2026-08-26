@@ -78,8 +78,8 @@ const getNotificationVisuals = (type, category) => {
   }
   if (t.includes("like") || t.includes("reaction")) {
     return {
-      icon: <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />,
-      bg: "bg-rose-50 text-rose-500 border-rose-100",
+      icon: <Sparkles className="w-4 h-4 text-[#7C3AED] fill-[#7C3AED]" />,
+      bg: "bg-purple-50 text-[#7C3AED] border-purple-100",
       badge: "Activity",
       colorType: "primary"
     };

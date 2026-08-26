@@ -45,7 +45,7 @@ const DashboardStatCard = ({ icon: Icon, title, value, description, accent = "pr
           <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-none font-heading">
             {value ?? 0}
           </p>
-          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500 mt-1.5 leading-tight truncate">
+          <p className="text-[11px] font-bold uppercase tracking-[0.08em] text-slate-500 mt-1.5 leading-tight">
             {title}
           </p>
         </div>
@@ -58,7 +58,7 @@ const DashboardStatCard = ({ icon: Icon, title, value, description, accent = "pr
       {description && (
         <p className="text-[10px] font-semibold text-slate-400 pt-2 mt-2 border-t border-slate-100 flex items-center gap-1.5 relative z-10 leading-snug">
           <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${config.dotColor}`} />
-          <span className="min-w-0 truncate">{description}</span>
+          <span className="min-w-0">{description}</span>
         </p>
       )}
     </Card>

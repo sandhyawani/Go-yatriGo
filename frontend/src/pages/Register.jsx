@@ -233,7 +233,8 @@ const Register = () => {
           data.append("image", compressed);
 
           const uploadRes = await axios.post("/upload", data, {
-            headers: { "Content-Type": "multipart/form-data" }
+            headers: { "Content-Type": "multipart/form-data" },
+            skipAuthRedirect: true
           });
 
           if (!uploadRes.data.success || !uploadRes.data.url) {
@@ -248,7 +249,8 @@ const Register = () => {
           data.append("image", compressed);
 
           const uploadRes = await axios.post("/upload", data, {
-            headers: { "Content-Type": "multipart/form-data" }
+            headers: { "Content-Type": "multipart/form-data" },
+            skipAuthRedirect: true
           });
 
           if (!uploadRes.data.success || !uploadRes.data.url) {
@@ -269,7 +271,7 @@ const Register = () => {
         mobile: payload.mobile.trim(),
         img: imageUrl,
         govId: govIdUrl
-      });
+      }, { skipAuthRedirect: true });
 
       if (!isMounted.current) return;
 

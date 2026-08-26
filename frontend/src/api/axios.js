@@ -55,18 +55,31 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
-      console.warn("Unauthorized request. Clearing local session.");
-      localStorage.removeItem(STORAGE_KEY);
-      window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+      // Only treat as unauthorized if the user was actually logged in (had a token).
+      // This prevents register/upload 401 errors from incorrectly clearing session state.
+      let hadToken = false;
+      try {
+        const userStr = localStorage.getItem(STORAGE_KEY);
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          hadToken = Boolean(user?.token);
+        }
+      } catch (_) {}
 
-      const isPublicAuthPage =
-        window.location.pathname === '/login' ||
-        window.location.pathname === '/register' ||
-        window.location.pathname === '/forgot-password' ||
-        window.location.pathname.startsWith('/reset-password');
+      if (hadToken) {
+        console.warn("Unauthorized request. Clearing local session.");
+        localStorage.removeItem(STORAGE_KEY);
+        window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
 
-      if (!isPublicAuthPage) {
-        window.location.href = '/login';
+        const isPublicAuthPage =
+          window.location.pathname === '/login' ||
+          window.location.pathname === '/register' ||
+          window.location.pathname === '/forgot-password' ||
+          window.location.pathname.startsWith('/reset-password');
+
+        if (!isPublicAuthPage) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

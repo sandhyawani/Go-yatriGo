@@ -1109,15 +1109,18 @@ const Profile = () => {
           );
 
           setJoinedTrips(
-            trips.filter((t) =>
-              t.companions?.some(
+            trips.filter((t) => {
+              const membersList = t.companions || t.members || [];
+              return membersList.some(
                 (c) =>
                   (c.userId?._id ||
                     c.userId ||
+                    c.user?._id ||
+                    c.user ||
                     c._id ||
                     c) === targetId
-              )
-            )
+              );
+            })
           );
           setFetchedTabs((prev) => ({ ...prev, trips: true }));
         }

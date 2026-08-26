@@ -1083,14 +1083,18 @@ exports.addGalleryItem = async (req, res) => {
 
     const item = await JourneyGallery.create({
       journeyId: id,
-      url,
+      mediaUrl: url,
       caption,
       mediaType: type || "image",
-      uploadedBy: userId
+      itemType: type === "video" ? "video" : "photo",
+      uploaderId: userId,
+      uploaderName: req.user.name || "",
+      uploaderPic: req.user.profilePic || req.user.pic || req.user.avatar || ""
     });
 
     res.status(201).json({ success: true, item });
   } catch (error) {
+    console.error("Error adding gallery item:", error);
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };

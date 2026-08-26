@@ -152,6 +152,10 @@ export const AuthContextProvider = ({ children }) => {
 
         if (cancelled) return;
 
+        if (data && data.success === false) {
+          throw new Error("Not authenticated");
+        }
+
         dispatch({
           type: "AUTH_RESTORE_SUCCESS",
           payload: normalizeAuthPayload(data, storedUser?.token)
