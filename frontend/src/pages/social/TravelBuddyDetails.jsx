@@ -723,83 +723,99 @@ const TravelBuddyDetails = () => {
             <motion.div
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white border border-slate-100 p-4 sm:p-5 rounded-2xl shadow-sm space-y-4"
+              className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden"
             >
-              <h3 className="text-sm font-medium text-[#1E293B] flex items-center gap-2 border-b border-slate-100 pb-3">
-                <MessageSquare className="w-4 h-4 text-[#7C3AED]" /> Group Chat
-              </h3>
+              {/* Card Header */}
+              <div className="px-4 sm:px-5 pt-4 sm:pt-5 pb-3 flex items-center gap-2 border-b border-slate-100">
+                <MessageSquare className="w-4 h-4 text-[#7C3AED]" />
+                <h3 className="text-sm font-semibold text-[#1E293B]">Group Chat</h3>
+              </div>
 
-              {showChat ? (
-                <div className="bg-[#FAFAFA] p-4 rounded-xl border border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <h4 className="text-sm font-black text-[#1E293B] flex items-center gap-1.5">
-                      <UserCheck className="w-4 h-4 text-emerald-600" /> Group Chat
-                    </h4>
-                    <p className="text-xs text-slate-500 font-medium mt-1">
-                      Coordinate plans, updates and check-ins with your travel companions.
-                    </p>
-                  </div>
-                  <div className="shrink-0 flex flex-wrap sm:flex-nowrap items-stretch sm:items-center gap-2">
+              {/* Card Body */}
+              <div className="p-4 sm:p-5">
+                {showChat ? (
+                  <div className="space-y-3">
+                    {/* Info banner */}
+                    <div className="flex items-start gap-3 p-3.5 rounded-xl bg-[#F8F7FF] border border-[#E9E7FD]">
+                      <div className="w-8 h-8 rounded-xl bg-[#7C3AED]/10 flex items-center justify-center shrink-0">
+                        <UserCheck className="w-4 h-4 text-[#7C3AED]" />
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-sm font-bold text-[#1E293B] leading-snug">You're in the group</h4>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5 leading-relaxed">
+                          Coordinate plans, updates and check-ins with your travel companions.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Action buttons — equal height, equal weight side by side */}
+                    <div className="flex flex-col sm:flex-row items-stretch gap-2.5">
+                      <button
+                        onClick={() => handleOpenJourneyWorkspace(false)}
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-[#7C3AED] bg-white border border-[#7C3AED]/30 hover:bg-[#F8F7FF] hover:border-[#7C3AED]/60 transition-all duration-200 shadow-xs"
+                      >
+                        <BookOpen className="w-3.5 h-3.5 shrink-0" />
+                        Open Journey Hub
+                      </button>
+                      <button
+                        onClick={() => handleOpenJourneyWorkspace(true)}
+                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold text-white bg-[#7C3AED] hover:bg-[#6D28D9] transition-all duration-200 shadow-sm hover:shadow-md"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 shrink-0" />
+                        Open Group Chat
+                      </button>
+                    </div>
+
+                    {/* Leave group — tertiary, below the primary actions */}
                     {!isHost && isUpcoming && (
                       <button
                         onClick={() => setShowLeaveModal(true)}
-                        className="flex-1 sm:flex-initial px-3.5 py-2 bg-rose-50 hover:bg-rose-100 text-rose-500 rounded-xl text-[10px] font-black transition-all border border-rose-200 text-center"
+                        className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-[11px] font-bold text-rose-500 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-all duration-200"
                       >
                         Leave Group
                       </button>
                     )}
-                    <button
-                      onClick={() => handleOpenJourneyWorkspace(false)}
-                      className="flex-1 sm:flex-initial px-3.5 sm:px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 rounded-xl text-xs font-bold transition-all shadow-sm border border-brand-200 flex items-center justify-center gap-1.5"
-                    >
-                      <BookOpen className="w-3.5 h-3.5" /> Open Journey Hub
-                    </button>
-                    <button
-                      onClick={() => handleOpenJourneyWorkspace(true)}
-                      className="w-full sm:w-auto px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
-                    >
-                      <MessageSquare className="w-3.5 h-3.5" /> Open Group Chat
-                    </button>
                   </div>
-                </div>
-              ) : isPending ? (
-                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
-                  <Clock className="w-7 h-7 text-amber-500 mx-auto" />
-                  <h4 className="text-sm font-black text-[#1E293B]">
-                    Join request pending
-                  </h4>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    You'll get access after the host approves your request.
-                  </p>
-                </div>
-              ) : isOngoing ? (
-                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
-                  <Lock className="w-7 h-7 text-slate-400 mx-auto" />
-                  <h4 className="text-sm font-black text-[#1E293B]">
-                    Group chat is private
-                  </h4>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    This journey is in progress. Group chat is exclusive to active members.
-                  </p>
-                </div>
-              ) : (
-                <div className="bg-[#FAFAFA] p-6 rounded-xl border border-slate-100 text-center space-y-2">
-                  <Lock className="w-7 h-7 text-slate-400 mx-auto" />
-                  <h4 className="text-sm font-black text-[#1E293B]">
-                    Group chat is private
-                  </h4>
-                  <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-                    Join this journey to access the group chat.
-                  </p>
-                </div>
-              )}
+                ) : isPending ? (
+                  <div className="flex flex-col items-center gap-2 py-5 text-center">
+                    <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 flex items-center justify-center">
+                      <Clock className="w-5 h-5 text-amber-500" />
+                    </div>
+                    <h4 className="text-sm font-bold text-[#1E293B]">Join request pending</h4>
+                    <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                      You'll get access after the host approves your request.
+                    </p>
+                  </div>
+                ) : isOngoing ? (
+                  <div className="flex flex-col items-center gap-2 py-5 text-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      <Lock className="w-5 h-5 text-slate-400" />
+                    </div>
+                    <h4 className="text-sm font-bold text-[#1E293B]">Group chat is private</h4>
+                    <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                      This journey is in progress. Group chat is exclusive to active members.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 py-5 text-center">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center">
+                      <Lock className="w-5 h-5 text-slate-400" />
+                    </div>
+                    <h4 className="text-sm font-bold text-[#1E293B]">Group chat is private</h4>
+                    <p className="text-xs text-slate-500 max-w-xs leading-relaxed">
+                      Join this journey to access the group chat.
+                    </p>
+                  </div>
+                )}
+              </div>
 
+              {/* Cancellation reason footer */}
               {isCancelled && trip.cancellationReason && (
-                <div className="p-4 sm:p-5 bg-rose-50 border-t border-rose-100 text-rose-700 text-xs font-semibold rounded-xl">
-                  <span className="font-black text-[10px] block mb-1">
+                <div className="px-4 sm:px-5 py-3.5 bg-rose-50 border-t border-rose-100">
+                  <span className="text-[10px] font-black text-rose-600 block mb-1 uppercase tracking-wide">
                     Reason for Cancellation
                   </span>
-                  "{trip.cancellationReason}"
+                  <p className="text-xs font-medium text-rose-700">"{trip.cancellationReason}"</p>
                 </div>
               )}
             </motion.div>
