@@ -170,7 +170,7 @@ export const ChatInput = ({
         onKeyDown={handleKeyDown}
         placeholder="Share your travel experience..."
         rows={1}
-        className="flex-1 max-h-[80px] bg-transparent text-xs sm:text-sm text-slate-800 px-1.5 sm:px-2 py-1.5 resize-none outline-none focus:outline-none focus:ring-0 focus:border-transparent focus-visible:outline-none focus-visible:ring-0 border-none shadow-none placeholder-slate-400 overflow-y-auto scrollbar-none min-h-[32px]" />
+        className="flex-1 max-h-[80px] bg-transparent text-[16px] sm:text-sm text-slate-800 px-1.5 sm:px-2 py-1.5 resize-none outline-none focus:outline-none focus:ring-0 focus:border-transparent focus-visible:outline-none focus-visible:ring-0 border-none shadow-none placeholder-slate-400 overflow-y-auto scrollbar-none min-h-[32px]" />
 
 
         {!isRecording && !inputText.trim() && !audioBlob && !selectedFile &&

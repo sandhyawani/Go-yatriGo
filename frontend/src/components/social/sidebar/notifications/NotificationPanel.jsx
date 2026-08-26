@@ -588,6 +588,41 @@ export const NotificationPanel = () => {
                               </button>
                             </>
                           )}
+
+                          {isJoinRequest && (
+                            <>
+                              <button
+                                disabled={isProcessingAction}
+                                onClick={async () => {
+                                  setIsProcessingAction(true);
+                                  const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
+                                  const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
+                                  if (groupId && reqId) {
+                                    await handleManageJoin(groupId, reqId, "approved", notifId);
+                                  }
+                                  setIsProcessingAction(false);
+                                }}
+                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
+                              >
+                                Accept Join
+                              </button>
+                              <button
+                                disabled={isProcessingAction}
+                                onClick={async () => {
+                                  setIsProcessingAction(true);
+                                  const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
+                                  const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
+                                  if (groupId && reqId) {
+                                    await handleManageJoin(groupId, reqId, "rejected", notifId);
+                                  }
+                                  setIsProcessingAction(false);
+                                }}
+                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                              >
+                                Decline
+                              </button>
+                            </>
+                          )}
                         </div>
                       )}
                     </div>

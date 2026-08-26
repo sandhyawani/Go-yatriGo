@@ -35,7 +35,7 @@ const SidebarLayout = ({ children }) => {
       <DesktopSidebar />
       <MobileTopHeader />
 
-      <main className="flex min-w-0 flex-1 h-full overflow-y-auto overflow-x-hidden relative scroll-smooth bg-slate-50/50">
+      <main id="main-scroll-container" className="flex min-w-0 flex-1 h-full overflow-y-auto overflow-x-hidden relative scroll-smooth bg-slate-50/50">
         <div className="mx-auto min-w-0 w-full max-w-[1920px]">
           {children}
         </div>

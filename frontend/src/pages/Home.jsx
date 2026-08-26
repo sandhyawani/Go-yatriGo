@@ -115,6 +115,30 @@ const getVisibleCommentCount = (post) => {
 const Home = () => {
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const updateMemoriesCache = useCallback((updater) => {
+    queryClient.setQueryData(['memories'], (oldData) => {
+      if (!oldData || !oldData.pages) return oldData;
+      return {
+        ...oldData,
+        pages: oldData.pages.map(page => ({
+          ...page,
+          memories: updater(page.memories)
+        }))
+      };
+    });
+  }, [queryClient]);
+
+  // For adding a new post at the top
+  const addMemoryToCache = useCallback((newPost) => {
+    queryClient.setQueryData(['memories'], (oldData) => {
+      if (!oldData || !oldData.pages || oldData.pages.length === 0) return oldData;
+      const newPages = [...oldData.pages];
+      newPages[0] = { ...newPages[0], memories: [newPost, ...newPages[0].memories] };
+      return { ...oldData, pages: newPages };
+    });
+  }, [queryClient]);
   const location = useLocation();
 
   useEffect(() => {
@@ -135,8 +159,28 @@ const Home = () => {
   }, []);
 
 
-  const [memories, setMemories] = useState([]);
-  const [activeJourneys, setActiveJourneys] = useState([]);
+  // React Query Hooks
+  const myUserIdStr = (user?._id || user?.id)?.toString();
+  const {
+    data: memoriesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: loadingMemories,
+    isError: errorMemories
+  } = useInfiniteMemoriesQuery();
+  
+  const memories = useMemo(() => {
+    return memoriesData?.pages.flatMap(page => page.memories) || [];
+  }, [memoriesData]);
+
+  const {
+    data: sideData,
+    isLoading: loadingStories
+  } = useHomeSideDataQuery(myUserIdStr);
+
+  const activeJourneys = sideData?.activeJourneys || [];
+
   const upcomingTripsRef = useRef(null);
 
   const upcomingTripsList = useMemo(() => {
@@ -175,19 +219,20 @@ const Home = () => {
     setIsBannerDismissed(true);
   };
 
-  const [dispatches, setStories] = useState([]);
-  const [suggestions, setSuggestions] = useState([]);
-  const [nearbyTrips, setNearbyTrips] = useState([]);
-  const [savedPostIds, setSavedPostIds] = useState(new Set());
-  const [loadingMemories, setLoadingMemories] = useState(true);
-  const [loadingStories, setLoadingStories] = useState(true);
+  const dispatches = sideData?.stories || [];
+  const suggestions = sideData?.suggestions || [];
+  const nearbyTrips = sideData?.nearbyTrips || [];
+  const [savedPostIds, setSavedPostIds] = useState(new Set()); // Initialize in effect
+  // Loading states are now handled by React Query
   const [followLoadingMap, setFollowLoadingMap] = useState({});
   const [saveLoadingMap, setSaveLoadingMap] = useState({});
   const [feltLoadingMap, setFeltLoadingMap] = useState({});
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [errorMemories, setErrorMemories] = useState(false);
+  useEffect(() => {
+    if (sideData?.savedPostIds) {
+      setSavedPostIds(new Set(sideData.savedPostIds));
+    }
+  }, [sideData?.savedPostIds]);
+  // Pagination states are handled by React Query
   const [commentsLoadingMap, setCommentsLoadingMap] = useState({});
   const [showMobileGroups, setShowMobileGroups] = useState(false);
   const storyContainerRef = useRef(null);
@@ -291,6 +336,9 @@ const Home = () => {
   const lastTapTime = useRef({});
 
 
+  // Scroll Restoration Hook
+  useScrollRestoration(!loadingMemories && memories.length > 0, '.main-scroll-container');
+  
   const myUserId = useMemo(
   () => (user?._id || user?.id)?.toString(),
   [user?._id, user?.id]
@@ -382,181 +430,33 @@ const Home = () => {
   }, [socket]);
 
 
-  const fetchMemories = useCallback(async (pageNum = 1, append = false) => {
-    if (pageNum === 1) {
-      setLoadingMemories(true);
-      setErrorMemories(false);
-    } else setLoadingMore(true);
+  
 
-    try {
-      const res = await axios.get(`/social/memory?page=${pageNum}&limit=10`, {
-        withCredentials: true
-      });
-      if (res.data.success) {
-        if (append) {
-          setMemories((prev) => {
-            const existingIds = new Set(prev.map((p) => p._id));
-            const newPosts = res.data.memories.filter(
-            (p) => !existingIds.has(p._id)
-            );
-            return [...prev, ...newPosts];
-          });
-        } else {
-          setMemories(res.data.memories);
-        }
-        if (res.data.memories.length < 10) setHasMore(false);else
-        setHasMore(true);
-      }
-    } catch (err) {
-      showToast.error("Failed to load travel feed");
-      if (pageNum === 1) setErrorMemories(true);
-    } finally {
-      if (pageNum === 1) setLoadingMemories(false);else
-      setLoadingMore(false);
-    }
-  }, []);
+  
 
-  const fetchSideData = useCallback(() => {
-    setLoadingStories(true);
-
-    Promise.allSettled([
-    axios.get("/social/story", { withCredentials: true }),
-    axios.get("/users/suggestions", { withCredentials: true }),
-    axios.get("/social/buddy", { withCredentials: true }),
-    axios.get("/social/memory/save?idsOnly=true", { withCredentials: true }),
-    axios.get("/journeys/my", { withCredentials: true })]
-    ).then((results) => {
-      if (results[0].status === "fulfilled" && results[0].value.data.success) {
-        setStories(results[0].value.data.stories);
-      }
-      setLoadingStories(false);
-
-      if (results[1].status === "fulfilled" && results[1].value.data.success) {
-        const filtered = (results[1].value.data.suggestions || []).filter(
-        (s) => s._id?.toString() !== myUserId
-        );
-        setSuggestions(filtered);
-      }
-      let buddyActives = [];
-      if (results[2].status === "fulfilled" && results[2].value.data?.success) {
-        const trips = results[2].value.data.trips || [];
-        setNearbyTrips(trips);
-        const todayBuddy = new Date();
-        todayBuddy.setHours(0, 0, 0, 0);
-        buddyActives = trips
-          .filter((trip) => {
-            const isJoined =
-              trip.members?.some((m) => (m.user?._id || m.user)?.toString() === myUserId) ||
-              (trip.userId?._id || trip.userId || trip.host?._id || trip.host)?.toString() === myUserId;
-            if (!isJoined || trip.status === "cancelled") return false;
-
-            if (trip.endDate && new Date(trip.endDate) < todayBuddy) return false;
-            return true;
-          })
-          .map((trip) => ({
-            ...trip,
-            isBuddyTrip: true,
-            status:
-              trip.status === "active" || trip.status === "active now"
-                ? "Ongoing"
-                : trip.status === "upcoming"
-                ? "Upcoming"
-                : "Planning"
-          }));
-      }
-      if (results[3].status === "fulfilled" && results[3].value.data?.success) {
-        const ids = new Set(
-          (results[3].value.data.posts || []).map((p) =>
-            (p._id || p.postId?._id)?.toString()
-          )
-        );
-        setSavedPostIds(ids);
-      }
-
-      let userJourneys = [];
-      if (results[4].status === "fulfilled" && results[4].value.data?.success) {
-        userJourneys = results[4].value.data.journeys || [];
-      }
-
-      const todayJourney = new Date();
-      todayJourney.setHours(0, 0, 0, 0);
-      const actives = userJourneys.filter((j) => {
-        const s = String(j.status || "").trim().toLowerCase();
-        if (["completed", "cancelled", "canceled", "scrapbook"].includes(s) || j.isCancelled) return false;
-        if (j.endDate && new Date(j.endDate) < todayJourney) return false;
-        return s === "ongoing" || s === "planning" || s === "upcoming" || s === "active" || s === "active now" || s === "pending";
-      });
-
-      // Deduplicate buddy trips that are already imported as personal journeys
-      const activeIds = new Set(actives.map((j) => (j._id || j.id)?.toString()));
-      const activeSourceIds = new Set(
-        actives
-          .filter((j) => j.sourceType === "explore" && j.sourceId)
-          .map((j) => j.sourceId.toString())
-      );
-
-      const filteredBuddyActives = buddyActives.filter((trip) => {
-        const tripId = (trip._id || trip.id)?.toString();
-        return !activeSourceIds.has(tripId) && !activeIds.has(tripId);
-      });
-
-      const combinedActives = [...actives, ...filteredBuddyActives];
-
-      const now = moment();
-      combinedActives.sort((a, b) => {
-        const aHappening =
-          a.startDate &&
-          moment(a.startDate).isSameOrBefore(now, "day") &&
-          (!a.endDate || moment(a.endDate).isSameOrAfter(now, "day"));
-        const bHappening =
-          b.startDate &&
-          moment(b.startDate).isSameOrBefore(now, "day") &&
-          (!b.endDate || moment(b.endDate).isSameOrAfter(now, "day"));
-
-        if (aHappening && !bHappening) return -1;
-        if (!aHappening && bHappening) return 1;
-
-        const dateA = a.startDate ? new Date(a.startDate).getTime() : 0;
-        const dateB = b.startDate ? new Date(b.startDate).getTime() : 0;
-        return dateA - dateB;
-      });
-
-      setActiveJourneys(combinedActives);
-    });
-  }, [myUserId]);
-
-  const fetchFeedData = useCallback(() => {
-    fetchMemories(1, false);
-    fetchSideData();
-  }, [fetchMemories, fetchSideData]);
+  
 
   useEffect(() => {
-    fetchFeedData();
+    
   }, [fetchFeedData]);
 
-  const loadMorePosts = useCallback(() => {
-    if (!loadingMore && hasMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchMemories(nextPage, true);
-    }
-  }, [loadingMore, hasMore, page, fetchMemories]);
+  
 
   useEffect(() => {
     if (!loadMoreRef.current) return;
     const observer = new IntersectionObserver(
-    (entries) => {
-      if (entries[0].isIntersecting && !loadingMore && hasMore) {
-        loadMorePosts();
-      }
-    },
-    { rootMargin: "200px" }
+      (entries) => {
+        if (entries[0].isIntersecting && !isFetchingNextPage && hasNextPage) {
+          fetchNextPage();
+        }
+      },
+      { rootMargin: "200px" }
     );
     observer.observe(loadMoreRef.current);
     return () => {
       observer.disconnect();
     };
-  }, [loadMorePosts, loadingMore, hasMore]);
+  }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const handleOpenComments = async (postId) => {
     if (activeCommentPost === postId) {
@@ -573,8 +473,7 @@ const Home = () => {
         withCredentials: true
       });
       if (res.data.success) {
-        setMemories((prev) =>
-        prev.map((m) =>
+        updateMemoriesCache((prev) => prev.map((m) =>
         m._id === postId ? { ...m, comments: res.data.comments } : m
         )
         );
@@ -660,7 +559,7 @@ const Home = () => {
         setPostLocation("");
         setPostTags("");
         setPostImage("");
-        setMemories((prev) => [res.data.post, ...prev]);
+        addMemoryToCache(res.data.post);
       }
     } catch {
       showToast.error("Failed to share travel memory");
@@ -682,9 +581,7 @@ const Home = () => {
       setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
 
       let previousMemories = [];
-      setMemories((prev) => {
-        previousMemories = prev;
-        return prev.map((m) => {
+      updateMemoriesCache((prev) => { previousMemories = prev; return prev.map((m) => {
           const mId = (m._id || m.id)?.toString();
           if (mId === cleanPostId) {
             const hasFelt = m.likes?.some(
@@ -711,8 +608,7 @@ const Home = () => {
           const updatedLikes =
             res.data.likes || res.data.memory?.likes || res.data.post?.likes;
           if (Array.isArray(updatedLikes)) {
-            setMemories((prev) =>
-              prev.map((m) =>
+            updateMemoriesCache((prev) => prev.map((m) =>
                 (m._id || m.id)?.toString() === cleanPostId
                   ? { ...m, likes: updatedLikes, likesCount: updatedLikes.length }
                   : m
@@ -721,7 +617,7 @@ const Home = () => {
           }
         }
       } catch (err) {
-        setMemories(previousMemories);
+        queryClient.setQueryData(['memories'], previousMemories);
         showToast.error(err.response?.data?.message || "Failed to update reaction");
       } finally {
         setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));
@@ -786,8 +682,7 @@ const Home = () => {
       );
       if (res.data.success) {
         setCommentText((prev) => ({ ...prev, [postId]: "" }));
-        setMemories((prev) =>
-        prev.map((m) => {
+        updateMemoriesCache((prev) => prev.map((m) => {
           if (m._id !== postId) return m;
           if (res.data.memory?.comments) {
             return {
@@ -839,8 +734,7 @@ const Home = () => {
       );
       if (res.data.success) {
         showToast.success("Comment deleted");
-        setMemories((prev) =>
-        prev.map((m) => {
+        updateMemoriesCache((prev) => prev.map((m) => {
           if (m._id !== postId) return m;
           if (res.data.memory?.comments) {
             return {
@@ -1046,8 +940,7 @@ const Home = () => {
       if (res.data.success) {
         showToast.success("Travel Memory updated successfully!");
         const updatedMemory = res.data.post || res.data.memory;
-        setMemories((prev) =>
-          prev.map((p) => (p._id === editPostData._id ? { ...p, ...updatedMemory } : p))
+        updateMemoriesCache((prev) => prev.map((p) => (p._id === editPostData._id ? { ...p, ...updatedMemory } : p))
         );
         setShowEditPostModal(false);
         setEditPostData(null);
@@ -1076,7 +969,7 @@ const Home = () => {
       });
       if (res.data.success) {
         showToast.success("Travel Memory deleted successfully!");
-        setMemories((prev) => prev.filter((m) => m._id !== postId));
+        updateMemoriesCache((prev) => prev.filter((m) => m._id !== postId));
       }
     } catch {
       showToast.error("Action failed");
@@ -1087,7 +980,7 @@ const Home = () => {
   const handleDeleteStory = useCallback(
   (dispatchId) => {
     setActiveStoryGroup(null);
-    fetchFeedData();
+    
   },
   [fetchFeedData]
   );

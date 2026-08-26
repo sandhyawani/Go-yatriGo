@@ -69,37 +69,37 @@ const SettingsToggle = ({
       </div>
 
       <button
-      type="button"
-      role="switch"
-      aria-checked={value}
-      aria-labelledby={labelId}
-      aria-describedby={description ? descId : undefined}
-      aria-disabled={isLoading}
-      disabled={isLoading}
-      onClick={handleToggle}
-      className={[
-      "relative inline-flex h-6 w-11 shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out",
-      "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7C3AED]",
-      value ? "bg-[#7C3AED]" : "bg-[#E5E7EB]",
-      isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"].
-      join(" ")}>
-
-        <span
-        aria-hidden="true"
+        type="button"
+        role="switch"
+        aria-checked={value}
+        aria-labelledby={labelId}
+        aria-describedby={description ? descId : undefined}
+        aria-disabled={isLoading}
+        disabled={isLoading}
+        onClick={handleToggle}
         className={[
-        "pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out",
-        value ? "translate-x-5" : "translate-x-0"].
-        join(" ")} />
+          "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7C3AED]",
+          value ? "bg-[#7C3AED]" : "bg-[#E5E7EB]",
+          isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+        ].join(" ")}
+      >
+        <span
+          aria-hidden="true"
+          className={[
+            "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-200 ease-in-out",
+            value ? "translate-x-6" : "translate-x-1"
+          ].join(" ")}
+        />
 
-
-        {isLoading &&
-        <span className="absolute inset-0 flex items-center justify-center">
+        {isLoading && (
+          <span className="absolute inset-0 flex items-center justify-center">
             <Loader2
-          className="w-3.5 h-3.5 text-white animate-spin"
-          aria-hidden="true" />
-
-          </span>}
-
+              className="w-3.5 h-3.5 text-white animate-spin"
+              aria-hidden="true"
+            />
+          </span>
+        )}
       </button>
     </div>);
 

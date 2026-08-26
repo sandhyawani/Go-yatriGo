@@ -61,6 +61,7 @@ const Layout = () => {
   return (
     <div className="flex min-h-[100dvh] flex-col lg:flex-row isolate bg-background max-w-[1920px] mx-auto w-full lg:h-screen lg:overflow-hidden">
       <main
+        id="main-scroll-container"
         className={`flex-1 w-full min-w-0 relative z-navbar ${
           isChatPage ? "" : "overflow-x-hidden"
         } ${

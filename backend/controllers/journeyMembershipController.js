@@ -5,6 +5,7 @@ const JourneyInvitation = require("../models/JourneyInvitation");
 const JourneyJoinRequest = require("../models/JourneyJoinRequest");
 const JourneyTimeline = require("../models/JourneyTimeline");
 const Notification = require("../models/Notification");
+const { createAndSendNotification } = require("../utils/notificationHelper");
 const ChatRoom = require("../models/ChatRoom");
 const User = require("../models/User");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
@@ -119,11 +120,12 @@ exports.inviteMembers = async (req, res) => {
       );
       createdInvites.push(invite);
 
-      await Notification.create({
+      await createAndSendNotification(req.app.get("io"), {
         sender: userId,
         receiver: targetId,
         type: "journey_invitation",
         journey: id,
+        invitation: invite._id,
         message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
       });
     }
@@ -373,11 +375,12 @@ exports.resendInvitation = async (req, res) => {
     try {
       const recipientId = inv.inviteeId?._id || inv.inviteeId;
       if (recipientId) {
-        await Notification.create({
+        await createAndSendNotification(req.app.get("io"), {
           sender: req.user._id || req.user.id,
           receiver: recipientId,
           type: "journey_invitation",
           journey: inv.journeyId?._id || inv.journeyId,
+          invitation: inv._id,
           message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`
         });
       }
@@ -842,7 +845,7 @@ exports.requestToJoinJourney = async (req, res) => {
       message: req.body.message || ""
     });
 
-    await Notification.create({
+    await createAndSendNotification(req.app.get("io"), {
       sender: userId,
       receiver: journey.creator,
       type: "journey_join_request",

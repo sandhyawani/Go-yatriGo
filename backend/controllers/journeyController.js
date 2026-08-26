@@ -267,32 +267,42 @@ exports.createJourney = async (req, res) => {
       validIds = filteredIds;
 
       if (validIds.length > 0) {
-        await JourneyInvitation.create(
-        validIds.map((invId) => ({
-          journeyId: newJourney[0]._id,
-          inviterId: userId,
-          inviteeId: invId,
-          type: "invitation",
-          status: "pending",
-          role: "Member",
-          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        })),
-        { session }
+        const invites = await JourneyInvitation.create(
+          validIds.map((invId) => ({
+            journeyId: newJourney[0]._id,
+            inviterId: userId,
+            inviteeId: invId,
+            type: "invitation",
+            status: "pending",
+            role: "Member",
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+          })),
+          { session }
         );
 
         newJourney[0].pendingInvitationCount = validIds.length;
         await newJourney[0].save({ session });
 
-        await Notification.create(
-        validIds.map((invId) => ({
-          sender: userId,
-          receiver: invId,
-          type: "journey_invitation",
-          journey: newJourney[0]._id,
-          message: `${user?.name || "A traveler"} invited you to join "${title}"`
-        })),
-        { session }
+        const notifications = await Notification.create(
+          invites.map((inv) => ({
+            sender: userId,
+            receiver: inv.inviteeId,
+            type: "journey_invitation",
+            journey: newJourney[0]._id,
+            invitation: inv._id,
+            message: `${user?.name || "A traveler"} invited you to join "${title}"`
+          })),
+          { session }
         );
+
+        // Optionally, one could emit the socket event here, but we need to do it after session commit 
+        // to be completely safe, or do it now. The transaction is usually fast.
+        const io = req.app.get("io");
+        if (io) {
+          notifications.forEach(notif => {
+            io.to(notif.receiver.toString()).emit("new_notification", notif);
+          });
+        }
       }
     }
 

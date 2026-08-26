@@ -171,4 +171,15 @@ const FeedCard = React.forwardRef(
 
 FeedCard.displayName = "FeedCard";
 
-export default FeedCard;
+export default React.memo(FeedCard, (prevProps, nextProps) => {
+  return (
+    prevProps.post._id === nextProps.post._id &&
+    prevProps.hasFelt === nextProps.hasFelt &&
+    prevProps.isSaved === nextProps.isSaved &&
+    prevProps.feltLoadingMap[prevProps.post._id] === nextProps.feltLoadingMap[nextProps.post._id] &&
+    prevProps.saveLoadingMap[prevProps.post._id] === nextProps.saveLoadingMap[nextProps.post._id] &&
+    prevProps.activeCommentPost === nextProps.activeCommentPost &&
+    prevProps.playingAudioId === nextProps.playingAudioId &&
+    prevProps.journeyLikeAnim?.postId === nextProps.journeyLikeAnim?.postId
+  );
+});
