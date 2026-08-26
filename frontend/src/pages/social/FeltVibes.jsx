@@ -34,36 +34,36 @@ const CreatorGroup = ({ authorId, groupData }) => {
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
-    className="bg-white/80 backdrop-blur-xl rounded-[1.75rem] sm:rounded-[2rem] border border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.05)] sm:shadow-[0_8px_30px_rgba(0,0,0,0.06)] p-3.5 sm:p-5 hover:shadow-[0_12px_40px_rgba(124,58,237,0.08)] transition-all duration-300">
+    className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-3 sm:p-4 hover:shadow-[0_8px_30px_rgba(124,58,237,0.08)] transition-all duration-300">
 
       {}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 sm:mb-4 gap-3">
-        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+      <div className="flex items-center justify-between mb-3 gap-2">
+        <div className="flex items-center gap-2.5 min-w-0">
           <img
           src={authorPic}
           alt={authorName}
-          className="w-11 h-11 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-brand-100 shadow-sm shrink-0" />
+          className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-brand-100 shadow-sm shrink-0" />
 
           <div className="min-w-0 flex-1">
-            <h3 className="text-base sm:text-xl font-bold text-slate-900 truncate">{authorName}</h3>
-            <p className="text-xs sm:text-sm text-slate-500 font-medium mt-0.5">
+            <h3 className="text-sm font-bold text-slate-900 truncate">{authorName}</h3>
+            <p className="text-[11px] text-slate-500 font-medium">
               <span className="text-brand-600 font-bold">
                 {groupData.items.length}
               </span>{" "}
-              memories inspired you
+              memories felt by you
             </p>
           </div>
         </div>
         <button
         onClick={() => navigate(`/profile/${authorId}`)}
-        className="px-4 py-2 sm:px-5 sm:py-2.5 bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-xs sm:text-sm font-bold rounded-xl transition-colors border border-slate-200/80 hover:border-brand-200 w-full sm:w-fit text-center shrink-0">
+        className="px-3 py-1.5 bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-[11px] font-bold rounded-lg transition-colors border border-slate-200/80 hover:border-brand-200 shrink-0">
 
           View Profile
         </button>
       </div>
 
       {}
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-4 sm:overflow-x-auto sm:pb-2 sm:scrollbar-hide sm:snap-x">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:pb-2 sm:scrollbar-hide sm:snap-x">
         <AnimatePresence mode="popLayout">
           {displayItems.map((item) =>
           <div key={item._id} className="w-full sm:w-auto sm:snap-start shrink-0 min-w-0">
@@ -76,15 +76,15 @@ const CreatorGroup = ({ authorId, groupData }) => {
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           onClick={() => setExpanded(true)}
-          className="w-full sm:w-[200px] h-[210px] sm:h-[260px] rounded-2xl sm:rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group p-2 text-center sm:snap-start">
+          className="w-full sm:w-[180px] h-[180px] sm:h-[220px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group p-2 text-center sm:snap-start">
 
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-white shadow-sm flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 group-hover:shadow-md transition-all">
-                <span className="text-brand-600 font-bold text-lg sm:text-xl">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-md transition-all">
+                <span className="text-brand-600 font-bold text-base sm:text-lg">
                   +{remainingCount}
                 </span>
               </div>
-              <span className="text-xs sm:text-sm font-bold text-slate-600 group-hover:text-brand-700 transition-colors">
-                View All Memories
+              <span className="text-[11px] font-bold text-slate-600 group-hover:text-brand-700 transition-colors">
+                View All
               </span>
             </motion.div>}
 
@@ -205,43 +205,43 @@ const FeltVibes = () => {
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 relative z-10">
         {}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-6 gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-3">
           <div>
-            <h1 className="text-3xl font-extrabold text-slate-900 flex items-center gap-3">
-              <span className="text-4xl drop-shadow-sm">✨</span>
+            <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+              <span className="text-2xl drop-shadow-sm">✨</span>
               Felt Vibes
             </h1>
-            <p className="text-slate-500 font-medium mt-2 text-base">
+            <p className="text-slate-500 font-medium mt-1 text-sm">
               A curated collection of travel memories and stories that inspired
               you.
             </p>
 
             {}
-            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2 sm:gap-y-2 mt-4 text-xs font-bold text-slate-600 bg-white/60 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-white/50 shadow-sm w-full sm:w-fit">
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-brand-600 text-sm font-extrabold">{stats.total}</span>
-                <span>Total Vibes</span>
+            <div className="flex flex-wrap items-center gap-1.5 mt-3 text-xs font-bold text-slate-600 bg-white/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white/50 shadow-sm w-fit">
+              <div className="flex items-center gap-1">
+                <span className="text-brand-600 font-extrabold">{stats.total}</span>
+                <span className="text-slate-500 font-medium">Total</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-rose-500 text-sm font-extrabold">{stats.memories}</span>
-                <span>Memories</span>
+              <div className="w-px h-3 bg-slate-200"></div>
+              <div className="flex items-center gap-1">
+                <span className="text-rose-500 font-extrabold">{stats.memories}</span>
+                <span className="text-slate-500 font-medium">Memories</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-brand-500 text-sm font-extrabold">{stats.stories}</span>
-                <span>Dispatches</span>
+              <div className="w-px h-3 bg-slate-200"></div>
+              <div className="flex items-center gap-1">
+                <span className="text-brand-500 font-extrabold">{stats.stories}</span>
+                <span className="text-slate-500 font-medium">Dispatches</span>
               </div>
-              <div className="hidden sm:block w-px h-4 bg-slate-200"></div>
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/60 sm:bg-transparent rounded-xl">
-                <span className="text-brand-600 text-sm font-extrabold">{stats.groups}</span>
-                <span>Groups</span>
+              <div className="w-px h-3 bg-slate-200"></div>
+              <div className="flex items-center gap-1">
+                <span className="text-brand-600 font-extrabold">{stats.groups}</span>
+                <span className="text-slate-500 font-medium">Groups</span>
               </div>
             </div>
           </div>
           <Link
           to="/social/explore"
-          className="text-sm font-bold text-white text-center bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-md shadow-brand-500/20 px-6 py-3.5 rounded-xl w-full sm:w-fit shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5">
+          className="text-xs font-bold text-white text-center bg-gradient-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700 shadow-md shadow-brand-500/20 px-5 py-2.5 rounded-xl w-full sm:w-fit shrink-0 transition-all hover:shadow-lg hover:-translate-y-0.5">
 
             Explore More
           </Link>

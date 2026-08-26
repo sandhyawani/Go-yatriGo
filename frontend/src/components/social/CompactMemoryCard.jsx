@@ -76,9 +76,17 @@ const CompactMemoryCard = ({ item }) => {
   const badge = getBadgeInfo(item.postType);
 
   const handleCardClick = () => {
-    if (item.type === "group") navigate(`/social/buddy/${item._id}`);
-    else if (item.type === "story") navigate(`/social`);
-    else navigate(`/post/${item._id}`);
+    const authorId = item.author?._id;
+    if (item.type === "group") {
+      navigate(`/social/buddy/${item._id}`);
+    } else if (item.type === "story") {
+      // stories: navigate to the author's profile
+      if (authorId) navigate(`/profile/${authorId}`);
+      else navigate("/");
+    } else {
+      // memories: navigate to the post detail page
+      navigate(`/post/${item._id}`);
+    }
   };
 
   const isNonTravel =

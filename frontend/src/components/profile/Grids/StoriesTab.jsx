@@ -40,14 +40,14 @@ export const StoriesTab = ({
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+    <div className="grid grid-cols-3 md:grid-cols-4 gap-2 sm:gap-3">
       {userStories.map((story, index) => (
         <div
           key={story._id}
           className="relative group cursor-pointer"
           onClick={() => handleOpenStory(index)}
         >
-          <div className="aspect-[9/16] bg-slate-100 rounded-3xl overflow-hidden relative shadow-sm">
+          <div className="aspect-[9/16] bg-slate-100 rounded-2xl overflow-hidden relative shadow-sm">
             {story.mediaType === "video" ? (
               <video
                 src={`${story.media || story.mediaUrl}#t=0.1`}
@@ -66,8 +66,8 @@ export const StoriesTab = ({
             )}
             
             {/* View Count overlay */}
-            <div className="absolute bottom-3 left-3 bg-black/45 backdrop-blur-md px-2.5 py-1 rounded-full text-white text-[10px] font-black tracking-wider flex items-center gap-1">
-              <Eye className="w-3.5 h-3.5" />
+            <div className="absolute bottom-2 left-2 bg-black/45 backdrop-blur-md px-1.5 py-0.5 rounded-full text-white text-[9px] font-black tracking-wider flex items-center gap-1">
+              <Eye className="w-2.5 h-2.5" />
               <span>{story.viewers?.length || 0}</span>
             </div>
 
@@ -79,10 +79,10 @@ export const StoriesTab = ({
                   setStoryToDelete(story);
                   setShowDeleteStoryModal(true);
                 }}
-                className="absolute top-3 right-3 bg-black/45 hover:bg-rose-600/80 p-2 rounded-full backdrop-blur-md text-white transition-all z-20 scale-90 md:scale-100"
+                className="absolute top-1.5 right-1.5 bg-black/45 hover:bg-rose-600/80 p-1.5 rounded-full backdrop-blur-md text-white transition-all z-20"
                 title="Delete Dispatch"
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" />
               </button>
             )}
           </div>

@@ -684,13 +684,12 @@ exports.getFeltVibesCollection = async (req, res) => {
         .lean(),
       Story.find({
         $or: [
-          { "reactions.user": authUserId },
-          { views: authUserId },
-          { likes: authUserId }
+          { reactions: authUserId },
+          { views: authUserId }
         ],
-        ...(blockedObjectIds.length > 0 ? { user: { $nin: blockedObjectIds } } : {})
+        ...(blockedObjectIds.length > 0 ? { userId: { $nin: blockedObjectIds } } : {})
       })
-        .populate("user", "name username pic img avatar isVerified")
+        .populate("userId", "name username pic img avatar isVerified")
         .sort({ createdAt: -1 })
         .lean()
     ]);
@@ -748,14 +747,14 @@ exports.getFeltVibesCollection = async (req, res) => {
       title: s.title || s.caption || "Dispatch Story",
       caption: s.caption || "",
       location: s.location || "",
-      mediaUrl: s.mediaUrl || s.image || "",
-      mediaUrls: s.mediaUrl || s.image ? [s.mediaUrl || s.image] : [],
+      mediaUrl: s.media || s.mediaUrl || s.image || "",
+      mediaUrls: s.media ? [s.media] : (s.mediaUrl || s.image ? [s.mediaUrl || s.image] : []),
       mediaType: s.mediaType || "image",
       postType: "story",
       type: "story",
-      likesCount: Array.isArray(s.likes) ? s.likes.length : (Array.isArray(s.reactions) ? s.reactions.length : 0),
+      likesCount: Array.isArray(s.reactions) ? s.reactions.length : 0,
       commentsCount: 0,
-      author: s.user || { name: "Traveler", pic: "" },
+      author: s.userId || { name: s.userName || "Traveler", pic: s.userPic || "" },
       createdAt: s.createdAt
     }));
 
