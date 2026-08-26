@@ -738,11 +738,12 @@ const Register = () => {
                     aria-describedby={
                     errors.repeatPassword ? "repeat-error" : undefined}
 
-                    className={`w-full pl-11 pr-10 py-1.5 bg-slate-50 border ${
+                    className={`w-full pl-11 pr-10 h-[44px] bg-slate-50 border ${
                     errors.repeatPassword ?
                     "border-red-300 focus:border-red-400 focus:ring-red-400/20" :
                     formData.repeatPassword &&
-                    formData.repeatPassword === formData.password ?
+                    formData.repeatPassword === formData.password &&
+                    !errors.password ?
                     "border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/20" :
                     "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
                     } rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-slate-400 text-sm shadow-sm`} />
@@ -750,6 +751,7 @@ const Register = () => {
 
                     {formData.repeatPassword &&
                     formData.repeatPassword === formData.password &&
+                    !errors.password &&
                     <CheckCircle2 className="absolute right-10 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500 animate-in fade-in" />}
 
                   </div>
