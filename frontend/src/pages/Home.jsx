@@ -33,7 +33,9 @@ import UpcomingTripsWidget from "../components/home/UpcomingTripsWidget";
 import { resolveRelationship } from "../utils/relationshipResolver";
 import { useTripMates } from "../hooks/useTripMates";
 import { normalizeJourneyStatus } from "../utils/journeyLifecycle";
-
+import { useQueryClient } from "@tanstack/react-query";
+import { useInfiniteMemoriesQuery, useHomeSideDataQuery } from "../hooks/queries/useHomeData";
+import { useScrollRestoration } from "../hooks/useScrollRestoration";
 
 const SOCKET_URL =
 process.env.REACT_APP_SOCKET_URL || "http://10.126.5.219:5000";
@@ -139,6 +141,30 @@ const Home = () => {
       return { ...oldData, pages: newPages };
     });
   }, [queryClient]);
+  const myUserIdStr = (user?._id || user?.id)?.toString();
+
+  const updateStoriesCache = useCallback((updater) => {
+    queryClient.setQueryData(['homeSideData', myUserIdStr], (oldData) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        stories: typeof updater === 'function' ? updater(oldData.stories || []) : updater
+      };
+    });
+  }, [queryClient, myUserIdStr]);
+  const setStories = updateStoriesCache;
+
+  const updateSuggestionsCache = useCallback((updater) => {
+    queryClient.setQueryData(['homeSideData', myUserIdStr], (oldData) => {
+      if (!oldData) return oldData;
+      return {
+        ...oldData,
+        suggestions: typeof updater === 'function' ? updater(oldData.suggestions || []) : updater
+      };
+    });
+  }, [queryClient, myUserIdStr]);
+  const setSuggestions = updateSuggestionsCache;
+
   const location = useLocation();
 
   useEffect(() => {
@@ -160,14 +186,14 @@ const Home = () => {
 
 
   // React Query Hooks
-  const myUserIdStr = (user?._id || user?.id)?.toString();
   const {
     data: memoriesData,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
     isLoading: loadingMemories,
-    isError: errorMemories
+    isError: errorMemories,
+    refetch: refetchMemories
   } = useInfiniteMemoriesQuery();
   
   const memories = useMemo(() => {
@@ -436,9 +462,7 @@ const Home = () => {
 
   
 
-  useEffect(() => {
-    
-  }, [fetchFeedData]);
+
 
   
 
@@ -982,7 +1006,7 @@ const Home = () => {
     setActiveStoryGroup(null);
     
   },
-  [fetchFeedData]
+  []
   );
 
   const handleStoryViewed = useCallback((dispatchId) => {
@@ -1353,7 +1377,7 @@ const Home = () => {
                     We couldn't load the feed right now. Please check your connection and try again.
                   </p>
                   <button
-                    onClick={() => fetchMemories(1)}
+                    onClick={() => refetchMemories()}
                     className="btn-primary !py-2 !px-5 text-xs font-bold"
                   >
                     Try again
@@ -1424,12 +1448,12 @@ const Home = () => {
                       />
                     );
                   })}
-                  {hasMore && memories.length > 0 && (
+                  {hasNextPage && memories.length > 0 && (
                     <div
                       className="flex justify-center mt-6 pb-6"
                       ref={loadMoreRef}
                     >
-                      {loadingMore && (
+                      {isFetchingNextPage && (
                         <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
                       )}
                     </div>
@@ -1570,7 +1594,7 @@ const Home = () => {
         <CreateDispatchModal
         isOpen={showStoryModal}
         onClose={() => setShowStoryModal(false)}
-        onSuccess={fetchFeedData} />
+        onSuccess={() => queryClient.invalidateQueries(['homeSideData'])} />
 
         {reportModal.isOpen &&
         <ReportModal

@@ -29,7 +29,7 @@ root.render(
           </NotificationProvider>
         </SocketProvider>
       </AuthContextProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
+
     </QueryClientProvider>
   </>
 );
