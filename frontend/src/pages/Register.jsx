@@ -214,9 +214,10 @@ const Register = () => {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
 
+      const firstError = Object.values(newErrors)[0];
       showToast.warning(
-      "Incomplete Form",
-      "Please fill in all required fields correctly."
+        "Incomplete Form",
+        firstError || "Please fill in all required fields correctly."
       );
       return;
     }
@@ -428,6 +429,7 @@ const Register = () => {
                 <AnimatePresence>
                   {errors.name &&
                   <motion.div
+                  key="name-error"
                   id="name-error"
                   role="alert"
                   initial={{ opacity: 0, height: 0 }}
@@ -472,6 +474,7 @@ const Register = () => {
                   <AnimatePresence>
                     {errors.email &&
                     <motion.div
+                    key="email-error"
                     id="email-error"
                     role="alert"
                     initial={{ opacity: 0, height: 0 }}
@@ -515,6 +518,7 @@ const Register = () => {
                   <AnimatePresence>
                     {errors.mobile &&
                     <motion.div
+                    key="mobile-error"
                     id="mobile-error"
                     role="alert"
                     initial={{ opacity: 0, height: 0 }}
@@ -621,6 +625,7 @@ const Register = () => {
                   <AnimatePresence>
                     {errors.govId &&
                     <motion.div
+                    key="govId-error"
                     id="govId-error"
                     role="alert"
                     initial={{ opacity: 0, height: 0 }}
@@ -705,6 +710,7 @@ const Register = () => {
                   <AnimatePresence>
                     {errors.password &&
                     <motion.div
+                    key="password-error"
                     role="alert"
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
@@ -760,6 +766,7 @@ const Register = () => {
                   <AnimatePresence>
                     {errors.repeatPassword &&
                     <motion.div
+                    key="repeatPassword-error"
                     id="repeat-error"
                     role="alert"
                     initial={{ opacity: 0, height: 0 }}

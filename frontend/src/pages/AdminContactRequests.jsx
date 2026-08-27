@@ -293,11 +293,11 @@ const AdminContactRequests = () => {
       contact.name,
       contact.email,
       contact.subject,
-      contact.message].
+      contact.message]
 
-      filter(Boolean).
-      join(" ").
-      toLowerCase();
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
 
       return matchesFilter && haystack.includes(normalizedTerm);
     });

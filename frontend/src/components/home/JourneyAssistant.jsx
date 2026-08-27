@@ -94,8 +94,8 @@ const JourneyAssistant = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
             {[
             { name: "Spiti Valley", region: "Himachal Pradesh", squads: "12 Travel Groups active" },
             { name: "Gokarna Beaches", region: "Karnataka", squads: "8 Travel Groups active" },
-            { name: "Leh Ladakh Pass", region: "Jammu & Kashmir", squads: "15 Travel Groups active" }].
-            map((item, idx) =>
+            { name: "Leh Ladakh Pass", region: "Jammu & Kashmir", squads: "15 Travel Groups active" }]
+            .map((item, idx) =>
             <div key={idx} className="flex justify-between items-center text-xs">
                 <div>
                   <span className="font-extrabold text-slate-850 block">{item.name}</span>

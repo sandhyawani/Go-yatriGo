@@ -604,8 +604,8 @@ const SecuritySettings = () => {
           { id: "all", label: "All Settings", icon: Shield },
           { id: "password", label: "Password", icon: Key },
           { id: "2fa", label: "2FA Auth", icon: Smartphone },
-          { id: "sessions", label: "Active Sessions", icon: Activity }].
-          map((tab) => {
+          { id: "sessions", label: "Active Sessions", icon: Activity }]
+          .map((tab) => {
             const IconComponent = tab.icon;
             const isActive = activeTab === tab.id;
             return (

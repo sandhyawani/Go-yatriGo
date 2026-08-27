@@ -241,9 +241,9 @@ export const ChatSidebar = ({
         followRequests.filter(
         (n) =>
         !searchQuery ||
-        n.sender?.name?.
-        toLowerCase().
-        includes(searchQuery.toLowerCase())
+        n.sender?.name
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase())
         ).length === 0) && (
         !searchQuery ||
         globalUsers.filter(
@@ -273,8 +273,8 @@ export const ChatSidebar = ({
         <>
             {}
             {activeTab === "requests" &&
-          followRequests.
-          filter(
+          followRequests
+          .filter(
           (n) => {
             if (!searchQuery) return true;
             const q = searchQuery.toLowerCase();
@@ -283,8 +283,8 @@ export const ChatSidebar = ({
               (n.sender?.username || "").toLowerCase().includes(q)
             );
           }
-          ).
-          map((req) => {
+          )
+          .map((req) => {
             const senderId = req.sender?._id || req.sender;
             const isProcessing = processingRequestIds.has(req._id || senderId);
             return (
@@ -463,16 +463,16 @@ export const ChatSidebar = ({
                     No new people found
                   </div> :
 
-            globalUsers.
-            filter(
+            globalUsers
+            .filter(
             (u) =>
             !filteredRooms.some(
             (r) =>
             r.type === "direct" &&
             r.members?.some((m) => m._id === u._id)
             )
-            ).
-            map((u) =>
+            )
+            .map((u) =>
             <button
             key={u._id}
             onClick={() => handleSelectGlobalUser(u)}

@@ -8,10 +8,10 @@ const rowClass = (danger, extra = "") =>
 danger ?
 "bg-white border border-rose-100 hover:bg-rose-50/50" :
 "bg-slate-50/80 hover:bg-slate-100/80",
-extra].
+extra]
 
-filter(Boolean).
-join(" ");
+.filter(Boolean)
+.join(" ");
 
 const SettingsRow = ({
   icon: Icon,

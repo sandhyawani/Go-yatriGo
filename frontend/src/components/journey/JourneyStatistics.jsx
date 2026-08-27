@@ -11,13 +11,13 @@ const JourneyStatistics = ({ userId }) => {
     const endpoint = userId ?
     `/journeys/stats/user/${userId}` :
     `/journeys/stats/me`;
-    axiosInstance.
-    get(endpoint).
-    then((res) => {
+    axiosInstance
+    .get(endpoint)
+    .then((res) => {
       if (res.data?.success) setStats(res.data.stats);
-    }).
-    catch((err) => console.error("Error fetching journey stats:", err)).
-    finally(() => setLoading(false));
+    })
+    .catch((err) => console.error("Error fetching journey stats:", err))
+    .finally(() => setLoading(false));
   }, [userId]);
 
   if (loading) {

@@ -57,12 +57,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
   const fetchNotes = () => {
     if (!journeyId) return;
-    axiosInstance.
-    get(`/journeys/${journeyId}/workspace`).
-    then((res) => {
+    axiosInstance
+    .get(`/journeys/${journeyId}/workspace`)
+    .then((res) => {
       if (res.data?.success) setNotes(res.data.items || []);
-    }).
-    catch((err) => console.error("Error fetching workspace notes:", err));
+    })
+    .catch((err) => console.error("Error fetching workspace notes:", err));
   };
 
   useEffect(() => {

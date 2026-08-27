@@ -37,10 +37,10 @@ const Card = ({
   variantMap[variant] || variantMap.default,
   interactiveClasses,
   defaultShadow,
-  className].
+  className]
 
-  filter(Boolean).
-  join(" ");
+  .filter(Boolean)
+  .join(" ");
 
   return (
     <div className={classes} onClick={onClick} {...props}>

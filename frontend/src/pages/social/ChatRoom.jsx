@@ -758,9 +758,9 @@ const ChatRoom = () => {
       isAudio: !!audioBlob,
       isPending: true,
       createdAt: new Date().toISOString(),
-      unreadBy: activeRoom.members.
-      map((member) => typeof member === "object" ? member._id : member).
-      filter((id) => id?.toString() !== currentUserId?.toString()),
+      unreadBy: activeRoom.members
+      .map((member) => typeof member === "object" ? member._id : member)
+      .filter((id) => id?.toString() !== currentUserId?.toString()),
       seenBy: [currentUserId],
       replyTo: replyToMsg ? {
         _id: replyToMsg._id,

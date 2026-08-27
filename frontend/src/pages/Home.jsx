@@ -563,10 +563,10 @@ const Home = () => {
     }
     setSubmittingPost(true);
     try {
-      const tagsArray = postTags.
-      split(",").
-      map((t) => t.trim().replace(/^#/, "")).
-      filter(Boolean);
+      const tagsArray = postTags
+      .split(",")
+      .map((t) => t.trim().replace(/^#/, ""))
+      .filter(Boolean);
       const res = await axios.post(
       "/social/memory",
       {

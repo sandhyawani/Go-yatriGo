@@ -29,19 +29,19 @@ const TravelHighlights = ({ travelMemories, onHighlightClick }) => {
   const highlights = useMemo(() => {
     if (!travelMemories || travelMemories.length === 0) return [];
 
-    return [...travelMemories].
-    filter((post) => post.image).
-    map((post) => {
+    return [...travelMemories]
+    .filter((post) => post.image)
+    .map((post) => {
       let score = 0;
       if (post.destination) score += 5;
       if (post.journeyTag) score += 5;
       if (post.likes) score += post.likes.length * 2;
       if (post.commentsCount) score += post.commentsCount;
       return { post, score };
-    }).
-    sort((a, b) => b.score - a.score).
-    map((item) => item.post).
-    slice(0, 5);
+    })
+    .sort((a, b) => b.score - a.score)
+    .map((item) => item.post)
+    .slice(0, 5);
   }, [travelMemories]);
 
   if (highlights.length === 0) return null;

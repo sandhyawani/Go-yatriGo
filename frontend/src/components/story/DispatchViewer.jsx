@@ -209,14 +209,14 @@ const DispatchViewer = ({
       if (!currentStory.viewedBy?.includes(myUserId)) {
         if (!currentStory.viewedBy) currentStory.viewedBy = [];
         currentStory.viewedBy.push(myUserId);
-        axios.
-        post(
+        axios
+        .post(
         `/social/story/${currentStory._id}/view`,
         {},
         { withCredentials: true }
-        ).
-        then(() => onStoryViewed?.(currentStory._id)).
-        catch(() => {});
+        )
+        .then(() => onStoryViewed?.(currentStory._id))
+        .catch(() => {});
       }
     }
   }, [activeStoryGroup, activeStoryIndex, myUserId, onStoryViewed]);

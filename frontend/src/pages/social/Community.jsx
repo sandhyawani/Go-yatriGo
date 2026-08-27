@@ -300,8 +300,8 @@ const Community = () => {
           { id: "posts", label: "Travel Posts", icon: BookOpen },
           { id: "memories", label: "Journey Memories", icon: Calendar },
           { id: "tips", label: "Travel Tips", icon: FileText },
-          { id: "discussions", label: "Discussions", icon: MessageCircle }].
-          map((tab) =>
+          { id: "discussions", label: "Discussions", icon: MessageCircle }]
+          .map((tab) =>
           <button
           key={tab.id}
           onClick={() => {

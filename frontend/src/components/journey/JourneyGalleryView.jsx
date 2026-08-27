@@ -32,12 +32,12 @@ const JourneyGalleryView = ({ journeyId }) => {
 
   const fetchGallery = useCallback(() => {
     if (!journeyId) return;
-    axiosInstance.
-    get(`/journeys/${journeyId}/gallery`).
-    then((res) => {
+    axiosInstance
+    .get(`/journeys/${journeyId}/gallery`)
+    .then((res) => {
       if (res.data?.success) setGallery(res.data.gallery);
-    }).
-    catch((err) => console.error("Error fetching gallery:", err));
+    })
+    .catch((err) => console.error("Error fetching gallery:", err));
   }, [journeyId]);
 
   useEffect(() => {

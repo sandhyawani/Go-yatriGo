@@ -1055,8 +1055,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                         {[
                   { label: "1:1", value: 1 },
                   { label: "4:5", value: 4 / 5 },
-                  { label: "16:9", value: 16 / 9 }].
-                  map((item) =>
+                  { label: "16:9", value: 16 / 9 }]
+                  .map((item) =>
                   <button
                   key={item.label}
                   onClick={() => setAspect(item.value)}
@@ -1461,26 +1461,26 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                                 {(musicQuery.trim() ?
                       musicResults :
-                      trendingMusic).
+                      trendingMusic)
 
-                      filter(
+                      .filter(
                       (song, index, self) =>
                       index ===
                       self.findIndex(
                       (s) =>
-                      s.title?.
-                      split("(")[0].
-                      trim().
-                      toLowerCase() ===
-                      song.title?.
-                      split("(")[0].
-                      trim().
-                      toLowerCase() &&
+                      s.title
+                      ?.split("(")[0]
+                      .trim()
+                      .toLowerCase() ===
+                      song.title
+                      ?.split("(")[0]
+                      .trim()
+                      .toLowerCase() &&
                       s.artist?.toLowerCase() ===
                       song.artist?.toLowerCase()
                       )
-                      ).
-                      map((song) =>
+                      )
+                      .map((song) =>
                       <div
                       key={song.id}
                       onClick={() => {
@@ -1501,9 +1501,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                               AudioManager.stopAll();
                               audioRef.current.src =
                               song.previewUrl;
-                              audioRef.current.
-                              play().
-                              catch((e) => console.warn(e));
+                              audioRef.current
+                              .play()
+                              .catch((e) => console.warn(e));
                               setIsPlayingMusic(true);
                             }
                           }, 100);
@@ -1592,8 +1592,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       )}
                                 {(musicQuery.trim() ?
                       musicResults :
-                      trendingMusic).
-                      length === 0 &&
+                      trendingMusic)
+                      .length === 0 &&
                       !isSearchingMusic &&
                       <div className="flex h-40 flex-col items-center justify-center text-center">
                                       <div className="mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">

@@ -20,7 +20,7 @@
     "emoji-picker-react": "^4.19.1",
     "font-awesome-icons": "^1.6.0",
     "formik": "^2.2.9",
-    "framer-motion": "^12.38.0",
+    "framer-motion": "^10.18.0",
     "js-cookie": "^3.0.5",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.28",

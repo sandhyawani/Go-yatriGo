@@ -409,11 +409,11 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     if (!query) return baseList;
 
     return baseList.filter((item) =>
-    [item.name, item.username, item.type, item.role, item.email, item.mobile, item.city, item.state, item.ownerName].
-    filter(Boolean).
-    join(" ").
-    toLowerCase().
-    includes(query)
+    [item.name, item.username, item.type, item.role, item.email, item.mobile, item.city, item.state, item.ownerName]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase()
+    .includes(query)
     );
   }, [list, searchQuery, currentUser, path, activeFilter]);
 

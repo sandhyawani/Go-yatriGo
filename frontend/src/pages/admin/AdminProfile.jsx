@@ -160,8 +160,8 @@ const AdminProfile = () => {
                   label: "Location",
                   value: user.city && user.state ? `${user.city}, ${user.state}` : "Location not added",
                   icon: <MapPin className="h-3.5 w-3.5 text-slate-400" />
-                }].
-                map(({ label, value, icon }) =>
+                }]
+                .map(({ label, value, icon }) =>
                 <div key={label}>
                     <p className="mb-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">
                       {label}
@@ -253,8 +253,8 @@ const AdminProfile = () => {
                 "Manage Users & Roles",
                 "View Analytics Dashboard",
                 "System Configurations",
-                "Content Moderation"].
-                map((item) =>
+                "Content Moderation"]
+                .map((item) =>
                 <li key={item} className="flex items-center gap-2 text-[12px] text-slate-600">
                     <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-brand-500" />
                     {item}
@@ -288,8 +288,8 @@ const AdminProfile = () => {
                   icon: <ShieldCheck className="h-3 w-3 text-slate-500" />,
                   title: "Approved 12 new users",
                   time: "May 24, 2026"
-                }].
-                map(({ icon, title, time }, i, arr) =>
+                }]
+                .map(({ icon, title, time }, i, arr) =>
                 <div key={i} className="relative flex items-start gap-2.5">
                     {i < arr.length - 1 &&
                   <div className="absolute bottom-[-12px] left-[11px] top-6 w-px bg-slate-100" />}

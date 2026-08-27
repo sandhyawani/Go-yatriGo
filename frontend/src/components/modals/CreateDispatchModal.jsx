@@ -282,8 +282,8 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 const parts = [
                 props.name,
                 props.city || props.state,
-                props.country].
-                filter(Boolean);
+                props.country]
+                .filter(Boolean);
                 return { display_name: parts.join(", ") || query };
               });
             }
@@ -1407,30 +1407,30 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
                           {(musicSearchQuery.trim() ?
                 spotifyResults :
-                trendingSongs).
+                trendingSongs)
 
-                filter(
+                .filter(
                 (track, index, self) =>
                 index ===
                 self.findIndex(
                 (t) =>
                 (t?.title ?
-                String(t.title).
-                split("(")[0].
-                trim().
-                toLowerCase() :
+                String(t.title)
+                .split("(")[0]
+                .trim()
+                .toLowerCase() :
                 "") === (
                 track?.title ?
-                String(track.title).
-                split("(")[0].
-                trim().
-                toLowerCase() :
+                String(track.title)
+                .split("(")[0]
+                .trim()
+                .toLowerCase() :
                 "") &&
                 (t?.artist || "").toLowerCase() ===
                 (track?.artist || "").toLowerCase()
                 )
-                ).
-                map((track) =>
+                )
+                .map((track) =>
                 <div
                 key={track.id}
                 className={`group flex items-center justify-between p-2 h-[62px] rounded-2xl transition-all cursor-pointer ${selectedSong?.songTitle === track.title ? "bg-brand-50 border border-brand-100" : "bg-white hover:bg-slate-50 border border-transparent"}`}
@@ -1484,8 +1484,8 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 )}
                           {(musicSearchQuery.trim() ?
                 spotifyResults :
-                trendingSongs).
-                length === 0 &&
+                trendingSongs)
+                .length === 0 &&
                 !isSearchingMusic &&
                 <div className="py-12 text-center">
                                 {spotifyError ?
@@ -1563,8 +1563,8 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     <Lock className="w-5 h-5 text-slate-600" />,
 
                     desc: "Choose specific people"
-                  }].
-                  map((opt) =>
+                  }]
+                  .map((opt) =>
                   <div
                   key={opt.id}
                   onClick={() => {

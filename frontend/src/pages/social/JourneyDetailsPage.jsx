@@ -85,19 +85,19 @@ const JourneyDetailsPage = () => {
   const fetchJourney = (silent = false) => {
     if (!id) return;
     if (!silent) setLoading(true);
-    axiosInstance.
-    get(`/journeys/${id}`).
-    then((res) => {
+    axiosInstance
+    .get(`/journeys/${id}`)
+    .then((res) => {
       if (res.data?.success) setJourney(res.data.journey);
-    }).
-    catch((err) => {
+    })
+    .catch((err) => {
       console.error("Error loading journey details:", err);
       if (!silent) {
         showToast.error("Journey not found or access denied");
         navigate("/social/journeys");
       }
-    }).
-    finally(() => {
+    })
+    .finally(() => {
       if (!silent) setLoading(false);
     });
   };

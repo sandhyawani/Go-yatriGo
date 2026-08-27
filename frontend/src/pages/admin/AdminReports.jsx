@@ -136,11 +136,11 @@ const AdminReports = () => {
       getName(report.reporter),
       getName(report.reportedUser),
       report.targetType,
-      report.reason].
+      report.reason]
 
-      filter(Boolean).
-      join(" ").
-      toLowerCase();
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
       return matchesStatus && (!normalizedSearch || text.includes(normalizedSearch));
     });
   }, [filter, reports, search]);
@@ -167,8 +167,8 @@ const AdminReports = () => {
             {[
             { label: "Pending", value: summary.pending, tone: "text-brand-700 bg-brand-100" },
             { label: "Resolved", value: summary.resolved, tone: "text-brand-800 bg-brand-200" },
-            { label: "Dismissed", value: summary.dismissed, tone: "text-brand-600 bg-brand-50" }].
-            map((item) =>
+            { label: "Dismissed", value: summary.dismissed, tone: "text-brand-600 bg-brand-50" }]
+            .map((item) =>
             <div key={item.label} className={`rounded-lg px-3 py-1.5 ${item.tone}`}>
                 <p className="text-base font-semibold">{item.value}</p>
                 <p className="text-[9px] uppercase tracking-widest opacity-80">{item.label}</p>

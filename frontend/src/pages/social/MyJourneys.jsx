@@ -36,22 +36,22 @@ const MyJourneys = () => {
   };
 
   useEffect(() => {
-    axiosInstance.
-    get("/journeys/invitations/my?status=pending").
-    then((res) => {
+    axiosInstance
+    .get("/journeys/invitations/my?status=pending")
+    .then((res) => {
       if (res.data?.success) setInvitations(res.data.invitations || []);
-    }).
-    catch(() => {});
+    })
+    .catch(() => {});
   }, []);
 
   const fetchJourneys = () => {
     setLoading(true);
-    const invitesPromise = axiosInstance.
-    get("/journeys/invitations/my?status=pending").
-    then((res) => {
+    const invitesPromise = axiosInstance
+    .get("/journeys/invitations/my?status=pending")
+    .then((res) => {
       if (res.data?.success) setInvitations(res.data.invitations || []);
-    }).
-    catch(() => {});
+    })
+    .catch(() => {});
 
     if (activeTab === "Invites") {
       invitesPromise.finally(() => setLoading(false));

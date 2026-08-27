@@ -38,8 +38,8 @@ const DiscoveryMap = ({ trips }) => {
   const navigate = useNavigate();
 
 
-  const plottableTrips = (trips || []).
-  map((trip) => {
+  const plottableTrips = (trips || [])
+  .map((trip) => {
 
     if (trip.destinationCoordinates?.lat && trip.destinationCoordinates?.lng) {
       return {
@@ -59,8 +59,8 @@ const DiscoveryMap = ({ trips }) => {
       };
     }
     return null;
-  }).
-  filter(Boolean);
+  })
+  .filter(Boolean);
 
 
   const defaultCenter = [20.5937, 78.9629];

@@ -191,9 +191,9 @@ const ModerationPipeline = ({ type }) => {
     }
   };
 
-  const filteredRows = data.
-  filter((a) => (a.name || a.brand || "").toLowerCase().includes(searchQuery.toLowerCase()))?.
-  map((a) => ({ id: a._id, ...a }));
+  const filteredRows = data
+  .filter((a) => (a.name || a.brand || "").toLowerCase().includes(searchQuery.toLowerCase()))
+  ?.map((a) => ({ id: a._id, ...a }));
 
   return (
     <div className="min-h-screen bg-slate-50/50 pb-12">

@@ -158,8 +158,8 @@ const AddUser = () => {
   "placeholder:text-slate-400 placeholder:font-normal",
   hasError ?
   "border-red-200 bg-white ring-4 ring-red-50 focus:border-red-400" :
-  "border-slate-100 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"].
-  join(" ");
+  "border-slate-100 focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"]
+  .join(" ");
 
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
