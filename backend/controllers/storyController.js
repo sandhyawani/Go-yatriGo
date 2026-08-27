@@ -22,7 +22,7 @@ exports.createStory = async (req, res) => {
     if (!userId) {
       return res.status(401).json({
         success: false,
-        message: "Not authorized. Please log in to share a story."
+        message: "Not authorized. Please log in to share a Dispatch."
       });
     }
 
@@ -124,7 +124,7 @@ exports.createStory = async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: "Story created successfully",
+      message: "Dispatch created successfully",
       story: populatedStory
     });
   } catch (error) {

@@ -214,7 +214,7 @@ const registerUser = async (req, res, next) => {
       policiesAcceptedAt: new Date(),
       isAdmin: false,
       isVerified: false,
-      verificationStatus: "unverified"
+      verificationStatus: normalizeText(govId) ? "pending" : "unverified"
     });
 
     await user.save();

@@ -51,7 +51,7 @@ const getLatestMessagePreview = (msg, currentUserId) => {
     if (text.startsWith("Reacted")) {
       return text;
     }
-    return `💬 Story reply: ${text}`;
+    return `💬 Dispatch reply: ${text}`;
   }
 
   if (hasMedia) {
@@ -926,7 +926,7 @@ const ChatRoom = () => {
         setActiveStoryIndex(0);
       }
     } catch (err) {
-      showToast.error("Story is no longer available.");
+      showToast.error("Dispatch is no longer available.");
     }
   };
 

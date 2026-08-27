@@ -34,7 +34,7 @@ export const getLatestMessagePreview = (msg, currentUserId) => {
     if (text.startsWith("Reacted")) {
       return text;
     }
-    return `💬 Story reply: ${text}`;
+    return `💬 Dispatch reply: ${text}`;
   }
 
   if (hasMedia) {

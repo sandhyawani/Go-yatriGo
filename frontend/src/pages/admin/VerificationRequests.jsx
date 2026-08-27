@@ -25,6 +25,13 @@ Fingerprint } from
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
 
+const getImageUrl = (url) => {
+  if (!url) return "";
+  if (url.startsWith("http") || url.startsWith("data:")) return url;
+  const baseUrl = axios.defaults.baseURL ? axios.defaults.baseURL.replace("/api", "") : "http://localhost:5000";
+  return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 const VerificationRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -359,7 +366,7 @@ const VerificationRequests = () => {
                   <div className="flex items-center gap-3">
                     <button
                 onClick={() =>
-                handleDownload(selectedUser.govId, selectedUser.name)}
+                handleDownload(getImageUrl(selectedUser.govId), selectedUser.name)}
 
                 className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 hover:bg-brand-50 hover:text-brand-700 hover:border-brand-200 transition group tooltip-trigger">
 
@@ -435,22 +442,22 @@ const VerificationRequests = () => {
 
                       {isPdf ?
                   <iframe
-                  src={selectedUser.govId}
+                  src={getImageUrl(selectedUser.govId)}
                   className="w-full h-full max-h-[75vh] rounded-xl border border-slate-200 bg-white shadow-xl"
                   title="Document Preview"
                   onLoad={() => setImageLoaded(true)}>
                   </iframe> :
 
                   <motion.img
-                  src={selectedUser.govId}
+                  src={getImageUrl(selectedUser.govId)}
                   alt="Government ID"
                   className="max-w-full max-h-[75vh] object-contain rounded-lg shadow-xl transition-opacity duration-300 bg-white"
                   style={{
                     scale: zoom,
-                    rotate: rotation,
-                    opacity: imageLoaded ? 1 : 0
+                    rotate: rotation
                   }}
                   onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageLoaded(true)}
                   drag
                   dragConstraints={{
                     top: -200,

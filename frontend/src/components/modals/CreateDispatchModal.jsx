@@ -402,7 +402,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       videoElem.onloadedmetadata = () => {
         window.URL.revokeObjectURL(videoElem.src);
         if (videoElem.duration > 61) {
-          return showToast.error("Story video duration cannot exceed 1 minute (60 seconds)!");
+          return showToast.error("Dispatch video duration cannot exceed 1 minute (60 seconds)!");
         }
         setMediaType("video");
         setMediaUrl(URL.createObjectURL(file));

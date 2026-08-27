@@ -284,12 +284,19 @@ const Register = () => {
     } catch (err) {
       if (!isMounted.current) return;
 
-      const errorMsg =
+      let errorMsg =
       typeof err.response?.data === "string" ?
       err.response.data :
       err.response?.data?.message ||
       err.message ||
       "Registration failed. Please try again.";
+      
+      if (errorMsg === "Email already registered" || errorMsg === "Username already taken") {
+          errorMsg = "This email is already registered. Please go to Login.";
+      } else if (err.message === "Network Error") {
+          errorMsg = "Internet connection issue. Please try logging in, your account might be ready.";
+      }
+
       showToast.error(errorMsg);
     } finally {
       if (isMounted.current) setLoading(false);

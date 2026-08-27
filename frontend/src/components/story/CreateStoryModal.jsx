@@ -60,7 +60,7 @@ export const CreateStoryModal = ({ isOpen, onClose, onStoryCreated, onSuccess })
       });
 
       if (res.data.success) {
-        showToast.success("Dispatch published successfully!", { id: "story" });
+        showToast.success("Dispatch published successfully!", { id: "dispatch" });
         if (onStoryCreated) onStoryCreated();
         if (onSuccess) onSuccess();
         onClose();
@@ -71,7 +71,7 @@ export const CreateStoryModal = ({ isOpen, onClose, onStoryCreated, onSuccess })
         setTextContent("");
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to publish Dispatch.", { id: "story" });
+      showToast.error(err.response?.data?.message || "Failed to publish Dispatch.", { id: "dispatch" });
     } finally {
       setIsSubmitting(false);
     }
