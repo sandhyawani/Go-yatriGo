@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Music, Type, Check, Play, Pause, Send, Loader2, ImagePlus, MapPin, Smile, Palette, Globe, Users, Lock, ArrowLeft } from "lucide-react";
+import { X, Music, Type, Check, Play, Pause, Send, Loader2, ImagePlus, MapPin, Smile, Palette, Globe, Users, Lock, ArrowLeft, Briefcase } from "lucide-react";
 import axios from "../../api/axios";
 import { showToast } from "../../utils/showToast";
 import { Search } from "lucide-react";
@@ -651,15 +651,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       textStickers.length > 0 ? textStickers[0].style.color : "white"
       );
 
-      if (visibility === "private" && allowedUsers.length === 0) {
-        showToast.error("Please select at least one user for a private Dispatch");
-        setIsSubmitting(false);
-        return;
-      }
-
       formData.append("visibility", visibility);
-      if (visibility === "private")
-      formData.append("allowedUsers", JSON.stringify(allowedUsers));
       if (hiddenUsers.length > 0)
       formData.append("hiddenFrom", JSON.stringify(hiddenUsers));
 
@@ -917,11 +909,19 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                           <span className="text-xs font-bold tracking-wide">Trip Mates</span>
                         </>}
 
+                      {visibility === "custom" &&
+              <>
+                          <Users className="w-3.5 h-3.5" />{" "}
+                          <span className="text-xs font-bold tracking-wide">
+                            Specific People ({allowedUsers.length} people)
+                          </span>
+                        </>}
+
                       {visibility === "private" &&
               <>
                           <Lock className="w-3.5 h-3.5" />{" "}
                           <span className="text-xs font-bold tracking-wide">
-                            Private ({allowedUsers.length} people)
+                            Only Me
                           </span>
                         </>}
 
@@ -1514,30 +1514,24 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
           className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-md flex flex-col items-center justify-center p-6">
 
                     <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[80vh]">
-                      <div className="p-4 border-b border-slate-100 flex items-center justify-between shrink-0">
-                        <h3 className="text-slate-800 font-black text-lg">
-                          {isSelectingUsers ? "Select Users" : "Dispatch Privacy"}
-                        </h3>
+                      <div className="p-4 border-b border-slate-100 flex items-start justify-between shrink-0">
+                        <div>
+                          <h3 className="text-slate-800 font-black text-lg">
+                            Dispatch Privacy
+                          </h3>
+                          <p className="text-xs text-slate-500 mt-1">
+                            Choose who can see your dispatch
+                          </p>
+                        </div>
                         <button
-                onClick={() => {
-                  if (isSelectingUsers) {
-                    setIsSelectingUsers(false);
-                  } else {
-                    setActiveOverlay(null);
-                  }
-                }}
-                className="text-slate-400 hover:text-slate-600 p-1 bg-slate-100 rounded-full">
+                onClick={() => setActiveOverlay(null)}
+                className="text-slate-400 hover:text-slate-600 p-1 bg-slate-100 rounded-full shrink-0">
 
-                          {isSelectingUsers ?
-                  <ArrowLeft className="w-4 h-4" /> :
-
-                  <X className="w-4 h-4" />}
-
+                          <X className="w-4 h-4" />
                         </button>
                       </div>
 
-                      {!isSelectingUsers ?
-              <>
+
                           <div className="p-2 overflow-y-auto">
                             {[
                   {
@@ -1550,28 +1544,24 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   },
                   {
                     id: "friends",
-                    label: "Trip Mates",
+                    label: "Friends",
                     icon:
                     <Users className="w-5 h-5 text-slate-600" />,
 
-                    desc: "Only connected trip mates"
+                    desc: "People you're connected with"
                   },
                   {
-                    id: "private",
-                    label: "Private",
+                    id: "tripMates",
+                    label: "Trip Mates",
                     icon:
-                    <Lock className="w-5 h-5 text-slate-600" />,
+                    <Briefcase className="w-5 h-5 text-slate-600" />,
 
-                    desc: "Choose specific people"
+                    desc: "People connected to this trip"
                   }]
                   .map((opt) =>
                   <div
                   key={opt.id}
-                  onClick={() => {
-                    setVisibility(opt.id);
-                    if (opt.id === "private")
-                    setIsSelectingUsers(true);
-                  }}
+                  onClick={() => setVisibility(opt.id)}
                   className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${visibility === opt.id ? "bg-slate-50 ring-1 ring-slate-200" : "hover:bg-slate-50"}`}>
 
                                 <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-lg shadow-inner border border-slate-200">
@@ -1603,80 +1593,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                               Done
                             </button>
                           </div>
-                        </> :
-
-              <>
-                          <div className="p-4 border-b border-slate-100 shrink-0">
-                            <div className="relative">
-                              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                              <input
-                    type="text"
-                    value={userSearchQuery}
-                    onChange={(e) =>
-                    setUserSearchQuery(e.target.value)}
-
-                    placeholder="Search users..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pl-9 pr-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-600/30" />
-
-                            </div>
-                          </div>
-                          <div className="p-2 overflow-y-auto flex-1 min-h-[200px]">
-                            {isSearchingUsers ?
-                  <div className="py-8 flex justify-center">
-                                <Loader2 className="w-6 h-6 text-primary-600 animate-spin" />
-                              </div> :
-                  userSearchResults.length > 0 ?
-                  userSearchResults.map((u) =>
-                  <div
-                  key={u._id}
-                  onClick={() => {
-                    setAllowedUsers((prev) =>
-                    prev.includes(u._id) ?
-                    prev.filter((id) => id !== u._id) :
-                    [...prev, u._id]
-                    );
-                  }}
-                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 cursor-pointer">
-
-                                  <div className="w-10 h-10 rounded-full overflow-hidden shrink-0">
-                                    <Avatar
-                      user={u}
-                      className="w-full h-full object-cover" />
-
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-slate-800 truncate">
-                                      {u.username}
-                                    </p>
-                                    <p className="text-xs text-slate-500 truncate">
-                                      {u.name}
-                                    </p>
-                                  </div>
-                                  <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${allowedUsers.includes(u._id) ? "border-primary-600 bg-primary-600" : "border-slate-300"}`}>
-
-                                    {allowedUsers.includes(u._id) &&
-                      <Check className="w-3 h-3 text-white" />}
-
-                                  </div>
-                                </div>
-                  ) :
-
-                  <div className="py-8 text-center text-slate-500 text-sm">
-                                No users found
-                              </div>}
-
-                          </div>
-                          <div className="p-4 pt-2 border-t border-slate-100 shrink-0">
-                            <button
-                  onClick={() => setIsSelectingUsers(false)}
-                  className="w-full bg-[#1E293B] text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition shadow-md">
-
-                              Confirm Users ({allowedUsers.length})
-                            </button>
-                          </div>
-                        </>}
-
                     </div>
                   </motion.div>}
 

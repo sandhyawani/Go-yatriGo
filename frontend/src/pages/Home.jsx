@@ -604,8 +604,8 @@ const Home = () => {
 
       setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
 
-      let previousMemories = [];
-      updateMemoriesCache((prev) => { previousMemories = prev; return prev.map((m) => {
+      const previousQueryData = queryClient.getQueryData(['memories']);
+      updateMemoriesCache((prev) => { return prev.map((m) => {
           const mId = (m._id || m.id)?.toString();
           if (mId === cleanPostId) {
             const hasFelt = m.likes?.some(
@@ -641,7 +641,7 @@ const Home = () => {
           }
         }
       } catch (err) {
-        queryClient.setQueryData(['memories'], previousMemories);
+        queryClient.setQueryData(['memories'], previousQueryData);
         showToast.error(err.response?.data?.message || "Failed to update reaction");
       } finally {
         setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));

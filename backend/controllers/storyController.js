@@ -84,7 +84,7 @@ exports.createStory = async (req, res) => {
       : "center";
     const captionColor = req.body.captionColor || req.body.textColor || "white";
     const location = (req.body.location || "").trim();
-    const visibility = ["public", "private", "friends"].includes(req.body.visibility)
+    const visibility = ["public", "private", "friends", "custom", "tripMates"].includes(req.body.visibility)
       ? req.body.visibility
       : "public";
 
@@ -165,6 +165,7 @@ exports.getActiveStories = async (req, res) => {
 
     const rawStories = await Story.find(query)
       .populate("userId", "name username pic img avatar profilePic profilePicture isVerified")
+      .populate("viewers.userId", "name username pic img avatar profilePic profilePicture isVerified")
       .sort({ createdAt: -1 });
 
     const currentUserIdStr = userId.toString();
@@ -184,6 +185,10 @@ exports.getActiveStories = async (req, res) => {
       }
 
       if (story.visibility === "private") {
+        return false;
+      }
+
+      if (story.visibility === "custom") {
         return (
           story.allowedUsers &&
           story.allowedUsers.some((u) => (u?._id || u).toString() === currentUserIdStr)

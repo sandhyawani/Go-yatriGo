@@ -52,7 +52,7 @@ const storySchema = new mongoose.Schema(
 
   visibility: {
     type: String,
-    enum: ["public", "private", "friends"],
+    enum: ["public", "private", "friends", "custom", "tripMates"],
     default: "public"
   },
 
