@@ -215,24 +215,24 @@ const CreateJourneyModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full sm:max-w-xl bg-white dark:bg-slate-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-xl bg-surface rounded-t-[var(--radius-card)] sm:rounded-[var(--radius-card)] shadow-md border border-border-default overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
         {/* Mobile touch indicator bar */}
         <div className="pt-2.5 pb-1 flex justify-center sm:hidden">
-          <div className="w-10 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+          <div className="w-10 h-1 rounded-full bg-slate-300" />
         </div>
 
         {/* Modal Header */}
-        <div className="bg-white dark:bg-slate-900 px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white flex items-center justify-between">
+        <div className="bg-white px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 text-text-primary flex items-center justify-between">
           <div className="flex items-center gap-2.5 sm:gap-3">
-            <div className="p-2 bg-[#7C3AED] rounded-xl shadow-md shadow-[#7C3AED]/20 shrink-0">
+            <div className="p-2 bg-brand rounded-xl shadow-md shadow-brand/20 shrink-0">
               <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
               <h2 className="text-sm sm:text-base font-extrabold flex items-center gap-1.5 leading-tight">
                 Launch Journey <Sparkles className="w-3.5 h-3.5 text-amber-500" />
               </h2>
-              <p className="text-[10.5px] sm:text-[11px] text-slate-500 font-medium">
+              <p className="text-[10.5px] sm:text-[11px] text-text-muted font-medium">
                 {step === 1 && "Step 1: Define your getaway"}
                 {step === 2 && "Step 2: Invite your travel group"}
                 {step === 3 && "Step 3: Review & launch"}
@@ -241,20 +241,20 @@ const CreateJourneyModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 transition-colors cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl hover:bg-background text-text-muted hover:text-text-primary transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step Progress Bar */}
-        <div className="flex items-center px-4 sm:px-6 py-2.5 bg-slate-50 dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800 select-none">
+        <div className="flex items-center px-4 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-100 select-none">
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 1 ? "text-[#7C3AED]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 1 ? "text-brand" : "text-text-muted"}`}
           >
             <span
               className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                step >= 1 ? "bg-[#7C3AED] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                step >= 1 ? "bg-brand text-white" : "bg-slate-200 text-text-secondary"
               }`}
             >
               1
@@ -262,15 +262,15 @@ const CreateJourneyModal = ({
             <span className="hidden xs:inline">Details</span>
           </div>
           <div
-            className={`flex-1 h-0.5 mx-2 sm:mx-3 rounded-full ${step >= 2 ? "bg-[#7C3AED]" : "bg-slate-200 dark:bg-slate-800"}`}
+            className={`flex-1 h-0.5 mx-2 sm:mx-3 rounded-full ${step >= 2 ? "bg-brand" : "bg-slate-200"}`}
           />
 
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 2 ? "text-[#7C3AED]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 2 ? "text-brand" : "text-text-muted"}`}
           >
             <span
               className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                step >= 2 ? "bg-[#7C3AED] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                step >= 2 ? "bg-brand text-white" : "bg-slate-200 text-text-secondary"
               }`}
             >
               2
@@ -278,15 +278,15 @@ const CreateJourneyModal = ({
             <span className="hidden xs:inline">Group</span>
           </div>
           <div
-            className={`flex-1 h-0.5 mx-2 sm:mx-3 rounded-full ${step >= 3 ? "bg-[#7C3AED]" : "bg-slate-200 dark:bg-slate-800"}`}
+            className={`flex-1 h-0.5 mx-2 sm:mx-3 rounded-full ${step >= 3 ? "bg-brand" : "bg-slate-200"}`}
           />
 
           <div
-            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 3 ? "text-[#7C3AED]" : "text-slate-400"}`}
+            className={`flex items-center gap-1.5 text-xs font-bold ${step >= 3 ? "text-brand" : "text-text-muted"}`}
           >
             <span
               className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black ${
-                step >= 3 ? "bg-[#7C3AED] text-white" : "bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
+                step >= 3 ? "bg-brand text-white" : "bg-slate-200 text-text-secondary"
               }`}
             >
               3
@@ -303,10 +303,10 @@ const CreateJourneyModal = ({
                 🎉
               </div>
               <div>
-                <h2 className="text-lg sm:text-xl font-black text-slate-900 dark:text-white">
+                <h2 className="text-lg sm:text-xl font-black text-text-primary">
                   Journey Created!
                 </h2>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xs mx-auto">
+                <p className="text-xs text-text-muted mt-1 max-w-xs mx-auto">
                   {invitedUserIds.length > 0
                     ? `Invitations sent to ${invitedUserIds.length} ${invitedUserIds.length === 1 ? "person" : "people"}.`
                     : "Your journey has been launched successfully."}
@@ -320,7 +320,7 @@ const CreateJourneyModal = ({
                   className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
                     linkCopied
                       ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
-                      : "bg-white dark:bg-slate-900 text-[#7C3AED] hover:bg-brand-50 border-brand-200 dark:border-brand-800 shadow-xs active:scale-95"
+                      : "bg-white text-brand hover:bg-brand-50 border-brand-200 shadow-xs active:scale-95"
                   }`}
                 >
                   {linkCopied ? (
@@ -330,7 +330,7 @@ const CreateJourneyModal = ({
                     </>
                   ) : (
                     <>
-                      <Link2 className="w-4 h-4 text-[#7C3AED]" />
+                      <Link2 className="w-4 h-4 text-brand" />
                       <span>Copy Private Invite Link</span>
                     </>
                   )}
@@ -344,7 +344,7 @@ const CreateJourneyModal = ({
                     handleCloseModal();
                     navigate(`/social/journeys/${j._id}`);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Open Journey</span>
                   <ArrowRight className="w-4 h-4" />
@@ -357,7 +357,7 @@ const CreateJourneyModal = ({
               {step === 1 && (
                 <form id="step1Form" onSubmit={handleNextStep1} className="space-y-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                       Journey Title *
                     </label>
                     <input
@@ -365,14 +365,14 @@ const CreateJourneyModal = ({
                       required
                       value={formData.title}
                       onChange={(e) => handleChange("title", e.target.value)}
-                      placeholder="e.g. Ratnagiri Beach Getaway, Leh Expedition"
-                      className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all"
+                      placeholder="e.g. Ratnagiri Beach Getaway, Leh Trip"
+                      className="input-field"
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         Starting From (Optional)
                       </label>
                       <input
@@ -380,11 +380,11 @@ const CreateJourneyModal = ({
                         value={formData.from}
                         onChange={(e) => handleChange("from", e.target.value)}
                         placeholder="e.g. Pune, Mumbai"
-                        className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all"
+                        className="input-field"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         Destination *
                       </label>
                       <input
@@ -393,14 +393,14 @@ const CreateJourneyModal = ({
                         value={formData.destination}
                         onChange={(e) => handleChange("destination", e.target.value)}
                         placeholder="e.g. Ganpatipule, Manali"
-                        className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all"
+                        className="input-field"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         Start Date *
                       </label>
                       <input
@@ -409,11 +409,11 @@ const CreateJourneyModal = ({
                         min={todayStr}
                         value={formData.startDate}
                         onChange={(e) => handleChange("startDate", e.target.value)}
-                        className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all"
+                        className="input-field"
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         End Date *
                       </label>
                       <input
@@ -422,50 +422,50 @@ const CreateJourneyModal = ({
                         min={formData.startDate || todayStr}
                         value={formData.endDate}
                         onChange={(e) => handleChange("endDate", e.target.value)}
-                        className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] transition-all"
+                        className="input-field"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         Journey Type
                       </label>
                       <CustomSelect
                         value={formData.journeyType}
                         onChange={(e) => handleChange("journeyType", e.target.value)}
-                        className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-xs sm:text-sm outline-none focus:border-[#7C3AED]"
+                        className="input-field"
                         options={[
                           { label: "👥 Journey with Trip Mates", value: "Connections" },
-                          { label: "👤 Solo Expedition", value: "Solo" }
+                          { label: "👤 Solo Journey", value: "Solo" }
                         ]}
                       />
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                         Journey Visibility
                       </label>
-                      <div className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 flex items-center gap-2 text-xs sm:text-sm font-bold text-slate-600 dark:text-slate-300">
+                      <div className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 bg-background flex items-center gap-2 text-xs sm:text-sm font-bold text-text-secondary">
                         🔒 Private Journey
                       </div>
-                      <p className="mt-1 text-[10.5px] text-slate-500 font-medium">
+                      <p className="mt-1 text-[10.5px] text-text-muted font-medium">
                         Only invited members can view this workspace.
                       </p>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1.5">
+                    <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1.5">
                       Cover Image
                     </label>
                     <div className="flex flex-col gap-2">
                       <div
                         onClick={() => !imagePreview && fileInputRef.current?.click()}
-                        className={`relative w-full rounded-2xl bg-[#7C3AED]/5 border-2 border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center overflow-hidden transition-all group ${
+                        className={`relative w-full rounded-2xl bg-brand/5 border-2 border-slate-200 flex flex-col items-center justify-center overflow-hidden transition-all group ${
                           !imagePreview
-                            ? "min-h-[130px] sm:min-h-[160px] border-dashed hover:border-[#7C3AED]/40 cursor-pointer py-4 px-3 text-center"
+                            ? "min-h-[130px] sm:min-h-[160px] border-dashed hover:border-brand/40 cursor-pointer py-4 px-3 text-center"
                             : "h-28 sm:h-36"
                         }`}
                       >
@@ -482,8 +482,8 @@ const CreateJourneyModal = ({
                         ) : (
                           <div className="flex flex-col items-center gap-1">
                             <span className="text-2xl">✨</span>
-                            <span className="text-xs sm:text-sm font-bold text-[#7C3AED]">Auto Cover</span>
-                            <div className="text-[11px] text-slate-500 text-center max-w-[260px]">
+                            <span className="text-xs sm:text-sm font-bold text-brand">Auto Cover</span>
+                            <div className="text-[11px] text-text-muted text-center max-w-[260px]">
                               Automatically generates a cover image based on destination.
                             </div>
                             <button
@@ -492,7 +492,7 @@ const CreateJourneyModal = ({
                                 e.stopPropagation();
                                 fileInputRef.current?.click();
                               }}
-                              className="text-[10.5px] font-bold text-[#7C3AED] hover:text-[#6d28d9] bg-[#7C3AED]/10 hover:bg-[#7C3AED]/20 px-3.5 py-1.5 rounded-xl transition-colors mt-1 cursor-pointer"
+                              className="text-[10.5px] font-bold text-brand hover:text-brand-dark bg-brand/10 hover:bg-brand/20 px-3.5 py-1.5 rounded-xl transition-colors mt-1 cursor-pointer"
                             >
                               + Upload image
                             </button>
@@ -512,7 +512,7 @@ const CreateJourneyModal = ({
                           <button
                             type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="text-[10.5px] font-bold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1 rounded-xl transition-colors cursor-pointer"
+                            className="text-[10.5px] font-bold text-text-muted hover:text-text-primary hover:bg-background px-3 py-1 rounded-xl transition-colors cursor-pointer"
                           >
                             Change image
                           </button>
@@ -522,7 +522,7 @@ const CreateJourneyModal = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-1">
+                    <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
                       Notes & Goals (Optional)
                     </label>
                     <textarea
@@ -530,7 +530,7 @@ const CreateJourneyModal = ({
                       value={formData.description}
                       onChange={(e) => handleChange("description", e.target.value)}
                       placeholder="What is this getaway all about? Add notes or travel vibes..."
-                      className="w-full px-3.5 py-2.5 rounded-xl sm:rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 placeholder-slate-400 text-xs outline-none focus:ring-2 focus:ring-[#7C3AED]/20 focus:border-[#7C3AED] min-h-[70px] resize-none transition-all"
+                      className="input-field"
                     />
                   </div>
                 </form>
@@ -540,20 +540,20 @@ const CreateJourneyModal = ({
               {/* Step 2: Invite Group */}
               {step === 2 && (
                 <div>
-                  <div className="mb-4 bg-brand-50 dark:bg-brand-900/40 p-4 rounded-2xl border border-brand-200 dark:border-brand-800/60 flex items-start gap-3">
-                    <Users className="w-5 h-5 text-[#7C3AED] shrink-0 mt-0.5" />
+                  <div className="mb-4 bg-brand-50 p-4 rounded-2xl border border-brand-200 flex items-start gap-3">
+                    <Users className="w-5 h-5 text-brand shrink-0 mt-0.5" />
                     <div className="text-xs">
-                      <strong className="text-slate-800 dark:text-slate-200 font-bold block">
+                      <strong className="text-text-primary font-bold block">
                         Invite Your Travel Group
                       </strong>
-                      <span className="text-slate-600 dark:text-slate-400 text-[11px]">
+                      <span className="text-text-secondary text-[11px]">
                         Choose who you'd like to travel with. Invitations will be sent when you launch the journey.
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between px-1 mb-2">
-                    <span className="text-xs font-black text-slate-700 dark:text-slate-200">
+                    <span className="text-xs font-black text-text-primary">
                       {invitedUserIds.length > 0 ?
                   `${invitedUserIds.length} ${invitedUserIds.length === 1 ? "person" : "people"} selected` :
                   "No one selected (you can invite people later)"}
@@ -568,8 +568,8 @@ const CreateJourneyModal = ({
               )}
               {step === 3 && (
                 <div className="space-y-4 sm:space-y-5 animate-fade-in">
-                  <div className="bg-white dark:bg-slate-900 rounded-2xl sm:rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
-                    <div className="relative h-36 sm:h-44 bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden">
+                  <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 overflow-hidden shadow-sm">
+                    <div className="relative h-36 sm:h-44 bg-slate-200 flex items-center justify-center overflow-hidden">
                       {formData.coverImage || imagePreview ? (
                         <img
                           src={imagePreview || formData.coverImage}
@@ -577,7 +577,7 @@ const CreateJourneyModal = ({
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <div className="flex flex-col items-center justify-center text-slate-400 opacity-80">
+                        <div className="flex flex-col items-center justify-center text-text-muted opacity-80">
                           <span className="text-2xl sm:text-3xl mb-1 sm:mb-2">✨</span>
                           <span className="text-xs sm:text-sm font-bold">Auto Cover Selected</span>
                         </div>
@@ -585,7 +585,7 @@ const CreateJourneyModal = ({
 
                       <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-3.5 sm:p-5 text-white">
                         <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[9.5px] sm:text-[10px] font-extrabold bg-[#7C3AED] px-2 py-0.5 rounded-md self-start uppercase tracking-wider shadow-sm">
+                          <span className="text-[9.5px] sm:text-[10px] font-extrabold bg-brand px-2 py-0.5 rounded-md self-start uppercase tracking-wider shadow-sm">
                             {formData.journeyType === "Solo Expedition" || formData.journeyType === "Solo" || formData.journeyType === "Solo Journey"
                               ? "SOLO TRIP"
                               : "TRIP MATES"}
@@ -601,35 +601,35 @@ const CreateJourneyModal = ({
                       </div>
                     </div>
 
-                    <div className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 bg-slate-50/50 dark:bg-slate-950/50 border-t border-slate-100 dark:border-slate-800 text-xs">
+                    <div className="p-3 sm:p-4 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 bg-slate-50/50 border-t border-slate-100 text-xs">
                       <div>
-                        <span className="text-[9.5px] sm:text-[10px] font-bold text-slate-400 uppercase block">
+                        <span className="text-[9.5px] sm:text-[10px] font-bold text-text-muted uppercase block">
                           Duration
                         </span>
-                        <span className="font-extrabold text-slate-800 dark:text-slate-100 mt-0.5 block text-xs">
+                        <span className="font-extrabold text-text-primary mt-0.5 block text-xs">
                           {getDurationDays() || "3 Days"}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[9.5px] sm:text-[10px] font-bold text-slate-400 uppercase block">
+                        <span className="text-[9.5px] sm:text-[10px] font-bold text-text-muted uppercase block">
                           Host
                         </span>
-                        <span className="font-extrabold text-slate-800 dark:text-slate-100 mt-0.5 block text-xs">
+                        <span className="font-extrabold text-text-primary mt-0.5 block text-xs">
                           You
                         </span>
                       </div>
                       <div>
-                        <span className="text-[9.5px] sm:text-[10px] font-bold text-slate-400 uppercase block">
+                        <span className="text-[9.5px] sm:text-[10px] font-bold text-text-muted uppercase block">
                           Invited
                         </span>
-                        <span className="font-extrabold text-[#7C3AED] mt-0.5 block text-xs">
+                        <span className="font-extrabold text-brand mt-0.5 block text-xs">
                           {invitedUserIds.length > 0
                             ? `${invitedUserIds.length} ${invitedUserIds.length === 1 ? "person" : "people"}`
                             : "None"}
                         </span>
                       </div>
                       <div>
-                        <span className="text-[9.5px] sm:text-[10px] font-bold text-slate-400 uppercase block">
+                        <span className="text-[9.5px] sm:text-[10px] font-bold text-text-muted uppercase block">
                           Status
                         </span>
                         <span className="font-extrabold text-amber-500 mt-0.5 block text-xs">
@@ -639,11 +639,11 @@ const CreateJourneyModal = ({
                     </div>
                   </div>
 
-                  <div className="bg-brand-50/70 dark:bg-brand-950/40 p-3.5 sm:p-4 rounded-2xl border border-brand-200/80 dark:border-brand-900/60 space-y-2">
-                    <h4 className="text-[11px] sm:text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-[#7C3AED]" /> Ready to launch?
+                  <div className="bg-brand-50/70 p-3.5 sm:p-4 rounded-2xl border border-brand-200/80 space-y-2">
+                    <h4 className="text-[11px] sm:text-xs font-black text-text-primary uppercase tracking-wider flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-brand" /> Ready to launch?
                     </h4>
-                    <div className="space-y-1.5 text-[11px] sm:text-xs text-slate-700 dark:text-slate-300 font-semibold">
+                    <div className="space-y-1.5 text-[11px] sm:text-xs text-text-primary font-semibold">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                         <span>Trip details and dates configured</span>
@@ -666,7 +666,7 @@ const CreateJourneyModal = ({
 
         {/* Modal Action Footer */}
         {!createdJourney && (
-          <div className="px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2.5 bg-white dark:bg-slate-900">
+          <div className="px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] border-t border-slate-100 flex items-center justify-between gap-2.5 bg-white">
             {step > 1 ? (
               <button
                 type="button"
@@ -679,7 +679,7 @@ const CreateJourneyModal = ({
                       : step - 1
                   )
                 }
-                className="flex items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-text-secondary hover:bg-background transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
@@ -687,7 +687,7 @@ const CreateJourneyModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                className="px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:bg-background transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -697,7 +697,7 @@ const CreateJourneyModal = ({
               <button
                 form="step1Form"
                 type="submit"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 cursor-pointer"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 cursor-pointer"
               >
                 <span>
                   {formData.journeyType === "Solo Expedition" || formData.journeyType === "Solo" || formData.journeyType === "Solo Journey"
@@ -712,7 +712,7 @@ const CreateJourneyModal = ({
               <button
                 type="button"
                 onClick={handleNextStep2}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 cursor-pointer"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 cursor-pointer"
               >
                 <span>{invitedUserIds.length === 0 ? "Skip for now" : "Next: Review"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -724,7 +724,7 @@ const CreateJourneyModal = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] text-white text-xs font-black shadow-lg shadow-[#7C3AED]/30 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-black shadow-lg shadow-brand/30 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap cursor-pointer"
               >
                 {loading ? "Launching..." : "🚀 Launch Journey"}
               </button>

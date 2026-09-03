@@ -351,6 +351,33 @@ const warnUser = async (req, res) => {
   }
 };
 
+const toggleVerification = async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    const isCurrentlyVerified = Boolean(user.isVerified === true && user.verificationStatus === "verified");
+    const nextVerifiedState = !isCurrentlyVerified;
+
+    user.isVerified = nextVerifiedState;
+    user.verificationStatus = nextVerifiedState ? "verified" : "unverified";
+    if (!nextVerifiedState) {
+      user.verificationNote = "";
+    }
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: `User ${nextVerifiedState ? "verified" : "unverified"} successfully`,
+      isVerified: user.isVerified,
+      verificationStatus: user.verificationStatus,
+      user
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
+
 module.exports = {
   getStats,
   getAllReports,
@@ -362,5 +389,6 @@ module.exports = {
   warnUser,
   getPendingVerifications,
   approveVerification,
-  rejectVerification
+  rejectVerification,
+  toggleVerification
 };

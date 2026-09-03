@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { Trash2 } from "lucide-react";
 import moment from "moment";
 import { renderClickableText } from "../utils/feedHelpers";
@@ -41,26 +42,59 @@ const CommentItem = ({
 
   return (
     <div className="group/comment relative flex items-start gap-2.5 py-1.5 text-xs leading-relaxed">
-      <img
-        src={
-          userPic ||
-          `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            userName
-          )}&background=7C3AED&color=fff&bold=true`
-        }
-        alt={userName}
-        className="h-6 w-6 shrink-0 rounded-full object-cover border border-slate-100 mt-0.5"
-        onError={(e) => {
-          e.target.onerror = null;
-          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
-            userName
-          )}&background=7C3AED&color=fff&bold=true`;
-        }}
-      />
+      {commentAuthorId ? (
+        <Link
+          to={`/profile/${commentAuthorId}`}
+          className="shrink-0 transition-opacity hover:opacity-80"
+        >
+          <img
+            src={
+              userPic ||
+              `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                userName
+              )}&background=0284c7&color=fff&bold=true`
+            }
+            alt={userName}
+            className="h-6 w-6 rounded-full object-cover border border-slate-100 mt-0.5 cursor-pointer"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                userName
+              )}&background=0284c7&color=fff&bold=true`;
+            }}
+          />
+        </Link>
+      ) : (
+        <img
+          src={
+            userPic ||
+            `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              userName
+            )}&background=0284c7&color=fff&bold=true`
+          }
+          alt={userName}
+          className="h-6 w-6 shrink-0 rounded-full object-cover border border-slate-100 mt-0.5"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+              userName
+            )}&background=0284c7&color=fff&bold=true`;
+          }}
+        />
+      )}
 
       <div className="min-w-0 flex-1 pr-6">
         <div className="flex flex-wrap items-baseline gap-x-2">
-          <span className="font-semibold text-slate-800">{userName}</span>
+          {commentAuthorId ? (
+            <Link
+              to={`/profile/${commentAuthorId}`}
+              className="font-semibold text-slate-800 hover:text-brand transition-colors cursor-pointer"
+            >
+              {userName}
+            </Link>
+          ) : (
+            <span className="font-semibold text-slate-800">{userName}</span>
+          )}
           {timestamp && (
             <span className="text-[10px] text-slate-400 font-normal">
               {timestamp}

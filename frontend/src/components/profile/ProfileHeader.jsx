@@ -7,6 +7,7 @@ import { getAvatarUrl } from "../../utils/avatar";
 import { showToast } from "../../utils/showToast";
 import { compressImage } from "../../utils/compressImage";
 import { chatService } from "../../services/chatService";
+import { isActuallyVerified } from "../../utils/verification";
 
 export const ProfileHeader = ({
   profileUser,
@@ -165,9 +166,6 @@ export const ProfileHeader = ({
   const isRequested = Boolean(relationship?.requestSent);
   const isTripMate = Boolean(relationship?.isTripMate);
 
-  // ------------------------------------------------------------
-  // Messaging permission
-  // ------------------------------------------------------------
   const canMessageUser = (() => {
     if (isOwnProfile || !currentUser || !profileUser) return false;
 
@@ -207,9 +205,6 @@ export const ProfileHeader = ({
 
   const hasStories = Array.isArray(userStories) && userStories.length > 0;
 
-  // ------------------------------------------------------------
-  // Share profile
-  // ------------------------------------------------------------
   const handleShareProfile = async () => {
     try {
       if (navigator.clipboard) {
@@ -225,9 +220,6 @@ export const ProfileHeader = ({
     }
   };
 
-  // ------------------------------------------------------------
-  // Travel interest icons
-  // ------------------------------------------------------------
   const INTEREST_ICON_MAP = {
     "road trips": "🛣️",
     backpacking: "🎒",
@@ -251,9 +243,6 @@ export const ProfileHeader = ({
     spirituality: "🙏",
   };
 
-  // ------------------------------------------------------------
-  // Counts
-  // ------------------------------------------------------------
   const mutualCount =
     profileUser?.mutualsCount !== undefined
       ? profileUser.mutualsCount
@@ -287,45 +276,53 @@ export const ProfileHeader = ({
     userTrips.length ??
     0;
 
+  const rawBio = (profileUser?.bio || "").trim();
+  const displayBio =
+    rawBio &&
+    /^hey there!? i(?:'m| am) using (?:go )?yatrigo\.? (?:what|wht) about you\??$/i.test(
+      rawBio
+    )
+      ? "Hey there! I’m using YatriGo. What about you?"
+      : profileUser?.bio;
+
   const verificationStatus = profileUser?.verificationStatus || "unverified";
 
-  // ------------------------------------------------------------
-  // Verification badge
-  // ------------------------------------------------------------
   const renderVerificationBadge = () => {
-    if (verificationStatus === "verified") {
+    if (isActuallyVerified(profileUser)) {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2 py-0.5 text-[11px] font-bold text-primary-700">
-          <ShieldCheck className="h-3 w-3 text-primary-600" />
+        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 shadow-2xs">
+          <ShieldCheck className="h-3 w-3 text-emerald-600" />
           Verified
         </span>
       );
     }
-    if (verificationStatus === "pending") {
+    if (profileUser?.verificationStatus === "pending") {
       return (
-        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700">
+        <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-bold text-amber-700 shadow-2xs">
           <Clock className="h-3 w-3 text-amber-600" />
-          Pending
+          Verification Pending
         </span>
       );
     }
-    if (verificationStatus === "rejected") {
+    if (profileUser?.verificationStatus === "rejected") {
       return (
         <span
-          className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-600"
-          title={profileUser?.verificationNote}
+          className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50 px-2 py-0.5 text-[11px] font-bold text-red-600 shadow-2xs"
+          title={profileUser?.verificationNote || "Verification was unsuccessful"}
         >
           <XCircle className="h-3 w-3" />
-          Rejected
+          Not Verified (Rejected)
         </span>
       );
     }
-    return null;
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-bold text-slate-600 shadow-2xs">
+        <ShieldAlert className="h-3 w-3 text-slate-500" />
+        Not Verified
+      </span>
+    );
   };
 
-  // ------------------------------------------------------------
-  // Relationship action button
-  // ------------------------------------------------------------
   const renderRelationshipAction = () => {
     if (isBlockedByMe) {
       return (
@@ -400,7 +397,7 @@ export const ProfileHeader = ({
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-surface shadow-sm">
       {/* ─── 1. COVER AREA ────────────────────────────────────────── */}
-      <div className="relative h-28 sm:h-36 md:h-44 w-full overflow-hidden bg-gradient-to-r from-purple-800 via-primary-600 to-purple-900 select-none group/cover">
+      <div className="relative h-28 sm:h-36 md:h-44 w-full overflow-hidden bg-gradient-to-r from-sky-800 via-brand to-sky-900 select-none group/cover">
         {coverPreview || profileUser?.coverImage || profileUser?.coverPic ? (
           <img
             src={
@@ -440,8 +437,7 @@ export const ProfileHeader = ({
             />
 
             {coverPreview ? (
-              /* Preview Confirmation Actions */
-              <div className="flex items-center gap-1.5 rounded-full bg-slate-900/80 p-1 backdrop-blur-md shadow-lg border border-white/20">
+              <div className="flex items-center gap-1.5 rounded-full bg-brand/80 p-1 backdrop-blur-md shadow-lg border border-white/20">
                 <button
                   type="button"
                   onClick={handleCancelCover}
@@ -473,7 +469,6 @@ export const ProfileHeader = ({
                 </button>
               </div>
             ) : (
-              /* Subtle Purple Edit Button */
               <button
                 type="button"
                 onClick={() => coverInputRef.current?.click()}
@@ -510,7 +505,7 @@ export const ProfileHeader = ({
                   e.target.onerror = null;
                   e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                     profileUser?.name || "Explorer"
-                  )}&background=7C3AED&color=fff&bold=true`;
+                  )}&background=0284c7&color=fff&bold=true`;
                 }}
               />
             </div>
@@ -636,31 +631,42 @@ export const ProfileHeader = ({
 
         {/* Identity & Bio */}
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-dark font-heading">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+            <h1 className="text-base sm:text-xl font-bold tracking-tight text-dark font-heading leading-snug">
               {profileUser?.name || "Explorer"}
             </h1>
             {renderVerificationBadge()}
-            {profileUser?.rating && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800 font-sans">
+            {Number(profileUser?.rating) > 0 ? (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10.5px] sm:text-xs font-semibold text-amber-800 font-sans"
+                title={profileUser?.reviewsCount ? `${profileUser.reviewsCount} review${profileUser.reviewsCount > 1 ? "s" : ""}` : "Rating"}
+              >
                 <Star className="h-3 w-3 fill-amber-400 text-amber-500" />
                 {profileUser.rating}
+              </span>
+            ) : (
+              <span
+                className="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-[10.5px] sm:text-xs font-semibold text-slate-500 font-sans"
+                title="No reviews yet"
+              >
+                <Star className="h-3 w-3 text-slate-400" />
+                Unrated
               </span>
             )}
           </div>
 
-          <p className="text-xs sm:text-sm font-medium text-primary-600 font-sans">
+          <p className="text-xs font-medium text-primary-600 font-sans">
             @{profileUser?.username || "traveler"}
           </p>
 
-          {profileUser?.bio && (
+          {displayBio && (
             <p className="text-xs sm:text-sm text-secondary-600 font-normal sm:font-medium leading-relaxed max-w-2xl whitespace-pre-wrap break-words pt-0.5 font-sans">
-              {profileUser.bio}
+              {displayBio}
             </p>
           )}
 
           {/* Metadata chips (Location, Member since, Email/Phone) */}
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted font-medium pt-1 font-sans">
+          <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-muted font-medium pt-1 font-sans">
             {profileUser?.city || profileUser?.state || profileUser?.country ? (
               <span className="inline-flex items-center gap-1 text-secondary-600">
                 <MapPin className="h-3.5 w-3.5 text-danger shrink-0" />
@@ -675,7 +681,7 @@ export const ProfileHeader = ({
                 onClick={() =>
                   navigate("/updateProfile", { state: profileUser })
                 }
-                className="inline-flex items-center gap-1 text-primary-600 bg-primary-50 border border-primary-200 px-2.5 py-0.5 rounded-full text-[11px] font-semibold hover:bg-primary-100 transition-colors"
+                className="inline-flex items-center gap-1 text-primary-600 bg-primary-50 border border-primary-200 px-2.5 py-0.5 rounded-full text-xs font-semibold hover:bg-primary-100 transition-colors"
               >
                 <MapPin className="h-3 w-3 text-danger" /> Add Location
               </button>
@@ -696,7 +702,7 @@ export const ProfileHeader = ({
 
           {/* Travel Interests & Styles (Compact chips) */}
           {profileUser?.interests && profileUser.interests.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-2 font-sans">
+            <div className="flex flex-wrap items-center gap-1.5 pt-1.5 font-sans">
               {profileUser.interests
                 .filter((interest) => {
                   const lower = (interest || "").toLowerCase().trim();
@@ -709,7 +715,7 @@ export const ProfileHeader = ({
                 .map((interest) => (
                   <span
                     key={interest}
-                    className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50/80 px-2.5 py-0.5 text-[11px] font-semibold text-primary-700"
+                    className="inline-flex items-center gap-1 rounded-full border border-primary-100 bg-primary-50/80 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-primary-700"
                   >
                     <span>
                       {INTEREST_ICON_MAP[(interest || "").toLowerCase()] || "🌍"}
@@ -732,12 +738,12 @@ export const ProfileHeader = ({
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
               {memoriesCount}
             </span>
-            <span className="text-[9px] min-[430px]:text-[10px] font-semibold uppercase tracking-[0.08em] text-muted group-hover:text-primary-700 font-sans truncate block">
+            <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
               Memories
             </span>
           </button>
 
-          {/* Trips */}
+          {/* My Trips */}
           <button
             type="button"
             onClick={() => setActiveTab("trips")}
@@ -746,8 +752,8 @@ export const ProfileHeader = ({
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
               {completedTrips}
             </span>
-            <span className="text-[9px] min-[430px]:text-[10px] font-semibold uppercase tracking-[0.08em] text-muted group-hover:text-primary-700 font-sans truncate block">
-              Trips
+            <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
+              {isOwnProfile ? "My Trips" : "Trips"}
             </span>
           </button>
 
@@ -760,7 +766,7 @@ export const ProfileHeader = ({
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
               {followersCount}
             </span>
-            <span className="text-[9px] min-[430px]:text-[10px] font-semibold uppercase tracking-[0.08em] text-muted group-hover:text-primary-700 font-sans truncate block">
+            <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
               Followers
             </span>
           </button>
@@ -774,7 +780,7 @@ export const ProfileHeader = ({
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
               {followingCount}
             </span>
-            <span className="text-[9px] min-[430px]:text-[10px] font-semibold uppercase tracking-[0.08em] text-muted group-hover:text-primary-700 font-sans truncate block">
+            <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
               Following
             </span>
           </button>
@@ -792,7 +798,7 @@ export const ProfileHeader = ({
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
               {profileUser?.tripMatesCount || mutualCount || 0}
             </span>
-            <span className="text-[9px] min-[430px]:text-[10px] font-semibold uppercase tracking-[0.08em] text-muted group-hover:text-primary-700 font-sans truncate block">
+            <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
               {profileUser?.tripMatesCount > 0 ? "Trip Mates" : "Mutuals"}
             </span>
           </button>

@@ -58,11 +58,11 @@ const SettingsToggle = ({
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80">
       <div className="pr-4">
-        <span id={labelId} className="text-sm font-semibold text-[#1E293B]">
+        <span id={labelId} className="text-sm font-semibold text-text-primary">
           {title ?? "Setting"}
         </span>
         {description && typeof description === "string" &&
-        <p id={descId} className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+        <p id={descId} className="text-xs text-text-muted mt-0.5 leading-relaxed">
             {description}
           </p>}
 
@@ -79,8 +79,8 @@ const SettingsToggle = ({
         onClick={handleToggle}
         className={[
           "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full transition-colors duration-200 ease-in-out",
-          "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#7C3AED]",
-          value ? "bg-[#7C3AED]" : "bg-[#E5E7EB]",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand",
+          value ? "bg-brand" : "bg-slate-200",
           isLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
         ].join(" ")}
       >

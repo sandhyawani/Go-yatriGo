@@ -37,10 +37,6 @@ const journeyMembershipController = require("./journeyMembershipController");
 
 const { syncJourneyStatus } = journeyLifecycleController;
 
-// ==========================================
-// CORE JOURNEY CRUD & FETCHING
-// ==========================================
-
 exports.createJourney = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -540,10 +536,6 @@ exports.deleteJourney = async (req, res) => {
   }
 };
 
-// ==========================================
-// WORKSPACE & TIMELINE & CHECKIN
-// ==========================================
-
 exports.getWorkspaceItems = async (req, res) => {
   try {
     const { id } = req.params;
@@ -786,7 +778,6 @@ exports.safeCheckIn = async (req, res) => {
       return res.status(404).json({ success: false, message: "Journey not found" });
     }
 
-    // 1. Membership Authorization (Creator or Member)
     const isMember = journey.members?.some(
       (m) => (m.user?._id || m.user).toString() === userId.toString()
     ) || (journey.creator && (journey.creator._id || journey.creator).toString() === userId.toString());
@@ -797,7 +788,6 @@ exports.safeCheckIn = async (req, res) => {
       return res.status(403).json({ success: false, code: "NOT_JOURNEY_MEMBER", message: "Only journey members can broadcast check-ins." });
     }
 
-    // 2. Journey Status Checks
     if (journey.status === "Cancelled" || journey.isCancelled) {
       if (useTransaction) await session.abortTransaction();
       if (session) session.endSession();
@@ -807,12 +797,9 @@ exports.safeCheckIn = async (req, res) => {
     const finalLocation = location || locationName || journey.destination || "Current Location";
     const finalNote = message || note || "";
 
-    // 3. Determine if Quick Safety or Milestone Check-In
     const isExplicitQuickSafe = isQuickSafe === true || checkInType === "safe_confirmation" || checkInType === "Safety Confirmation" || !checkInType;
 
     if (isExplicitQuickSafe) {
-      // BRANCH A: QUICK "I'M SAFE" SAFETY CONFIRMATION
-      // Does NOT advance milestones, does NOT alter journey status.
       const createPayload = {
         journeyId: id,
         userId,
@@ -880,7 +867,6 @@ exports.safeCheckIn = async (req, res) => {
       });
     }
 
-    // BRANCH B: SEQUENTIAL JOURNEY MILESTONE
     if (!JOURNEY_MILESTONES.includes(checkInType)) {
       if (useTransaction) await session.abortTransaction();
       if (session) session.endSession();
@@ -901,7 +887,6 @@ exports.safeCheckIn = async (req, res) => {
       });
     }
 
-    // Query existing milestones to ensure sequential progression and duplicate prevention
     const timelineQuery = JourneyTimeline.find({
       journeyId: id,
       eventType: "safe_checkin",
@@ -917,7 +902,6 @@ exports.safeCheckIn = async (req, res) => {
       }
     }
 
-    // Rule: Duplicate check -> 409 Conflict
     if (completedMilestones.includes(checkInType)) {
       if (useTransaction) await session.abortTransaction();
       if (session) session.endSession();
@@ -928,7 +912,6 @@ exports.safeCheckIn = async (req, res) => {
       });
     }
 
-    // Rule: Next expected check
     const nextExpectedIndex = completedMilestones.length;
     const nextExpectedMilestone = JOURNEY_MILESTONES[nextExpectedIndex];
 
@@ -1067,10 +1050,6 @@ exports.safeCheckIn = async (req, res) => {
   }
 };
 
-// ==========================================
-// GALLERY & MEMORIES
-// ==========================================
-
 exports.getGallery = async (req, res) => {
   try {
     const { id } = req.params;
@@ -1195,10 +1174,6 @@ exports.reactToMemory = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
-// ==========================================
-// STATISTICS & COMPANIONS
-// ==========================================
 
 exports.getUserStatistics = async (req, res) => {
   try {
@@ -1460,10 +1435,6 @@ exports.getPreviousCompanions = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
-// ==========================================
-// RE-EXPORTS FOR BACKWARD COMPATIBILITY
-// ==========================================
 
 exports.syncJourneyStatus = journeyLifecycleController.syncJourneyStatus;
 exports.syncJourneyStatusHandler = journeyLifecycleController.syncJourneyStatusHandler;

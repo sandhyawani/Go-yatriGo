@@ -41,7 +41,7 @@ const CommentInput = ({
         <button
           type="submit"
           disabled={isSubmittingComment[post._id] || !commentText[post._id]?.trim()}
-          aria-label="Post comment"
+          aria-label="Share thought"
           className="absolute right-1 flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white shadow-sm transition-all duration-200 hover:bg-brand-700 active:scale-90 disabled:pointer-events-none disabled:scale-75 disabled:opacity-0"
         >
           {isSubmittingComment[post._id] ? (

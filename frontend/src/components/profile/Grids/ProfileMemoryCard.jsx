@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
+  Heart,
   Sparkles,
   MessageCircle,
   Share2,
@@ -143,14 +144,251 @@ export const ProfileMemoryCard = ({
     ? moment(currentPost.createdAt).format("MMM D, YYYY")
     : null;
 
+  // ─── SINGLE VS DOUBLE CLICK / TAP COORDINATOR ─────────────────────
+  const cardRef = useRef(null);
+  const clickTimerRef = useRef(null);
+  const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
+  const touchStartRef = useRef({ x: 0, y: 0, time: 0, isScrolling: false });
+  const lastFeltTriggerTimeRef = useRef(0);
+  const lastTouchHandledTimeRef = useRef(0);
+
+  const [heartAnim, setHeartAnim] = useState(null);
+
+  useEffect(() => {
+    return () => {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+      }
+    };
+  }, []);
+
+  const triggerFeltAction = (tapPoint) => {
+    const now = Date.now();
+    // Guard against rapid duplicate triggers (350ms cooldown) and ongoing loading
+    if (now - lastFeltTriggerTimeRef.current < 350) return;
+    if (postId && feltLoadingMap?.[postId]) return;
+    lastFeltTriggerTimeRef.current = now;
+
+    // Position floating heart animation safely within card bounds
+    const safePoint = {
+      x: Math.max(15, Math.min(85, tapPoint?.x ?? 50)),
+      y: Math.max(15, Math.min(85, tapPoint?.y ?? 50)),
+    };
+
+    setHeartAnim({
+      x: safePoint.x,
+      y: safePoint.y,
+      key: now,
+    });
+
+    window.setTimeout(() => {
+      setHeartAnim((prev) => (prev?.key === now ? null : prev));
+    }, 750);
+
+    // Invoke existing handleFelt exactly once — single source of truth for optimistic updates and API requests
+    if (handleFelt && postId) {
+      handleFelt(postId);
+    }
+  };
+
+  const handleMouseDown = (e) => {
+    // Prevent browser text selection when double clicking
+    if (e.detail > 1) {
+      e.preventDefault();
+    }
+  };
+
+  const handleClick = (e) => {
+    // If recently handled by touch event on mobile, ignore synthetic click
+    if (Date.now() - lastTouchHandledTimeRef.current < 500) {
+      return;
+    }
+
+    if (e.detail === 2) {
+      // Desktop double-click
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+      const rect = cardRef.current?.getBoundingClientRect();
+      const tapPoint = rect
+        ? {
+            x: ((e.clientX - rect.left) / rect.width) * 100,
+            y: ((e.clientY - rect.top) / rect.height) * 100,
+          }
+        : { x: 50, y: 50 };
+
+      triggerFeltAction(tapPoint);
+      return;
+    }
+
+    // First click: wait briefly for possible second click
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+    }
+
+    clickTimerRef.current = setTimeout(() => {
+      clickTimerRef.current = null;
+      if (onCardClick) onCardClick();
+    }, 230);
+  };
+
+  const handleDoubleClick = (e) => {
+    if (clickTimerRef.current) {
+      clearTimeout(clickTimerRef.current);
+      clickTimerRef.current = null;
+    }
+    const rect = cardRef.current?.getBoundingClientRect();
+    const tapPoint = rect
+      ? {
+          x: ((e.clientX - rect.left) / rect.width) * 100,
+          y: ((e.clientY - rect.top) / rect.height) * 100,
+        }
+      : { x: 50, y: 50 };
+
+    triggerFeltAction(tapPoint);
+  };
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    touchStartRef.current = {
+      x: touch.clientX,
+      y: touch.clientY,
+      time: Date.now(),
+      isScrolling: false,
+    };
+  };
+
+  const handleTouchMove = (e) => {
+    if (touchStartRef.current.isScrolling) return;
+    const touch = e.touches[0];
+    const dx = Math.abs(touch.clientX - touchStartRef.current.x);
+    const dy = Math.abs(touch.clientY - touchStartRef.current.y);
+
+    // Cancel tap detection if user moves finger > 8px (scrolling)
+    if (dx > 8 || dy > 8) {
+      touchStartRef.current.isScrolling = true;
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    lastTouchHandledTimeRef.current = Date.now();
+
+    // If scrolling, do not trigger single tap or double tap
+    if (touchStartRef.current.isScrolling) {
+      return;
+    }
+
+    const touch = e.changedTouches[0];
+    const now = Date.now();
+    const touchDuration = now - touchStartRef.current.time;
+
+    // Ignore long presses (> 500ms)
+    if (touchDuration > 500) return;
+
+    const lastTap = lastTapRef.current;
+    const timeSinceLastTap = now - lastTap.time;
+    const dx = Math.abs(touch.clientX - lastTap.x);
+    const dy = Math.abs(touch.clientY - lastTap.y);
+
+    // Double-tap detected (< 300ms, within 32px distance)
+    if (timeSinceLastTap < 300 && dx < 32 && dy < 32) {
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+        clickTimerRef.current = null;
+      }
+      lastTapRef.current = { time: 0, x: 0, y: 0 };
+
+      const rect = cardRef.current?.getBoundingClientRect();
+      const tapPoint = rect
+        ? {
+            x: ((touch.clientX - rect.left) / rect.width) * 100,
+            y: ((touch.clientY - rect.top) / rect.height) * 100,
+          }
+        : { x: 50, y: 50 };
+
+      triggerFeltAction(tapPoint);
+    } else {
+      // First tap of potential double tap
+      lastTapRef.current = {
+        time: now,
+        x: touch.clientX,
+        y: touch.clientY,
+      };
+
+      if (clickTimerRef.current) {
+        clearTimeout(clickTimerRef.current);
+      }
+
+      clickTimerRef.current = setTimeout(() => {
+        clickTimerRef.current = null;
+        lastTapRef.current = { time: 0, x: 0, y: 0 };
+        if (onCardClick) onCardClick();
+      }, 230);
+    }
+  };
+
   return (
     <>
       <article
-        onClick={() => {
-          if (onCardClick) onCardClick();
-        }}
-        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-slate-900"
+        ref={cardRef}
+        onMouseDown={handleMouseDown}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        style={{ touchAction: "manipulation" }}
+        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-text-primary select-none"
       >
+        {/* Double-tap / Double-click Heart / Felt Animation Overlay */}
+        <AnimatePresence>
+          {(heartAnim || (journeyLikeAnim?.postId === postId && journeyLikeAnim)) && (
+            <motion.div
+              key={heartAnim?.key || journeyLikeAnim?.key || postId}
+              initial={{ scale: 0.2, opacity: 0, y: 10 }}
+              animate={{
+                scale: [0.2, 1.25, 1],
+                opacity: [0, 1, 1, 0],
+                y: [10, -4, -18],
+              }}
+              exit={{ opacity: 0, scale: 0.8 }}
+              transition={{
+                duration: 0.72,
+                times: [0, 0.25, 0.7, 1],
+                ease: "easeOut",
+              }}
+              style={{
+                left: `${heartAnim?.x ?? journeyLikeAnim?.x ?? 50}%`,
+                top: `${heartAnim?.y ?? journeyLikeAnim?.y ?? 50}%`,
+                transform: "translate(-50%, -50%)",
+              }}
+              className="pointer-events-none absolute z-30 flex flex-col items-center justify-center select-none"
+            >
+              <div className="relative flex items-center justify-center">
+                <motion.div
+                  initial={{ scale: 0.6, opacity: 0.8 }}
+                  animate={{ scale: 2, opacity: 0 }}
+                  transition={{ duration: 0.55, ease: "easeOut" }}
+                  className="absolute w-16 h-16 rounded-full bg-rose-500/25 blur-sm"
+                />
+                <Heart className="w-12 h-12 text-rose-500 fill-rose-500 drop-shadow-[0_4px_16px_rgba(244,63,94,0.5)]" />
+                <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+              <div className="mt-1 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 shadow-lg">
+                <span className="text-[10px] font-black uppercase tracking-wider text-white">
+                  Felt
+                </span>
+                <span className="text-[10px]">✨</span>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* ─── 1. MEMORY HEADER ────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-2 p-3 sm:p-3.5 pb-2 select-none border-b border-slate-100/70">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -167,7 +405,7 @@ export const ProfileMemoryCard = ({
 
             <div className="flex flex-col min-w-0 flex-1">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs sm:text-sm font-bold text-slate-900 truncate leading-tight font-heading">
+                <span className="text-xs sm:text-sm font-bold text-text-primary truncate leading-tight font-heading">
                   {authorName}
                 </span>
                 <span className="hidden sm:inline-block text-[9px] font-bold uppercase tracking-wider text-primary-700 bg-primary-50 px-1.5 py-0.2 rounded-full border border-primary-100 shrink-0">
@@ -175,9 +413,9 @@ export const ProfileMemoryCard = ({
                 </span>
               </div>
 
-              <div className="flex items-center gap-1.5 text-[10px] text-slate-500 font-medium truncate mt-0.5 font-sans">
+              <div className="flex items-center gap-1.5 text-[10px] text-text-muted font-medium truncate mt-0.5 font-sans">
                 {currentPost.location && (
-                  <span className="flex items-center gap-0.5 text-slate-600 truncate max-w-[130px]">
+                  <span className="flex items-center gap-0.5 text-text-secondary truncate max-w-[130px]">
                     <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
                     <span className="truncate">{currentPost.location}</span>
                   </span>
@@ -198,7 +436,7 @@ export const ProfileMemoryCard = ({
                 e.stopPropagation();
                 setShowMenu((prev) => !prev);
               }}
-              className="p-1.5 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+              className="p-1.5 rounded-full text-text-muted hover:text-text-primary hover:bg-background transition-colors"
               aria-label="Options"
             >
               <MoreVertical className="w-4 h-4" />
@@ -223,7 +461,7 @@ export const ProfileMemoryCard = ({
                           if (setEditPostData) setEditPostData(currentPost);
                           if (setShowEditPostModal) setShowEditPostModal(true);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
                         <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                         <span>Edit Memory</span>
@@ -235,7 +473,7 @@ export const ProfileMemoryCard = ({
                           setShowMenu(false);
                           setShowChangeCoverModal(true);
                         }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
+                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
                         <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                         <span>Change Cover</span>
@@ -268,9 +506,9 @@ export const ProfileMemoryCard = ({
                           });
                         }
                       }}
-                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
+                      className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover transition-colors whitespace-nowrap"
                     >
-                      <ShieldAlert className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <ShieldAlert className="w-3.5 h-3.5 text-text-muted shrink-0" />
                       <span>Report Memory</span>
                     </button>
                   )}
@@ -283,15 +521,15 @@ export const ProfileMemoryCard = ({
         {/* ─── 2. MUSIC BAR (IF ATTACHED) ──────────────────────────────── */}
         {(audioSrc || songTitle) && (
           <div className="px-3 pt-2 pb-0.5 select-none">
-            <div className="flex items-center justify-between rounded-xl bg-purple-50/70 border border-primary-100/70 px-2.5 py-1.5">
+            <div className="flex items-center justify-between rounded-xl bg-primary-50/70 border border-primary-100/70 px-2.5 py-1.5">
               <div className="flex items-center gap-2 min-w-0">
                 <Music2 className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                 <div className="min-w-0">
-                  <p className="text-[11px] font-bold text-slate-900 truncate leading-tight">
+                  <p className="text-[11px] font-bold text-text-primary truncate leading-tight">
                     {songTitle || "Audio Track"}
                   </p>
                   {artistName && (
-                    <p className="text-[9px] text-slate-500 font-medium truncate">
+                    <p className="text-[9px] text-text-muted font-medium truncate">
                       {artistName}
                     </p>
                   )}
@@ -328,7 +566,7 @@ export const ProfileMemoryCard = ({
 
         {/* ─── 3. COVER IMAGE (16:9 Aspect Ratio) ───────────────────────── */}
         <div className="p-3 pt-2 select-none">
-          <div className="group/cover relative w-full aspect-[16/9] bg-slate-100 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80">
+          <div className="group/cover relative w-full aspect-[16/9] bg-background rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80">
             {coverUrl ? (
               currentPost.mediaType === "video" ||
               coverUrl.match(/\.(mp4|webm|mov)$/i) ? (
@@ -348,9 +586,9 @@ export const ProfileMemoryCard = ({
                 />
               )
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-primary-50/40 via-white to-purple-50/20">
+              <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-primary-50/40 via-white to-primary-50/20">
                 <MapPin className="w-6 h-6 text-primary-400 mb-1" />
-                <p className="text-[11px] font-bold text-slate-700 line-clamp-2 px-2">
+                <p className="text-[11px] font-bold text-text-primary line-clamp-2 px-2">
                   {currentPost.caption || currentPost.title || "Travel Memory"}
                 </p>
               </div>
@@ -370,54 +608,39 @@ export const ProfileMemoryCard = ({
                 <span>Change Cover</span>
               </button>
             )}
-
-            {/* Double-tap felt animation indicator */}
-            {journeyLikeAnim?.postId === postId && (
-              <motion.div
-                initial={{ scale: 0, opacity: 0 }}
-                animate={{ scale: [0.8, 1.3, 1], opacity: [0, 1, 0] }}
-                transition={{ duration: 0.9 }}
-                className="absolute inset-0 flex items-center justify-center pointer-events-none z-20"
-              >
-                <div className="flex flex-col items-center justify-center gap-1.5 drop-shadow-xl select-none">
-                  <Sparkles className="w-14 h-14 text-[#7C3AED] fill-[#7C3AED]" />
-                  <span className="text-[11px] font-black text-white px-2.5 py-0.5 rounded-full bg-black/60 backdrop-blur-md">Journey Felt</span>
-                </div>
-              </motion.div>
-            )}
           </div>
         </div>
 
         {/* ─── 4. MEMORY CONTENT (Title, Caption, Location, Date) ──────── */}
         <div className="px-3.5 pb-2 text-left space-y-1.5 font-sans">
           {currentPost.title && (
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900 line-clamp-1 font-heading leading-tight">
+            <h3 className="text-xs sm:text-sm font-bold text-text-primary line-clamp-1 font-heading leading-tight">
               {currentPost.title}
             </h3>
           )}
 
           {currentPost.caption && (
-            <p className="text-xs text-slate-600 font-normal line-clamp-2 leading-relaxed break-words font-sans">
+            <p className="text-xs text-text-secondary font-normal line-clamp-2 leading-relaxed break-words font-sans">
               {currentPost.caption}
             </p>
           )}
 
           {/* Location & Date Pills */}
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-slate-500">
+          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-text-muted">
             {currentPost.location && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 truncate max-w-[140px]">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-primary truncate max-w-[140px]">
                 <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
                 <span className="truncate">{currentPost.location}</span>
               </span>
             )}
             {travelDateFormatted && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-secondary">
                 <Calendar className="w-2.5 h-2.5 text-primary-600 shrink-0" />
                 <span>{travelDateFormatted}</span>
               </span>
             )}
             {currentPost.journeyId && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-purple-50 text-primary-700 border border-primary-100/60">
+              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 border border-primary-100/60">
                 <Compass className="w-2.5 h-2.5 text-primary-600 shrink-0" />
                 <span>Trip</span>
               </span>
@@ -438,15 +661,15 @@ export const ProfileMemoryCard = ({
               }}
               className={`inline-flex items-center gap-1 text-xs font-bold transition-transform active:scale-90 ${
                 hasFelt
-                  ? "text-[#7C3AED]"
-                  : "text-slate-600 hover:text-[#7C3AED]"
+                  ? "text-brand"
+                  : "text-text-secondary hover:text-brand"
               } ${postId && feltLoadingMap?.[postId] ? "opacity-50 cursor-not-allowed" : ""}`}
-              title="Felt this memory"
+              title="Felt this travel memory"
               aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
             >
               <Sparkles
                 className={`w-3.5 h-3.5 transition-all duration-300 ${
-                  hasFelt ? "fill-[#7C3AED] text-[#7C3AED] scale-110" : "text-slate-400"
+                  hasFelt ? "fill-brand text-brand scale-110" : "text-text-muted"
                 }`}
               />
               <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
@@ -463,7 +686,7 @@ export const ProfileMemoryCard = ({
                   handleOpenComments(postId);
                 }
               }}
-              className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-primary-600 transition-transform active:scale-90"
+              className="inline-flex items-center gap-1 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-90"
               title="Comments"
             >
               <MessageCircle className="w-3.5 h-3.5" />
@@ -477,7 +700,7 @@ export const ProfileMemoryCard = ({
                 e.stopPropagation();
                 if (handleDispatch) handleDispatch(postId);
               }}
-              className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 hover:text-primary-600 transition-transform active:scale-90"
+              className="inline-flex items-center gap-1 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-90"
               title="Share"
             >
               <Share2 className="w-3.5 h-3.5" />
@@ -495,9 +718,9 @@ export const ProfileMemoryCard = ({
             className={`text-xs font-bold transition-transform active:scale-90 ${
               isSaved
                 ? "text-primary-600"
-                : "text-slate-600 hover:text-primary-600"
+                : "text-text-secondary hover:text-primary-600"
             }`}
-            title={isSaved ? "Saved" : "Save Memory"}
+            title={isSaved ? "Saved" : "Save Travel Memory"}
           >
             <Bookmark
               className={`w-4 h-4 transition-colors ${

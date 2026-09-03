@@ -24,7 +24,7 @@ const KPI_CONFIG = [
   detail: "Registered travelers",
   to: "/users",
   Icon: Users,
-  iconClass: "bg-brand-100 text-brand-700",
+  iconClass: "bg-brand-100 text-brand-dark",
   glowClass: "from-brand-200"
 },
 {
@@ -33,7 +33,7 @@ const KPI_CONFIG = [
   detail: "Sessions in last 30 min",
   to: "/users?filter=online",
   Icon: Activity,
-  iconClass: "bg-brand-100 text-brand-700",
+  iconClass: "bg-brand-100 text-brand-dark",
   glowClass: "from-brand-200"
 },
 {
@@ -42,7 +42,7 @@ const KPI_CONFIG = [
   detail: "Needs a moderator",
   to: "/admin/reports",
   Icon: ShieldAlert,
-  iconClass: "bg-brand-100 text-brand-700",
+  iconClass: "bg-brand-100 text-brand-dark",
   glowClass: "from-brand-300",
   priority: true
 },
@@ -52,24 +52,24 @@ const KPI_CONFIG = [
   detail: "Access restricted",
   to: "/users?filter=suspended",
   Icon: XCircle,
-  iconClass: "bg-brand-100 text-brand-700",
+  iconClass: "bg-brand-100 text-brand-dark",
   glowClass: "from-brand-200"
 },
 {
   key: "newPostsToday",
-  label: "New posts today",
+  label: "New travel memories today",
   detail: "Community submissions",
   Icon: FileText,
-  iconClass: "bg-brand-100 text-brand-700",
+  iconClass: "bg-brand-100 text-brand-dark",
   glowClass: "from-brand-200"
 }];
 
 
 const STATUS_COLORS = {
-  pending: "#a855f7",
-  resolved: "#c084fc",
-  dismissed: "#e9d5ff",
-  unknown: "#d8b4fe"
+  pending: "#30afff",
+  resolved: "#92eeff",
+  dismissed: "#e0f7fc",
+  unknown: "#b8eff9"
 };
 
 const formatNumber = (number) =>
@@ -125,17 +125,17 @@ const MetricCard = ({ config, value, index }) => {
           <Icon className="h-4 w-4" />
         </span>
         {priority &&
-      <span className="rounded-full border border-brand-200 bg-white px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-brand-700">
+      <span className="rounded-full border border-brand-200 bg-white px-2 py-0.5 text-[9px] font-semibold uppercase tracking-[0.15em] text-brand-dark">
             Urgent
           </span>}
 
       </div>
       <div className="relative mt-3">
-        <p className="text-xl font-bold tracking-tight text-slate-900">
+        <p className="text-xl font-bold tracking-tight text-text-primary">
           {formatNumber(value)}
         </p>
-        <p className="text-xs font-semibold text-slate-800">{label}</p>
-        <p className="text-[10px] text-slate-500">{detail}</p>
+        <p className="text-xs font-semibold text-text-primary">{label}</p>
+        <p className="text-[10px] text-text-muted">{detail}</p>
       </div>
     </div>;
 
@@ -168,7 +168,7 @@ const ChartTooltip = ({ active, payload, label }) => {
 
   return (
     <div className="rounded-xl border border-brand-200 bg-white/95 px-3 py-2 shadow-xl backdrop-blur">
-      <p className="mb-1.5 text-xs font-medium text-slate-700">{label}</p>
+      <p className="mb-1.5 text-xs font-medium text-text-primary">{label}</p>
       {payload.map((item) =>
       <p
       key={item.dataKey}
@@ -183,7 +183,7 @@ const ChartTooltip = ({ active, payload, label }) => {
 };
 
 const EmptyChart = ({ children }) =>
-<div className="flex h-[160px] items-center justify-center text-sm text-slate-500">
+<div className="flex h-[160px] items-center justify-center text-sm text-text-muted">
     {children}
   </div>;
 
@@ -269,7 +269,7 @@ const Admin = () => {
 
   return (
     <main
-    className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6"
+    className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-text-primary sm:px-4 lg:px-6"
     aria-label="Admin dashboard">
 
       <div className="mx-auto max-w-[1450px]">
@@ -281,13 +281,13 @@ const Admin = () => {
           <div className="pointer-events-none absolute -right-12 -top-20 h-52 w-52 rounded-full bg-brand-200 blur-3xl" />
           <div className="relative flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
             <div>
-              <p className="mb-2 text-xs font-medium text-brand-600">
+              <p className="mb-2 text-xs font-medium text-brand">
                 {greeting}, {user.name || "Administrator"}
               </p>
-              <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">
+              <h1 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">
                 Moderation Command Center
               </h1>
-              <p className="mt-1 max-w-xl text-xs leading-5 text-slate-600">
+              <p className="mt-1 max-w-xl text-xs leading-5 text-text-secondary">
                 Monitor community safety, review flagged content, and respond to
                 trust signals in real time.
               </p>
@@ -297,7 +297,7 @@ const Admin = () => {
               type="button"
               onClick={() => fetchStats()}
               disabled={loading}
-              className="flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 text-xs font-medium text-slate-700 transition hover:bg-brand-50 hover:text-slate-900 disabled:opacity-60">
+              className="flex h-9 items-center gap-1.5 rounded-lg border border-brand-200 bg-brand-50 px-3 text-xs font-medium text-text-primary transition hover:bg-brand-50 hover:text-text-primary disabled:opacity-60">
 
                 <RefreshCw
                 className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
@@ -306,7 +306,7 @@ const Admin = () => {
               </button>
               <Link
               to="/admin/reports"
-              className="flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-4 text-xs font-semibold text-white shadow-md shadow-brand-900/20 transition hover:bg-brand-700">
+              className="btn-primary">
 
                 Review reports
                 <ArrowRight className="h-3.5 w-3.5" />
@@ -314,7 +314,7 @@ const Admin = () => {
             </div>
           </div>
           {updatedAt &&
-          <p className="relative mt-3 text-[10px] text-slate-500">
+          <p className="relative mt-3 text-[10px] text-text-muted">
               Updated{" "}
               {updatedAt.toLocaleTimeString([], {
               hour: "2-digit",
@@ -331,7 +331,7 @@ const Admin = () => {
         role="alert"
         className="mb-4 flex items-center gap-2 rounded-xl border border-brand-300 bg-brand-50 px-3 py-2 text-xs text-brand-800">
 
-            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-brand-600" />
+            <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-brand" />
             <span className="flex-1">{error}</span>
             <button
           type="button"
@@ -379,8 +379,8 @@ const Admin = () => {
                 <span
                 className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
                 hasReports ?
-                "bg-brand-200 text-brand-700" :
-                "bg-brand-100 text-brand-600"
+                "bg-brand-200 text-brand-dark" :
+                "bg-brand-100 text-brand"
                 }`}>
 
                   {hasReports ?
@@ -390,15 +390,15 @@ const Admin = () => {
 
                 </span>
                 <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
                     Moderation alerts
                   </p>
-                  <h2 className="text-lg font-semibold text-slate-900">
+                  <h2 className="text-lg font-semibold text-text-primary">
                     {hasReports ?
                     `${metrics.reportsPending} reports require review` :
                     "Moderation queue is clear"}
                   </h2>
-                  <p className="text-xs text-slate-600">
+                  <p className="text-xs text-text-secondary">
                     {hasReports ?
                     "Investigate recent safety flags and take action." :
                     "There are no pending reports right now."}
@@ -407,7 +407,7 @@ const Admin = () => {
               </div>
               <Link
               to="/admin/reports"
-              className="hidden items-center gap-1 text-xs font-medium text-brand-600 transition hover:text-slate-900 sm:flex">
+              className="hidden items-center gap-1 text-xs font-medium text-brand transition hover:text-text-primary sm:flex">
 
                 Full queue <ArrowRight className="h-3.5 w-3.5" />
               </Link>
@@ -421,25 +421,25 @@ const Admin = () => {
               to="/admin/reports"
               className="group flex items-center gap-2 rounded-xl border border-brand-200 bg-white px-3 py-2 transition hover:border-brand-300 hover:bg-brand-50">
 
-                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand-500 shadow-sm" />
+                    <span className="h-2 w-2 shrink-0 rounded-full bg-brand shadow-sm" />
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs font-medium text-slate-900">
+                      <p className="truncate text-xs font-medium text-text-primary">
                         {displayName(report.reportedUser)}
-                        <span className="ml-1.5 text-[10px] font-normal text-slate-500">
+                        <span className="ml-1.5 text-[10px] font-normal text-text-muted">
                           {report.targetType}
                         </span>
                       </p>
-                      <p className="truncate text-[11px] text-slate-600">
+                      <p className="truncate text-[11px] text-text-secondary">
                         {report.reason}
                       </p>
                     </div>
-                    <span className="shrink-0 text-xs text-slate-500">
+                    <span className="shrink-0 text-xs text-text-muted">
                       {formatReportAge(report.createdAt)}
                     </span>
                   </Link>
               ) :
 
-              <div className="rounded-xl border border-brand-200 bg-white px-3 py-5 text-center text-xs text-slate-500">
+              <div className="rounded-xl border border-brand-200 bg-white px-3 py-5 text-center text-xs text-text-muted">
                   No flagged items waiting in the queue.
                 </div>}
 
@@ -456,14 +456,14 @@ const Admin = () => {
 
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
                   Activity
                 </p>
-                <h2 className="text-base font-semibold text-slate-900">
+                <h2 className="text-base font-semibold text-text-primary">
                   Recent reports
                 </h2>
               </div>
-              <Clock className="h-4 w-4 text-slate-500" />
+              <Clock className="h-4 w-4 text-text-muted" />
             </div>
             <div className="space-y-1">
               {recentReports.length > 0 ?
@@ -482,21 +482,21 @@ const Admin = () => {
                     }} />
 
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs text-slate-800">
+                        <p className="truncate text-xs text-text-primary">
                           {displayName(report.reportedUser)}
-                          <span className="ml-1 text-[10px] text-slate-500">
+                          <span className="ml-1 text-[10px] text-text-muted">
                             reported for {report.targetType}
                           </span>
                         </p>
                       </div>
-                      <span className="rounded-md bg-brand-100 px-1.5 py-0.5 text-[9px] capitalize text-slate-600">
+                      <span className="rounded-md bg-brand-100 px-1.5 py-0.5 text-[9px] capitalize text-text-secondary">
                         {status}
                       </span>
                     </div>);
 
               }) :
 
-              <div className="py-8 text-center text-xs text-slate-500">
+              <div className="py-8 text-center text-xs text-text-muted">
                   No moderation activity recorded.
                 </div>}
 
@@ -515,14 +515,14 @@ const Admin = () => {
 
             <div className="mb-4 flex items-center justify-between">
               <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
                   Analytics
                 </p>
-                <h2 className="text-base font-semibold text-slate-900">
+                <h2 className="text-base font-semibold text-text-primary">
                   Safety signals over 7 days
                 </h2>
               </div>
-              <span className="flex items-center gap-1 rounded-md bg-brand-100 px-2 py-1 text-[10px] font-medium text-brand-700">
+              <span className="flex items-center gap-1 rounded-md bg-brand-100 px-2 py-1 text-[10px] font-medium text-brand-dark">
                 <TrendingUp className="h-3.5 w-3.5" />
                 Live data
               </span>
@@ -537,10 +537,10 @@ const Admin = () => {
                     <linearGradient id="postsColor" x1="0" y1="0" x2="0" y2="1">
                       <stop
                     offset="0%"
-                    stopColor="#7C3AED"
+                    stopColor="#0284c7"
                     stopOpacity={0.42} />
 
-                      <stop offset="100%" stopColor="#7C3AED" stopOpacity={0} />
+                      <stop offset="100%" stopColor="#0284c7" stopOpacity={0} />
                     </linearGradient>
                     <linearGradient
                   id="reportsColor"
@@ -549,8 +549,8 @@ const Admin = () => {
                   x2="0"
                   y2="1">
 
-                      <stop offset="0%" stopColor="#d8b4fe" stopOpacity={0.5} />
-                      <stop offset="100%" stopColor="#d8b4fe" stopOpacity={0} />
+                      <stop offset="0%" stopColor="#b8eff9" stopOpacity={0.5} />
+                      <stop offset="100%" stopColor="#b8eff9" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid
@@ -574,8 +574,8 @@ const Admin = () => {
                   <Area
                 type="monotone"
                 dataKey="posts"
-                name="New posts"
-                stroke="#7C3AED"
+                name="New travel memories"
+                stroke="#0284c7"
                 fill="url(#postsColor)"
                 strokeWidth={2.25} />
 
@@ -583,7 +583,7 @@ const Admin = () => {
                 type="monotone"
                 dataKey="reports"
                 name="Reports"
-                stroke="#a855f7"
+                stroke="#30afff"
                 fill="url(#reportsColor)"
                 strokeWidth={2.25} />
 
@@ -604,10 +604,10 @@ const Admin = () => {
           role="region"
           aria-label="Report outcomes">
 
-            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-slate-500">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-text-muted">
               Resolution mix
             </p>
-            <h2 className="text-base font-semibold text-slate-900">
+            <h2 className="text-base font-semibold text-text-primary">
               Report outcomes
             </h2>
             {reportDistribution.length ?
@@ -647,10 +647,10 @@ const Admin = () => {
                     STATUS_COLORS.unknown
                   }} />
 
-                      <span className="flex-1 capitalize text-slate-600">
+                      <span className="flex-1 capitalize text-text-secondary">
                         {item.name}
                       </span>
-                      <span className="font-medium text-slate-800">
+                      <span className="font-medium text-text-primary">
                         {item.value}
                       </span>
                     </div>

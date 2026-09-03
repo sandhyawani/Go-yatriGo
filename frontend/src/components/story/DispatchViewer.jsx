@@ -1,6 +1,7 @@
 import { showToast } from "../../utils/showToast";
 import ReportModal from "../modals/ReportModal";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import {
@@ -42,6 +43,7 @@ const DispatchViewer = ({
   onStoryViewed,
   fetchFeedData
 }) => {
+  const navigate = useNavigate();
   const [storyMediaLoaded, setStoryMediaLoaded] = useState(false);
   const [storyProgress, setStoryProgress] = useState(0);
   const [isTabActive, setIsTabActive] = useState(true);
@@ -107,7 +109,7 @@ const DispatchViewer = ({
       { withCredentials: true }
       );
       if (res.data.success) {
-        showToast.success("Dispatch deleted successfully!");
+        showToast.success("Moment deleted successfully!");
         if (typeof handleDeleteStory === "function") {
           try {handleDeleteStory(currentStory._id);} catch {}
         }
@@ -116,7 +118,7 @@ const DispatchViewer = ({
         fetchFeedData?.();
       }
     } catch {
-      showToast.error("Failed to delete Dispatch.");
+      showToast.error("Failed to delete Moment.");
     } finally {
       setDeletingStory(false);
       setIsStoryPaused(false);
@@ -189,7 +191,7 @@ const DispatchViewer = ({
   };
 
   const handleAvatarError = useCallback((e, name) => {
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=8b5cf6&color=fff`;
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=0284c7&color=fff`;
   }, []);
 
   const videoRef = useRef(null);
@@ -425,7 +427,6 @@ const DispatchViewer = ({
   exit={{ opacity: 0 }}
   className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[99999] flex items-center justify-center overflow-hidden">
 
-      {}
       <button
     onClick={prevStory}
     className="hidden sm:flex absolute left-4 z-50 w-10 h-10 items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-white transition-all backdrop-blur-sm"
@@ -448,7 +449,6 @@ const DispatchViewer = ({
     onDragEnd={handleDragEnd}
     className="relative w-full h-full max-w-[430px] mx-auto sm:h-[95vh] sm:rounded-[36px] overflow-hidden bg-black flex flex-col shadow-2xl ring-1 ring-white/10">
 
-        {}
         <div className="absolute top-3 inset-x-3 z-40 flex gap-1">
           {activeStoryGroup.stories?.map((st, idx) =>
         <div
@@ -470,61 +470,82 @@ const DispatchViewer = ({
         )}
         </div>
 
-        {}
+        {/* Author Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-brand-400 via-brand-500 to-brand-600 shrink-0">
-              <div className="w-full h-full rounded-full border-[1.5px] border-black overflow-hidden bg-zinc-800">
-                <img
-              src={getAvatarUrl(
-              activeStoryGroup.userPic,
-              null,
-              activeStoryGroup.userName
-              )}
-              alt={activeStoryGroup.userName}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStoryGroup.userName || "Explorer")}&background=8b5cf6&color=fff&bold=true`;
-              }} />
-
+          {(() => {
+            const storyAuthorId = (
+              activeStoryGroup?.userId?._id ||
+              activeStoryGroup?.userId?.id ||
+              activeStoryGroup?.userId
+            )?.toString();
+            return (
+              <div
+                onClick={() => {
+                  if (storyAuthorId) {
+                    closeStoryViewer();
+                    navigate(`/profile/${storyAuthorId}`);
+                  }
+                }}
+                className={`flex items-center gap-2 ${
+                  storyAuthorId ? "cursor-pointer group/author" : ""
+                }`}
+              >
+                <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-brand-400 via-brand-500 to-brand-600 shrink-0 group-hover/author:scale-105 transition-transform">
+                  <div className="w-full h-full rounded-full border-[1.5px] border-black overflow-hidden bg-zinc-800">
+                    <img
+                      src={getAvatarUrl(
+                        activeStoryGroup.userPic,
+                        null,
+                        activeStoryGroup.userName
+                      )}
+                      alt={activeStoryGroup.userName}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                          activeStoryGroup.userName || "Explorer"
+                        )}&background=0284c7&color=fff&bold=true`;
+                      }}
+                    />
+                  </div>
+                </div>
+                <div style={{ textShadow: "0 1px 6px rgba(0,0,0,0.9)" }}>
+                  <h4 className="text-[13px] font-bold text-white leading-none flex items-center gap-1 group-hover/author:text-brand-300 transition-colors">
+                    {activeStoryGroup.userName}
+                  </h4>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <span className="text-[10px] text-white/70 font-medium flex items-center gap-1.5">
+                      <span>{moment(currentStory?.createdAt).fromNow()}</span>
+                      <span className="w-1 h-1 rounded-full bg-white/40"></span>
+                      <span className="text-white/90">
+                        {(() => {
+                          const expiresAt = moment(currentStory?.createdAt).add(
+                            24,
+                            "hours"
+                          );
+                          const now = moment();
+                          const diffHours = expiresAt.diff(now, "hours");
+                          if (diffHours > 0) return `${diffHours}h remaining`;
+                          const diffMinutes = expiresAt.diff(now, "minutes");
+                          if (diffMinutes > 0) return `${diffMinutes}m remaining`;
+                          return "Expiring soon";
+                        })()}
+                      </span>
+                    </span>
+                    {currentStory?.visibility && (
+                      <span className="text-[9px] font-bold text-white/90 flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md shadow-sm border border-white/20">
+                        {currentStory.visibility === "public"
+                          ? "🌍 Public"
+                          : currentStory.visibility === "friends"
+                          ? "👥 Trip Mates"
+                          : "🔒 Private"}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
-            <div style={{ textShadow: "0 1px 6px rgba(0,0,0,0.9)" }}>
-              <h4 className="text-[13px] font-bold text-white leading-none flex items-center gap-1">
-                {activeStoryGroup.userName}
-              </h4>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-white/70 font-medium flex items-center gap-1.5">
-                  <span>{moment(currentStory?.createdAt).fromNow()}</span>
-                  <span className="w-1 h-1 rounded-full bg-white/40"></span>
-                  <span className="text-white/90">
-                    {(() => {
-                    const expiresAt = moment(currentStory?.createdAt).add(
-                    24,
-                    "hours"
-                    );
-                    const now = moment();
-                    const diffHours = expiresAt.diff(now, "hours");
-                    if (diffHours > 0) return `${diffHours}h remaining`;
-                    const diffMinutes = expiresAt.diff(now, "minutes");
-                    if (diffMinutes > 0) return `${diffMinutes}m remaining`;
-                    return "Expiring soon";
-                  })()}
-                  </span>
-                </span>
-                {currentStory?.visibility &&
-              <span className="text-[9px] font-bold text-white/90 flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-md shadow-sm border border-white/20">
-                    {currentStory.visibility === "public" ?
-                "🌍 Public" :
-                currentStory.visibility === "friends" ?
-                "👥 Trip Mates" :
-                "🔒 Private"}
-                  </span>}
-
-              </div>
-            </div>
-          </div>
+            );
+          })()}
           <button
         onClick={closeStoryViewer}
         className="w-9 h-9 flex items-center justify-center bg-black/40 hover:bg-black/60 border border-white/10 rounded-full text-white transition-colors"
@@ -534,7 +555,6 @@ const DispatchViewer = ({
           </button>
         </div>
 
-        {}
         <div
       className="absolute inset-y-0 left-0 w-1/3 z-20 touch-none select-none"
       onPointerDown={handlePointerDown}
@@ -554,7 +574,6 @@ const DispatchViewer = ({
       onPointerCancel={() => setIsStoryPaused(false)} />
 
 
-        {}
         <div className="w-full h-full flex items-center justify-center relative bg-black">
           {!storyMediaLoaded &&
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
@@ -562,7 +581,6 @@ const DispatchViewer = ({
             </div>}
 
 
-          {}
           {mediaUrl &&
         <div
         className="absolute inset-0 z-0 overflow-hidden opacity-25"
@@ -586,7 +604,6 @@ const DispatchViewer = ({
             </div>}
 
 
-          {}
           <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
             {isVideo ?
           <video
@@ -602,14 +619,13 @@ const DispatchViewer = ({
 
           <img
           src={mediaUrl}
-          alt="Dispatch"
+          alt="Moment"
           className="w-full h-full object-contain"
           onLoad={() => setStoryMediaLoaded(true)} />}
 
 
           </div>
 
-          {}
           <AnimatePresence>
             {storyMediaLoaded &&
           currentStory?.song &&
@@ -637,7 +653,6 @@ const DispatchViewer = ({
 
           </AnimatePresence>
 
-          {}
           {(isVideo || currentStory?.song) &&
         <button
         onClick={(e) => {
@@ -663,7 +678,6 @@ const DispatchViewer = ({
             </button>}
 
 
-          {}
           <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
               {storyMediaLoaded && currentStory?.stickers?.length > 0 ?
@@ -685,7 +699,21 @@ const DispatchViewer = ({
             transition={{ delay: 0.1, duration: 0.4, type: "spring" }}
             className={`absolute w-full px-5 text-center font-black text-xl z-30 tracking-tight pointer-events-none leading-snug
                       ${currentStory.captionPosition === "top" ? "top-32" : currentStory.captionPosition === "bottom" ? "bottom-32" : "top-1/2 -translate-y-1/2"}
-                      ${currentStory.captionColor === "black" ? "text-black" : currentStory.captionColor === "purple" ? "text-brand-400" : "text-white"}`}
+                      ${
+                        currentStory.captionColor === "black" || currentStory.captionColor === "#0f172a" || currentStory.captionColor === "#000000"
+                          ? "text-slate-900"
+                          : currentStory.captionColor === "sky" || currentStory.captionColor === "purple" || currentStory.captionColor === "brand" || currentStory.captionColor === "#0ea5e9" || currentStory.captionColor === "#0284c7"
+                          ? "text-sky-400"
+                          : currentStory.captionColor === "ruby" || currentStory.captionColor === "red" || currentStory.captionColor === "#f43f5e"
+                          ? "text-rose-400"
+                          : currentStory.captionColor === "amber" || currentStory.captionColor === "yellow" || currentStory.captionColor === "#f59e0b"
+                          ? "text-amber-300"
+                          : currentStory.captionColor === "emerald" || currentStory.captionColor === "green" || currentStory.captionColor === "#10b981"
+                          ? "text-emerald-400"
+                          : currentStory.captionColor === "violet" || currentStory.captionColor === "#8b5cf6"
+                          ? "text-violet-400"
+                          : "text-white"
+                      }`}
             style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}>
 
                       {currentStory.caption}
@@ -695,11 +723,9 @@ const DispatchViewer = ({
           </div>
         </div>
 
-        {}
         <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pt-10 pb-8 sm:pb-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
           {!isOwnStory ?
         <div className="pointer-events-auto flex flex-col gap-3 w-full">
-              {}
               <div className="flex justify-center gap-3">
                 {["✨", "🔥", "😍", "😂", "🌍"].map((emoji, i) =>
             <motion.button
@@ -722,7 +748,6 @@ const DispatchViewer = ({
                   </motion.button>
             )}
               </div>
-              {}
               <div className="flex gap-2 items-center">
                 <button
             onClick={(e) => {
@@ -731,8 +756,8 @@ const DispatchViewer = ({
               setReportModal({ isOpen: true });
             }}
             className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-rose-500/80 text-white border border-white/20 rounded-full transition-all shrink-0"
-                  aria-label="Report Dispatch"
-                  title="Report Dispatch">
+                  aria-label="Report Moment"
+                  title="Report Moment">
 
                   <ShieldAlert className="w-4 h-4" />
                 </button>
@@ -747,7 +772,7 @@ const DispatchViewer = ({
               if (e.key === "Enter" && storyReplyText.trim())
               handleStoryReply();
             }}
-            aria-label="Reply to story" />
+            aria-label="Reply to moment" />
 
                 <button
             onClick={handleStoryReply}
@@ -808,7 +833,7 @@ const DispatchViewer = ({
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                 transition={{ type: "spring", damping: 25, stiffness: 350 }}
-                className="absolute bottom-12 right-0 w-48 bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-[70]">
+                className="absolute bottom-12 right-0 w-48 bg-brand/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl overflow-hidden z-[70]">
 
                     <button
                 onClick={(e) => {
@@ -829,7 +854,7 @@ const DispatchViewer = ({
                 className="w-full flex items-center gap-3 px-4 py-3 text-rose-400 hover:bg-rose-500/15 transition-colors text-left">
 
                       <Trash2 className="w-4 h-4 shrink-0" />
-                      <span className="text-sm font-semibold">Delete Dispatch</span>
+                      <span className="text-sm font-semibold">Delete Moment</span>
                     </button>
                   </motion.div>}
 
@@ -841,7 +866,7 @@ const DispatchViewer = ({
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                 transition={{ type: "spring", damping: 25, stiffness: 350 }}
                 onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-12 right-0 w-64 bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl z-[70] p-4 space-y-3">
+                className="absolute bottom-12 right-0 w-64 bg-brand/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl z-[70] p-4 space-y-3">
 
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
@@ -854,7 +879,7 @@ const DispatchViewer = ({
                     setShowMoreMenu(null);
                     setIsStoryPaused(false);
                   }}
-                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-slate-400 hover:text-white transition-all">
+                  className="w-6 h-6 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-text-muted hover:text-white transition-all">
                         <X className="w-3 h-3" />
                       </button>
                     </div>
@@ -865,10 +890,10 @@ const DispatchViewer = ({
                   value={captionInput}
                   onChange={(e) => setCaptionInput(e.target.value)}
                   placeholder="Enter caption..."
-                  className="w-full bg-slate-800/90 border border-white/15 rounded-xl p-3 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 resize-none transition-all"
+                  className="w-full bg-slate-800/90 border border-white/15 rounded-xl p-3 text-sm text-white placeholder:text-text-muted focus:outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 resize-none transition-all"
                   autoFocus
                   onClick={(e) => e.stopPropagation()} />
-                      <span className="absolute bottom-2 right-2 text-[10px] font-semibold text-slate-500">
+                      <span className="absolute bottom-2 right-2 text-[10px] font-semibold text-text-muted">
                         {captionInput.length}/150
                       </span>
                     </div>
@@ -880,7 +905,7 @@ const DispatchViewer = ({
                     setShowMoreMenu(null);
                     setIsStoryPaused(false);
                   }}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold text-text-muted hover:text-white hover:bg-white/10 transition-all">
                         Cancel
                       </button>
                       <button
@@ -906,14 +931,14 @@ const DispatchViewer = ({
                 exit={{ opacity: 0, y: 8, scale: 0.95 }}
                 transition={{ type: "spring", damping: 25, stiffness: 350 }}
                 onClick={(e) => e.stopPropagation()}
-                className="absolute bottom-12 right-0 w-56 bg-slate-900/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl z-[70] p-4 space-y-3 text-center">
+                className="absolute bottom-12 right-0 w-56 bg-brand/95 backdrop-blur-xl border border-white/15 rounded-2xl shadow-2xl z-[70] p-4 space-y-3 text-center">
 
                     <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 mx-auto">
                       <Trash2 className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="text-sm font-bold text-white">Delete Dispatch?</h4>
-                      <p className="text-[11px] text-slate-400 leading-relaxed">This can't be undone.</p>
+                      <h4 className="text-sm font-bold text-white">Delete Moment?</h4>
+                      <p className="text-[11px] text-text-muted leading-relaxed">This can't be undone.</p>
                     </div>
                     <div className="flex items-center gap-2">
                       <button
@@ -923,7 +948,7 @@ const DispatchViewer = ({
                     setShowMoreMenu(null);
                     setIsStoryPaused(false);
                   }}
-                  className="flex-1 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs transition-all">
+                  className="flex-1 py-2 rounded-lg bg-slate-800 hover text-slate-300 font-bold text-xs transition-all">
                         Cancel
                       </button>
                       <button
@@ -963,7 +988,6 @@ const DispatchViewer = ({
 
 
 
-      {}
       <AnimatePresence>
         {showViewersLocal &&
       activeStoryGroup &&
@@ -984,16 +1008,16 @@ const DispatchViewer = ({
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", damping: 25, stiffness: 200 }}
-        className="fixed bottom-0 inset-x-0 sm:max-w-[430px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-t-[32px] z-[100001] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20 dark:border-white/5">
+        className="fixed bottom-0 inset-x-0 sm:max-w-[430px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 backdrop-blur-xl rounded-t-[32px] z-[100001] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20">
 
                 <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
-                  <div className="w-12 h-1.5 bg-slate-300/50 dark:bg-slate-600/50 rounded-full" />
+                  <div className="w-12 h-1.5 bg-slate-300/50 rounded-full" />
                 </div>
 
-                <div className="px-5 pb-3 pt-1 border-b border-slate-200/30 dark:border-slate-700/30 flex items-center justify-between shrink-0">
-                  <h3 className="font-black text-slate-800 dark:text-white text-lg flex items-center gap-2">
+                <div className="px-5 pb-3 pt-1 border-b border-slate-200/30 flex items-center justify-between shrink-0">
+                  <h3 className="font-black text-text-primary text-lg flex items-center gap-2">
                     <span className="text-xl">👁</span> Viewers
-                    <span className="text-xs bg-slate-100/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-xs bg-background/80 text-text-muted px-2 py-0.5 rounded-full font-bold">
                       {activeStoryGroup.stories[activeStoryIndex]?.viewers?.length ?? 0}
                     </span>
                   </h3>
@@ -1003,7 +1027,7 @@ const DispatchViewer = ({
               setIsStoryPaused(false);
             }}
             aria-label="Close viewers"
-            className="p-2 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-700/80 dark:hover:bg-slate-600/80 rounded-full text-slate-500 dark:text-slate-300 transition-colors">
+            className="p-2 bg-background/80 hover/80/80 rounded-full text-text-muted transition-colors">
 
                     <X className="w-4 h-4" />
                   </button>
@@ -1011,15 +1035,15 @@ const DispatchViewer = ({
 
                 <div className="flex-1 overflow-y-auto p-2 scrollbar-none pointer-events-auto">
                   {!activeStoryGroup.stories[activeStoryIndex]?.viewers?.length ?
-            <div className="flex flex-col items-center justify-center h-full min-h-[140px] text-slate-500 dark:text-slate-400">
-                      <div className="w-12 h-12 rounded-full bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center mb-3">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <div className="flex flex-col items-center justify-center h-full min-h-[140px] text-text-muted">
+                      <div className="w-12 h-12 rounded-full bg-background/50 flex items-center justify-center mb-3">
+                        <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </div>
-                      <p className="font-bold text-[15px] text-slate-700 dark:text-slate-300">No viewers yet</p>
-                      <p className="text-xs text-center mt-1 px-4 opacity-80 leading-relaxed">When someone views your story,<br />they'll appear here.</p>
+                      <p className="font-bold text-[15px] text-text-primary">No viewers yet</p>
+                      <p className="text-xs text-center mt-1 px-4 opacity-80 leading-relaxed">When someone views your moment,<br />they'll appear here.</p>
                     </div> :
 
             <div className="space-y-1 p-2">
@@ -1027,21 +1051,34 @@ const DispatchViewer = ({
                 const reaction = activeStoryGroup.stories[activeStoryIndex].storyReactions?.find(
                 (r) => r.userId?._id === v.userId?._id || r.userId === v.userId?._id
                 );
+                const viewerUserId = (v.userId?._id || v.userId?.id || v.userId)?.toString();
                 return (
-                  <div key={v._id || v.userId?._id} className="flex items-center justify-between p-2.5 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors group">
+                  <div
+                    key={v._id || v.userId?._id}
+                    onClick={() => {
+                      if (viewerUserId) {
+                        setShowViewersLocal(false);
+                        closeStoryViewer();
+                        navigate(`/profile/${viewerUserId}`);
+                      }
+                    }}
+                    className={`flex items-center justify-between p-2.5 hover:bg-background/80 rounded-2xl transition-colors group ${
+                      viewerUserId ? "cursor-pointer" : ""
+                    }`}
+                  >
                             <div className="flex items-center gap-3">
                               <img
                       loading="lazy"
                       src={getAvatarUrl(v.userId?.pic, v.userId?.img, v.userId?.name)}
                       alt={v.userId?.name}
-                      className="w-11 h-11 rounded-full object-cover border border-slate-200/50 dark:border-slate-700/50 shadow-sm"
+                      className="w-11 h-11 rounded-full object-cover border border-slate-200/50 shadow-sm group-hover:opacity-80 transition-opacity"
                       onError={(e) => handleAvatarError(e, v.userId?.name)} />
 
                               <div>
-                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-primary-600 transition-colors">
+                                <p className="text-[14px] font-bold text-text-primary group-hover:text-primary-600 transition-colors">
                                   {v.userId?.name}
                                 </p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                <p className="text-[11px] text-text-muted font-medium mt-0.5">
                                   Viewed {moment(v.viewedAt).fromNow()}
                                 </p>
                               </div>

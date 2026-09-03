@@ -5,11 +5,7 @@ const JourneyTimeline = require("../models/JourneyTimeline");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
-
-/**
- * Transfer journey host ownership from the current organizer to an active member.
- * Preserves transaction safety, MongoDB session retries, member roles, and socket notifications.
- */
+// Transfer journey host ownership to an active member with transaction retry handling
 exports.transferHost = async (req, res) => {
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -67,11 +63,9 @@ exports.transferHost = async (req, res) => {
         return res.status(400).json({ success: false, message: "Target user is not an active member" });
       }
 
-      // Perform atomic ownership transfer across all representations inside ONE transaction:
-      // 1. Journey.creator
+      // Perform atomic ownership transfer across all representations in transaction
       journey.creator = newHostId;
 
-      // 2. Journey.members roles
       journey.members.forEach((m) => {
         const uId = (m.user?._id || m.user).toString();
         if (uId === currentUserId.toString()) {
@@ -83,7 +77,6 @@ exports.transferHost = async (req, res) => {
 
       await journey.save({ session });
 
-      // 3. JourneyMember roles
       await JourneyMember.findOneAndUpdate(
         { journeyId: id, userId: currentUserId },
         { role: "Member", status: "active" },

@@ -12,7 +12,8 @@ const {
   deleteMessageForMe,
   unsendMessage,
   clearChatForMe,
-  deleteChatForMe
+  deleteChatForMe,
+  reactToMessage
 } = require("../controllers/chatController");
 
 const router = express.Router();
@@ -30,6 +31,7 @@ router.put("/room/:roomId/seen", verifyToken, markMessagesSeen);
 
 router.delete("/room/:roomId/messages/:messageId/delete-for-me", verifyToken, deleteMessageForMe);
 router.delete("/room/:roomId/messages/:messageId/unsend", verifyToken, unsendMessage);
+router.post("/room/:roomId/messages/:messageId/react", verifyToken, checkSuspended, reactToMessage);
 router.delete("/room/:roomId/clear", verifyToken, clearChatForMe);
 router.delete("/room/:roomId/delete-chat", verifyToken, deleteChatForMe);
 

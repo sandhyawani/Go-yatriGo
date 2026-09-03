@@ -68,31 +68,26 @@ const FeedCard = React.forwardRef(
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={FEED_CARD_SPRING}
-        className="group relative overflow-hidden rounded-[var(--radius-card)] border border-[var(--border-default)] bg-white shadow-[var(--shadow-card-sm)] transition-all duration-300"
+        className="group relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm hover:shadow-md transition-all duration-300"
       >
-        {/* Background Pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.02] pointer-events-none"
-          style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%237C3AED' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-          }}
-        ></div>
+        {/* Scrapbook Washi Tape Top Accent */}
+        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-16 sm:w-20 h-3.5 bg-amber-100/85 border border-amber-200/70 rounded-xs shadow-2xs rotate-[-1deg] backdrop-blur-[1px] z-20 pointer-events-none opacity-80" />
 
-        {/* Visited Stamp */}
+        {/* Vintage Postmark / Visited Ink Stamp */}
         {post.location && (
-          <div className="absolute top-5 right-5 w-24 h-24 border-[3px] border-brand-500/20 rounded-full flex flex-col items-center justify-center opacity-40 pointer-events-none rotate-[15deg] z-0">
-            <div className="absolute inset-0 border border-dashed border-brand-500/30 rounded-full m-1"></div>
-            <span className="text-[9px] font-black uppercase text-brand-600/50 tracking-[0.2em] mt-1">
-              VISITED
+          <div className="absolute top-4 right-4 sm:right-6 w-20 h-20 border-[2px] border-dashed border-brand-500/25 rounded-full flex flex-col items-center justify-center pointer-events-none rotate-[-8deg] z-0 select-none opacity-45">
+            <div className="absolute inset-1 border border-brand-500/20 rounded-full"></div>
+            <span className="text-[7.5px] font-black uppercase text-brand-600/60 tracking-[0.18em]">
+              JOURNEY
             </span>
             <span
-              className="text-[11px] font-bold text-brand-600/60 truncate max-w-[70px] text-center mt-0.5"
+              className="text-[10px] font-bold text-brand-700/70 truncate max-w-[62px] text-center my-0.5"
               title={post.location}
             >
               {formatLocation(post.location).split(",")[0]}
             </span>
-            <span className="text-[7px] font-semibold text-brand-600/40 mt-1">
-              {moment(post.createdAt).format("DD MMM YY")}
+            <span className="text-[7px] font-semibold text-brand-600/50">
+              {moment(post.createdAt).format("DD MMM YYYY")}
             </span>
           </div>
         )}
@@ -108,16 +103,6 @@ const FeedCard = React.forwardRef(
           handleDeletePost={handleDeletePost}
           handleAvatarError={handleAvatarError}
         />
-
-        {/* Perforation Divider */}
-        <div className="w-full h-2 flex overflow-hidden opacity-30">
-          {Array.from({ length: 20 }).map((_, i) => (
-            <div
-              key={i}
-              className="w-4 h-2 bg-slate-200 rounded-b-full mx-1 flex-shrink-0"
-            />
-          ))}
-        </div>
 
         {/* Media Section */}
         <FeedMedia

@@ -28,7 +28,7 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
 
   if (showFallback) {
     return (
-      <div className={`flex items-center justify-center bg-[#7C3AED] text-white font-semibold select-none shrink-0 uppercase rounded-full border-2 border-white shadow-sm ${className}`}>
+      <div className={`flex items-center justify-center bg-brand text-white font-semibold select-none shrink-0 uppercase rounded-full border-2 border-white shadow-sm ${className}`}>
         {getInitials(finalName)}
       </div>);
 

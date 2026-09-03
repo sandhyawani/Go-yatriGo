@@ -7,6 +7,7 @@ import { SocketContext } from "../../context/SocketContext";
 import { SOCKET_EVENTS } from "../../constants/socketEvents";
 import { MessageSquare, Video, Loader2 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
+import { useNotificationContext } from "../../context/NotificationContext";
 import { getAvatarUrl } from "../../utils/avatar";
 import DispatchViewer from "../../components/story/DispatchViewer";
 import ChatSidebar from "../../components/chat/ChatSidebar";
@@ -64,6 +65,7 @@ const getLatestMessagePreview = (msg, currentUserId) => {
 
 const ChatRoom = () => {
   const { user, dispatch } = useContext(AuthContext);
+  const { sentRequests = [], cancelSentRequest } = useNotificationContext() || {};
   const currentUserId = user?._id || user?.id;
   const navigate = useNavigate();
   const location = useLocation();
@@ -425,6 +427,21 @@ const ChatRoom = () => {
       }
     };
 
+    const onMessageReactionUpdated = ({ roomId, messageId, reactions }) => {
+      const incomingRoomId = getRoomIdString(roomId);
+      const activeRoomId = getRoomIdString(activeRoomRef.current?._id);
+
+      if (incomingRoomId && activeRoomId && incomingRoomId === activeRoomId) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            (m._id === messageId || m._id?.toString?.() === messageId?.toString?.())
+              ? { ...m, reactions }
+              : m
+          )
+        );
+      }
+    };
+
     const onRequestStatusUpdated = ({
       roomId,
       requestStatus,
@@ -494,6 +511,7 @@ const ChatRoom = () => {
     socket.on(SOCKET_EVENTS.IS_TYPING, onIsTyping);
     socket.on(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
     socket.on(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
+    socket.on(SOCKET_EVENTS.MESSAGE_REACTION_UPDATED, onMessageReactionUpdated);
     socket.on(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
     socket.on("room_access_revoked", onRoomAccessRevoked);
     socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, onNewNotification);
@@ -516,6 +534,7 @@ const ChatRoom = () => {
       socket.off(SOCKET_EVENTS.IS_TYPING, onIsTyping);
       socket.off(SOCKET_EVENTS.NOT_TYPING, onNotTyping);
       socket.off(SOCKET_EVENTS.MESSAGE_UNSENT, onMessageUnsent);
+      socket.off(SOCKET_EVENTS.MESSAGE_REACTION_UPDATED, onMessageReactionUpdated);
       socket.off(SOCKET_EVENTS.REQUEST_STATUS_UPDATED, onRequestStatusUpdated);
       socket.off("room_access_revoked", onRoomAccessRevoked);
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, onNewNotification);
@@ -890,19 +909,59 @@ const ChatRoom = () => {
   };
 
   const handleReaction = async (messageId, emoji) => {
+    if (!activeRoom || !messageId || !emoji) return;
 
+    // Optimistic UI update: toggle reaction
     setMessages((prev) =>
-    prev.map((m) => {
-      if (m._id === messageId) {
-        const existingReactions = m.reactions || [];
-        return {
-          ...m,
-          reactions: [...existingReactions, { emoji, userId: currentUserId }]
-        };
-      }
-      return m;
-    })
+      prev.map((m) => {
+        if (m._id === messageId || m._id?.toString?.() === messageId?.toString?.()) {
+          const currentReactions = m.reactions || [];
+          const existingIdx = currentReactions.findIndex(
+            (r) => (r.user?._id || r.user || r.userId)?.toString() === currentUserId?.toString() && r.emoji === emoji
+          );
+
+          let updatedReactions;
+          if (existingIdx > -1) {
+            // Remove reaction
+            updatedReactions = currentReactions.filter((_, idx) => idx !== existingIdx);
+          } else {
+            // Filter out any previous reaction by this user, then add the new emoji
+            updatedReactions = [
+              ...currentReactions.filter(
+                (r) => (r.user?._id || r.user || r.userId)?.toString() !== currentUserId?.toString()
+              ),
+              { emoji, user: currentUserId, userId: currentUserId }
+            ];
+          }
+
+          return { ...m, reactions: updatedReactions };
+        }
+        return m;
+      })
     );
+
+    try {
+      const res = await chatService.reactToMessage(activeRoom._id, messageId, emoji);
+      if (res.success && res.reactions) {
+        setMessages((prev) =>
+          prev.map((m) =>
+            (m._id === messageId || m._id?.toString?.() === messageId?.toString?.())
+              ? { ...m, reactions: res.reactions }
+              : m
+          )
+        );
+
+        if (socket && socket.connected) {
+          socket.emit("message_reaction", {
+            roomId: activeRoom._id,
+            messageId,
+            reactions: res.reactions
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to react to message:", err);
+    }
   };
 
   const handleOpenStory = async (dispatchId) => {
@@ -1229,12 +1288,12 @@ const ChatRoom = () => {
       result = await Swal.fire({
         html: `
           <div class="flex flex-col items-center text-center">
-            <div class="w-12 h-12 rounded-full bg-[#F3E8FF] flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
             </div>
-            <h2 class="text-slate-800 text-xl font-bold mb-2">Hide Journey Group?</h2>
-            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
-              <span class="font-semibold text-slate-700">${roomToDelete.name}</span> will be hidden from your chat list. You'll remain a member of the Journey. You can reopen the group from the Journey anytime, and it will automatically reappear when a new message arrives.
+            <h2 class="text-text-primary text-xl font-bold mb-2">Hide Journey Group?</h2>
+            <p class="text-text-muted font-medium text-[15px] leading-relaxed">
+              <span class="font-semibold text-text-primary">${roomToDelete.name}</span> will be hidden from your chat list. You'll remain a member of the Journey. You can reopen the group from the Journey anytime, and it will automatically reappear when a new message arrives.
             </p>
           </div>
         `,
@@ -1245,8 +1304,8 @@ const ChatRoom = () => {
         padding: "1.75rem",
         customClass: {
           popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
-          confirmButton: "bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
-          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          confirmButton: "bg-brand hover:bg-brand-dark text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-text-primary hover rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
           actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
         },
         confirmButtonText: "Hide Group",
@@ -1259,8 +1318,8 @@ const ChatRoom = () => {
             <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
             </div>
-            <h2 class="text-slate-800 text-xl font-bold mb-2">Delete chat?</h2>
-            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+            <h2 class="text-text-primary text-xl font-bold mb-2">Delete chat?</h2>
+            <p class="text-text-muted font-medium text-[15px] leading-relaxed">
               Messages will be cleared and this chat will be removed.
             </p>
           </div>
@@ -1272,8 +1331,8 @@ const ChatRoom = () => {
         padding: "1.75rem",
         customClass: {
           popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
-          confirmButton: "bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
-          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          confirmButton: "bg-danger hover:bg-red-600 text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-text-primary hover rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
           actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
         },
         confirmButtonText: "Yes, delete",
@@ -1345,11 +1404,11 @@ const ChatRoom = () => {
       result = await Swal.fire({
         html: `
           <div class="flex flex-col items-center text-center">
-            <div class="w-12 h-12 rounded-full bg-[#F3E8FF] flex items-center justify-center mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
+            <div class="w-12 h-12 rounded-full bg-brand-50 flex items-center justify-center mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" x2="22" y1="2" y2="22"/></svg>
             </div>
-            <h2 class="text-slate-800 text-xl font-bold mb-2">Hide ${selectedRoomIds.size} Journey Group${selectedRoomIds.size > 1 ? "s" : ""}?</h2>
-            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+            <h2 class="text-text-primary text-xl font-bold mb-2">Hide ${selectedRoomIds.size} Journey Group${selectedRoomIds.size > 1 ? "s" : ""}?</h2>
+            <p class="text-text-muted font-medium text-[15px] leading-relaxed">
               The selected groups will be hidden from your chat list. You'll remain a member of their Journeys. You can access the groups again from each Journey, and they will automatically reappear when new messages arrive.
             </p>
           </div>
@@ -1361,8 +1420,8 @@ const ChatRoom = () => {
         padding: "1.75rem",
         customClass: {
           popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
-          confirmButton: "bg-[#7C3AED] hover:bg-[#6D28D9] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
-          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          confirmButton: "bg-brand hover:bg-brand-dark text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-text-primary hover rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
           actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
         },
         confirmButtonText: `Hide ${selectedRoomIds.size} Group${selectedRoomIds.size > 1 ? "s" : ""}`,
@@ -1382,8 +1441,8 @@ const ChatRoom = () => {
             <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mb-4">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
             </div>
-            <h2 class="text-slate-800 text-xl font-bold mb-2">${title}</h2>
-            <p class="text-slate-500 font-medium text-[15px] leading-relaxed">
+            <h2 class="text-text-primary text-xl font-bold mb-2">${title}</h2>
+            <p class="text-text-muted font-medium text-[15px] leading-relaxed">
               ${text}
             </p>
           </div>
@@ -1395,8 +1454,8 @@ const ChatRoom = () => {
         padding: "1.75rem",
         customClass: {
           popup: "rounded-3xl shadow-lg border border-slate-200 bg-white",
-          confirmButton: "bg-[#EF4444] hover:bg-[#DC2626] text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
-          cancelButton: "bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          confirmButton: "bg-danger hover:bg-red-600 text-white rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
+          cancelButton: "bg-white border border-slate-200 text-text-primary hover rounded-xl px-6 py-2.5 font-semibold transition duration-200 w-full sm:w-auto",
           actions: "gap-3 flex w-full justify-center mt-6 flex-col-reverse sm:flex-row"
         },
         confirmButtonText: "Yes, delete",
@@ -1582,6 +1641,8 @@ const ChatRoom = () => {
       setActiveTab={setActiveTab}
       requestChats={requestChats}
       followRequests={followRequests}
+      sentRequests={sentRequests}
+      handleCancelSentRequest={cancelSentRequest}
       loading={loading}
       filteredRooms={filteredRooms}
       activeRoom={activeRoom}
@@ -1601,9 +1662,8 @@ const ChatRoom = () => {
 
 
 
-      {}
       <main
-      className={`flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden ${
+      className={`flex-1 flex flex-col h-full bg-background overflow-hidden ${
       isEmbedded || activeRoom ? "flex" : "hidden lg:flex"
       }`}>
 
@@ -1625,7 +1685,6 @@ const ChatRoom = () => {
           handleDeleteChat={handleDeleteChat} />
 
             
-                        {}
             <ChatMessages
           messages={messages}
           currentUserId={currentUserId}
@@ -1648,25 +1707,24 @@ const ChatRoom = () => {
           loadingMessages={loadingMessages} />
 
             
-            {}
             {activeRoom.type === "direct" &&
           activeRoom.requestStatus === "pending" ?
           activeRoom.requestedBy?.toString() === currentUserId?.toString() ?
           <div className="px-4 py-3 border-t border-slate-100 bg-white text-center">
-                  <p className="text-xs font-medium text-slate-400">
+                  <p className="text-xs font-medium text-text-muted">
                     Waiting for {activeRoom.name} to accept your request.
                   </p>
                 </div> :
 
           <div className="px-4 py-4 border-t border-slate-100 bg-white">
-                  <p className="text-sm font-semibold text-slate-600 mb-3 text-center">
+                  <p className="text-sm font-semibold text-text-secondary mb-3 text-center">
                     {activeRoom.name} wants to connect with you.
                   </p>
                   <div className="flex justify-center gap-3">
                     <button
               onClick={() => handleRequestAction("accept")}
               disabled={isProcessingAction}
-              className="px-5 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs">
+              className="px-5 py-2 bg-brand hover:bg-brand-dark active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs">
 
                       {isProcessingAction && <Loader2 className="w-4 h-4 animate-spin" />}
                       Accept
@@ -1674,7 +1732,7 @@ const ChatRoom = () => {
                     <button
               onClick={() => handleRequestAction("decline")}
               disabled={isProcessingAction}
-              className="px-5 py-2 bg-slate-100 hover:bg-slate-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-slate-600 rounded-full text-sm font-bold transition-all">
+              className="px-5 py-2 bg-background hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-text-secondary rounded-full text-sm font-bold transition-all">
 
                       Decline
                     </button>
@@ -1697,11 +1755,11 @@ const ChatRoom = () => {
             if (isBlockedByMe) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     🔒 You blocked this user.{" "}
                     <button
                       onClick={handleBlockUser}
-                      className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors"
+                      className="text-brand font-bold ml-1 hover:underline hover:text-brand-dark transition-colors"
                     >
                       Unblock
                     </button>
@@ -1713,7 +1771,7 @@ const ChatRoom = () => {
             if (isBlocked) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     🔒 This conversation is unavailable.
                   </div>
                 </div>
@@ -1723,7 +1781,7 @@ const ChatRoom = () => {
             if (isDeclined) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     Message request was declined.
                   </div>
                 </div>
@@ -1747,11 +1805,11 @@ const ChatRoom = () => {
             if (isBlockedByMe) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     🔒 You blocked this user.{" "}
                     <button
                       onClick={handleBlockUser}
-                      className="text-brand-600 font-bold ml-1 hover:underline hover:text-brand-700 transition-colors"
+                      className="text-brand font-bold ml-1 hover:underline hover:text-brand-dark transition-colors"
                     >
                       Unblock
                     </button>
@@ -1763,7 +1821,7 @@ const ChatRoom = () => {
             if (isBlocked) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     🔒 This conversation is unavailable.
                   </div>
                 </div>
@@ -1773,7 +1831,7 @@ const ChatRoom = () => {
             if (isDeclined) {
               return (
                 <div className="px-4 py-3 border-t border-slate-100 bg-white flex items-center justify-center text-center shrink-0">
-                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-slate-500 font-medium">
+                  <div className="bg-slate-50 px-4 py-2 rounded-xl border border-slate-100 text-[13px] text-text-muted font-medium">
                     Message request was declined.
                   </div>
                 </div>
@@ -1815,7 +1873,7 @@ const ChatRoom = () => {
 
           </> :
         loading ?
-        <div className="flex-1 flex flex-col h-full bg-[#FAFAFA] overflow-hidden animate-pulse">
+        <div className="flex-1 flex flex-col h-full bg-background overflow-hidden animate-pulse">
             <div className="bg-white px-5 py-4 border-b border-slate-100 flex items-center gap-3 shrink-0">
               <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0"></div>
               <div className="flex-1 space-y-2">
@@ -1840,16 +1898,16 @@ const ChatRoom = () => {
               </div>
             </div>
             <div className="bg-white p-4 border-t border-slate-100 shrink-0">
-               <div className="h-12 w-full bg-slate-100 rounded-2xl"></div>
+               <div className="h-12 w-full bg-background rounded-2xl"></div>
             </div>
           </div> :
 
         <div className="flex-1 flex flex-col items-center justify-center text-center p-8 select-none">
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mb-5">
+            <div className="w-16 h-16 rounded-2xl bg-background flex items-center justify-center mb-5">
               <MessageSquare className="w-7 h-7 text-slate-300" />
             </div>
-            <h3 className="text-base font-bold text-slate-600 mb-1.5">Select a conversation</h3>
-            <p className="text-[13px] text-slate-400 leading-relaxed max-w-[240px]">
+            <h3 className="text-base font-bold text-text-secondary mb-1.5">Select a conversation</h3>
+            <p className="text-[13px] text-text-muted leading-relaxed max-w-[240px]">
               Choose a traveler or group to start chatting.
             </p>
           </div>}
@@ -1881,31 +1939,31 @@ const ChatRoom = () => {
                   alt=""
                   className="w-[72px] h-[72px] rounded-full object-cover shadow-sm mb-3 border border-slate-100" />
 
-                    <h3 className="text-[18px] font-bold text-slate-900 leading-tight">
+                    <h3 className="text-[18px] font-bold text-text-primary leading-tight">
                       Block {otherUser?.name}?
                     </h3>
                     {otherUser?.username &&
-                  <p className="text-[14px] font-medium text-slate-500 mb-5">
+                  <p className="text-[14px] font-medium text-text-muted mb-5">
                         @{otherUser.username}
                       </p>}
 
                     {!otherUser?.username && <div className="h-5"></div>}
 
-                    <div className="text-[13.5px] text-slate-600 mb-6 space-y-3 w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left">
+                    <div className="text-[13.5px] text-text-secondary mb-6 space-y-3 w-full bg-slate-50 rounded-2xl p-4 border border-slate-100 text-left">
                       <p className="flex items-start gap-2">
-                        <span className="text-slate-400 mt-0.5">•</span>
+                        <span className="text-text-muted mt-0.5">•</span>
                         <span>
                           You won't be able to send messages to each other.
                         </span>
                       </p>
                       <p className="flex items-start gap-2">
-                        <span className="text-slate-400 mt-0.5">•</span>
+                        <span className="text-text-muted mt-0.5">•</span>
                         <span>
                           Existing chat history will remain available.
                         </span>
                       </p>
                       <p className="flex items-start gap-2">
-                        <span className="text-slate-400 mt-0.5">•</span>
+                        <span className="text-text-muted mt-0.5">•</span>
                         <span>You can unblock them anytime.</span>
                       </p>
                     </div>
@@ -1919,7 +1977,7 @@ const ChatRoom = () => {
                       </button>
                       <button
                     onClick={() => setShowBlockModal(false)}
-                    className="w-full py-3.5 text-slate-700 bg-transparent rounded-2xl font-bold text-[15px] hover:bg-slate-100 transition-all active:scale-[0.98]">
+                    className="w-full py-3.5 text-text-primary bg-transparent rounded-2xl font-bold text-[15px] hover:bg-background transition-all active:scale-[0.98]">
 
                         Cancel
                       </button>

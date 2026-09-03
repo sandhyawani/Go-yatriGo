@@ -8,7 +8,7 @@ import travelBg from "../assets/images/bg.jpg";
 import stickerPack from "../assets/images/login.jpg";
 
 const STRENGTH_META = {
-  0: { bar: "bg-slate-200", text: "", textColor: "text-slate-400" },
+  0: { bar: "bg-slate-200", text: "", textColor: "text-text-muted" },
   25: { bar: "bg-red-500", text: "Weak", textColor: "text-red-500" },
   50: { bar: "bg-orange-500", text: "Fair", textColor: "text-orange-500" },
   75: { bar: "bg-yellow-500", text: "Good", textColor: "text-yellow-500" },
@@ -111,11 +111,10 @@ const ResetPassword = () => {
       style={{ backgroundImage: `url(${travelBg})` }} />
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
-        {}
         <div className="hidden lg:flex lg:w-3/5 items-center justify-center p-12">
           <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -123,7 +122,7 @@ const ResetPassword = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="relative group w-full max-w-2xl">
 
-            <div className="absolute -inset-4 bg-brand-500/20 blur-3xl rounded-[3rem] group-hover:bg-brand-500/30 transition-all duration-700" />
+            <div className="absolute -inset-4 bg-brand/20 blur-3xl rounded-[3rem] group-hover:bg-brand/30 transition-all duration-700" />
             <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 overflow-hidden shadow-2xl">
               <img
               src={stickerPack}
@@ -156,7 +155,6 @@ const ResetPassword = () => {
           </motion.div>
         </div>
 
-        {}
         <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto custom-scrollbar">
           <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -168,27 +166,26 @@ const ResetPassword = () => {
               <div className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-brand-500">
                 <Fingerprint className="w-5 h-5" />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tighter">
+              <h1 className="text-2xl font-black text-text-primary tracking-tighter">
                 New Password
               </h1>
-              <p className="text-slate-500 font-medium text-[11px] mt-1">
+              <p className="text-text-muted font-medium text-[11px] mt-1">
                 Choose a strong new password for your account.
               </p>
             </div>
 
             <form className="space-y-4" onSubmit={handleSubmit} noValidate>
-              {}
               {!token &&
               <div className="space-y-1">
                   <label
                 htmlFor="otp"
-                className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">
 
                     OTP
                   </label>
                   <div className="relative group">
                     <Fingerprint
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.otp ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.otp ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -202,7 +199,7 @@ const ResetPassword = () => {
                   }}
                   aria-invalid={!!errors.otp}
                   aria-describedby={errors.otp ? "otp-error" : undefined}
-                  className={`w-full pl-11 pr-4 py-2 bg-slate-50 border ${errors.otp ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  className={`w-full pl-11 pr-4 py-2 bg-slate-50 border ${errors.otp ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                   </div>
                   <AnimatePresence>
@@ -225,17 +222,16 @@ const ResetPassword = () => {
                 </div>}
 
 
-              {}
               <div className="space-y-1">
                 <label
                 htmlFor="new-password"
-                className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">
 
                   New Password
                 </label>
                 <div className="relative group">
                   <Lock
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                   <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -252,7 +248,7 @@ const ResetPassword = () => {
                   aria-describedby={
                   errors.password ? "pw-error" : "pw-strength"}
 
-                  className={`w-full pl-11 pr-12 py-2 bg-slate-50 border ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  className={`w-full pl-11 pr-12 py-2 bg-slate-50 border ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                   <button
                   type="button"
@@ -260,7 +256,7 @@ const ResetPassword = () => {
                   aria-label={
                   showPassword ? "Hide password" : "Show password"}
 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1">
 
                     {showPassword ?
                     <EyeOff className="w-4 h-4" /> :
@@ -294,7 +290,7 @@ const ResetPassword = () => {
                 className="mt-2 ml-1"
                 aria-live="polite">
 
-                    <div className="flex gap-1 h-1 w-full rounded-full overflow-hidden bg-slate-100">
+                    <div className="flex gap-1 h-1 w-full rounded-full overflow-hidden bg-background">
                       <div
                     className={`h-full transition-all duration-300 ${meta.bar}`}
                     style={{ width: `${strength}%` }} />
@@ -309,17 +305,16 @@ const ResetPassword = () => {
 
               </div>
 
-              {}
               <div className="space-y-1">
                 <label
                 htmlFor="confirm-password"
-                className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">
 
                   Confirm Password
                 </label>
                 <div className="relative group">
                   <Lock
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.confirm ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.confirm ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                   <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -342,7 +337,7 @@ const ResetPassword = () => {
                   confirmPassword && confirmPassword === password ?
                   "border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/20" :
                   "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
-                  } rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  } rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                   <button
                   type="button"
@@ -352,7 +347,7 @@ const ResetPassword = () => {
                   "Hide confirm password" :
                   "Show confirm password"}
 
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1">
 
                     {showConfirmPassword ?
                     <EyeOff className="w-4 h-4" /> :
@@ -386,7 +381,7 @@ const ResetPassword = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className="w-full py-2 bg-brand-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-brand-500 disabled:opacity-70 disabled:cursor-not-allowed group mt-2 overflow-hidden relative">
+              className="w-full py-2 bg-brand text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(2,132,199,0.3)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.4)] flex items-center justify-center gap-3 hover:bg-brand disabled:opacity-70 disabled:cursor-not-allowed group mt-2 overflow-hidden relative">
 
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 {loading ?
@@ -407,7 +402,7 @@ const ResetPassword = () => {
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center">
               <Link
               to="/login"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
+              className="inline-flex items-center gap-2 text-text-muted hover:text-text-secondary font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
 
                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Login

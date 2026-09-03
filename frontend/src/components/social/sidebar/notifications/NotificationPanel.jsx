@@ -1,6 +1,26 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Bell, CheckCheck, Trash2, X, Compass, UserPlus, Heart, MessageSquare, ShieldAlert, ShieldCheck, AlertTriangle, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Bell,
+  CheckCheck,
+  Trash2,
+  X,
+  Compass,
+  UserPlus,
+  Heart,
+  MessageSquare,
+  ShieldAlert,
+  ShieldCheck,
+  AlertTriangle,
+  Sparkles,
+  ArrowRight,
+  ArrowLeft,
+  Send,
+  Clock,
+  UserMinus,
+  RefreshCw,
+  Loader2
+} from "lucide-react";
 import { useSidebar } from "../SidebarProvider";
 import { useNotificationContext } from "../../../../context/NotificationContext";
 import { notificationVariants } from "../animations/sidebarAnimations";
@@ -9,27 +29,78 @@ import { useNavigate } from "react-router-dom";
 import { getAvatar } from "../../../../utils/chat/chatHelpers";
 import { chatService } from "../../../../services/chatService";
 
-const CATEGORIES = ["All", "Journey", "Social", "Messages", "Safety"];
+const CATEGORIES = [
+  { key: "All", label: "All", icon: Bell },
+  { key: "Journey", label: "Journey", icon: Compass },
+  { key: "Social", label: "Social", icon: UserPlus },
+  { key: "Messages", label: "Messages", icon: MessageSquare },
+  { key: "Safety", label: "Safety", icon: ShieldAlert },
+];
 
-// Semantic styling and icon mapping adhering to Go YatriGo design tokens
+export const getNormalizedCategory = (notif) => {
+  if (!notif) return "Social";
+  const c = (notif.category || "").toLowerCase();
+  const t = (notif.type || "").toLowerCase();
+
+  if (
+    c === "safety" ||
+    c === "safe" ||
+    c === "emergency" ||
+    t.includes("safe") ||
+    t.includes("sos") ||
+    t.includes("emergency") ||
+    t.includes("warning") ||
+    t.includes("admin_warning")
+  ) {
+    return "Safety";
+  }
+
+  if (
+    c === "messages" ||
+    c === "message" ||
+    c === "chat" ||
+    t.includes("message") ||
+    t.includes("direct") ||
+    t.includes("chat") ||
+    t === "new_message" ||
+    t === "message_request"
+  ) {
+    return "Messages";
+  }
+
+  if (
+    c === "journey" ||
+    t.includes("journey") ||
+    t.includes("trip") ||
+    t.includes("group") ||
+    t.includes("join") ||
+    t.includes("host_transferred")
+  ) {
+    return "Journey";
+  }
+
+  return "Social";
+};
+
 const getNotificationVisuals = (type, category) => {
   const t = (type || "").toLowerCase();
+  const c = (category || "").toLowerCase();
 
-  // Safety / Urgent
   if (t.includes("sos") || t.includes("emergency")) {
     return {
-      icon: <ShieldAlert className="w-4 h-4 text-rose-600" />,
-      bg: "bg-rose-50 text-rose-600 border-rose-100",
-      badge: "Urgent",
-      colorType: "danger"
+      icon: <ShieldAlert className="w-4 h-4 text-rose-600 animate-pulse" />,
+      bg: "bg-rose-50 text-rose-600 border-rose-200",
+      badge: "Emergency Alert",
+      colorType: "danger",
+      isEmergency: true
     };
   }
   if (t.includes("warning") || t.includes("admin_warning")) {
     return {
-      icon: <AlertTriangle className="w-4 h-4 text-rose-600" />,
-      bg: "bg-rose-50 text-rose-600 border-rose-100",
-      badge: "Warning",
-      colorType: "danger"
+      icon: <AlertTriangle className="w-4 h-4 text-amber-600" />,
+      bg: "bg-amber-50 text-amber-600 border-amber-200",
+      badge: "Safety Warning",
+      colorType: "warning"
     };
   }
   if (t.includes("cancelled") || t.includes("rejected") || t.includes("reject")) {
@@ -41,12 +112,11 @@ const getNotificationVisuals = (type, category) => {
     };
   }
 
-  // Safety / Success
   if (t.includes("safe") || t.includes("checkin")) {
     return {
       icon: <ShieldCheck className="w-4 h-4 text-emerald-600" />,
-      bg: "bg-emerald-50 text-emerald-600 border-emerald-100",
-      badge: "Safe",
+      bg: "bg-emerald-50 text-emerald-600 border-emerald-200",
+      badge: "Safe Check-in",
       colorType: "success"
     };
   }
@@ -59,36 +129,36 @@ const getNotificationVisuals = (type, category) => {
     };
   }
 
-  // Primary Journey / Social / Message Actions
+  if (t.includes("message") || t.includes("chat") || t.includes("direct") || c === "messages" || c === "message") {
+    return {
+      icon: <MessageSquare className="w-4 h-4 text-sky-600" />,
+      bg: "bg-sky-50 text-sky-600 border-sky-200",
+      badge: t === "message_request" ? "Message Request" : "Message",
+      colorType: "primary"
+    };
+  }
+
   if (t.includes("journey") || t.includes("trip") || t.includes("join")) {
     return {
-      icon: <Compass className="w-4 h-4 text-brand-600" />,
-      bg: "bg-brand-50 text-brand-600 border-brand-100",
+      icon: <Compass className="w-4 h-4 text-brand" />,
+      bg: "bg-brand-50 text-brand border-brand-100",
       badge: "Journey",
       colorType: "primary"
     };
   }
   if (t.includes("follow")) {
     return {
-      icon: <UserPlus className="w-4 h-4 text-brand-600" />,
-      bg: "bg-brand-50 text-brand-600 border-brand-100",
+      icon: <UserPlus className="w-4 h-4 text-brand" />,
+      bg: "bg-brand-50 text-brand border-brand-100",
       badge: "Social",
       colorType: "primary"
     };
   }
   if (t.includes("like") || t.includes("reaction")) {
     return {
-      icon: <Sparkles className="w-4 h-4 text-[#7C3AED] fill-[#7C3AED]" />,
-      bg: "bg-purple-50 text-[#7C3AED] border-purple-100",
-      badge: "Activity",
-      colorType: "primary"
-    };
-  }
-  if (t.includes("comment") || t.includes("message") || t.includes("reply") || t.includes("chat")) {
-    return {
-      icon: <MessageSquare className="w-4 h-4 text-brand-600" />,
-      bg: "bg-brand-50 text-brand-600 border-brand-100",
-      badge: "Chat",
+      icon: <Sparkles className="w-4 h-4 text-brand fill-brand" />,
+      bg: "bg-primary-50 text-brand border-primary-100",
+      badge: "Like",
       colorType: "primary"
     };
   }
@@ -101,10 +171,9 @@ const getNotificationVisuals = (type, category) => {
     };
   }
 
-  // Fallback Informational
   return {
-    icon: <Bell className="w-4 h-4 text-slate-500" />,
-    bg: "bg-slate-100 text-slate-600 border-slate-200",
+    icon: <Bell className="w-4 h-4 text-text-muted" />,
+    bg: "bg-background text-text-secondary border-slate-200",
     badge: category || "Alert",
     colorType: "neutral"
   };
@@ -130,7 +199,7 @@ const getCategoryEmptyDetails = (category) => {
     case "Safety":
       return {
         title: "No safety alerts",
-        description: "Safe check-ins and emergency updates from your journeys will appear here."
+        description: "Safe check-ins, SOS notices, and emergency updates will appear here."
       };
     default:
       return {
@@ -201,8 +270,9 @@ export const NotificationPanel = () => {
   // Filter notifications precisely by active category
   const filteredNotifications = notifications.filter((n) => {
     if (activeCategory === "All") return true;
-    return n.category === activeCategory;
+    return getNormalizedCategory(n) === activeCategory;
   });
+
 
   const handleNotificationClick = async (n) => {
     const notifId = n._id || n.id;
@@ -212,10 +282,8 @@ export const NotificationPanel = () => {
 
     setShowNotifPanel(false);
 
-    // Authoritative navigation routing
     const type = (n.type || "").toLowerCase();
 
-    // 1. Journey / Squad
     if (n.journey || type.includes("journey") || type.includes("invite")) {
       const journeyId = typeof n.journey === "object" ? n.journey?._id : n.journey;
       if (journeyId) {
@@ -236,7 +304,6 @@ export const NotificationPanel = () => {
       return;
     }
 
-    // 2. Chat / Messages
     if (n.room || type.includes("message") || type.includes("chat") || type.includes("direct")) {
       const roomId = typeof n.room === "object" ? n.room?._id : n.room;
       if (roomId) {
@@ -259,7 +326,6 @@ export const NotificationPanel = () => {
       return;
     }
 
-    // 3. Social / Profile
     if (type.includes("follow")) {
       const actorId = n.sender?._id || n.sender?.id || (typeof n.sender === "string" ? n.sender : null);
       if (actorId) {
@@ -287,43 +353,31 @@ export const NotificationPanel = () => {
       return;
     }
 
-    // 4. Safety
     if (type.includes("sos") || type.includes("emergency")) {
       navigate("/emergency-contacts");
       return;
     }
 
-    // Default
     navigate("/");
   };
 
-  const getTabCount = (cat) => {
-    switch (cat) {
-      case "All":
-        return counts.all || notifications.length;
-      case "Journey":
-        return counts.journey || notifications.filter((n) => n.category === "Journey").length;
-      case "Social":
-        return counts.social || notifications.filter((n) => n.category === "Social").length;
-      case "Messages":
-        return counts.messages || notifications.filter((n) => n.category === "Messages").length;
-      case "Safety":
-        return counts.safety || notifications.filter((n) => n.category === "Safety").length;
-      default:
-        return 0;
-    }
+
+  const getTabCount = (catKey) => {
+    if (catKey === "All") return counts.all || notifications.length;
+    return notifications.filter((n) => getNormalizedCategory(n) === catKey).length;
   };
+
 
   return (
     <>
-      {/* Mobile Backdrop */}
+      {/* Backdrop for Desktop */}
       <motion.div
         key="notif-backdrop"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={() => setShowNotifPanel(false)}
-        className="fixed inset-0 z-[1001] bg-slate-900/30 backdrop-blur-xs lg:hidden"
+        className="fixed inset-0 z-[1001] bg-slate-900/20 backdrop-blur-xs hidden lg:block"
       />
 
       <AnimatePresence>
@@ -333,21 +387,32 @@ export const NotificationPanel = () => {
           animate="animate"
           exit="exit"
           variants={notificationVariants}
-          className="fixed top-14 lg:top-4 left-2 right-2 sm:left-6 sm:right-6 lg:left-64 lg:right-auto lg:w-[480px] max-h-[82vh] lg:max-h-[80vh] flex flex-col bg-white rounded-3xl shadow-2xl border border-slate-100 z-[1002] overflow-hidden select-none font-sans"
+          className="fixed inset-0 lg:inset-auto lg:top-4 lg:left-64 lg:w-[480px] lg:max-h-[85vh] flex flex-col bg-surface rounded-none lg:rounded-[var(--radius-card)] shadow-none lg:shadow-2xl border-0 lg:border lg:border-slate-100 z-[1002] overflow-hidden select-none font-sans"
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-100 bg-white/80 backdrop-blur-md shrink-0 gap-2">
+          <div className="flex items-center justify-between px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-100 bg-white/95 backdrop-blur-md shrink-0 gap-2">
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
+              <button
+                onClick={() => setShowNotifPanel(false)}
+                className="p-1.5 -ml-1 rounded-xl text-text-secondary hover:text-text-primary hover:bg-slate-100 active:scale-95 transition-all lg:hidden cursor-pointer shrink-0"
+                aria-label="Back"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-700" />
+              </button>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-brand-50 hidden lg:flex items-center justify-center text-brand shrink-0">
                 <Bell className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h3 className="text-sm sm:text-base font-bold tracking-tight text-slate-900 font-heading truncate">
+                <h3 className="text-sm sm:text-base font-bold tracking-tight text-text-primary font-heading truncate">
                   Notifications
                 </h3>
-                {unreadCount > 0 && (
-                  <p className="text-[10px] sm:text-[11px] font-semibold text-brand-600 truncate font-sans">
+                {unreadCount > 0 ? (
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-brand truncate font-sans">
                     {unreadCount} unread alert{unreadCount > 1 ? "s" : ""}
+                  </p>
+                ) : (
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-text-muted truncate font-sans">
+                    All caught up
                   </p>
                 )}
               </div>
@@ -357,7 +422,7 @@ export const NotificationPanel = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-[11px] sm:text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
+                  className="text-[11px] sm:text-xs font-bold text-brand hover:text-brand-dark bg-brand-50 hover:bg-brand-100 px-2.5 sm:px-3 py-1.5 rounded-xl transition-all flex items-center gap-1 active:scale-95 cursor-pointer"
                   title="Mark all notifications as read"
                 >
                   <CheckCheck className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Mark all read</span><span className="sm:hidden">Read all</span>
@@ -376,7 +441,7 @@ export const NotificationPanel = () => {
 
               <button
                 onClick={() => setShowNotifPanel(false)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors lg:hidden"
+                className="p-1.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-background transition-colors hidden lg:flex cursor-pointer"
                 aria-label="Close notifications"
               >
                 <X className="w-4 h-4" />
@@ -385,27 +450,29 @@ export const NotificationPanel = () => {
           </div>
 
           {/* Category Tabs */}
-          <div className="flex items-center gap-1.5 px-4 py-2.5 bg-slate-50/80 border-b border-slate-100 overflow-x-auto shrink-0 scrollbar-none">
-            {CATEGORIES.map((cat) => {
-              const count = getTabCount(cat);
-              const isActive = activeCategory === cat;
+          <div className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-slate-50/90 border-b border-slate-100 overflow-x-auto shrink-0 scrollbar-none">
+            {CATEGORIES.map((catItem) => {
+              const count = getTabCount(catItem.key);
+              const isActive = activeCategory === catItem.key;
+              const Icon = catItem.icon;
               return (
                 <button
-                  key={cat}
-                  onClick={() => setActiveCategory(cat)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+                  key={catItem.key}
+                  onClick={() => setActiveCategory(catItem.key)}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
                     isActive
-                      ? "bg-brand-600 text-white shadow-sm shadow-brand-600/20"
-                      : "bg-white text-slate-600 hover:bg-brand-50 hover:text-brand-600 border border-slate-200/80"
+                      ? "bg-brand text-white shadow-xs"
+                      : "bg-white text-text-secondary hover:bg-brand-50 hover:text-brand border border-slate-200/80"
                   }`}
                 >
-                  <span>{cat}</span>
+                  <Icon className="w-3.5 h-3.5 shrink-0" />
+                  <span>{catItem.label}</span>
                   {count > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
                         isActive
                           ? "bg-white/20 text-white"
-                          : "bg-slate-100 text-slate-600 group-hover:bg-brand-100"
+                          : "bg-background text-text-secondary"
                       }`}
                     >
                       {count}
@@ -416,22 +483,23 @@ export const NotificationPanel = () => {
             })}
           </div>
 
-          {/* Notifications List */}
-          <div className="overflow-y-auto overflow-x-hidden flex-1 p-3.5 space-y-2.5">
+          {/* List Content */}
+          <div className="overflow-y-auto overflow-x-hidden flex-1 p-3.5 sm:p-4 space-y-2.5 pb-20 lg:pb-4">
+            {/* RECEIVED NOTIFICATIONS LIST */}
             {loading && notifications.length === 0 ? (
-              <div className="py-12 flex flex-col items-center justify-center gap-3 text-slate-400">
-                <div className="w-6 h-6 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
+              <div className="py-12 flex flex-col items-center justify-center gap-3 text-text-muted">
+                <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
                 <p className="text-xs font-semibold">Loading notifications...</p>
               </div>
             ) : filteredNotifications.length === 0 ? (
-              <div className="text-center py-12 px-4 flex flex-col items-center justify-center text-slate-500">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 border border-slate-200/60 flex items-center justify-center mb-3">
-                  <Bell className="w-6 h-6 text-slate-400" />
+              <div className="text-center py-12 px-4 flex flex-col items-center justify-center text-text-muted">
+                <div className="w-12 h-12 rounded-2xl bg-background border border-slate-200/60 flex items-center justify-center mb-3">
+                  <Bell className="w-6 h-6 text-text-muted" />
                 </div>
-                <h4 className="text-sm font-bold text-slate-800 font-heading">
+                <h4 className="text-sm font-bold text-text-primary font-heading">
                   {getCategoryEmptyDetails(activeCategory).title}
                 </h4>
-                <p className="text-xs text-slate-400 max-w-[260px] mx-auto mt-1 leading-relaxed font-sans">
+                <p className="text-xs text-text-muted max-w-[260px] mx-auto mt-1 leading-relaxed font-sans">
                   {getCategoryEmptyDetails(activeCategory).description}
                 </p>
               </div>
@@ -456,7 +524,7 @@ export const NotificationPanel = () => {
                     className={`group relative flex items-start gap-3 p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
                       isUnread
                         ? "bg-brand-50/40 border-brand-100/80 hover:bg-brand-50/60 shadow-xs"
-                        : "bg-white border-slate-100 hover:bg-slate-50/80"
+                        : "bg-white border-slate-100 hover/80"
                     }`}
                   >
                     {/* Actor Avatar with event badge */}
@@ -475,7 +543,7 @@ export const NotificationPanel = () => {
 
                     {/* Notification Body */}
                     <div className="flex-1 min-w-0 pr-6">
-                      <div className="text-[13px] text-slate-800 leading-snug">
+                      <div className="text-[13px] text-slate-900 leading-snug break-words">
                         <span className="font-bold text-slate-900 hover:underline">
                           {senderName}
                         </span>{" "}
@@ -484,24 +552,55 @@ export const NotificationPanel = () => {
                         </span>
                       </div>
 
-                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-slate-400 font-medium">
+                      <div className="flex items-center gap-2 mt-1.5 text-[11px] text-text-muted font-medium">
                         <span>{moment(notif.createdAt).fromNow()}</span>
                         {visuals.badge && (
                           <>
                             <span>•</span>
-                            <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                            <span className="text-[10px] font-semibold uppercase tracking-wider text-text-muted">
                               {visuals.badge}
                             </span>
                           </>
                         )}
                       </div>
 
+                      {/* Prominent Emergency / Safety Callout */}
+                      {visuals.isEmergency && (
+                        <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center justify-between gap-2 shadow-2xs">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0 animate-pulse" />
+                            <span className="truncate font-bold">Emergency SOS Alert</span>
+                          </div>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setShowNotifPanel(false);
+                              navigate("/emergency-contacts");
+                            }}
+                            className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-[11px] font-bold shrink-0 transition-colors cursor-pointer"
+                          >
+                            View Contacts
+                          </button>
+                        </div>
+                      )}
+
                       {/* Inline Actions */}
                       {isUnread && (
                         <div
-                          className="mt-2.5 flex items-center gap-2"
+                          className="mt-2.5 flex items-center gap-2 flex-wrap"
                           onClick={(e) => e.stopPropagation()}
                         >
+                          {/* Direct message quick action */}
+                          {(type === "new_message" || type === "direct") && (
+                            <button
+                              onClick={() => handleNotificationClick(notif)}
+                              className="px-3 py-1 bg-sky-50 hover:bg-sky-100 text-sky-700 text-xs font-bold rounded-lg border border-sky-200 transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5 text-sky-600" />
+                              <span>Open Chat</span>
+                            </button>
+                          )}
+
                           {isJourneyInvite && (
                             <>
                               <button
@@ -512,7 +611,7 @@ export const NotificationPanel = () => {
                                   await handleAcceptJourneyInvitation(invId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1 shadow-xs cursor-pointer"
+                                className="btn-primary"
                               >
                                 Accept <ArrowRight className="w-3 h-3" />
                               </button>
@@ -524,7 +623,7 @@ export const NotificationPanel = () => {
                                   await handleRejectJourneyInvitation(invId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
                                 Decline
                               </button>
@@ -541,7 +640,7 @@ export const NotificationPanel = () => {
                                   await handleAcceptFollow(reqId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
+                                className="btn-primary"
                               >
                                 Accept
                               </button>
@@ -553,7 +652,7 @@ export const NotificationPanel = () => {
                                   await handleRejectFollow(reqId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
                                 Decline
                               </button>
@@ -570,7 +669,7 @@ export const NotificationPanel = () => {
                                   await handleAcceptMessage(roomId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
+                                className="btn-primary"
                               >
                                 Accept Chat
                               </button>
@@ -582,7 +681,7 @@ export const NotificationPanel = () => {
                                   await handleRejectMessage(roomId, notifId);
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
                                 Decline
                               </button>
@@ -602,7 +701,7 @@ export const NotificationPanel = () => {
                                   }
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-brand-600 hover:bg-brand-700 active:scale-95 text-white text-xs font-bold rounded-lg transition-all shadow-xs cursor-pointer"
+                                className="btn-primary"
                               >
                                 Accept Join
                               </button>
@@ -617,7 +716,7 @@ export const NotificationPanel = () => {
                                   }
                                   setIsProcessingAction(false);
                                 }}
-                                className="px-3 py-1 bg-slate-100 hover:bg-slate-200 active:scale-95 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer"
+                                className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
                                 Decline
                               </button>
@@ -629,7 +728,7 @@ export const NotificationPanel = () => {
 
                     {/* Unread Indicator */}
                     {isUnread && (
-                      <div className="w-2 h-2 bg-brand-600 rounded-full shrink-0 mt-2 ring-2 ring-brand-200/50" />
+                      <div className="w-2 h-2 bg-brand rounded-full shrink-0 mt-2 ring-2 ring-brand-200/50" />
                     )}
 
                     {/* Delete Action Button */}
@@ -656,22 +755,22 @@ export const NotificationPanel = () => {
       {showClearConfirm && (
         <div
           id="confirm-clear-modal"
-          className="fixed inset-0 z-[1050] bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4"
+          className="fixed inset-0 z-[1050] bg-brand/40 backdrop-blur-xs flex items-center justify-center p-4"
         >
-          <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-surface rounded-[var(--radius-card)] p-6 max-w-sm w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
             <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
-            <h4 className="text-lg font-bold text-slate-900 font-heading">
+            <h4 className="text-lg font-bold text-text-primary font-heading">
               Clear All Notifications?
             </h4>
-            <p className="text-xs text-slate-500 mt-2 leading-relaxed font-sans">
+            <p className="text-xs text-text-muted mt-2 leading-relaxed font-sans">
               Are you sure you want to permanently delete all notifications? This action cannot be undone.
             </p>
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowClearConfirm(false)}
-                className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                className="px-4 py-2 text-xs font-bold text-text-secondary hover:bg-background rounded-xl transition-colors cursor-pointer"
               >
                 Cancel
               </button>

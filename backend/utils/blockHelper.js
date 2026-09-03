@@ -2,14 +2,7 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Block = require("../models/Block");
 
-/**
- * Checks if a block exists between userA and userB in EITHER direction.
- * (A blocked B OR B blocked A)
- * 
- * @param {string|mongoose.Types.ObjectId} userAId
- * @param {string|mongoose.Types.ObjectId} userBId
- * @returns {Promise<boolean>}
- */
+// Checks if a block exists between userA and userB in either direction
 const isBlockedPair = async (userAId, userBId) => {
   if (!userAId || !userBId) return false;
 
@@ -21,7 +14,6 @@ const isBlockedPair = async (userAId, userBId) => {
   const bId = mongoose.Types.ObjectId.isValid(bStr) ? new mongoose.Types.ObjectId(bStr) : null;
   if (!aId || !bId) return false;
 
-  // 1. Check in Block model
   const blockDoc = await Block.findOne({
     $or: [
       { blocker: aId, blocked: bId },
@@ -31,7 +23,7 @@ const isBlockedPair = async (userAId, userBId) => {
 
   if (blockDoc) return true;
 
-  // 2. Fallback check in User.blockedUsers array
+  // Fallback check in User.blockedUsers array
   const users = await User.find({
     _id: { $in: [aId, bId] }
   }).select("blockedUsers").lean();
@@ -47,13 +39,7 @@ const isBlockedPair = async (userAId, userBId) => {
   return false;
 };
 
-/**
- * Gets all user IDs that have a block relationship with the given userId (in either direction).
- * (Users who are blocked by userId + Users who blocked userId)
- * 
- * @param {string|mongoose.Types.ObjectId} userId
- * @returns {Promise<{ objectIds: mongoose.Types.ObjectId[], stringIds: string[], idSet: Set<string> }>}
- */
+// Gets all user IDs that have a block relationship with userId in either direction
 const getBlockedUserIds = async (userId) => {
   if (!userId) {
     return { objectIds: [], stringIds: [], idSet: new Set() };
@@ -139,20 +125,7 @@ const getModel = (name) => {
   }
 };
 
-/**
- * Performs complete, idempotent Block action:
- * - Upserts Block record
- * - Adds to User.blockedUsers
- * - Cleans up follow relationships (both directions)
- * - Cleans up follow requests (both directions)
- * - Deletes TripMate connections
- * - Deletes pending JourneyInvitations
- * - Removes follow request notifications
- * - Marks direct chat room as blocked
- * 
- * @param {string|mongoose.Types.ObjectId} blockerId
- * @param {string|mongoose.Types.ObjectId} blockedId
- */
+// Handles complete block action across users, relations, and messaging
 const blockUserAction = async (blockerId, blockedId) => {
   const b1Str = blockerId.toString();
   const b2Str = blockedId.toString();
@@ -163,14 +136,13 @@ const blockUserAction = async (blockerId, blockedId) => {
   const b1 = new mongoose.Types.ObjectId(b1Str);
   const b2 = new mongoose.Types.ObjectId(b2Str);
 
-  // 1. Idempotent Block record creation
   await Block.findOneAndUpdate(
     { blocker: b1, blocked: b2 },
     { blocker: b1, blocked: b2 },
     { upsert: true, new: true }
   );
 
-  // 2. Update blocker user: add to blockedUsers, remove follow relationships & message requests
+  // Update blocker: add to blockedUsers and remove relations
   await User.findByIdAndUpdate(b1, {
     $addToSet: { blockedUsers: b2 },
     $pull: {
@@ -181,7 +153,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     }
   });
 
-  // 3. Update blocked user: remove follow relationships & message requests
+  // Update blocked user: remove relations
   await User.findByIdAndUpdate(b2, {
     $pull: {
       followers: b1,
@@ -191,7 +163,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     }
   });
 
-  // 4. Delete Follow collection documents in both directions
+  // Clean up follow records
   const Follow = getModel("Follow");
   if (Follow) {
     await Follow.deleteMany({
@@ -202,7 +174,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // 5. Clean up TripMate connections
+  // Clean up connections
   const TripMateConnection = getModel("TripMateConnection");
   if (TripMateConnection) {
     await TripMateConnection.deleteMany({
@@ -213,7 +185,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // 6. Clean up pending JourneyInvitations
+  // Clean up pending invitations
   const JourneyInvitation = getModel("JourneyInvitation");
   if (JourneyInvitation) {
     await JourneyInvitation.deleteMany({
@@ -224,7 +196,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // 7. Clean up follow request notifications
+  // Clean up follow notifications
   const Notification = getModel("Notification");
   if (Notification) {
     await Notification.deleteMany({
@@ -236,7 +208,7 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // 8. Update direct ChatRoom requestStatus
+  // Update direct chat room status
   const ChatRoom = getModel("ChatRoom");
   if (ChatRoom) {
     await ChatRoom.updateMany(
@@ -253,31 +225,20 @@ const blockUserAction = async (blockerId, blockedId) => {
   return { success: true };
 };
 
-/**
- * Performs complete, idempotent Unblock action:
- * - Deletes Block record
- * - Removes from User.blockedUsers
- * - Resets direct ChatRoom requestStatus if it was blocked and not blocked by the other user
- * - Does NOT restore previous follow relationships
- * 
- * @param {string|mongoose.Types.ObjectId} blockerId
- * @param {string|mongoose.Types.ObjectId} blockedId
- */
+// Handles unblocking and restores direct chat room status if not blocked in opposite direction
 const unblockUserAction = async (blockerId, blockedId) => {
   const b1Str = blockerId.toString();
   const b2Str = blockedId.toString();
   const b1 = new mongoose.Types.ObjectId(b1Str);
   const b2 = new mongoose.Types.ObjectId(b2Str);
 
-  // 1. Delete Block record
   await Block.deleteMany({ blocker: b1, blocked: b2 });
 
-  // 2. Remove from User.blockedUsers
   await User.findByIdAndUpdate(b1, {
     $pull: { blockedUsers: b2 }
   });
 
-  // 3. Reset direct ChatRoom requestStatus ONLY if the pair is no longer blocked in the opposite direction
+  // Reset direct chat status only if not still blocked in opposite direction
   const isStillBlocked = await isBlockedPair(b1, b2);
   const ChatRoom = getModel("ChatRoom");
   if (ChatRoom && !isStillBlocked) {

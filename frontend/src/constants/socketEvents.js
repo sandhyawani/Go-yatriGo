@@ -11,6 +11,7 @@ export const SOCKET_EVENTS = {
   IS_TYPING: "is_typing",
   NOT_TYPING: "not_typing",
   MESSAGE_UNSENT: "message:unsent",
+  MESSAGE_REACTION_UPDATED: "message_reaction_updated",
   STORY_REACTION_MESSAGE_UPDATED: "story_reaction_message_updated",
   REQUEST_STATUS_UPDATED: "request_status_updated",
 

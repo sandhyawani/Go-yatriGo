@@ -41,7 +41,6 @@ const CustomSelect = ({
     });
   }, [options, searchable, searchQuery]);
 
-  // Flatten options for keyboard navigation
   const flatOptions = useMemo(() => {
     return filteredOptions.reduce((acc, opt) => {
       if (opt.options) {
@@ -88,7 +87,6 @@ const CustomSelect = ({
       updateDropdownPosition();
       
       const handleScroll = (e) => {
-        // If scrolling the dropdown itself, don't update position
         if (listboxRef.current && listboxRef.current.contains(e.target)) return;
         updateDropdownPosition();
       };
@@ -96,14 +94,12 @@ const CustomSelect = ({
       window.addEventListener('scroll', handleScroll, true);
       window.addEventListener('resize', updateDropdownPosition);
       
-      // Auto focus search if searchable
       if (searchable && searchInputRef.current) {
         setTimeout(() => {
           searchInputRef.current.focus();
         }, 50);
       }
       
-      // Reset highlight to selected item or first item
       const selectedIdx = flatOptions.findIndex(opt => getOptionValue(opt) === value);
       setHighlightedIndex(selectedIdx !== -1 ? selectedIdx : 0);
       
@@ -116,7 +112,6 @@ const CustomSelect = ({
     }
   }, [isOpen, updateDropdownPosition, searchable, value, flatOptions]);
 
-  // Handle clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (
@@ -207,7 +202,7 @@ const CustomSelect = ({
   const renderOptionItem = (opt, index = -1, isGroup = false) => {
     if (isGroup) {
       return (
-        <div key={`group-${opt.label}`} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50/50">
+        <div key={`group-${opt.label}`} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-text-muted bg-slate-50/50">
           {opt.label}
         </div>
       );
@@ -230,15 +225,15 @@ const CustomSelect = ({
           handleSelect(opt);
         }}
         className={`w-full flex items-center justify-between text-left px-4 min-h-[44px] py-2 text-xs sm:text-sm font-medium transition-colors outline-none
-          ${opt.disabled ? 'opacity-50 cursor-not-allowed text-slate-400' : 'cursor-pointer'}
-          ${isSelected ? 'bg-[#7C3AED]/10 text-[#7C3AED] dark:bg-[#7C3AED]/20 dark:text-purple-300 font-bold' : 'text-slate-700 dark:text-slate-200 hover:bg-[#7C3AED]/5 dark:hover:bg-slate-800/80 hover:text-[#6D28D9]'}
-          ${isHighlighted && !isSelected ? 'bg-[#7C3AED]/5 dark:bg-slate-800/60 text-[#6D28D9] dark:text-purple-300' : ''}
+          ${opt.disabled ? 'opacity-50 cursor-not-allowed text-text-muted' : 'cursor-pointer'}
+          ${isSelected ? 'bg-brand/10 text-brand font-bold' : 'text-text-primary hover:bg-brand/5/80 hover:text-brand-dark'}
+          ${isHighlighted && !isSelected ? 'bg-brand/5 text-brand-dark' : ''}
         `}
       >
         <span className="truncate pr-4">
           {optionRenderer ? optionRenderer(opt) : getOptionLabel(opt)}
         </span>
-        {isSelected && <Check className="w-4 h-4 shrink-0 text-[#7C3AED]" />}
+        {isSelected && <Check className="w-4 h-4 shrink-0 text-brand" />}
       </button>
     );
   };
@@ -257,18 +252,18 @@ const CustomSelect = ({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         onKeyDown={handleKeyDown}
         className={`
-          w-full flex items-center justify-between text-left h-[44px] pl-4 pr-4 bg-white dark:bg-slate-800/90 border rounded-xl text-xs sm:text-sm font-bold outline-none transition-all shadow-xs group focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20
-          ${disabled || loading ? 'opacity-60 cursor-not-allowed bg-slate-50 dark:bg-slate-900' : 'hover:border-[#C4B5FD] dark:hover:border-slate-600'}
-          ${isOpen ? 'border-[#7C3AED] ring-2 ring-[#7C3AED]/20 bg-white dark:bg-slate-800' : error ? 'border-red-300 dark:border-red-800' : 'border-slate-200 dark:border-slate-700/80 bg-slate-50/70 dark:bg-slate-800/50'}
+          w-full flex items-center justify-between text-left h-[44px] pl-4 pr-4 bg-white border rounded-xl text-xs sm:text-sm font-bold outline-none transition-all shadow-xs group focus:border-brand focus:ring-2 focus:ring-brand/20
+          ${disabled || loading ? 'opacity-60 cursor-not-allowed bg-slate-50' : 'hover:border-brand-300'}
+          ${isOpen ? 'border-brand ring-2 ring-brand/20 bg-white' : error ? 'border-red-300' : 'border-slate-200 bg-slate-50/70'}
         `}
       >
         <div className="flex items-center gap-3 min-w-0 truncate">
           {icon && (
-            <div className={`shrink-0 transition-colors ${isOpen ? 'text-[#7C3AED]' : (value !== "" && value !== undefined && value !== null) ? 'text-slate-700 dark:text-slate-300' : 'text-slate-500'}`}>
+            <div className={`shrink-0 transition-colors ${isOpen ? 'text-brand' : (value !== "" && value !== undefined && value !== null) ? 'text-text-primary' : 'text-text-muted'}`}>
               {icon}
             </div>
           )}
-          <span className={`truncate ${(value !== "" && value !== undefined && value !== null) ? 'text-slate-900 dark:text-slate-100' : 'text-slate-500 font-semibold'}`}>
+          <span className={`truncate ${(value !== "" && value !== undefined && value !== null) ? 'text-text-primary' : 'text-text-muted font-semibold'}`}>
             {loading ? 'Loading...' : displayLabel}
           </span>
         </div>
@@ -278,19 +273,19 @@ const CustomSelect = ({
             <div 
               role="button"
               tabIndex={0}
-              className="p-1 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-1 text-text-muted hover:text-text-secondary rounded-full hover:bg-background transition-colors"
               onClick={handleClear}
               onKeyDown={(e) => { if(e.key === 'Enter' || e.key === ' ') handleClear(e); }}
             >
               <X className="w-4 h-4" />
             </div>
           )}
-          <ChevronDown className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180 text-[#7C3AED]' : ''}`} />
+          <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-200 ${isOpen ? 'rotate-180 text-brand' : ''}`} />
         </div>
       </button>
 
       {error && <p className="mt-1.5 px-1 text-[10px] font-bold text-red-500">{error}</p>}
-      {helperText && !error && <p className="mt-1.5 px-1 text-[10px] font-bold text-slate-500">{helperText}</p>}
+      {helperText && !error && <p className="mt-1.5 px-1 text-[10px] font-bold text-text-muted">{helperText}</p>}
 
       {typeof window !== 'undefined' && createPortal(
         <AnimatePresence>
@@ -303,18 +298,18 @@ const CustomSelect = ({
               exit={{ opacity: 0, scale: 0.95, y: direction === "down" ? -10 : 10 }}
               transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
               style={dropdownStyle}
-              className={`bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl shadow-xl overflow-hidden flex flex-col ${dropdownClassName}`}
+              className={`bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col ${dropdownClassName}`}
               role="listbox"
               onKeyDown={handleKeyDown}
             >
               {searchable && (
-                <div className="p-2 border-b border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 sticky top-0 z-10">
+                <div className="p-2 border-b border-slate-100 bg-white sticky top-0 z-10">
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
                     <input
                       ref={searchInputRef}
                       type="text"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-800 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-[#7C3AED]/20 text-slate-800 dark:text-slate-100"
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand/20 text-text-primary"
                       placeholder="Search..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
@@ -332,7 +327,7 @@ const CustomSelect = ({
               <div className="overflow-y-auto py-1 overscroll-contain flex-1 min-h-0">
 
                 {filteredOptions.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-sm text-slate-500">
+                  <div className="px-4 py-6 text-center text-sm text-text-muted">
                     No options found
                   </div>
                 ) : (

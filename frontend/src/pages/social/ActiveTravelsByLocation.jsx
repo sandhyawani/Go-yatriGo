@@ -13,7 +13,7 @@ const DestinationSkeleton = () => (
     {[1, 2, 3, 4].map((i) => (
       <div
         key={i}
-        className="shrink-0 w-36 h-20 rounded-2xl bg-slate-100 border border-slate-100"
+        className="shrink-0 w-36 h-20 rounded-2xl bg-background border border-slate-100"
       />
     ))}
   </div>
@@ -24,11 +24,11 @@ const TripSkeleton = () => (
     {[1, 2, 3].map((i) => (
       <div
         key={i}
-        className="bg-white rounded-[24px] border border-slate-100 overflow-hidden"
+        className="bg-surface rounded-[var(--radius-card)] border border-slate-100 overflow-hidden"
       >
-        <div className="h-48 bg-slate-100" />
+        <div className="h-48 bg-background" />
         <div className="p-5 space-y-3">
-          <div className="h-4 bg-slate-100 rounded w-3/4" />
+          <div className="h-4 bg-background rounded w-3/4" />
           <div className="h-3 bg-slate-50 rounded w-1/2" />
           <div className="h-3 bg-slate-50 rounded w-1/3" />
         </div>
@@ -322,21 +322,21 @@ const ActiveTravelsByLocation = () => {
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
             onClick={() => navigate(-1)}
-            className="w-9 h-9 rounded-full bg-slate-50 hover:bg-slate-100 flex items-center justify-center transition-colors shrink-0"
+            className="w-9 h-9 rounded-full bg-slate-50 hover:bg-background flex items-center justify-center transition-colors shrink-0"
           >
-            <ChevronLeft className="w-5 h-5 text-slate-600" />
+            <ChevronLeft className="w-5 h-5 text-text-secondary" />
           </button>
           <div className="flex-1 min-w-0">
-            <h1 className="text-base font-black text-slate-800 tracking-tight">
+            <h1 className="text-base font-black text-text-primary tracking-tight">
               Active Travels
             </h1>
-            <p className="text-[11px] font-semibold text-slate-400 truncate">
+            <p className="text-[11px] font-semibold text-text-muted truncate">
               Discover where travelers are heading
             </p>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {summary && !loading && (
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
+              <span className="text-[10px] font-bold text-text-muted bg-slate-50 px-2.5 py-1 rounded-full border border-slate-100">
                 {summary.totalTrips} {summary.totalTrips === 1 ? "trip" : "trips"}
               </span>
             )}
@@ -355,8 +355,8 @@ const ActiveTravelsByLocation = () => {
                 onClick={btn.onClick}
                 className={`snap-start flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 shrink-0 ${
                   btn.isActive
-                    ? "bg-brand-600 text-white shadow-sm"
-                    : "bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:bg-brand-50"
+                    ? "bg-brand text-white shadow-sm"
+                    : "bg-white text-text-secondary border border-slate-200 hover:border-brand-200 hover:bg-brand-50"
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -372,8 +372,8 @@ const ActiveTravelsByLocation = () => {
               className={`snap-start flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 ${
                 (urlScope === "city" && urlCity && urlCity !== user?.city) ||
                 (urlScope === "state" && urlState && urlState !== user?.state)
-                  ? "bg-brand-600 text-white shadow-sm"
-                  : "bg-white text-slate-600 border border-slate-200 hover:border-brand-200 hover:bg-brand-50"
+                  ? "bg-brand text-white shadow-sm"
+                  : "bg-white text-text-secondary border border-slate-200 hover:border-brand-200 hover:bg-brand-50"
               }`}
             >
               <Search className="w-3.5 h-3.5" />
@@ -393,23 +393,23 @@ const ActiveTravelsByLocation = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full mt-2 right-0 z-50 w-72 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 space-y-3"
+                  className="absolute top-full mt-2 right-0 z-50 w-72 bg-surface rounded-[var(--radius-card)] shadow-2xl border border-slate-200 p-4 space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                    <span className="text-xs font-black text-text-secondary uppercase tracking-wider">
                       Select Location
                     </span>
                     <button
                       onClick={() => setShowLocationPicker(false)}
-                      className="p-1 rounded-full hover:bg-slate-100"
+                      className="p-1 rounded-full hover:bg-background"
                     >
-                      <X className="w-3.5 h-3.5 text-slate-400" />
+                      <X className="w-3.5 h-3.5 text-text-muted" />
                     </button>
                   </div>
 
                   {/* State search */}
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
                     <input
                       type="text"
                       value={stateSearch}
@@ -419,7 +419,7 @@ const ActiveTravelsByLocation = () => {
                         setCustomCity("");
                       }}
                       placeholder="Search state..."
-                      className="w-full pl-9 pr-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400"
+                      className="input-field !pl-9"
                     />
                   </div>
 
@@ -434,22 +434,22 @@ const ActiveTravelsByLocation = () => {
                         }}
                         className={`w-full text-left px-3 py-2 text-xs font-semibold rounded-lg transition-colors ${
                           customState === st
-                            ? "bg-brand-50 text-brand-700 border border-brand-200"
-                            : "text-slate-600 hover:bg-slate-50"
+                            ? "bg-brand-50 text-brand-dark border border-brand-200"
+                            : "text-text-secondary hover"
                         }`}
                       >
                         {st}
                       </button>
                     ))}
                     {filteredStates.length === 0 && (
-                      <p className="text-[11px] text-slate-400 text-center py-2">No states found</p>
+                      <p className="text-[11px] text-text-muted text-center py-2">No states found</p>
                     )}
                   </div>
 
                   {/* City list */}
                   {customState && citiesForState.length > 0 && (
                     <>
-                      <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                      <div className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
                         Cities in {customState}
                       </div>
                       <div className="max-h-28 overflow-y-auto space-y-1 scrollbar-none">
@@ -459,8 +459,8 @@ const ActiveTravelsByLocation = () => {
                             onClick={() => setCustomCity(ct)}
                             className={`w-full text-left px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
                               customCity === ct
-                                ? "bg-brand-50 text-brand-700 border border-brand-200"
-                                : "text-slate-600 hover:bg-slate-50"
+                                ? "bg-brand-50 text-brand-dark border border-brand-200"
+                                : "text-text-secondary hover"
                             }`}
                           >
                             {ct}
@@ -479,7 +479,7 @@ const ActiveTravelsByLocation = () => {
                           setCustomState("");
                           setStateSearch("");
                         }}
-                        className="flex-1 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl py-2 transition-colors"
+                        className="flex-1 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-xl py-2 transition-colors"
                       >
                         All {customState}
                       </button>
@@ -487,7 +487,7 @@ const ActiveTravelsByLocation = () => {
                     {customCity && customState && (
                       <button
                         onClick={handleCustomLocationSelect}
-                        className="flex-1 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl py-2 transition-colors"
+                        className="flex-1 text-xs font-bold text-white bg-brand hover:bg-brand-dark rounded-xl py-2 transition-colors"
                       >
                         {customCity}, {customState}
                       </button>
@@ -502,10 +502,10 @@ const ActiveTravelsByLocation = () => {
         {/* Current filter indicator */}
         <div className="flex items-center gap-2 mb-4">
           <MapPin className="w-3.5 h-3.5 text-brand-500" />
-          <span className="text-xs font-bold text-slate-500">
+          <span className="text-xs font-bold text-text-muted">
             Showing travels {urlScope === "all" ? "everywhere" : `in `}
             {urlScope !== "all" && (
-              <span className="text-slate-800">{activeFilterLabel}</span>
+              <span className="text-text-primary">{activeFilterLabel}</span>
             )}
           </span>
         </div>
@@ -524,13 +524,13 @@ const ActiveTravelsByLocation = () => {
             <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mb-4">
               <AlertCircle className="w-7 h-7 text-rose-500" />
             </div>
-            <h3 className="text-sm font-bold text-slate-700 mb-1">
+            <h3 className="text-sm font-bold text-text-primary mb-1">
               Something went wrong
             </h3>
-            <p className="text-xs text-slate-500 mb-4 max-w-xs">{error}</p>
+            <p className="text-xs text-text-muted mb-4 max-w-xs">{error}</p>
             <button
               onClick={fetchActiveTrips}
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-brand bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               Retry
@@ -541,15 +541,15 @@ const ActiveTravelsByLocation = () => {
         {/* ── Empty state ── */}
         {!loading && !error && trips.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
-            <div className="w-14 h-14 rounded-full bg-slate-100 flex items-center justify-center mb-4">
-              <Compass className="w-7 h-7 text-slate-400" />
+            <div className="w-14 h-14 rounded-full bg-background flex items-center justify-center mb-4">
+              <Compass className="w-7 h-7 text-text-muted" />
             </div>
-            <h3 className="text-sm font-bold text-slate-700 mb-1">
+            <h3 className="text-sm font-bold text-text-primary mb-1">
               {urlScope === "all"
                 ? "No active travels available right now"
                 : `No upcoming travels from ${activeFilterLabel} yet`}
             </h3>
-            <p className="text-xs text-slate-500 mb-4 max-w-xs">
+            <p className="text-xs text-text-muted mb-4 max-w-xs">
               {urlScope !== "all"
                 ? "Try exploring everywhere or select a different location."
                 : "Check back later — new travel plans are created every day!"}
@@ -557,7 +557,7 @@ const ActiveTravelsByLocation = () => {
             {urlScope !== "all" && (
               <button
                 onClick={handleEverywhere}
-                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-brand bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors"
               >
                 <Globe className="w-3.5 h-3.5" />
                 Explore Everywhere
@@ -571,7 +571,7 @@ const ActiveTravelsByLocation = () => {
           <div className="space-y-6">
             {/* Destination summary cards */}
             <div>
-              <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
+              <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
                 <Compass className="w-3.5 h-3.5 text-brand-500" />
                 Destinations
               </h2>
@@ -587,20 +587,20 @@ const ActiveTravelsByLocation = () => {
                       }
                       className={`snap-start shrink-0 flex flex-col items-start px-4 py-3 rounded-2xl border transition-all duration-200 min-w-[140px] ${
                         isActive
-                          ? "bg-brand-600 text-white border-brand-600 shadow-md shadow-brand-600/20"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-brand-200 hover:shadow-sm"
+                          ? "bg-brand text-white border-brand shadow-md shadow-brand-600/20"
+                          : "bg-white text-text-primary border-slate-200 hover:border-brand-200 hover:shadow-sm"
                       }`}
                     >
                       <span
                         className={`text-sm font-black leading-tight truncate max-w-full ${
-                          isActive ? "text-white" : "text-slate-800"
+                          isActive ? "text-white" : "text-text-primary"
                         }`}
                       >
                         {group.destination}
                       </span>
                       <span
                         className={`text-[11px] font-bold mt-1 ${
-                          isActive ? "text-white/80" : "text-slate-400"
+                          isActive ? "text-white/80" : "text-text-muted"
                         }`}
                       >
                         {group.tripCount}{" "}
@@ -623,17 +623,17 @@ const ActiveTravelsByLocation = () => {
                   transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
                 >
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-xs font-black text-slate-700 flex items-center gap-2">
+                    <h3 className="text-xs font-black text-text-primary flex items-center gap-2">
                       <MapPin className="w-3.5 h-3.5 text-brand-500" />
                       {expandedDest}
-                      <span className="text-slate-400 font-bold">
+                      <span className="text-text-muted font-bold">
                         · {tripsForDestination.length}{" "}
                         {tripsForDestination.length === 1 ? "trip" : "trips"}
                       </span>
                     </h3>
                     <button
                       onClick={() => setExpandedDest(null)}
-                      className="text-[11px] font-bold text-slate-400 hover:text-slate-600 transition-colors"
+                      className="text-[11px] font-bold text-text-muted hover:text-text-secondary transition-colors"
                     >
                       Close
                     </button>
@@ -655,7 +655,7 @@ const ActiveTravelsByLocation = () => {
             {/* All trips when no destination is selected */}
             {!expandedDest && (
               <div>
-                <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
+                <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
                   <MapPin className="w-3.5 h-3.5 text-brand-500" />
                   All Trips
                 </h2>

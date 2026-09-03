@@ -9,71 +9,71 @@ import {
 const STATUS_CONFIG = {
   upcoming: {
     className:
-      "bg-brand-50 text-brand-700 border-brand-200 " +
-      "dark:bg-brand-950/40 dark:text-brand-400 dark:border-brand-800/50",
+      "bg-sky-50 text-sky-800 border-sky-200/80 " +
+      "dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800",
     icon: Clock,
     label: "Upcoming",
   },
 
   ongoing: {
     className:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 " +
-      "dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50",
+      "bg-cyan-50 text-cyan-900 border-cyan-200/80 " +
+      "dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800",
     icon: Navigation,
     label: "Ongoing",
   },
 
   active: {
     className:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 " +
-      "dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50",
+      "bg-cyan-50 text-cyan-900 border-cyan-200/80 " +
+      "dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800",
     icon: Navigation,
     label: "Ongoing",
   },
 
   open: {
     className:
-      "bg-emerald-50 text-emerald-700 border-emerald-200 " +
-      "dark:bg-emerald-950/40 dark:text-emerald-400 dark:border-emerald-800/50",
+      "bg-cyan-50 text-cyan-900 border-cyan-200/80 " +
+      "dark:bg-cyan-950/40 dark:text-cyan-300 dark:border-cyan-800",
     icon: Navigation,
     label: "Open",
   },
 
   planning: {
     className:
-      "bg-amber-50 text-amber-700 border-amber-200 " +
-      "dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50",
+      "bg-slate-100 text-slate-700 border-slate-200 " +
+      "dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700",
     icon: Clock,
     label: "Planning",
   },
 
   pending: {
     className:
-      "bg-amber-50 text-amber-700 border-amber-200 " +
-      "dark:bg-amber-950/40 dark:text-amber-400 dark:border-amber-800/50",
+      "bg-sky-50 text-sky-800 border-sky-200/80 " +
+      "dark:bg-sky-950/40 dark:text-sky-300 dark:border-sky-800",
     icon: Clock,
     label: "Pending",
   },
 
   completed: {
     className:
-      "bg-slate-100 text-slate-700 border-slate-200 " +
-      "dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
+      "bg-slate-50 text-slate-700 border-slate-200 " +
+      "dark:bg-slate-800/80 dark:text-slate-300 dark:border-slate-700",
     icon: CheckCircle2,
     label: "Completed",
   },
 
   cancelled: {
     className:
-      "bg-rose-50 text-rose-700 border-rose-200 " +
-      "dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50",
+      "bg-rose-50/80 text-rose-700 border-rose-200/80 " +
+      "dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",
     icon: XCircle,
     label: "Cancelled",
   },
   canceled: {
     className:
-      "bg-rose-50 text-rose-700 border-rose-200 " +
-      "dark:bg-rose-950/40 dark:text-rose-400 dark:border-rose-800/50",
+      "bg-rose-50/80 text-rose-700 border-rose-200/80 " +
+      "dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800",
     icon: XCircle,
     label: "Cancelled",
   },
@@ -81,8 +81,8 @@ const STATUS_CONFIG = {
 
 const DEFAULT_STATUS = {
   className:
-    "bg-slate-100 text-slate-700 border-slate-200 " +
-    "dark:bg-slate-800/60 dark:text-slate-300 dark:border-slate-700",
+    "bg-background text-text-primary border-slate-200 " +
+    "dark/60",
   icon: null,
   label: "Unknown",
 };

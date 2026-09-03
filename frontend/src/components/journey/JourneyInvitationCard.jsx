@@ -71,55 +71,72 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
   const isExpiringSoon = !isExpired && daysLeft <= 2 && daysLeft > 0;
 
   return (
-    <div className="bg-white dark:bg-slate-900 rounded-2xl p-4 border border-slate-200/80 dark:border-slate-800 shadow-xs hover:border-[#7C3AED]/40 transition-all space-y-3 relative overflow-hidden group animate-fade-in">
+    <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-brand/40 transition-all space-y-3 relative overflow-hidden group animate-fade-in">
       {/* Header Row */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <img
-            src={
-              organizer.profilePic ||
-              `https://ui-avatars.com/api/?name=${encodeURIComponent(organizer.name || "Host")}&background=8b5cf6&color=fff&bold=true`
-            }
-            alt={organizer.name}
-            className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200 dark:ring-slate-700"
-          />
+        {(() => {
+          const organizerId =
+            organizer._id ||
+            organizer.id ||
+            (typeof organizer === "string" ? organizer : null);
+          return (
+            <div
+              onClick={() => {
+                if (organizerId) navigate(`/profile/${organizerId}`);
+              }}
+              className={`flex items-center gap-2 min-w-0 ${
+                organizerId ? "cursor-pointer group/org transition-opacity hover:opacity-90" : ""
+              }`}
+            >
+              <img
+                src={
+                  organizer.profilePic ||
+                  `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                    organizer.name || "Host"
+                  )}&background=0284c7&color=fff&bold=true`
+                }
+                alt={organizer.name}
+                className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200 group-hover/org:ring-brand"
+              />
 
-          <p className="text-xs text-slate-600 dark:text-slate-300 truncate m-0">
-            <span className="font-bold text-slate-900 dark:text-white mr-1">
-              {organizer.name || "A traveler"}
-            </span>
-            invited you to join
-          </p>
-        </div>
+              <p className="text-xs text-text-secondary truncate m-0">
+                <span className="font-bold text-text-primary mr-1 group-hover/org:text-brand transition-colors">
+                  {organizer.name || "A traveler"}
+                </span>
+                invited you to join
+              </p>
+            </div>
+          );
+        })()}
         {isAccepted ? (
-          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/30">
-            <Check className="w-2.5 h-2.5 stroke-[3]" /> Accepted
+          <span className="text-[10px] font-bold text-sky-800 flex items-center gap-1 shrink-0 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200/80">
+            <Check className="w-2.5 h-2.5 stroke-[3] text-sky-600" /> Accepted
           </span>
         ) : isDeclined ? (
-          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1 shrink-0 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200 dark:border-slate-700">
+          <span className="text-[10px] font-bold text-text-secondary flex items-center gap-1 shrink-0 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/80">
             Declined
           </span>
         ) : isOngoing ? (
-          <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1 shrink-0 bg-emerald-50 dark:bg-emerald-950/20 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-900/30">
-            <Clock className="w-2.5 h-2.5 text-emerald-500" /> In Progress (Locked)
+          <span className="text-[10px] font-bold text-cyan-900 flex items-center gap-1 shrink-0 bg-cyan-50 px-2 py-0.5 rounded-full border border-cyan-200/80">
+            <Clock className="w-2.5 h-2.5 text-cyan-600" /> In Progress
           </span>
         ) : isExpired ? (
-          <span className="text-[10px] font-bold text-rose-700 dark:text-rose-400 flex items-center gap-1 shrink-0 bg-rose-50 dark:bg-rose-950/20 px-2 py-0.5 rounded-full border border-rose-200 dark:border-rose-900/30">
+          <span className="text-[10px] font-bold text-rose-700 flex items-center gap-1 shrink-0 bg-rose-50/80 px-2 py-0.5 rounded-full border border-rose-200/80">
             <Clock className="w-2.5 h-2.5 text-rose-500" /> Expired
           </span>
         ) : isExpiringSoon ? (
-          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 flex items-center gap-1 shrink-0 bg-amber-50 dark:bg-amber-950/20 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-900/30">
-            <Clock className="w-2.5 h-2.5 text-amber-500" /> {daysLeft}d left
+          <span className="text-[10px] font-bold text-sky-800 flex items-center gap-1 shrink-0 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200/80">
+            <Clock className="w-2.5 h-2.5 text-sky-600" /> {daysLeft}d left
           </span>
         ) : (
-          <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1 shrink-0 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full border border-slate-200/60 dark:border-slate-700/60">
-            <Clock className="w-2.5 h-2.5 text-slate-400" /> {daysLeft === Infinity ? "No expiry" : daysLeft > 0 ? `${daysLeft}d left` : "Ending soon"}
+          <span className="text-[10px] font-bold text-text-secondary flex items-center gap-1 shrink-0 bg-slate-50 px-2 py-0.5 rounded-full border border-slate-200/70">
+            <Clock className="w-2.5 h-2.5 text-text-muted" /> {daysLeft === Infinity ? "No expiry" : daysLeft > 0 ? `${daysLeft}d left` : "Ending soon"}
           </span>
         )}
       </div>
 
       {/* Trip Info Preview */}
-      <div className="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/40 p-2.5 rounded-xl border border-slate-200/70 dark:border-slate-700/60 transition-colors group-hover:bg-slate-100/70 dark:group-hover:bg-slate-800">
+      <div className="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 transition-colors group-hover:bg-background/70">
         <img
           src={
             journey.coverImage ||
@@ -131,23 +148,23 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
 
         <div className="min-w-0 flex-1">
           <div className="flex items-center justify-between gap-1">
-            <h4 className="text-sm font-extrabold text-slate-900 dark:text-white truncate m-0 group-hover:text-[#7C3AED] transition-colors">
+            <h4 className="text-sm font-extrabold text-text-primary truncate m-0 group-hover:text-brand transition-colors">
               {journey.title || "Secret Trip"}
             </h4>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 uppercase tracking-wider shrink-0">
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-background text-text-primary border border-slate-200/60 uppercase tracking-wider shrink-0">
               {journey.journeyType || "Travel Group"}
             </span>
           </div>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500 dark:text-slate-400 truncate">
-            <span className="flex items-center gap-1 truncate font-semibold text-slate-700 dark:text-slate-300">
-              <MapPin className="w-3 h-3 text-[#FF5A7A] shrink-0" />{" "}
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-text-muted truncate">
+            <span className="flex items-center gap-1 truncate font-semibold text-text-primary">
+              <MapPin className="w-3 h-3 text-rose-500 shrink-0" />{" "}
               {journey.destination || "Anywhere"}
             </span>
             {journey.startDate && (
               <>
                 <span>•</span>
-                <span className="flex items-center gap-1 shrink-0 text-slate-500 dark:text-slate-400">
-                  <Calendar className="w-3 h-3 text-slate-400 dark:text-slate-500" />
+                <span className="flex items-center gap-1 shrink-0 text-text-muted">
+                  <Calendar className="w-3 h-3 text-text-muted" />
                   {new Date(journey.startDate).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric"
@@ -164,21 +181,21 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         {isAccepted ? (
           <Link
             to={`/social/journeys/${journey._id}`}
-            className="flex-1 py-2 px-3 rounded-xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition-all"
+            className="flex-1 py-2 px-3 rounded-xl bg-brand hover:bg-brand text-white text-xs font-semibold shadow-sm flex items-center justify-center gap-1.5 transition-all"
           >
             <span>Open Journey</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         ) : isDeclined ? (
-          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 text-xs font-semibold text-center select-none border border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 text-text-muted text-xs font-semibold text-center select-none border border-slate-200/50">
             Invitation Declined
           </div>
         ) : isOngoing ? (
-          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-slate-500 dark:text-slate-400 text-xs font-semibold text-center select-none border border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 text-text-muted text-xs font-semibold text-center select-none border border-slate-200/50">
             Journey in Progress (Roster Locked)
           </div>
         ) : isExpired ? (
-          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 text-slate-400 dark:text-slate-500 text-xs font-semibold text-center select-none border border-slate-200/50 dark:border-slate-700/50">
+          <div className="flex-1 py-2 px-3 rounded-xl bg-slate-50 text-text-muted text-xs font-semibold text-center select-none border border-slate-200/50">
             Invitation Expired
           </div>
         ) : (
@@ -187,7 +204,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
               type="button"
               onClick={handleAccept}
               disabled={loadingAction !== null}
-              className="flex-1 py-2 px-3 rounded-xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-semibold shadow-sm shadow-[#7C3AED]/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
+              className="flex-1 py-2 px-3 rounded-xl bg-brand hover:bg-brand text-white text-xs font-semibold shadow-sm shadow-brand/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
             >
               {loadingAction === "accept" ? (
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -202,7 +219,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
               type="button"
               onClick={handleDecline}
               disabled={loadingAction !== null}
-              className="flex-1 py-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60 text-xs font-semibold transition-all disabled:opacity-50 whitespace-nowrap flex items-center justify-center"
+              className="flex-1 py-2 px-3 rounded-xl bg-background hover text-text-primary border border-slate-200/60 text-xs font-semibold transition-all disabled:opacity-50 whitespace-nowrap flex items-center justify-center"
             >
               {loadingAction === "decline" ? "..." : "Decline"}
             </button>
@@ -212,7 +229,7 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         {journey._id && !isAccepted && (
           <Link
             to={`/social/journeys/${journey._id}`}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0 flex items-center justify-center border border-slate-200/60 dark:border-slate-800"
+            className="p-2 rounded-xl text-text-muted hover:text-text-primary hover:bg-background transition-colors shrink-0 flex items-center justify-center border border-slate-200/60"
             title="Preview Hub"
           >
             <ArrowRight className="w-4 h-4" />

@@ -1,12 +1,7 @@
 import React from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 
-/**
- * TripOverlapConflictBanner
- * 
- * An inline, always-visible, non-hover-dependent alert banner rendered on
- * trip/journey detail pages when an active or upcoming overlap conflict exists.
- */
+// Banner displayed on trip details when an overlap conflict exists
 const TripOverlapConflictBanner = ({
   conflictType = "ACTIVE_JOURNEY_CONFLICT",
   onOpenDetails,
@@ -24,18 +19,18 @@ const TripOverlapConflictBanner = ({
 
   return (
     <div
-      className="w-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-fade-in"
+      className="w-full bg-amber-50 border border-amber-200 p-3.5 sm:p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs animate-fade-in"
       role="alert"
     >
       <div className="flex items-start gap-3 min-w-0 flex-1">
-        <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-900/50 flex items-center justify-center text-amber-600 dark:text-amber-400 shrink-0 mt-0.5 sm:mt-0">
+        <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0 mt-0.5 sm:mt-0">
           <AlertTriangle className="w-4 h-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <h4 className="font-black text-xs sm:text-sm text-amber-950 dark:text-amber-200 m-0 leading-snug">
+          <h4 className="font-black text-xs sm:text-sm text-amber-950 m-0 leading-snug">
             {title}
           </h4>
-          <p className="text-[11px] sm:text-xs text-amber-900/90 dark:text-amber-300/90 font-medium m-0 mt-0.5 leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-amber-900/90 font-medium m-0 mt-0.5 leading-relaxed">
             {message}
           </p>
         </div>

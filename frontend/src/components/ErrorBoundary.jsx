@@ -23,22 +23,22 @@ class ErrorBoundary extends React.Component {
             <div className="w-20 h-20 bg-rose-50 text-rose-500 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-inner">
               <AlertCircle className="w-10 h-10" />
             </div>
-            <h2 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">Something went wrong</h2>
-            <p className="text-slate-500 font-medium mb-10 leading-relaxed italic">
+            <h2 className="text-2xl font-black text-text-primary mb-4 tracking-tight">Something went wrong</h2>
+            <p className="text-text-muted font-medium mb-10 leading-relaxed italic">
               Our system encountered an unexpected error. Don't worry, your data is safe.
             </p>
             
             <div className="space-y-4">
               <button
               onClick={() => window.location.reload()}
-              className="w-full py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-black transition-all shadow-xl shadow-slate-900/10">
+              className="w-full py-4 bg-brand text-white rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-black transition-all shadow-xl shadow-slate-900/10">
 
                 <RefreshCcw className="w-4 h-4" />
                 Reload Application
               </button>
               <button
               onClick={() => window.location.href = '/'}
-              className="w-full py-4 bg-white text-slate-900 border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover:bg-slate-50 transition-all">
+              className="w-full py-4 bg-white text-text-primary border border-slate-200 rounded-2xl font-black uppercase tracking-widest text-xs flex items-center justify-center gap-3 hover transition-all">
 
                 <Home className="w-4 h-4" />
                 Back to Safety

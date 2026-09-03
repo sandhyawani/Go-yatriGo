@@ -34,9 +34,8 @@ const CreatorGroup = ({ authorId, groupData }) => {
     initial={{ opacity: 0, y: 20 }}
     animate={{ opacity: 1, y: 0 }}
     exit={{ opacity: 0, y: -20 }}
-    className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-3 sm:p-4 hover:shadow-[0_8px_30px_rgba(124,58,237,0.08)] transition-all duration-300">
+    className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/50 shadow-[0_4px_20px_rgba(0,0,0,0.05)] p-3 sm:p-4 hover:shadow-[0_8px_30px_rgba(2,132,199,0.08)] transition-all duration-300">
 
-      {}
       <div className="flex items-center justify-between mb-3 gap-2">
         <div className="flex items-center gap-2.5 min-w-0">
           <img
@@ -45,9 +44,9 @@ const CreatorGroup = ({ authorId, groupData }) => {
           className="w-9 h-9 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-brand-100 shadow-sm shrink-0" />
 
           <div className="min-w-0 flex-1">
-            <h3 className="text-sm font-bold text-slate-900 truncate">{authorName}</h3>
-            <p className="text-[11px] text-slate-500 font-medium">
-              <span className="text-brand-600 font-bold">
+            <h3 className="text-sm font-bold text-text-primary truncate">{authorName}</h3>
+            <p className="text-[11px] text-text-muted font-medium">
+              <span className="text-brand font-bold">
                 {groupData.items.length}
               </span>{" "}
               memories felt by you
@@ -56,13 +55,12 @@ const CreatorGroup = ({ authorId, groupData }) => {
         </div>
         <button
         onClick={() => navigate(`/profile/${authorId}`)}
-        className="px-3 py-1.5 bg-slate-100/80 hover:bg-brand-50 text-slate-700 hover:text-brand-700 text-[11px] font-bold rounded-lg transition-colors border border-slate-200/80 hover:border-brand-200 shrink-0">
+        className="px-3 py-1.5 bg-background/80 hover:bg-brand-50 text-text-primary hover:text-brand-dark text-[11px] font-bold rounded-lg transition-colors border border-slate-200/80 hover:border-brand-200 shrink-0">
 
           View Profile
         </button>
       </div>
 
-      {}
       <div className="grid grid-cols-2 gap-2 sm:flex sm:gap-3 sm:overflow-x-auto sm:pb-2 sm:scrollbar-hide sm:snap-x">
         <AnimatePresence mode="popLayout">
           {displayItems.map((item) =>
@@ -79,11 +77,11 @@ const CreatorGroup = ({ authorId, groupData }) => {
           className="w-full sm:w-[180px] h-[180px] sm:h-[220px] rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 hover:bg-brand-50 hover:border-brand-300 transition-all flex flex-col items-center justify-center cursor-pointer shrink-0 group p-2 text-center sm:snap-start">
 
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white shadow-sm flex items-center justify-center mb-2 group-hover:scale-110 group-hover:shadow-md transition-all">
-                <span className="text-brand-600 font-bold text-base sm:text-lg">
+                <span className="text-brand font-bold text-base sm:text-lg">
                   +{remainingCount}
                 </span>
               </div>
-              <span className="text-[11px] font-bold text-slate-600 group-hover:text-brand-700 transition-colors">
+              <span className="text-[11px] font-bold text-text-secondary group-hover:text-brand-dark transition-colors">
                 View All
               </span>
             </motion.div>}
@@ -198,44 +196,41 @@ const FeltVibes = () => {
   }, [feltVibes]);
 
   return (
-    <div className="bg-[#FAFAFA] text-[#1E293B] min-h-[100dvh] pb-20 pt-2 md:pt-4 md:pb-24 font-sans antialiased relative z-0">
-      {}
+    <div className="bg-background text-text-primary min-h-[100dvh] pb-20 pt-2 md:pt-4 md:pb-24 font-sans antialiased relative z-0">
       <div className="fixed top-0 left-0 w-full h-[500px] bg-gradient-to-br from-brand-100/40 via-brand-50/40 to-transparent -z-10 pointer-events-none" />
       <div className="fixed top-[-10%] right-[-5%] w-[400px] h-[400px] bg-brand-400/10 blur-[100px] rounded-full -z-10 pointer-events-none" />
 
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 relative z-10">
-        {}
         <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-5 gap-3">
           <div>
-            <h1 className="text-2xl font-extrabold text-slate-900 flex items-center gap-2">
+            <h1 className="text-2xl font-extrabold text-text-primary flex items-center gap-2">
               <span className="text-2xl drop-shadow-sm">✨</span>
               Felt Vibes
             </h1>
-            <p className="text-slate-500 font-medium mt-1 text-sm">
+            <p className="text-text-muted font-medium mt-1 text-sm">
               A curated collection of travel memories and stories that inspired
               you.
             </p>
 
-            {}
-            <div className="flex flex-wrap items-center gap-1.5 mt-3 text-xs font-bold text-slate-600 bg-white/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white/50 shadow-sm w-fit">
+            <div className="flex flex-wrap items-center gap-1.5 mt-3 text-xs font-bold text-text-secondary bg-white/60 backdrop-blur-md px-3 py-2 rounded-xl border border-white/50 shadow-sm w-fit">
               <div className="flex items-center gap-1">
-                <span className="text-brand-600 font-extrabold">{stats.total}</span>
-                <span className="text-slate-500 font-medium">Total</span>
+                <span className="text-brand font-extrabold">{stats.total}</span>
+                <span className="text-text-muted font-medium">Total</span>
               </div>
               <div className="w-px h-3 bg-slate-200"></div>
               <div className="flex items-center gap-1">
                 <span className="text-rose-500 font-extrabold">{stats.memories}</span>
-                <span className="text-slate-500 font-medium">Memories</span>
+                <span className="text-text-muted font-medium">Memories</span>
               </div>
               <div className="w-px h-3 bg-slate-200"></div>
               <div className="flex items-center gap-1">
                 <span className="text-brand-500 font-extrabold">{stats.stories}</span>
-                <span className="text-slate-500 font-medium">Dispatches</span>
+                <span className="text-text-muted font-medium">Dispatches</span>
               </div>
               <div className="w-px h-3 bg-slate-200"></div>
               <div className="flex items-center gap-1">
-                <span className="text-brand-600 font-extrabold">{stats.groups}</span>
-                <span className="text-slate-500 font-medium">Groups</span>
+                <span className="text-brand font-extrabold">{stats.groups}</span>
+                <span className="text-text-muted font-medium">Groups</span>
               </div>
             </div>
           </div>
@@ -247,9 +242,7 @@ const FeltVibes = () => {
           </Link>
         </div>
 
-        {}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          {}
           <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide flex-1">
             {filters.map((filter) => {
               let count = 0;
@@ -278,7 +271,7 @@ const FeltVibes = () => {
                 className={`whitespace-nowrap px-5 py-2.5 rounded-full text-sm font-bold transition-all duration-300 ${
                 activeFilter === filter ?
                 "bg-slate-800 text-white shadow-md shadow-slate-800/20 border-transparent" :
-                "bg-white/80 backdrop-blur-xl border border-slate-200 text-slate-600 hover:bg-white hover:border-slate-300 hover:shadow-sm"
+                "bg-white/80 backdrop-blur-xl border border-slate-200 text-text-secondary hover:bg-white hover hover:shadow-sm"
                 }`}>
 
                   {filter} ({count})
@@ -287,18 +280,17 @@ const FeltVibes = () => {
             })}
           </div>
 
-          {}
           <div className="relative shrink-0 z-20">
             <button
             onClick={() => setIsSortOpen(!isSortOpen)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-700 hover:bg-slate-50 transition-colors shadow-sm w-full sm:w-auto justify-between">
+            className="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-text-primary hover transition-colors shadow-sm w-full sm:w-auto justify-between">
 
               <span className="flex items-center gap-1">
-                <span className="text-slate-400 font-medium">Sort by:</span>{" "}
+                <span className="text-text-muted font-medium">Sort by:</span>{" "}
                 {sortBy}
               </span>
               <ChevronDown
-              className={`w-4 h-4 text-slate-400 transition-transform ${isSortOpen ? "rotate-180" : ""}`} />
+              className={`w-4 h-4 text-text-muted transition-transform ${isSortOpen ? "rotate-180" : ""}`} />
 
             </button>
 
@@ -314,7 +306,7 @@ const FeltVibes = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: 10, scale: 0.95 }}
                 transition={{ duration: 0.15 }}
-                className="absolute right-0 top-full mt-2 w-full sm:w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-40 overflow-hidden">
+                className="absolute right-0 top-full mt-2 w-full sm:w-48 bg-surface rounded-[var(--radius-card)] shadow-xl border border-slate-100 py-2 z-40 overflow-hidden">
 
                     {sortOptions.map((option) =>
                   <button
@@ -325,8 +317,8 @@ const FeltVibes = () => {
                   }}
                   className={`w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium transition-colors ${
                   sortBy === option ?
-                  "text-brand-600 bg-brand-50/50 font-bold" :
-                  "text-slate-600 hover:bg-slate-50"
+                  "text-brand bg-brand-50/50 font-bold" :
+                  "text-text-secondary hover"
                   }`}>
 
                         {option}
@@ -340,43 +332,42 @@ const FeltVibes = () => {
           </div>
         </div>
 
-        {}
         {loading ?
         <div className="flex justify-center py-32">
-            <Loader2 className="w-10 h-10 text-brand-600 animate-spin" />
+            <Loader2 className="w-10 h-10 text-brand animate-spin" />
           </div> :
         groupedVibes.length === 0 ?
         <div className="bg-white/80 backdrop-blur-xl border border-white rounded-[2rem] p-16 text-center shadow-[0_8px_30px_rgba(0,0,0,0.04)] mt-10">
-            <div className="text-7xl mx-auto mb-6 opacity-80 drop-shadow-[0_0_30px_rgba(124,58,237,0.3)]">
+            <div className="text-7xl mx-auto mb-6 opacity-80 drop-shadow-[0_0_30px_rgba(2,132,199,0.3)]">
               ✨
             </div>
             {feltVibes.length > 0 ?
           <>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                <h3 className="text-2xl font-bold text-text-primary mb-3">
                   No {activeFilter} Yet
                 </h3>
-                <p className="text-slate-500 max-w-md mx-auto font-medium text-base">
+                <p className="text-text-muted max-w-md mx-auto font-medium text-base">
                   You have felt vibes in other categories.
                 </p>
                 <button
             onClick={() => setActiveFilter("All")}
-            className="mt-8 inline-flex items-center px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-2xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            className="btn-primary">
 
                   View All
                 </button>
               </> :
 
           <>
-                <h3 className="text-2xl font-bold text-slate-900 mb-3">
+                <h3 className="text-2xl font-bold text-text-primary mb-3">
                   No Felt Vibes Yet
                 </h3>
-                <p className="text-slate-500 max-w-md mx-auto font-medium text-base">
+                <p className="text-text-muted max-w-md mx-auto font-medium text-base">
                   Start exploring travel memories and react with "Felt This" to
                   build your curated collection of inspiration.
                 </p>
                 <button
             onClick={() => navigate("/social/explore")}
-            className="mt-8 inline-flex items-center px-8 py-4 bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm rounded-2xl transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5">
+            className="btn-primary">
 
                   Explore Travelers
                 </button>

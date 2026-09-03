@@ -199,7 +199,7 @@ const Profile = () => {
     e.target.onerror = null;
     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
       name || "Explorer"
-    )}&background=7C3AED&color=fff&bold=true`;
+    )}&background=0284c7&color=fff&bold=true`;
   }, []);
 
   const toggleAudio = useCallback(
@@ -324,10 +324,9 @@ const Profile = () => {
   const handleDoubleTapLike = useCallback(
     (postId, likes, tapPoint) => {
       const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
-      const hasFelt = likes?.some(
-        (id) => (id?._id || id)?.toString() === myUserId?.toString()
-      );
-      if (!hasFelt && cleanPostId) handleFelt(cleanPostId);
+      if (!cleanPostId) return;
+
+      handleFelt(cleanPostId);
 
       setJourneyLikeAnim({
         postId: cleanPostId,
@@ -336,9 +335,9 @@ const Profile = () => {
         key: Date.now(),
       });
 
-      window.setTimeout(() => setJourneyLikeAnim(null), 1150);
+      window.setTimeout(() => setJourneyLikeAnim(null), 850);
     },
-    [myUserId, handleFelt]
+    [handleFelt]
   );
 
   const handlePostTap = useCallback(
@@ -555,7 +554,7 @@ const Profile = () => {
           }
         }
       } catch {
-        showToast.error("Failed to post comment");
+        showToast.error("Failed to add comment");
       } finally {
         setIsSubmittingComment((prev) => ({ ...prev, [postId]: false }));
       }
@@ -1870,7 +1869,7 @@ const Profile = () => {
       );
 
       if (res.data.success) {
-        showToast.success("Dispatch updated successfully!");
+        showToast.success("Moment updated successfully!");
 
         setUserStories((prev) =>
           prev.map((s) =>
@@ -1883,7 +1882,7 @@ const Profile = () => {
         setShowEditStoryModal(false);
       }
     } catch (err) {
-      showToast.error("Failed to update Dispatch.");
+      showToast.error("Failed to update Moment.");
     } finally {
       setIsSaving(false);
     }
@@ -1910,7 +1909,7 @@ const Profile = () => {
       );
 
       if (res.data.success) {
-        showToast.success("Dispatch deleted successfully!");
+        showToast.success("Moment deleted successfully!");
 
         setUserStories((prev) =>
           prev.filter(
@@ -1922,7 +1921,7 @@ const Profile = () => {
         setStoryToDelete(null);
       }
     } catch (err) {
-      showToast.error("Failed to delete Dispatch.");
+      showToast.error("Failed to delete Moment.");
     } finally {
       setIsSaving(false);
     }
@@ -2068,7 +2067,7 @@ const Profile = () => {
               (profileUser?.postsCount || 0) === 0 &&
               (profileUser?.following?.length || 0) === 0 &&
               (profileUser?.followers?.length || 0) === 0 && (
-                <div className="bg-gradient-to-r from-primary-50 via-purple-50 to-primary-50 border border-primary-100 rounded-3xl p-5 sm:p-6 shadow-soft">
+                <div className="bg-gradient-to-r from-primary-50 via-primary-50 to-primary-50 border border-primary-100 rounded-3xl p-5 sm:p-6 shadow-soft">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 select-none">
                     <div>
                       <h3 className="text-sm sm:text-base font-bold text-dark flex items-center gap-2">

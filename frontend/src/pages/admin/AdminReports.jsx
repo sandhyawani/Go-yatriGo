@@ -24,9 +24,9 @@ const getStatus = (report) => (report.status || "pending").toLowerCase();
 const getName = (user) => user?.username || user?.name || "Unknown user";
 
 const statusClasses = {
-  pending: "border-brand-300 bg-brand-50 text-brand-700",
+  pending: "border-brand-300 bg-brand-50 text-brand-dark",
   resolved: "border-brand-500 bg-brand-100 text-brand-800",
-  dismissed: "border-brand-200 bg-white text-brand-600"
+  dismissed: "border-brand-200 bg-white text-brand"
 };
 
 const ActionIconButton = ({ icon: Icon, title, onClick, toneClass }) =>
@@ -146,7 +146,7 @@ const AdminReports = () => {
   }, [filter, reports, search]);
 
   return (
-    <main className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-slate-900 sm:px-4 lg:px-6">
+    <main className="min-h-[calc(100vh-72px)] bg-white px-3 pb-6 pt-4 text-text-primary sm:px-4 lg:px-6">
       <div className="mx-auto max-w-[1450px]">
         <motion.header
         initial={{ opacity: 0, y: 8 }}
@@ -154,20 +154,20 @@ const AdminReports = () => {
         className="mb-4 flex flex-col justify-between gap-3 lg:flex-row lg:items-end">
 
           <div>
-            <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand-600">
+            <p className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-brand">
               <ShieldAlert className="h-4 w-4" />
               Priority workspace
             </p>
-            <h1 className="text-xl font-semibold tracking-tight text-slate-900 sm:text-2xl">Reports & Moderation</h1>
-            <p className="mt-1 text-xs text-slate-600">
+            <h1 className="text-xl font-semibold tracking-tight text-text-primary sm:text-2xl">Reports & Moderation</h1>
+            <p className="mt-1 text-xs text-text-secondary">
               Triage safety flags, remove harmful content, and enforce account restrictions.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {[
-            { label: "Pending", value: summary.pending, tone: "text-brand-700 bg-brand-100" },
+            { label: "Pending", value: summary.pending, tone: "text-brand-dark bg-brand-100" },
             { label: "Resolved", value: summary.resolved, tone: "text-brand-800 bg-brand-200" },
-            { label: "Dismissed", value: summary.dismissed, tone: "text-brand-600 bg-brand-50" }]
+            { label: "Dismissed", value: summary.dismissed, tone: "text-brand bg-brand-50" }]
             .map((item) =>
             <div key={item.label} className={`rounded-lg px-3 py-1.5 ${item.tone}`}>
                 <p className="text-base font-semibold">{item.value}</p>
@@ -183,13 +183,13 @@ const AdminReports = () => {
         className="mb-4 flex flex-col gap-2 rounded-xl border border-brand-200 bg-brand-50 p-2 sm:flex-row">
 
           <label className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-500" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
             <input
             type="search"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             placeholder="Search reporter, user, reason..."
-            className="h-9 w-full rounded-lg border border-brand-200 bg-white pl-9 pr-3 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-brand-400/35" />
+            className="h-9 w-full rounded-lg border border-brand-200 bg-white pl-9 pr-3 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-brand-400/35" />
 
           </label>
           <label className="relative sm:w-48">
@@ -202,7 +202,7 @@ const AdminReports = () => {
               { value: "resolved", label: "Resolved" },
               { value: "dismissed", label: "Dismissed" },
             ]}
-            icon={<Filter className="h-4 w-4 text-slate-500" />}
+            icon={<Filter className="h-4 w-4 text-text-muted" />}
             className="h-9 w-full rounded-lg text-xs"
             />
           </label>
@@ -210,7 +210,7 @@ const AdminReports = () => {
 
         {error &&
         <div className="mb-4 flex items-center gap-2 rounded-xl border border-brand-300 bg-brand-50 px-3 py-2 text-xs text-brand-800">
-            <AlertTriangle className="h-4 w-4 shrink-0 text-brand-600" />
+            <AlertTriangle className="h-4 w-4 shrink-0 text-brand" />
             <span className="flex-1">{error}</span>
             <button type="button" onClick={fetchReports} className="font-medium text-brand-900 hover:underline">
               Retry
@@ -224,20 +224,20 @@ const AdminReports = () => {
         className="overflow-hidden rounded-xl border border-brand-200 bg-brand-50 shadow-sm">
 
           {loading ?
-          <div className="flex h-48 items-center justify-center gap-2 text-xs text-slate-600">
+          <div className="flex h-48 items-center justify-center gap-2 text-xs text-text-secondary">
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-brand-300/25 border-t-brand-300" />
               Loading reports...
             </div> :
           filteredReports.length === 0 ?
-          <div className="flex h-48 flex-col items-center justify-center text-slate-600">
+          <div className="flex h-48 flex-col items-center justify-center text-text-secondary">
               <CheckCircle2 className="mb-2 h-6 w-6 text-brand-500" />
-              <p className="text-xs font-medium text-slate-800">No reports match this view</p>
-              <p className="mt-1 text-[10px] text-slate-500">Try adjusting your search or status filter.</p>
+              <p className="text-xs font-medium text-text-primary">No reports match this view</p>
+              <p className="mt-1 text-[10px] text-text-muted">Try adjusting your search or status filter.</p>
             </div> :
 
           <div className="overflow-x-auto">
               <table className="w-full min-w-[1020px] text-left text-sm">
-                <thead className="border-b border-brand-200 bg-brand-50 text-[9px] uppercase tracking-[0.18em] text-slate-500">
+                <thead className="border-b border-brand-200 bg-brand-50 text-[9px] uppercase tracking-[0.18em] text-text-muted">
                   <tr>
                     <th className="px-3 py-2.5 font-medium">Received</th>
                     <th className="px-3 py-2.5 font-medium">Reporter</th>
@@ -255,16 +255,16 @@ const AdminReports = () => {
                   return (
                     <tr
                     key={report._id}
-                    className="border-b border-brand-200 text-slate-700 transition last:border-0 hover:bg-brand-50">
+                    className="border-b border-brand-200 text-text-primary transition last:border-0 hover:bg-brand-50">
 
-                        <td className="whitespace-nowrap px-3 py-2 text-[11px] text-slate-600">
+                        <td className="whitespace-nowrap px-3 py-2 text-[11px] text-text-secondary">
                           <span className="flex items-center gap-1.5">
                             <Clock className="h-3 w-3" />
                             {new Date(report.createdAt).toLocaleDateString()}
                           </span>
                         </td>
                         <td className="px-3 py-2 text-[11px]">{getName(report.reporter)}</td>
-                        <td className="px-3 py-2 text-[11px] font-medium text-slate-900">
+                        <td className="px-3 py-2 text-[11px] font-medium text-text-primary">
                           {reportedName}
                           {report.reportedUser?.isSuspended &&
                         <span className="ml-1.5 rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-semibold tracking-wider text-rose-700">
@@ -272,7 +272,7 @@ const AdminReports = () => {
                             </span>}
 
                         </td>
-                        <td className="px-3 py-2 text-[11px] capitalize text-slate-600">{report.targetType}</td>
+                        <td className="px-3 py-2 text-[11px] capitalize text-text-secondary">{report.targetType}</td>
                         <td className="max-w-[200px] truncate px-3 py-2 text-[11px]" title={report.reason}>
                           {report.reason}
                         </td>
@@ -301,7 +301,7 @@ const AdminReports = () => {
                               payload: { id: report._id, status: "resolved" }
                             })}
 
-                            toneClass="border-brand-300 bg-brand-100 text-brand-700 hover:bg-brand-200" />
+                            toneClass="border-brand-300 bg-brand-100 text-brand-dark hover:bg-brand-200" />
 
                                 <ActionIconButton
                             icon={XCircle}
@@ -315,7 +315,7 @@ const AdminReports = () => {
                               payload: { id: report._id, status: "dismissed" }
                             })}
 
-                            toneClass="border-brand-200 bg-white text-slate-600 hover:bg-brand-50 hover:text-brand-600" />
+                            toneClass="border-brand-200 bg-white text-text-secondary hover:bg-brand-50 hover:text-brand" />
 
                               </>}
 
@@ -328,11 +328,11 @@ const AdminReports = () => {
                             isOpen: true,
                             action: "delete_post",
                             title: "Delete Travel Memory",
-                            desc: "Permanently delete this reported post?",
+                            desc: "Permanently delete this reported travel memory?",
                             payload: { id: report.targetId }
                           })}
 
-                          toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100" />}
+                          toneClass="border-brand-300 bg-brand-50 text-brand-dark hover:bg-brand-100" />}
 
 
                             {report.targetType === "group" &&
@@ -348,7 +348,7 @@ const AdminReports = () => {
                             payload: { id: report.targetId }
                           })}
 
-                          toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100" />}
+                          toneClass="border-brand-300 bg-brand-50 text-brand-dark hover:bg-brand-100" />}
 
 
                             {report.reportedUser?._id &&
@@ -359,7 +359,7 @@ const AdminReports = () => {
                             onClick={() =>
                             setWarnModal({ isOpen: true, userId: report.reportedUser._id, message: "" })}
 
-                            toneClass="border-brand-300 bg-brand-50 text-brand-700 hover:bg-brand-100" />
+                            toneClass="border-brand-300 bg-brand-50 text-brand-dark hover:bg-brand-100" />
 
                                 {report.reportedUser.isSuspended ?
                             <ActionIconButton
@@ -374,7 +374,7 @@ const AdminReports = () => {
                               payload: { id: report.reportedUser._id }
                             })}
 
-                            toneClass="border-brand-200 bg-white text-brand-600 hover:bg-brand-50" /> :
+                            toneClass="border-brand-200 bg-white text-brand hover:bg-brand-50" /> :
 
 
                             <ActionIconButton
@@ -385,7 +385,7 @@ const AdminReports = () => {
                               isOpen: true,
                               action: "suspend",
                               title: "Suspend user",
-                              desc: `Suspend ${reportedName}? They will not be able to post or message.`,
+                              desc: `Suspend ${reportedName}? They will not be able to share travel memories or message.`,
                               payload: { id: report.reportedUser._id }
                             })}
 
@@ -412,7 +412,7 @@ const AdminReports = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+        className="fixed inset-0 z-50 flex items-center justify-center bg-brand/40 p-4 backdrop-blur-sm">
 
             <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -421,17 +421,17 @@ const AdminReports = () => {
           className="w-full max-w-sm rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl">
 
               <div className="mb-2 flex items-start justify-between">
-                <h3 className="text-base font-semibold text-slate-900">{confirmModal.title}</h3>
-                <button type="button" onClick={() => setConfirmModal(blankConfirm)} className="text-slate-500 hover:text-slate-900">
+                <h3 className="text-base font-semibold text-text-primary">{confirmModal.title}</h3>
+                <button type="button" onClick={() => setConfirmModal(blankConfirm)} className="text-text-muted hover:text-text-primary">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mb-4 text-xs leading-5 text-slate-600">{confirmModal.desc}</p>
+              <p className="mb-4 text-xs leading-5 text-text-secondary">{confirmModal.desc}</p>
               <div className="flex justify-end gap-2">
                 <button
               type="button"
               onClick={() => setConfirmModal(blankConfirm)}
-              className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-brand-50">
+              className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-brand-50">
 
                   Cancel
                 </button>
@@ -439,7 +439,7 @@ const AdminReports = () => {
               type="button"
               disabled={actionLoading}
               onClick={executeAction}
-              className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-slate-900 transition hover:bg-brand-500 disabled:opacity-50">
+              className="rounded-lg bg-brand px-3 py-1.5 text-xs font-medium text-text-primary transition hover:bg-brand disabled:opacity-50">
 
                   {actionLoading ? "Working..." : "Confirm"}
                 </button>
@@ -453,7 +453,7 @@ const AdminReports = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4 backdrop-blur-sm">
+        className="fixed inset-0 z-50 flex items-center justify-center bg-brand/40 p-4 backdrop-blur-sm">
 
             <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
@@ -462,17 +462,17 @@ const AdminReports = () => {
           className="w-full max-w-md rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl">
 
               <div className="mb-2 flex items-start justify-between">
-                <h3 className="text-base font-semibold text-slate-900">Send warning</h3>
-                <button type="button" onClick={() => setWarnModal(blankWarning)} className="text-slate-500 hover:text-slate-900">
+                <h3 className="text-base font-semibold text-text-primary">Send warning</h3>
+                <button type="button" onClick={() => setWarnModal(blankWarning)} className="text-text-muted hover:text-text-primary">
                   <X className="h-4 w-4" />
                 </button>
               </div>
-              <p className="mb-3 text-xs text-slate-600">This sends an in-app moderation notice to the user.</p>
+              <p className="mb-3 text-xs text-text-secondary">This sends an in-app moderation notice to the user.</p>
               <form onSubmit={handleWarnUser}>
                 <textarea
               value={warnModal.message}
               onChange={(event) => setWarnModal({ ...warnModal, message: event.target.value })}
-              className="h-20 w-full resize-none rounded-lg border border-brand-200 bg-brand-50 p-2 text-xs text-slate-900 outline-none placeholder:text-slate-500 focus:border-amber-300/40"
+              className="h-20 w-full resize-none rounded-lg border border-brand-200 bg-brand-50 p-2 text-xs text-text-primary outline-none placeholder:text-text-muted focus:border-amber-300/40"
               placeholder="Enter warning message..."
               required />
 
@@ -480,14 +480,14 @@ const AdminReports = () => {
                   <button
                 type="button"
                 onClick={() => setWarnModal(blankWarning)}
-                className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-slate-700 hover:bg-brand-50">
+                className="rounded-lg border border-brand-200 px-3 py-1.5 text-xs font-medium text-text-primary hover:bg-brand-50">
 
                     Cancel
                   </button>
                   <button
                 type="submit"
                 disabled={actionLoading}
-                className="rounded-lg bg-brand-600 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-brand-500 disabled:opacity-50">
+                className="btn-primary">
 
                     {actionLoading ? "Sending..." : "Send warning"}
                   </button>

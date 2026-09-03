@@ -40,14 +40,14 @@ const CONTACT_INFO = [
   title: "Office",
   detail: "Cyber City, Gurugram, India",
   href: "https://maps.google.com/?q=Cyber+City+Gurugram",
-  color: "from-brand-500 to-fuchsia-500"
+  color: "from-brand-500 to-brand-700"
 }];
 
 
 const inputClass =
-"w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-slate-400 text-sm shadow-sm";
+"w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-text-primary font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-text-muted text-sm shadow-sm";
 const labelClass =
-"text-[11px] font-bold text-slate-500 uppercase tracking-wider ml-1 mb-1.5 block";
+"text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1 mb-1.5 block";
 
 
 const ContactUs = () => {
@@ -79,31 +79,30 @@ const ContactUs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-brand-500/30 py-10 md:py-16 flex items-center">
+    <div className="min-h-screen bg-slate-50 text-text-primary font-sans selection:bg-brand/30 py-10 md:py-16 flex items-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 relative z-10 w-full">
-        {}
         <div className="text-center max-w-2xl mx-auto mb-10">
           <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-100/50 border border-brand-200 text-[10px] font-bold uppercase tracking-wider mb-4 text-brand-700">
+          className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-100/50 border border-brand-200 text-[10px] font-bold uppercase tracking-wider mb-4 text-brand-dark">
 
-            <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+            <Sparkles className="w-3.5 h-3.5 text-brand" />
             <span>24/7 Support</span>
           </motion.div>
           <motion.h1
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-3">
+          className="text-3xl md:text-4xl font-black text-text-primary tracking-tight mb-3">
 
-            Get in <span className="text-brand-600">Touch.</span>
+            Get in <span className="text-brand">Touch.</span>
           </motion.h1>
           <motion.p
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="text-slate-500 text-sm md:text-base font-medium">
+          className="text-text-muted text-sm md:text-base font-medium">
 
             Send us a message and we'll respond as soon as possible.
           </motion.p>
@@ -115,10 +114,9 @@ const ContactUs = () => {
         transition={{ delay: 0.3 }}
         className="bg-white rounded-[2rem] border border-slate-100 shadow-xl shadow-brand-500/5 overflow-hidden flex flex-col md:flex-row">
 
-          {}
-          <div className="bg-brand-600 w-full md:w-2/5 p-8 text-white relative overflow-hidden flex flex-col justify-between">
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500 rounded-full blur-3xl -mr-32 -mt-32 opacity-50 pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-fuchsia-500 rounded-full blur-3xl -ml-32 -mb-32 opacity-50 pointer-events-none" />
+          <div className="bg-brand w-full md:w-2/5 p-8 text-white relative overflow-hidden flex flex-col justify-between">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-brand rounded-full blur-3xl -mr-32 -mt-32 opacity-50 pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-400 rounded-full blur-3xl -ml-32 -mb-32 opacity-50 pointer-events-none" />
 
             <div className="relative z-10">
               <h3 className="text-xl font-bold mb-6">Contact Information</h3>
@@ -159,7 +157,6 @@ const ContactUs = () => {
             </div>
           </div>
 
-          {}
           <div className="w-full md:w-3/5 p-8 md:p-10">
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -227,7 +224,7 @@ const ContactUs = () => {
               </div>
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                <div className="flex items-center gap-2 text-slate-500">
+                <div className="flex items-center gap-2 text-text-muted">
                   <ShieldCheck className="w-4 h-4 text-emerald-500" />
                   <span className="text-xs font-semibold">
                     Your data is secure
@@ -236,7 +233,7 @@ const ContactUs = () => {
                 <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto px-8 py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm">
+                className="btn-primary">
 
                   {isSubmitting ? "Sending..." : "Send Message"}
                   <Send

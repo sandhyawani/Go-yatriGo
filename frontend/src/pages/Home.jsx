@@ -11,7 +11,7 @@ import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/authContext";
 
 import AudioManager from "../utils/AudioManager";
-import { MessageSquare, X, MapPin, Compass, UserPlus, Sparkles, Bell, Loader2, ShieldAlert } from "lucide-react";
+import { MessageSquare, X, MapPin, Compass, UserPlus, Sparkles, Bell, Loader2, ShieldAlert, Camera } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
@@ -20,8 +20,7 @@ import { SOCKET_EVENTS } from "../constants/socketEvents";
 import Swal from "sweetalert2";
 import CreateDispatchModal from "../components/modals/CreateDispatchModal";
 import DispatchViewer from "../components/story/DispatchViewer";
-import RightSidebar, { ActiveTravelGroups } from "../components/home/RightSidebar";
-import JourneyMatesSuggestions from "../components/social/JourneyMatesSuggestions";
+import RightSidebar from "../components/home/RightSidebar";
 import Card from "../components/common/Card";
 import ReportModal from "../components/modals/ReportModal";
 import DispatchBar from "../components/home/DispatchBar";
@@ -34,7 +33,7 @@ import { resolveRelationship } from "../utils/relationshipResolver";
 import { useTripMates } from "../hooks/useTripMates";
 import { normalizeJourneyStatus } from "../utils/journeyLifecycle";
 import { useQueryClient } from "@tanstack/react-query";
-import { useInfiniteMemoriesQuery, useHomeSideDataQuery } from "../hooks/queries/useHomeData";
+import { useRecentMemoriesQuery, useHomeSideDataQuery } from "../hooks/queries/useHomeData";
 import { useScrollRestoration } from "../hooks/useScrollRestoration";
 
 const SOCKET_URL =
@@ -51,29 +50,29 @@ const formatLocation = (location) => {
 const PostSkeleton = () =>
 <div className="card overflow-hidden animate-pulse">
     <div className="p-4 flex items-center gap-3">
-      <div className="w-10 h-10 rounded-full bg-slate-200" />
+      <div className="w-10 h-10 rounded-full bg-secondary-200" />
       <div className="space-y-2 flex-1">
-        <div className="h-3 bg-slate-200 rounded w-32" />
-        <div className="h-2 bg-slate-100 rounded w-20" />
+        <div className="h-3 bg-secondary-200 rounded w-32" />
+        <div className="h-2 bg-background rounded w-20" />
       </div>
     </div>
-    <div className="w-full h-[380px] object-cover bg-slate-100" />
+    <div className="w-full h-[380px] object-cover bg-background" />
     <div className="p-5 space-y-4">
       <div className="flex gap-4">
-        <div className="w-6 h-6 rounded bg-slate-200" />
-        <div className="w-6 h-6 rounded bg-slate-200" />
-        <div className="w-6 h-6 rounded bg-slate-200" />
+        <div className="w-6 h-6 rounded bg-secondary-200" />
+        <div className="w-6 h-6 rounded bg-secondary-200" />
+        <div className="w-6 h-6 rounded bg-secondary-200" />
       </div>
       <div className="space-y-2">
-        <div className="h-3 bg-slate-200 rounded w-3/4" />
-        <div className="h-3 bg-slate-200 rounded w-1/2" />
+        <div className="h-3 bg-secondary-200 rounded w-3/4" />
+        <div className="h-3 bg-secondary-200 rounded w-1/2" />
       </div>
     </div>
   </div>;
 
 
 const StorySkeleton = () =>
-<div className="w-20 h-28 sm:w-24 sm:h-32 rounded-2xl bg-slate-100 relative overflow-hidden shrink-0 animate-pulse border border-slate-100">
+<div className="w-20 h-28 sm:w-24 sm:h-32 rounded-2xl bg-background relative overflow-hidden shrink-0 animate-pulse border border-border">
     <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
   </div>;
 
@@ -82,12 +81,12 @@ const notifIcon = (type) => {
   if (type === "post_like")
   return <span className="text-sm leading-none">✨</span>;
   if (type === "post_comment")
-  return <MessageSquare className="w-3.5 h-3.5 text-brand-600" />;
+  return <MessageSquare className="w-3.5 h-3.5 text-brand" />;
   if (type === "follow" || type === "new_follower")
   return <UserPlus className="w-3.5 h-3.5 text-success" />;
   if (type === "story_reply")
   return <Sparkles className="w-3.5 h-3.5 text-warning" />;
-  return <Bell className="w-3.5 h-3.5 text-slate-400" />;
+  return <Bell className="w-3.5 h-3.5 text-text-muted" />;
 };
 
 const getAllComments = (post) => {
@@ -120,25 +119,23 @@ const Home = () => {
   const queryClient = useQueryClient();
 
   const updateMemoriesCache = useCallback((updater) => {
-    queryClient.setQueryData(['memories'], (oldData) => {
-      if (!oldData || !oldData.pages) return oldData;
+    queryClient.setQueryData(['recentMemories'], (oldData) => {
+      if (!oldData) return oldData;
       return {
         ...oldData,
-        pages: oldData.pages.map(page => ({
-          ...page,
-          memories: updater(page.memories)
-        }))
+        memories: typeof updater === 'function' ? updater(oldData.memories || []) : updater
       };
     });
   }, [queryClient]);
 
-  // For adding a new post at the top
   const addMemoryToCache = useCallback((newPost) => {
-    queryClient.setQueryData(['memories'], (oldData) => {
-      if (!oldData || !oldData.pages || oldData.pages.length === 0) return oldData;
-      const newPages = [...oldData.pages];
-      newPages[0] = { ...newPages[0], memories: [newPost, ...newPages[0].memories] };
-      return { ...oldData, pages: newPages };
+    queryClient.setQueryData(['recentMemories'], (oldData) => {
+      if (!oldData) return oldData;
+      const currentList = oldData.memories || [];
+      return {
+        ...oldData,
+        memories: [newPost, ...currentList].slice(0, 5)
+      };
     });
   }, [queryClient]);
   const myUserIdStr = (user?._id || user?.id)?.toString();
@@ -181,23 +178,20 @@ const Home = () => {
 
   const handleAvatarError = useCallback((e, name) => {
     e.target.onerror = null;
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Explorer")}&background=7C3AED&color=fff&bold=true`;
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "Explorer")}&background=0284c7&color=fff&bold=true`;
   }, []);
 
+  const [showAllMemories, setShowAllMemories] = useState(false);
 
-  // React Query Hooks
   const {
     data: memoriesData,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
     isLoading: loadingMemories,
     isError: errorMemories,
     refetch: refetchMemories
-  } = useInfiniteMemoriesQuery();
+  } = useRecentMemoriesQuery(showAllMemories ? 50 : 5);
   
   const memories = useMemo(() => {
-    return memoriesData?.pages.flatMap(page => page.memories) || [];
+    return memoriesData?.memories || [];
   }, [memoriesData]);
 
   const {
@@ -248,8 +242,7 @@ const Home = () => {
   const dispatches = sideData?.stories || [];
   const suggestions = sideData?.suggestions || [];
   const nearbyTrips = sideData?.nearbyTrips || [];
-  const [savedPostIds, setSavedPostIds] = useState(new Set()); // Initialize in effect
-  // Loading states are now handled by React Query
+  const [savedPostIds, setSavedPostIds] = useState(new Set());
   const [followLoadingMap, setFollowLoadingMap] = useState({});
   const [saveLoadingMap, setSaveLoadingMap] = useState({});
   const [feltLoadingMap, setFeltLoadingMap] = useState({});
@@ -258,11 +251,9 @@ const Home = () => {
       setSavedPostIds(new Set(sideData.savedPostIds));
     }
   }, [sideData?.savedPostIds]);
-  // Pagination states are handled by React Query
   const [commentsLoadingMap, setCommentsLoadingMap] = useState({});
   const [showMobileGroups, setShowMobileGroups] = useState(false);
   const storyContainerRef = useRef(null);
-  const loadMoreRef = useRef(null);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState(null);
@@ -361,9 +352,12 @@ const Home = () => {
   const [onlineUsersMap, setOnlineUsersMap] = useState({});
   const lastTapTime = useRef({});
 
-
-  // Scroll Restoration Hook
-  useScrollRestoration(!loadingMemories && memories.length > 0, '.main-scroll-container');
+  useScrollRestoration(
+    !loadingMemories && memories.length > 0,
+    typeof window !== 'undefined' && window.innerWidth >= 1024
+      ? '#home-feed-scroll-container'
+      : '#main-scroll-container'
+  );
   
   const myUserId = useMemo(
   () => (user?._id || user?.id)?.toString(),
@@ -465,22 +459,6 @@ const Home = () => {
 
 
   
-
-  useEffect(() => {
-    if (!loadMoreRef.current) return;
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isFetchingNextPage && hasNextPage) {
-          fetchNextPage();
-        }
-      },
-      { rootMargin: "200px" }
-    );
-    observer.observe(loadMoreRef.current);
-    return () => {
-      observer.disconnect();
-    };
-  }, [fetchNextPage, isFetchingNextPage, hasNextPage]);
 
   const handleOpenComments = async (postId) => {
     if (activeCommentPost === postId) {
@@ -604,7 +582,7 @@ const Home = () => {
 
       setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
 
-      const previousQueryData = queryClient.getQueryData(['memories']);
+      const previousQueryData = queryClient.getQueryData(['recentMemories']);
       updateMemoriesCache((prev) => { return prev.map((m) => {
           const mId = (m._id || m.id)?.toString();
           if (mId === cleanPostId) {
@@ -641,7 +619,7 @@ const Home = () => {
           }
         }
       } catch (err) {
-        queryClient.setQueryData(['memories'], previousQueryData);
+        queryClient.setQueryData(['recentMemories'], previousQueryData);
         showToast.error(err.response?.data?.message || "Failed to update reaction");
       } finally {
         setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));
@@ -733,7 +711,7 @@ const Home = () => {
         );
       }
     } catch {
-      showToast.error("Failed to post comment");
+      showToast.error("Failed to add comment");
     } finally {
       setIsSubmittingComment((prev) => ({ ...prev, [postId]: false }));
     }
@@ -863,7 +841,6 @@ const Home = () => {
 
       setFollowLoadingMap((prev) => ({ ...prev, [targetId]: true }));
 
-      // Optimistic update
       setSuggestions((prev) =>
         prev.map((s) => {
           const sId = String(s._id || s.id || "");
@@ -979,7 +956,7 @@ const Home = () => {
 
   const handleDeletePost = useCallback(async (postId) => {
     const { isConfirmed } = await Swal.fire({
-      title: "Delete this memory post?",
+      title: "Delete this travel memory?",
       text: "This action cannot be undone.",
       icon: "warning",
       showCancelButton: true,
@@ -1236,30 +1213,19 @@ const Home = () => {
   }, [dispatches, nearbyTrips, memories]);
 
   return (
-    <div className="w-full min-h-[100dvh] overflow-x-hidden pb-20 lg:pb-0 relative bg-[#FAFAFA]">
-      {}
-      {}
-      <div
-      className="absolute inset-0 pointer-events-none opacity-[0.02] mix-blend-multiply"
-      style={{
-        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%237C3AED' fill-opacity='1' fill-rule='evenodd'/%3E%3C/svg%3E")`
-      }} />
-
-      {}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.03]" xmlns="http://www.w3.org/2000/svg">
-        <path d="M-100,200 Q200,300 500,100 T1200,400" fill="none" stroke="#7C3AED" strokeWidth="4" strokeDasharray="12 12" />
-        <path d="M-50,600 Q300,500 600,700 T1300,500" fill="none" stroke="#7C3AED" strokeWidth="3" strokeDasharray="8 12" />
+    <div className="w-full min-h-[100dvh] lg:min-h-0 lg:h-full overflow-x-hidden lg:overflow-hidden pb-20 lg:pb-0 relative bg-background flex flex-col">
+      {/* Background Ambience */}
+      <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.02] text-brand" xmlns="http://www.w3.org/2000/svg">
+        <path d="M-100,200 Q200,300 500,100 T1200,400" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="12 12" />
+        <path d="M-50,600 Q300,500 600,700 T1300,500" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 12" />
       </svg>
-      {}
-      <div className="absolute right-[-10%] bottom-[-5%] pointer-events-none opacity-[0.02]">
-        <Compass className="w-[800px] h-[800px] text-[#7C3AED]" strokeWidth={0.5} />
+      <div className="absolute right-[-10%] bottom-[-5%] pointer-events-none opacity-[0.015]">
+        <Compass className="w-[800px] h-[800px] text-brand" strokeWidth={0.5} />
       </div>
-      <div className="w-full pt-4 px-4 sm:px-6 lg:pl-0 lg:pr-0 relative z-10">
-        <div className="grid min-w-0 grid-cols-1 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_380px] gap-6 xl:gap-8 items-start">
-          {}
-          <div className="w-full space-y-4 min-w-0">
+      <div className="w-full pt-1.5 lg:pt-0 px-3 sm:px-4 lg:px-4 xl:px-6 relative z-10 flex-1 min-h-0 lg:h-full lg:overflow-hidden">
+        <div className="w-full h-full min-h-0 flex flex-col lg:flex-row gap-5 xl:gap-6 items-stretch lg:overflow-hidden">
+          <div id="home-feed-scroll-container" className="flex-1 min-w-0 space-y-4 lg:h-full lg:min-h-0 lg:overflow-y-auto lg:pr-1 pt-1 pb-4 scrollbar-none hide-scrollbar no-scrollbar overscroll-contain">
 
-            {}
             <ExplorerDashboardWidget
               user={user}
               memoriesCount={memories.filter((m) => (m.userId?._id || m.userId)?.toString() === myUserId).length}
@@ -1267,69 +1233,61 @@ const Home = () => {
               onUpcomingClick={handleScrollToUpcoming}
             />
 
+
             {/* Current Ongoing Journey OR Featured Next Upcoming Trip */}
             {dashboardJourney ? (
               <div className="space-y-3">
                 <JourneyStatusWidget journey={dashboardJourney} user={user} />
-                {dashboardJourney.destination ? (
-                  <TravelWeatherWidget destination={dashboardJourney.destination} />
-                ) : null}
               </div>
             ) : (
-              <Card variant="default" padding="md" className="border-slate-200/80 shadow-xs text-center space-y-3 !p-6 rounded-2xl">
-                <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto text-brand-600 shadow-xs border border-brand-100/70">
+              <div className="bg-surface border border-border-default shadow-xs text-center space-y-3 p-5 sm:p-6 rounded-2xl">
+                <div className="w-12 h-12 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto text-brand shadow-2xs border border-brand-100">
                   <Compass className="w-6 h-6" />
                 </div>
                 <div>
-                  <h4 className="text-[11px] font-extrabold text-slate-400 uppercase tracking-[0.12em]">
+                  <h4 className="text-[11px] font-black text-text-muted uppercase tracking-widest">
                     NO ACTIVE JOURNEY
                   </h4>
-                  <p className="text-base font-extrabold text-slate-900 font-heading mt-0.5">
-                    Plan your next expedition today
+                  <p className="text-sm sm:text-base font-bold text-text-primary font-heading mt-0.5">
+                    Plan your next journey or join an existing trip
                   </p>
                 </div>
-                <div className="flex items-center justify-center gap-3 pt-1">
+                <div className="flex flex-wrap items-center justify-center gap-2.5 pt-1">
+                  <Link
+                    to="/social/buddy"
+                    className="bg-brand-500 hover:bg-brand-600 text-slate-950 py-2 px-4 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 inline-flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Compass className="w-3.5 h-3.5 text-slate-950" />
+                    <span>Explore & Join Trips</span>
+                  </Link>
                   <Link
                     to="/social/journeys"
-                    className="btn-primary !py-2 !px-4 text-xs font-bold shadow-sm"
+                    className="bg-surface hover:bg-slate-100 text-text-primary border border-border-default py-2 px-4 text-xs font-bold rounded-xl shadow-xs transition-all active:scale-95 inline-flex items-center gap-1.5 cursor-pointer"
                   >
-                    Plan Journey
+                    <span>Plan Journey</span>
                   </Link>
                 </div>
-              </Card>
+              </div>
             )}
 
-            {/* Upcoming Trips Section on Dashboard */}
+            {/* Upcoming Trips Section on Dashboard — show only the nearest 1 */}
             {ongoingJourney && upcomingTripsList.length > 0 ? (
               <div ref={upcomingTripsRef}>
-                <UpcomingTripsWidget upcomingTrips={upcomingTripsList} title="Upcoming Trips" />
+                <UpcomingTripsWidget upcomingTrips={upcomingTripsList.slice(0, 1)} title="Upcoming Trip" />
               </div>
             ) : !ongoingJourney && upcomingTripsList.length > 1 ? (
               <div ref={upcomingTripsRef}>
-                <UpcomingTripsWidget upcomingTrips={upcomingTripsList.slice(1)} title="More Upcoming Trips" />
+                <UpcomingTripsWidget upcomingTrips={upcomingTripsList.slice(1, 2)} title="Next Upcoming Trip" />
               </div>
             ) : (
               <div ref={upcomingTripsRef} />
             )}
 
-            {/* Mobile-only In-Stream Sections (Travelers for You & Active Groups in deliberate single-column order) */}
-            <div className="lg:hidden space-y-4">
-              <JourneyMatesSuggestions
-                currentUser={user}
-                currentUserId={user?._id || user?.id}
-                initialSuggestions={suggestions}
-                handleFollowToggle={handleFollowToggle}
-                followLoadingMap={followLoadingMap}
-                tripMateStates={tripMateStates}
-              />
 
-              <ActiveTravelGroups user={user} nearbyTrips={nearbyTrips} />
-            </div>
-
-            {/* 7. Travel Dispatches */}
-            <div className="space-y-3">
-               <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] pl-1 flex items-center gap-1.5 font-sans">
-                  <MapPin className="w-3.5 h-3.5 text-brand-600" /> Travel Dispatches
+            {/* 7. Trip Moments */}
+            <div className="space-y-2.5">
+               <h3 className="text-xs font-bold text-text-primary pl-1 flex items-center gap-1.5 font-heading">
+                  <Sparkles className="w-3.5 h-3.5 text-brand" /> Trip Moments
                </h3>
                <DispatchBar
                 user={user}
@@ -1345,11 +1303,22 @@ const Home = () => {
                 handleAvatarError={handleAvatarError} />
             </div>
 
-            {/* 8. Explorer Logbook / Travel Memories */}
-            <div className="space-y-4">
-              <h3 className="text-[10.5px] font-bold text-slate-400 uppercase tracking-[0.1em] pl-1 flex items-center gap-1.5 font-sans">
-                <Compass className="w-3.5 h-3.5 text-brand-600" /> Explorer Logbook
-              </h3>
+            {/* 8. Recent Travel Memories */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between pl-1 pr-1">
+                <h3 className="text-xs font-bold text-text-primary flex items-center gap-1.5 font-heading">
+                  <Camera className="w-3.5 h-3.5 text-brand" /> Recent Travel Memories
+                </h3>
+                {memories.length > 0 && (
+                  <button
+                    onClick={() => setShowAllMemories(!showAllMemories)}
+                    className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors flex items-center gap-1"
+                  >
+                    <span>{showAllMemories ? 'Show less' : 'View all'}</span>
+                    <span aria-hidden="true" className={showAllMemories ? '-scale-y-100 transform' : ''}>&rarr;</span>
+                  </button>
+                )}
+              </div>
               {loadingMemories ? (
                 <AnimatePresence>
                   <div className="space-y-6">
@@ -1370,10 +1339,10 @@ const Home = () => {
                   <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center mx-auto mb-3 border border-rose-100">
                     <ShieldAlert className="w-7 h-7 text-rose-500" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-extrabold text-slate-800 font-heading">
+                  <h3 className="text-base sm:text-lg font-extrabold text-text-primary font-heading">
                     Oops, something went wrong!
                   </h3>
-                  <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 mb-5 max-w-[280px] mx-auto">
+                  <p className="text-xs sm:text-sm font-medium text-text-muted mt-1 mb-5 max-w-[280px] mx-auto">
                     We couldn't load the feed right now. Please check your connection and try again.
                   </p>
                   <button
@@ -1386,12 +1355,12 @@ const Home = () => {
               ) : memories.length === 0 ? (
                 <Card variant="default" padding="lg" className="p-8 sm:p-14 text-center min-h-[340px] flex flex-col items-center justify-center border-slate-200/80 shadow-xs">
                   <div className="w-16 h-16 bg-brand-50 rounded-2xl flex items-center justify-center mx-auto mb-4 border border-brand-100/70">
-                    <Compass className="w-8 h-8 text-brand-600 animate-float" />
+                    <Camera className="w-8 h-8 text-brand animate-float" />
                   </div>
-                  <h3 className="text-base sm:text-lg font-extrabold text-slate-800 font-heading">
+                  <h3 className="text-base sm:text-lg font-extrabold text-text-primary font-heading">
                     No Travel Memories yet
                   </h3>
-                  <p className="text-xs sm:text-sm font-medium text-slate-500 mt-1 max-w-[280px] mx-auto">
+                  <p className="text-xs sm:text-sm font-medium text-text-muted mt-1 max-w-[280px] mx-auto">
                     Follow travelers or share your first journey to start building your feed.
                   </p>
                   <div className="mt-6">
@@ -1448,14 +1417,26 @@ const Home = () => {
                       />
                     );
                   })}
-                  {hasNextPage && memories.length > 0 && (
-                    <div
-                      className="flex justify-center mt-6 pb-6"
-                      ref={loadMoreRef}
-                    >
-                      {isFetchingNextPage && (
-                        <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
-                      )}
+                  {memories.length > 0 && (
+                    <div className="pt-2 pb-2 text-center">
+                      <button
+                        onClick={() => {
+                          const willCollapse = showAllMemories;
+                          setShowAllMemories(!showAllMemories);
+                          if (willCollapse) {
+                            const container = document.getElementById('home-feed-scroll-container');
+                            if (container) {
+                              container.scrollTo({ top: 0, behavior: 'smooth' });
+                            } else {
+                              window.scrollTo({ top: 0, behavior: 'smooth' });
+                            }
+                          }
+                        }}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-surface hover:bg-slate-100 text-text-primary border border-border-default rounded-xl text-xs font-bold shadow-xs transition-all active:scale-95"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-brand" />
+                        <span>{showAllMemories ? 'Show Fewer Memories' : 'View All Community Memories'}</span>
+                      </button>
                     </div>
                   )}
                 </div>
@@ -1464,10 +1445,10 @@ const Home = () => {
 
           </div>
 
-          {/* Desktop Right Sidebar (Travelers for You, Highlights, Active Groups) */}
-          <div className="hidden lg:block">
+          {/* Desktop Right Sidebar (Travelers for You, Active Groups, Trends & Insights) */}
+          <div className="hidden lg:block w-[280px] xl:w-[310px] 2xl:w-[340px] shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto pt-1 pb-4 scrollbar-none hide-scrollbar no-scrollbar overscroll-contain">
             <RightSidebar
-              className="min-w-0 w-full flex flex-col gap-4 shrink-0 self-start"
+              className="min-w-0 w-full flex flex-col gap-4 shrink-0"
               user={user}
               suggestions={suggestions}
               nearbyTrips={nearbyTrips}
@@ -1479,7 +1460,6 @@ const Home = () => {
 
         </div>
 
-        {}
         <AnimatePresence>
           {activeStoryGroup &&
           <DispatchViewer
@@ -1501,23 +1481,22 @@ const Home = () => {
 
         </AnimatePresence>
 
-        {}
         <AnimatePresence>
           {showEditPostModal && editPostData &&
           <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/20 backdrop-blur-xs">
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand/20 backdrop-blur-xs">
 
               <motion.div
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="bg-white rounded-[24px] w-full max-w-md shadow-xl overflow-hidden border border-slate-100">
+            className="bg-surface rounded-[var(--radius-card)] w-full max-w-md shadow-xl overflow-hidden border border-border">
 
-                <div className="flex items-center justify-between p-5 border-b border-slate-100">
-                  <h3 className="text-base font-bold text-slate-900">
+                <div className="flex items-center justify-between p-5 border-b border-border">
+                  <h3 className="text-base font-bold text-text-primary">
                     Edit Travel Memory
                   </h3>
                   <button
@@ -1525,14 +1504,14 @@ const Home = () => {
                   setShowEditPostModal(false);
                   setEditPostData(null);
                 }}
-                className="p-2 text-slate-400 hover:bg-slate-100 rounded-full transition-colors">
+                className="p-2 text-text-muted hover:bg-background rounded-full transition-colors">
 
                     <X className="w-5 h-5" />
                   </button>
                 </div>
                 <form onSubmit={handleEditPostSubmit} className="p-5 space-y-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-slate-500 uppercase tracking-wider pl-1">
+                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider pl-1">
                       Caption
                     </label>
                     <textarea
@@ -1545,11 +1524,11 @@ const Home = () => {
                   })}
 
                   rows="3"
-                  className="w-full bg-white border border-[#E5E7EB] rounded-xl p-4 text-sm text-[#1E293B] outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all duration-200 resize-none" />
+                  className="w-full bg-white border border-border-default rounded-xl p-4 text-sm text-text-primary outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all duration-200 resize-none" />
 
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider pl-1">
+                    <label className="text-xs font-bold text-text-muted uppercase tracking-wider pl-1">
                       Location
                     </label>
                     <input
@@ -1562,7 +1541,7 @@ const Home = () => {
                     location: e.target.value
                   })}
 
-                  className="w-full bg-white border border-[#E5E7EB] rounded-xl p-4 text-sm text-[#1E293B] outline-none focus:border-[#7C3AED] focus:ring-4 focus:ring-[#7C3AED]/10 transition-all duration-200" />
+                  className="w-full bg-white border border-border-default rounded-xl p-4 text-sm text-text-primary outline-none focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all duration-200" />
 
                   </div>
                   <div className="pt-2 flex items-center justify-end gap-3">
@@ -1572,7 +1551,7 @@ const Home = () => {
                     setShowEditPostModal(false);
                     setEditPostData(null);
                   }}
-                  className="px-5 py-2.5 text-sm font-semibold text-[#64748B] hover:bg-slate-50 border border-[#E5E7EB] rounded-xl transition-all duration-200">
+                  className="px-5 py-2.5 text-sm font-semibold text-text-muted hover border border-border-default rounded-xl transition-all duration-200">
 
                       Cancel
                     </button>

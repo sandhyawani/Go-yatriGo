@@ -105,19 +105,18 @@ const ReportProblem = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-800 py-8 px-4 sm:px-6 lg:px-8 selection:bg-brand-500/30">
+    <div className="min-h-screen bg-slate-50 text-text-primary py-8 px-4 sm:px-6 lg:px-8 selection:bg-brand/30">
       <div className="max-w-3xl mx-auto">
-        {}
         <div className="mb-6 flex items-center justify-between">
           <Link
           to="/settings"
-          className="inline-flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-600 transition-colors bg-white px-4 py-2 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow">
+          className="inline-flex items-center gap-2 text-sm font-bold text-text-muted hover:text-brand transition-colors bg-white px-4 py-2 rounded-2xl border border-slate-200/80 shadow-sm hover:shadow">
 
             <ArrowLeft className="w-4 h-4" />
             Back to Settings
           </Link>
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-100/60 border border-brand-200/80 text-[11px] font-bold text-brand-700">
-            <Sparkles className="w-3.5 h-3.5 text-brand-600" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-100/60 border border-brand-200/80 text-[11px] font-bold text-brand-dark">
+            <Sparkles className="w-3.5 h-3.5 text-brand" />
             <span>Engineering Support</span>
           </div>
         </div>
@@ -130,21 +129,21 @@ const ReportProblem = () => {
           initial={{ opacity: 0, scale: 0.95, y: 20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-3xl p-8 sm:p-12 border border-slate-100 shadow-xl text-center relative overflow-hidden">
+          className="bg-surface rounded-[var(--radius-card)] p-8 sm:p-12 border border-slate-100 shadow-xl text-center relative overflow-hidden">
 
-              <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+              <div className="absolute top-0 right-0 w-64 h-64 bg-brand/10 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
               <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none -ml-20 -mb-20" />
 
               <div className="w-20 h-20 bg-emerald-50 text-emerald-500 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner border border-emerald-100">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-3">
+              <h2 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight mb-3">
                 Problem Reported Successfully!
               </h2>
-              <p className="text-slate-500 max-w-md mx-auto text-sm sm:text-base leading-relaxed mb-8 font-medium">
+              <p className="text-text-muted max-w-md mx-auto text-sm sm:text-base leading-relaxed mb-8 font-medium">
                 We've received your detailed report regarding{" "}
-                <span className="font-bold text-slate-700">
+                <span className="font-bold text-text-primary">
                   "{selectedCategory}"
                 </span>
                 . Our engineering and qa team will review and investigate it
@@ -159,14 +158,14 @@ const ReportProblem = () => {
                 setScreenshotUrl("");
                 setIsSubmitted(false);
               }}
-              className="w-full sm:w-auto px-6 py-3.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-sm transition-colors">
+              className="w-full sm:w-auto px-6 py-3.5 bg-background hover text-text-primary font-bold rounded-xl text-sm transition-colors">
 
                   Report Another Problem
                 </button>
                 <button
               type="button"
               onClick={() => navigate("/settings")}
-              className="w-full sm:w-auto px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl text-sm shadow-md shadow-brand-500/20 hover:shadow-lg transition-all">
+              className="btn-primary">
 
                   Return to Settings
                 </button>
@@ -179,11 +178,10 @@ const ReportProblem = () => {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -15 }}
-          className="bg-white rounded-3xl border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden">
+          className="bg-surface rounded-[var(--radius-card)] border border-slate-100 shadow-[0_10px_40px_rgba(0,0,0,0.04)] overflow-hidden">
 
-              {}
               <div className="bg-gradient-to-r from-brand-900 via-brand-800 to-brand-900 p-6 sm:p-8 text-white relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-80 h-80 bg-brand-500/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
+                <div className="absolute top-0 right-0 w-80 h-80 bg-brand/20 rounded-full blur-3xl pointer-events-none -mr-20 -mt-20" />
                 <div className="relative z-10 flex items-start gap-4">
                   <div className="p-3.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-orange-400 shrink-0">
                     <AlertTriangle className="w-7 h-7" />
@@ -201,11 +199,9 @@ const ReportProblem = () => {
                 </div>
               </div>
 
-              {}
               <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-8">
-                {}
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-3">
+                  <label className="block text-xs font-black uppercase tracking-wider text-text-muted mb-3">
                     1. What kind of issue are you experiencing?
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -219,25 +215,25 @@ const ReportProblem = () => {
                       className={`flex items-start gap-3 p-4 rounded-2xl border text-left transition-all ${
                       isSelected ?
                       "bg-brand-50/80 border-brand-500 ring-2 ring-brand-500/20 shadow-sm" :
-                      "bg-slate-50/60 border-slate-200/80 hover:bg-slate-100/60 hover:border-slate-300"
+                      "bg-slate-50/60 border-slate-200/80 hover:bg-background/60 hover"
                       }`}>
 
                           <div
                         className={`p-2.5 rounded-xl shrink-0 ${
                         isSelected ?
-                        "bg-brand-600 text-white shadow-md shadow-brand-500/30" :
-                        "bg-white text-slate-500 border border-slate-200/60"
+                        "bg-brand text-white shadow-md shadow-brand-500/30" :
+                        "bg-white text-text-muted border border-slate-200/60"
                         }`}>
 
                             <Icon className="w-5 h-5" />
                           </div>
                           <div>
                             <span
-                          className={`block text-sm font-bold ${isSelected ? "text-brand-900" : "text-slate-800"}`}>
+                          className={`block text-sm font-bold ${isSelected ? "text-brand-900" : "text-text-primary"}`}>
 
                               {label}
                             </span>
-                            <span className="block text-xs text-slate-500 mt-0.5 leading-normal">
+                            <span className="block text-xs text-text-muted mt-0.5 leading-normal">
                               {desc}
                             </span>
                           </div>
@@ -247,16 +243,15 @@ const ReportProblem = () => {
                   </div>
                 </div>
 
-                {}
                 <div>
                   <label
                 htmlFor="problem-desc"
-                className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">
+                className="block text-xs font-black uppercase tracking-wider text-text-muted mb-2">
 
                     2. Describe the problem in detail{" "}
                     <span className="text-rose-500">*</span>
                   </label>
-                  <p className="text-xs text-slate-400 mb-3 font-medium">
+                  <p className="text-xs text-text-muted mb-3 font-medium">
                     Please explain what happened, what you were trying to do,
                     and steps to reproduce if possible.
                   </p>
@@ -265,27 +260,26 @@ const ReportProblem = () => {
                 rows={5}
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="e.g., When I open my saved posts tab and click on delete, the screen freezes..."
+                placeholder="e.g., When I open my saved memories tab and click on delete, the screen freezes..."
                 required
                 maxLength={2000}
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-slate-800 font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-slate-400 resize-none shadow-sm" />
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl p-4 text-sm text-text-primary font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-text-muted resize-none shadow-sm" />
 
-                  <div className="flex justify-between items-center mt-1.5 px-1 text-[11px] font-semibold text-slate-400">
+                  <div className="flex justify-between items-center mt-1.5 px-1 text-[11px] font-semibold text-text-muted">
                     <span>Minimum 10 characters</span>
                     <span>{message.length} / 2000</span>
                   </div>
                 </div>
 
-                {}
                 <div>
                   <label
                 htmlFor="screenshot-url"
-                className="block text-xs font-black uppercase tracking-wider text-slate-500 mb-2">
+                className="block text-xs font-black uppercase tracking-wider text-text-muted mb-2">
 
                     3. Screenshot URL (Optional)
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-text-muted">
                       <Image className="w-4.5 h-4.5" />
                     </div>
                     <input
@@ -294,27 +288,26 @@ const ReportProblem = () => {
                   value={screenshotUrl}
                   onChange={(e) => setScreenshotUrl(e.target.value)}
                   placeholder="https://image-host.com/your-screenshot.png"
-                  className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-slate-400 shadow-sm" />
+                  className="input-field" />
 
                   </div>
-                  <p className="text-[11px] text-slate-400 mt-1.5 font-medium">
+                  <p className="text-[11px] text-text-muted mt-1.5 font-medium">
                     Paste a direct link to an image/screenshot illustrating the
                     issue.
                   </p>
                 </div>
 
-                {}
                 <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-end gap-3">
                   <Link
                 to="/settings"
-                className="w-full sm:w-auto px-6 py-3 text-center rounded-xl font-bold text-sm text-slate-600 hover:bg-slate-100 transition-colors">
+                className="w-full sm:w-auto px-6 py-3 text-center rounded-xl font-bold text-sm text-text-secondary hover:bg-background transition-colors">
 
                     Cancel
                   </Link>
                   <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto px-8 py-3 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-md shadow-brand-500/20 hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0 active:scale-95 flex items-center justify-center gap-2 text-sm">
+                className="btn-primary">
 
                     {isSubmitting ?
                   "Submitting Report..." :

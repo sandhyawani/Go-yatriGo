@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { MapPin, Calendar, Globe, Sparkles, MoreHorizontal, ShieldAlert, Edit2, Trash2 } from "lucide-react";
+import { MapPin, Calendar, Globe, Sparkles, MoreHorizontal, ShieldAlert, Edit2, Trash2, BadgeCheck } from "lucide-react";
 import moment from "moment";
 import Avatar from "../../../common/Avatar";
 import { formatLocation, getTravelTag } from "../utils/feedHelpers";
+import { isActuallyVerified } from "../../../../utils/verification";
 
 const FeedHeader = ({
   post,
@@ -16,67 +17,62 @@ const FeedHeader = ({
   handleAvatarError
 }) => {
   const travelTag = getTravelTag(post);
+  const isPostAuthorVerified = isActuallyVerified(post.userId) || isActuallyVerified(post);
 
   return (
-    <header className="flex items-center justify-between gap-4 px-5 sm:px-6 py-4 bg-slate-50/50 border-b border-[var(--border-default)] relative z-10">
-      <div className="flex min-w-0 items-center gap-3.5">
-        <Link to={`/profile/${post.userId?._id || post.userId}`} className="shrink-0">
+    <header className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 bg-gradient-to-r from-slate-50/70 via-white to-amber-50/30 border-b border-slate-100/90 relative z-10">
+      <div className="flex min-w-0 items-center gap-3">
+        <Link to={`/profile/${post.userId?._id || post.userId}`} className="shrink-0 relative group">
           <Avatar
             user={post.userId}
             pic={post.userId?.pic}
             img={post.userId?.img || post.userPic}
             name={post.userId?.name || post.userName}
-            className="h-11 w-11 rounded-full object-cover ring-2 ring-white shadow-sm"
+            className="h-10 w-10 sm:h-11 sm:w-11 rounded-full object-cover ring-2 ring-amber-200/50 border border-white shadow-2xs transition-transform duration-300 group-hover:scale-105"
             onError={handleAvatarError}
           />
         </Link>
 
         <div className="min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 flex-wrap">
             <Link to={`/profile/${post.userId?._id || post.userId}`} className="min-w-0">
-              <h4 className="truncate text-sm font-bold text-slate-900 transition-colors hover:text-brand-600 font-heading">
+              <h4 className="truncate text-xs sm:text-[13px] font-extrabold text-slate-900 transition-colors hover:text-brand-600 font-heading">
                 {post.userName}
               </h4>
             </Link>
 
-            {(post.userId?.isVerified || post.isVerified) && (
-              <span
+            {isPostAuthorVerified && (
+              <BadgeCheck
+                className="w-3.5 h-3.5 text-blue-500 shrink-0 fill-blue-50"
                 title="Verified Traveler"
-                className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white"
-              >
-                <svg
-                  className="h-2.5 w-2.5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={3}
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </span>
+              />
             )}
+
+            <span className="text-[10px] font-semibold text-slate-400 font-sans">
+              • Log Entry
+            </span>
           </div>
 
-          <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px] text-slate-500">
+          <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10.5px] text-slate-500">
             {post.location && (
-              <span className="flex max-w-[190px] items-center gap-1 truncate font-bold text-[#7C3AED]">
-                <MapPin className="h-3.5 w-3.5 shrink-0" />
+              <span className="flex max-w-[190px] items-center gap-1 truncate font-bold text-brand-600">
+                <MapPin className="h-3 w-3 shrink-0 text-brand-500" />
                 <span className="truncate">{formatLocation(post.location)}</span>
               </span>
             )}
 
             {post.location && <span className="text-slate-300">•</span>}
 
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+            <span className="flex items-center gap-1 font-medium text-slate-400">
+              <Calendar className="h-3 w-3 text-slate-400" />
               {moment(post.createdAt).fromNow()}
             </span>
 
-            {post.visibility && (
+            {post.visibility && post.visibility !== "public" && (
               <>
                 <span className="hidden sm:inline text-slate-300">•</span>
-                <span className="hidden sm:flex items-center gap-1 capitalize">
-                  <Globe className="h-3.5 w-3.5 text-slate-400" />
+                <span className="hidden sm:flex items-center gap-1 capitalize font-medium text-slate-400">
+                  <Globe className="h-3 w-3" />
                   {post.visibility}
                 </span>
               </>

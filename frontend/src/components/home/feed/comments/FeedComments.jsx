@@ -42,7 +42,7 @@ const FeedComments = ({
           <button
             type="button"
             onClick={() => handleOpenComments(post._id)}
-            className="mt-2 block px-1 text-xs font-semibold text-slate-400 transition-colors hover:text-brand-600"
+            className="mt-2 block px-1 text-xs font-semibold text-slate-400 transition-colors hover:text-amber-700"
           >
             View all {visibleCommentsCount} Thoughts
           </button>

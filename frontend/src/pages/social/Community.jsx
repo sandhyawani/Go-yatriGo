@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { Sparkles, Heart, MessageSquare, Bookmark, Share2, MapPin, Plus, BookOpen, Calendar, FileText, Loader2, MessageCircle, ThumbsUp } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import axios from "../../api/axios";
@@ -12,6 +13,7 @@ import { getAvatarUrl } from "../../utils/avatar";
 import RightSidebar from "../../components/home/RightSidebar";
 
 const Community = () => {
+  const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   const myUserId = user?._id || user?.id;
 
@@ -131,7 +133,7 @@ const Community = () => {
       ...prev,
       [postId]: !prev[postId]
     }));
-    showToast.success("Post bookmarked!");
+    showToast.success("Travel memory bookmarked!");
     try {
       await axios.post(`/api/posts/like/${postId}`, {}, { withCredentials: true });
     } catch (e) {
@@ -184,17 +186,15 @@ const Community = () => {
   };
 
   return (
-    <div className="w-full min-h-[100dvh] bg-[#fafafa] pb-24 lg:pb-8 pt-4">
+    <div className="w-full min-h-[100dvh] bg-background pb-24 lg:pb-8 pt-4">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         
-        {}
         <div className="mb-6 flex items-center justify-end gap-4">
 
-          {}
           <div className="relative">
             <button
             onClick={() => setShowCreateDropdown(!showCreateDropdown)}
-            className="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-md shadow-brand-600/10 flex items-center gap-1.5 active:scale-95 duration-200">
+            className="btn-primary">
 
               <Plus className="w-4 h-4" /> Create
             </button>
@@ -212,14 +212,14 @@ const Community = () => {
                     setShowCreateDropdown(false);
                     setIsStoryModalOpen(true);
                   }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
+                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover transition-all duration-200">
 
                       <div className="w-8 h-8 rounded-lg bg-emerald-50 flex items-center justify-center text-emerald-500 shrink-0">
                         <Sparkles className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-800">📸 Story</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Share moments for 24h</p>
+                        <p className="text-xs font-bold text-text-primary">📸 Story</p>
+                        <p className="text-[10px] text-text-muted font-medium">Share moments for 24h</p>
                       </div>
                     </button>
 
@@ -228,14 +228,14 @@ const Community = () => {
                     setShowCreateDropdown(false);
                     setIsPostModalOpen(true);
                   }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
+                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover transition-all duration-200">
 
-                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand shrink-0">
                         <BookOpen className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-800">📝 Post</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Share photos and destinations</p>
+                        <p className="text-xs font-bold text-text-primary">📝 Travel Memory</p>
+                        <p className="text-[10px] text-text-muted font-medium">Share photos and destinations</p>
                       </div>
                     </button>
 
@@ -244,13 +244,13 @@ const Community = () => {
                     setShowCreateDropdown(false);
                     showToast.info("Journey Memories are generated automatically when a journey completes. Navigate to your active trip workspace in Journeys to wrap up planning and generate memories!");
                   }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
+                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover transition-all duration-200">
 
-                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand-600 shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-brand-50 flex items-center justify-center text-brand shrink-0">
                         <Calendar className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-800">📖 Journey Memory</p>
+                        <p className="text-xs font-bold text-text-primary">📖 Journey Memory</p>
                         <p className="text-[10px] text-slate-450 font-medium">Auto-generated from completed trips</p>
                       </div>
                     </button>
@@ -260,14 +260,14 @@ const Community = () => {
                     setShowCreateDropdown(false);
                     showToast.success("Travel Tip shared successfully!");
                   }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
+                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover transition-all duration-200">
 
                       <div className="w-8 h-8 rounded-lg bg-amber-50 flex items-center justify-center text-amber-500 shrink-0">
                         <FileText className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-800">💡 Travel Tip</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Share budget, gear or safety hacks</p>
+                        <p className="text-xs font-bold text-text-primary">💡 Travel Tip</p>
+                        <p className="text-[10px] text-text-muted font-medium">Share budget, gear or safety hacks</p>
                       </div>
                     </button>
 
@@ -276,14 +276,14 @@ const Community = () => {
                     setShowCreateDropdown(false);
                     showToast.success("Discussion thread opened!");
                   }}
-                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-all duration-200">
+                  className="w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl hover transition-all duration-200">
 
                       <div className="w-8 h-8 rounded-lg bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
                         <MessageCircle className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="text-xs font-bold text-slate-800">❓ Ask the Community</p>
-                        <p className="text-[10px] text-slate-400 font-medium">Start a destination discussion</p>
+                        <p className="text-xs font-bold text-text-primary">❓ Ask the Community</p>
+                        <p className="text-[10px] text-text-muted font-medium">Start a destination discussion</p>
                       </div>
                     </button>
                   </div>
@@ -293,11 +293,10 @@ const Community = () => {
           </div>
         </div>
 
-        {}
         <div className="bg-white border border-slate-200/80 rounded-2xl p-1.5 shadow-sm mb-6 flex overflow-x-auto scrollbar-none gap-1">
           {[
           { id: "stories", label: "Dispatches", icon: Sparkles },
-          { id: "posts", label: "Travel Posts", icon: BookOpen },
+          { id: "posts", label: "Travel Memories", icon: BookOpen },
           { id: "memories", label: "Journey Memories", icon: Calendar },
           { id: "tips", label: "Travel Tips", icon: FileText },
           { id: "discussions", label: "Discussions", icon: MessageCircle }]
@@ -310,39 +309,37 @@ const Community = () => {
           }}
           className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
           activeTab === tab.id ?
-          "bg-brand-50 text-brand-700 shadow-sm" :
-          "text-slate-500 hover:text-slate-800 hover:bg-slate-50"
+          "bg-brand-50 text-brand-dark shadow-sm" :
+          "text-text-muted hover:text-text-primary hover"
           }`}>
 
-              <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-brand-600" : "text-slate-400"}`} />
+              <tab.icon className={`w-4 h-4 ${activeTab === tab.id ? "text-brand" : "text-text-muted"}`} />
               {tab.label}
             </button>
           )}
         </div>
 
-        {}
         {loading ?
         <div className="flex justify-center items-center py-32">
-            <Loader2 className="w-8 h-8 animate-spin text-brand-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand" />
           </div> :
 
         <div className="space-y-6">
             
-            {}
             {activeTab === "stories" &&
           <div className="space-y-6">
                 <div className="bg-white border border-slate-200/80 rounded-3xl p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Active Traveler Stories</h3>
-                    <span className="text-[10px] bg-slate-50 border border-slate-100 text-slate-500 px-2 py-0.5 rounded-lg font-bold">24h Expiry</span>
+                    <h3 className="text-sm font-black text-text-muted uppercase tracking-widest">Active Traveler Stories</h3>
+                    <span className="text-[10px] bg-slate-50 border border-slate-100 text-text-muted px-2 py-0.5 rounded-lg font-bold">24h Expiry</span>
                   </div>
                   
                   {dispatches.length === 0 ?
               <div className="py-12 text-center">
-                      <p className="text-sm text-slate-400 font-semibold">No stories uploaded in the last 24 hours.</p>
+                      <p className="text-sm text-text-muted font-semibold">No stories uploaded in the last 24 hours.</p>
                       <button
                 onClick={() => setIsStoryModalOpen(true)}
-                className="mt-4 px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand-600 text-xs font-bold rounded-lg transition-all">
+                className="mt-4 px-4 py-2 bg-brand-50 hover:bg-brand-100 text-brand text-xs font-bold rounded-lg transition-all">
 
                         Publish the first story
                       </button>
@@ -364,11 +361,11 @@ const Community = () => {
                     alt={group.userName}
                     className="w-full h-full rounded-full object-cover border-2 border-white bg-slate-50" />
 
-                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-brand-600 rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white">
+                            <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-brand rounded-full border-2 border-white flex items-center justify-center text-[10px] text-white">
                               ✨
                             </div>
                           </div>
-                          <span className="text-[11px] font-bold text-slate-700 group-hover:text-brand-600 transition-colors">
+                          <span className="text-[11px] font-bold text-text-primary group-hover:text-brand transition-colors">
                             {group.userName.split(" ")[0]}
                           </span>
                         </div>
@@ -379,29 +376,40 @@ const Community = () => {
               </div>}
 
 
-            {}
             {activeTab === "posts" &&
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
                 
-                {}
                 <div className="space-y-6">
                   {travelMemories.map((post) => {
                 const isLiked = likedPosts[post._id];
                 const isBookmarked = bookmarkedPosts[post._id];
                 const commentsList = postComments[post._id] || [];
 
+                const authorId = post.userId?._id || post.userId?.id || (typeof post.userId === "string" ? post.userId : null);
+
                 return (
                   <div key={post._id} id={`post-${post._id}`} className="bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-card hover:shadow-md transition-all duration-300">
-                        {}
                         <div className="p-4 flex items-center justify-between border-b border-slate-100">
                           <div className="flex items-center gap-3">
-                            <Avatar src={post.userId?.pic} name={post.userId?.name} size="md" />
+                            <div
+                              onClick={() => {
+                                if (authorId) navigate(`/profile/${authorId}`);
+                              }}
+                              className={authorId ? "cursor-pointer transition-opacity hover:opacity-80" : ""}
+                            >
+                              <Avatar src={post.userId?.pic} name={post.userId?.name} size="md" />
+                            </div>
                             <div>
-                              <span className="text-xs font-black text-slate-800 block hover:underline cursor-pointer">
+                              <span
+                                onClick={() => {
+                                  if (authorId) navigate(`/profile/${authorId}`);
+                                }}
+                                className="text-xs font-black text-text-primary block hover:underline cursor-pointer"
+                              >
                                 {post.userId?.name}
                               </span>
                               {post.destination &&
-                          <span className="text-[10px] text-slate-400 font-semibold flex items-center gap-0.5">
+                          <span className="text-[10px] text-text-muted font-semibold flex items-center gap-0.5">
                                   <MapPin className="w-3 h-3 text-slate-350 shrink-0" />
                                   {post.destination}
                                 </span>}
@@ -409,30 +417,27 @@ const Community = () => {
                             </div>
                           </div>
                           
-                          {}
                           {post.journeyTag &&
-                      <span className="bg-brand-50 border border-brand-100 text-brand-700 text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg">
+                      <span className="bg-brand-50 border border-brand-100 text-brand-dark text-[10px] font-black uppercase tracking-wider px-2.5 py-1 rounded-lg">
                               🎒 {post.journeyTag}
                             </span>}
 
                         </div>
 
-                        {}
                         <div className="relative aspect-video w-full bg-slate-50 overflow-hidden">
                           <img
                       src={post.image}
-                      alt="Post Media"
+                      alt="Travel Memory Media"
                       className="w-full h-full object-cover" />
 
                         </div>
 
-                        {}
                         <div className="px-4 py-3 flex items-center justify-between border-b border-slate-150 bg-slate-50/50">
                           <div className="flex items-center gap-4">
                             <button
                         onClick={() => handleLikePost(post._id)}
                         className={`flex items-center gap-1.5 text-xs font-bold transition-all ${
-                        isLiked ? "text-rose-600 scale-105" : "text-slate-500 hover:text-rose-650"
+                        isLiked ? "text-rose-600 scale-105" : "text-text-muted hover:text-rose-650"
                         }`}>
 
                               <Heart className={`w-5 h-5 ${isLiked ? "fill-current" : ""}`} />
@@ -441,7 +446,7 @@ const Community = () => {
                             
                             <button
                         onClick={() => setActiveCommentPost(activeCommentPost === post._id ? null : post._id)}
-                        className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-brand-600 transition-colors">
+                        className="flex items-center gap-1.5 text-xs font-bold text-text-muted hover:text-brand transition-colors">
 
                               <MessageSquare className="w-5 h-5" />
                               <span>{post.commentsCount + commentsList.length}</span>
@@ -451,57 +456,55 @@ const Community = () => {
                           <div className="flex items-center gap-3">
                             <button
                         onClick={() => handleBookmarkPost(post._id)}
-                        className={`text-slate-500 hover:text-brand-650 transition-colors ${
-                        isBookmarked ? "text-brand-600 scale-105" : ""
+                        className={`text-text-muted hover:text-brand-650 transition-colors ${
+                        isBookmarked ? "text-brand scale-105" : ""
                         }`}
                         title="Add to Travel Bucket List">
 
                               <Bookmark className={`w-5 h-5 ${isBookmarked ? "fill-current" : ""}`} />
                             </button>
-                            <button className="text-slate-500 hover:text-brand-650 transition-colors" title="Share with external networks">
+                            <button className="text-text-muted hover:text-brand-650 transition-colors" title="Share with external networks">
                               <Share2 className="w-5 h-5" />
                             </button>
                           </div>
                         </div>
 
-                        {}
                         <div className="p-4 space-y-3">
-                          <p className="text-xs text-slate-600 font-medium leading-relaxed">
-                            <span className="font-extrabold text-slate-900 mr-2">{post.userId?.name}</span>
+                          <p className="text-xs text-text-secondary font-medium leading-relaxed">
+                            <span className="font-extrabold text-text-primary mr-2">{post.userId?.name}</span>
                             {post.caption}
                           </p>
 
-                          {}
                           {activeCommentPost === post._id &&
                       <div className="border-t border-slate-100 pt-3 space-y-2">
-                              <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Comments</span>
+                              <span className="text-[9px] text-text-muted font-black uppercase tracking-wider block">Comments</span>
                               
                               <div className="space-y-1.5 max-h-36 overflow-y-auto">
-                                <div className="text-[11px] text-slate-500">
-                                  <span className="font-bold text-slate-700 mr-1.5">Carlos:</span>
+                                <div className="text-[11px] text-text-muted">
+                                  <span className="font-bold text-text-primary mr-1.5">Carlos:</span>
                                   Incredible shot! Added this temple to our Kyoto checklist.
                                 </div>
                                 {commentsList.map((c, i) =>
-                          <div key={i} className="text-[11px] text-slate-500">
-                                    <span className="font-bold text-slate-700 mr-1.5">{c.user}:</span>
+                          <div key={i} className="text-[11px] text-text-muted">
+                                    <span className="font-bold text-text-primary mr-1.5">{c.user}:</span>
                                     {c.text}
                                   </div>
                           )}
                               </div>
 
-                              {}
                               <div className="flex items-center gap-2 pt-2">
                                 <input
                           type="text"
                           placeholder="Write a comment..."
                           value={newCommentText}
                           onChange={(e) => setNewCommentText(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-semibold focus:outline-none focus:border-brand-500 focus:bg-white" />
+                          className="input-field" />
 
                                 <button
-                          onClick={() => handleAddComment(post._id)}
-                          className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand-600 text-xs font-bold rounded-xl transition-all shrink-0">
-                            Travel Memories</button>
+                                  onClick={() => handleAddComment(post._id)}
+                                  className="px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand text-xs font-bold rounded-xl transition-all shrink-0">
+                                  Post
+                                </button>
                               </div>
                             </div>}
 
@@ -511,7 +514,6 @@ const Community = () => {
               })}
                 </div>
 
-                {}
                 <RightSidebar
             user={user}
             travelMemories={travelMemories}
@@ -521,7 +523,6 @@ const Community = () => {
               </div>}
 
 
-            {}
             {activeTab === "memories" &&
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {memories.map((mem) =>
@@ -539,27 +540,27 @@ const Community = () => {
                     </div>
 
                     <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                      <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                      <p className="text-xs text-text-muted font-medium leading-relaxed">
                         {mem.diarySummary}
                       </p>
 
                       <div className="grid grid-cols-3 gap-2 bg-slate-50 border border-slate-100 rounded-xl p-2.5 text-center shrink-0">
                         <div>
-                          <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Host</span>
-                          <span className="text-[10px] font-bold text-slate-800 block mt-0.5">{mem.host}</span>
+                          <span className="text-[9px] text-text-muted font-black uppercase tracking-wider block">Host</span>
+                          <span className="text-[10px] font-bold text-text-primary block mt-0.5">{mem.host}</span>
                         </div>
                         <div className="border-l border-slate-200">
-                          <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Companions</span>
-                          <span className="text-[10px] font-bold text-slate-800 block mt-0.5">{mem.companions} travelers</span>
+                          <span className="text-[9px] text-text-muted font-black uppercase tracking-wider block">Companions</span>
+                          <span className="text-[10px] font-bold text-text-primary block mt-0.5">{mem.companions} travelers</span>
                         </div>
                         <div className="border-l border-slate-200">
-                          <span className="text-[9px] text-slate-400 font-black uppercase tracking-wider block">Logged</span>
-                          <span className="text-[10px] font-bold text-slate-800 block mt-0.5">{mem.distance || "N/A"}</span>
+                          <span className="text-[9px] text-text-muted font-black uppercase tracking-wider block">Logged</span>
+                          <span className="text-[10px] font-bold text-text-primary block mt-0.5">{mem.distance || "N/A"}</span>
                         </div>
                       </div>
 
                       <div className="flex items-center justify-between border-t border-slate-100 pt-3 text-[11px] font-bold">
-                        <span className="text-slate-400">Traveled: {mem.date}</span>
+                        <span className="text-text-muted">Traveled: {mem.date}</span>
                         <span className="text-amber-500">★ {mem.rating}</span>
                       </div>
                     </div>
@@ -568,7 +569,6 @@ const Community = () => {
               </div>}
 
 
-            {}
             {activeTab === "tips" &&
           <div className="space-y-4 max-w-3xl mx-auto">
                 {travelTips.map((tip) =>
@@ -576,8 +576,8 @@ const Community = () => {
                     <span className="text-[9px] bg-brand-50 border border-brand-100 text-brand-650 font-black uppercase tracking-widest px-2.5 py-1 rounded-md">
                       {tip.category}
                     </span>
-                    <h3 className="text-base font-extrabold text-slate-900 mt-2.5">{tip.title}</h3>
-                    <p className="text-xs text-slate-500 font-medium mt-2 leading-relaxed">
+                    <h3 className="text-base font-extrabold text-text-primary mt-2.5">{tip.title}</h3>
+                    <p className="text-xs text-text-muted font-medium mt-2 leading-relaxed">
                       {tip.content}
                     </p>
                   </div>
@@ -585,35 +585,31 @@ const Community = () => {
               </div>}
 
 
-            {}
             {activeTab === "discussions" &&
           <div className="space-y-4 max-w-3xl mx-auto">
                 {discussions.map((disc) => {
               const votes = discussionVotes[disc.id] || disc.upvotes;
               return (
                 <div key={disc.id} className="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-card flex items-start gap-4">
-                      {}
                       <button
                   onClick={() => handleVote(disc.id)}
                   className="flex flex-col items-center bg-slate-50 hover:bg-brand-50 border border-slate-150 hover:border-brand-200 px-2.5 py-2 rounded-xl transition-all shrink-0">
 
-                        <ThumbsUp className="w-3.5 h-3.5 text-slate-500 hover:text-brand-600" />
-                        <span className="text-xs font-black text-slate-800 mt-1">{votes}</span>
+                        <ThumbsUp className="w-3.5 h-3.5 text-text-muted hover:text-brand" />
+                        <span className="text-xs font-black text-text-primary mt-1">{votes}</span>
                       </button>
 
-                      {}
                       <div className="flex-1 space-y-1">
-                        <h3 className="text-sm font-extrabold text-slate-850 hover:text-brand-600 cursor-pointer transition-colors">
+                        <h3 className="text-sm font-extrabold text-slate-850 hover:text-brand cursor-pointer transition-colors">
                           {disc.question}
                         </h3>
-                        <p className="text-[10px] text-slate-400 font-bold">
+                        <p className="text-[10px] text-text-muted font-bold">
                           Asked by <span className="text-slate-655 font-black">{disc.user}</span> • {disc.replies} replies
                         </p>
                         
-                        {}
                         <div className="flex flex-wrap gap-1.5 pt-1.5">
                           {disc.tags.map((tag, idx) =>
-                      <span key={idx} className="bg-slate-50 border border-slate-100 text-[9px] font-bold text-slate-500 px-2 py-0.5 rounded">
+                      <span key={idx} className="bg-slate-50 border border-slate-100 text-[9px] font-bold text-text-muted px-2 py-0.5 rounded">
                               {tag}
                             </span>
                       )}
@@ -630,7 +626,6 @@ const Community = () => {
 
       </div>
 
-      {}
       <AnimatePresence>
         {activeStoryGroup &&
         <DispatchViewer
@@ -662,7 +657,6 @@ const Community = () => {
 
       </AnimatePresence>
 
-      {}
       <CreateTravelMemoryModal
       isOpen={isPostModalOpen}
       onClose={() => setIsPostModalOpen(false)}

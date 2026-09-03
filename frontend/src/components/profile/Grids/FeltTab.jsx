@@ -49,7 +49,7 @@ export const FeltTab = ({
           if (post.postType === "story")
             badgeInfo = {
               icon: <Clapperboard className="w-3 h-3" />,
-              label: "Story",
+              label: "Dispatch",
               bg: "text-primary-600",
             };
           else if (post.postType === "group")
@@ -81,7 +81,7 @@ export const FeltTab = ({
             <div
               key={post._id}
               onClick={() => setSelectedMemory(post)}
-              className="aspect-[3/4] bg-surface/80 backdrop-blur-xl rounded-3xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(124,58,237,0.12)] hover:-translate-y-1 transition-all duration-300"
+              className="aspect-[3/4] bg-surface/80 backdrop-blur-xl rounded-3xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(2,132,199,0.12)] hover:-translate-y-1 transition-all duration-300"
             >
               {post.mediaType === "video" ||
               (post.image || post.mediaUrl || post.mediaUrls?.[0] || "").match(/\.(mp4|webm|mov)$/i) ? (

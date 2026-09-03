@@ -15,7 +15,7 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
   }, [src]);
 
   return (
-    <div className={`relative overflow-hidden bg-slate-100 ${className}`} {...props}>
+    <div className={`relative overflow-hidden bg-background ${className}`} {...props}>
       <AnimatePresence>
         {!isLoaded && !hasError &&
         <motion.div

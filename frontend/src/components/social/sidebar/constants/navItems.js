@@ -6,12 +6,14 @@ export const navItems = [
     label: "Home",
     icon: ICONS.Home,
     path: ROUTES.HOME,
+    tourId: "nav-home",
   },
   {
     label: "Explore",
     icon: ICONS.Compass,
     path: ROUTES.EXPLORE,
-    matchPrefix: true, // Matches /social/buddy/*
+    matchPrefix: true,
+    tourId: "nav-explore",
   },
   {
     label: "Search",
@@ -30,6 +32,7 @@ export const navItems = [
     icon: ICONS.MessageSquare,
     path: ROUTES.CHAT,
     matchPrefix: true,
+    tourId: "nav-chat",
   },
-  // Notifications is handled separately due to badge count, but we could add it here if refactored further
 ];
+

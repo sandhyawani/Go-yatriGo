@@ -44,7 +44,7 @@ export const ActionModals = ({
       {/* ─── 1. BLOCK CONFIRMATION MODAL ────────────────────────────────────── */}
       <AnimatePresence>
         {showBlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowBlockModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -61,7 +61,7 @@ export const ActionModals = ({
               <p className="text-xs text-muted font-medium leading-relaxed mb-6">
                 {isBlockedByMe
                   ? "They will be able to see your profile, trips, and interact with you again on Go YatriGo."
-                  : "They won't be able to find your profile, posts, or chat with you. They won't be notified that you blocked them."}
+                  : "They won't be able to find your profile, travel memories, or chat with you. They won't be notified that you blocked them."}
               </p>
               <div className="flex gap-2.5 justify-center">
                 <button
@@ -90,7 +90,7 @@ export const ActionModals = ({
       {/* ─── 2. RATE USER MODAL ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {showRateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowRateModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -161,10 +161,10 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 4. EDIT POST MODAL ─────────────────────────────────────────────── */}
+      {/* ─── 4. EDIT TRAVEL MEMORY MODAL ──────────────────────────────────── */}
       <AnimatePresence>
         {showEditPostModal && editPostData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditPostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -222,10 +222,10 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 5. DELETE POST MODAL ───────────────────────────────────────────── */}
+      {/* ─── 5. DELETE TRAVEL MEMORY MODAL ────────────────────────────────── */}
       <AnimatePresence>
         {showDeletePostModal && postToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeletePostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -267,7 +267,7 @@ export const ActionModals = ({
       {/* ─── 6. EDIT STORY MODAL ────────────────────────────────────────────── */}
       <AnimatePresence>
         {showEditStoryModal && editStoryData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
@@ -314,9 +314,13 @@ export const ActionModals = ({
                   }
                   className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
                   options={[
-                    { label: "White", value: "white" },
-                    { label: "Black", value: "black" },
-                    { label: "Purple", value: "purple" },
+                    { label: "Pure White", value: "white" },
+                    { label: "Deep Charcoal", value: "black" },
+                    { label: "Sky Blue (Brand Pop)", value: "sky" },
+                    { label: "Ruby Coral Pop", value: "ruby" },
+                    { label: "Amber Gold Pop", value: "amber" },
+                    { label: "Emerald Mint Pop", value: "emerald" },
+                    { label: "Electric Violet Pop", value: "violet" },
                   ]}
                 />
                 <div className="flex gap-2 justify-end pt-2">
@@ -344,7 +348,7 @@ export const ActionModals = ({
       {/* ─── 7. DELETE STORY MODAL ──────────────────────────────────────────── */}
       <AnimatePresence>
         {showDeleteStoryModal && storyToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeleteStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}

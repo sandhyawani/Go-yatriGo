@@ -89,6 +89,21 @@ const Login = () => {
 
     if (result.success) {
       const loggedInUser = result.user;
+      const myId = loggedInUser?._id || loggedInUser?.id;
+      const userEmail = email.toLowerCase();
+      try {
+        const justRegistered =
+          sessionStorage.getItem("goyatrigo_just_registered") === "true" ||
+          localStorage.getItem(`goyatrigo_newly_registered_${userEmail}`) === "true";
+
+        if (justRegistered && myId) {
+          localStorage.setItem(`goyatrigo_is_new_user_${myId}`, "true");
+          sessionStorage.removeItem("goyatrigo_just_registered");
+          localStorage.removeItem(`goyatrigo_newly_registered_${userEmail}`);
+        }
+      } catch (e) {
+        // Safe fallback
+      }
 
       if (loggedInUser.isAdmin === true) {
         navigate("/admin", { replace: true });
@@ -106,7 +121,7 @@ const Login = () => {
       icon: "error",
       title: "Access Denied",
       text: result.error || "Login failed. Please check your credentials.",
-      confirmButtonColor: "#7c3aed",
+      confirmButtonColor: "#0284c7",
       customClass: { popup: "rounded-[1.5rem]" }
     });
   };
@@ -118,7 +133,7 @@ const Login = () => {
       icon: "info",
       title: `${provider} Sign-In`,
       text: `${provider} authentication is coming soon.`,
-      confirmButtonColor: "#7c3aed",
+      confirmButtonColor: "#0284c7",
       customClass: { popup: "rounded-[1.5rem]" }
     });
   };
@@ -130,11 +145,10 @@ const Login = () => {
       style={{ backgroundImage: `url(${travelBg})` }} />
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
-        {}
         <div className="hidden lg:flex lg:w-3/5 items-center justify-center p-12">
           <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -142,12 +156,12 @@ const Login = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="relative group w-full max-w-2xl">
 
-            <div className="absolute -inset-4 bg-brand-500/20 blur-3xl rounded-[3rem] group-hover:bg-brand-500/30 transition-all duration-700" />
+            <div className="absolute -inset-4 bg-brand/20 blur-3xl rounded-[3rem] group-hover:bg-brand/30 transition-all duration-700" />
             <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 overflow-hidden shadow-2xl">
               <img
               src={stickerPack}
               alt="Travel Hero"
-              className="w-full h-[80vh] object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700 opacity-80" />
+              className="w-full max-h-[80vh] h-full object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700 opacity-80" />
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-black/20">
                 <motion.div
@@ -182,7 +196,6 @@ const Login = () => {
           </motion.div>
         </div>
 
-        {}
         <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto custom-scrollbar">
           <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -193,30 +206,29 @@ const Login = () => {
             <div className="mb-5 flex flex-col items-center lg:items-start">
               <Link
               to="/"
-              className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-brand-500 hover:bg-slate-100 hover:text-brand-600 transition-all">
+              className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-brand-500 hover:bg-background hover:text-brand transition-all">
 
                 <Fingerprint className="w-5 h-5" />
               </Link>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tighter">
+              <h1 className="text-2xl font-black text-text-primary tracking-tighter">
                 Welcome back.
               </h1>
-              <p className="text-slate-500 font-medium text-[11px] mt-1">
+              <p className="text-text-muted font-medium text-[11px] mt-1">
                 Unlock your premium travel portal
               </p>
             </div>
 
             <form className="space-y-4" onSubmit={handleClick} noValidate>
-              {}
               <div className="space-y-1">
                 <label
                 htmlFor="email"
-                className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">
 
                   Email
                 </label>
                 <div className="relative group">
                   <Mail
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.email ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.email ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                   <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -228,7 +240,7 @@ const Login = () => {
                   onChange={handleChange}
                   aria-invalid={!!errors.email}
                   aria-describedby={errors.email ? "email-error" : undefined}
-                  className={`w-full pl-11 pr-4 py-2 bg-slate-50 border ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  className={`w-full pl-11 pr-4 py-2 bg-slate-50 border ${errors.email ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                 </div>
                 <AnimatePresence>
@@ -250,25 +262,24 @@ const Login = () => {
                 </AnimatePresence>
               </div>
 
-              {}
               <div className="space-y-1">
                 <div className="flex justify-between items-center px-1">
                   <label
                   htmlFor="password"
-                  className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  className="text-[10px] font-black text-text-muted uppercase tracking-widest">
 
                     Password
                   </label>
                   <Link
                   to="/forgot-password"
-                  className="text-[10px] font-black text-brand-500 hover:text-brand-600 transition-colors uppercase no-underline">
+                  className="text-[10px] font-black text-brand-500 hover:text-brand transition-colors uppercase no-underline">
 
                     Forgot?
                   </Link>
                 </div>
                 <div className="relative group">
                   <Lock
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                   <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -283,12 +294,12 @@ const Login = () => {
                   aria-describedby={
                   errors.password ? "password-error" : undefined}
 
-                  className={`w-full pl-11 pr-12 py-2 bg-slate-50 border ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  className={`w-full pl-11 pr-12 py-2 bg-slate-50 border ${errors.password ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"} rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                   <button
                   type="button"
                   onClick={() => setShowPassword((p) => !p)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1"
                   aria-label={
                   showPassword ? "Hide password" : "Show password"}>
 
@@ -338,7 +349,7 @@ const Login = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className="w-full py-2 bg-brand-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-brand-500 disabled:opacity-70 disabled:cursor-not-allowed group mt-2 overflow-hidden relative">
+              className="w-full py-2 bg-brand text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(2,132,199,0.3)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.4)] flex items-center justify-center gap-3 hover:bg-brand disabled:opacity-70 disabled:cursor-not-allowed group mt-2 overflow-hidden relative">
 
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 {loading ?
@@ -355,25 +366,18 @@ const Login = () => {
             </form>
 
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center gap-3">
-              <p className="text-center text-[11px] font-bold text-slate-500">
+              <p className="text-center text-[11px] font-bold text-text-muted">
                 New user?
                 <Link
                 to="/register"
-                className="ml-2 text-brand-600 font-black hover:text-brand-700 transition-colors hover:underline underline-offset-4 decoration-2">
+                className="ml-2 text-brand font-black hover:text-brand-dark transition-colors hover:underline underline-offset-4 decoration-2">
 
                   Create Account
                 </Link>
               </p>
-              <Link
-              to="/"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
-
-                <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-                Exit Portal
-              </Link>
-              <div className="flex items-center justify-center gap-2 mt-2 px-4 py-2 bg-slate-50 border border-slate-100 rounded-full">
+              <div className="flex items-center justify-center gap-2 mt-1 px-4 py-2 bg-slate-50 border border-slate-100 rounded-full">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
+                <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest">
                   Protected Platform
                 </span>
               </div>

@@ -17,8 +17,8 @@ const GroupHeaderAvatar = ({ room }) => {
   }
 
   return (
-    <div className="w-9 h-9 rounded-full bg-[#F3E8FF] flex items-center justify-center shadow-sm border border-[#7C3AED]/10">
-      <Users className="w-4.5 h-4.5 text-[#7C3AED]" />
+    <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center shadow-sm border border-brand/10">
+      <Users className="w-4.5 h-4.5 text-brand" />
     </div>);
 
 };
@@ -67,7 +67,7 @@ export const ChatHeader = ({
           setActiveRoom(null);
           navigate("/social/chat");
         }}
-        className="p-1 sm:p-1.5 -ml-1 text-slate-500 hover:text-slate-900 rounded-lg transition-colors lg:hidden shrink-0">
+        className="p-1 sm:p-1.5 -ml-1 text-text-muted hover:text-text-primary rounded-lg transition-colors lg:hidden shrink-0">
 
           <ArrowLeft className="w-5 h-5" />
         </button>
@@ -97,14 +97,14 @@ export const ChatHeader = ({
         </div>
         <div className="min-w-0">
           <h3
-          className={`text-[13px] sm:text-[14px] font-bold text-slate-900 flex items-center gap-1.5 truncate max-w-[130px] sm:max-w-[200px] ${
-          activeRoom.type === "direct" ? "cursor-pointer hover:text-[#7C3AED] transition-colors" : ""
+          className={`text-[13px] sm:text-[14px] font-bold text-text-primary flex items-center gap-1.5 truncate max-w-[130px] sm:max-w-[200px] ${
+          activeRoom.type === "direct" ? "cursor-pointer hover:text-brand transition-colors" : ""
           }`}
           onClick={handleProfileNavigation}>
 
             <span className="truncate">{activeRoom.name}</span>
             {activeRoom.type === "group" &&
-            <span className="bg-slate-100 text-slate-500 px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider shrink-0">
+            <span className="bg-background text-text-muted px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider shrink-0">
                 Group
               </span>}
 
@@ -112,7 +112,7 @@ export const ChatHeader = ({
           <div
           className={`text-[11px] font-medium mt-0.5 truncate ${
           activeRoom.type === "group" ?
-          "text-slate-400" :
+          "text-text-muted" :
           (() => {
             const other = activeRoom.members?.find(
             (member) => (member._id || member)?.toString() !== currentUserId?.toString()
@@ -121,7 +121,7 @@ export const ChatHeader = ({
             return otherId && onlineUsers.has(otherId);
           })() ?
           "text-emerald-500" :
-          "text-slate-400"
+          "text-text-muted"
           }`}>
 
             {activeRoom.type === "direct" &&
@@ -132,7 +132,7 @@ export const ChatHeader = ({
               const otherId = (other?._id || other)?.toString();
               const isBlocked = otherId && user?.blockedUsers?.some((id) => (id._id || id)?.toString() === otherId);
               return isBlocked ? (
-                <span className="bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[11px] inline-block">
+                <span className="bg-background text-text-muted px-2 py-0.5 rounded-full text-[11px] inline-block">
                   🔒 Blocked
                 </span>
               ) : activeRoom.type === "group" ? (
@@ -151,7 +151,7 @@ export const ChatHeader = ({
         {activeRoom.type === "group" &&
         <Link
         to={journeyLink}
-        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-[#F3E8FF] hover:bg-[#E9D5FF] text-[#7C3AED] rounded-xl text-[12px] font-semibold transition-all duration-200">
+        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-brand-50 hover:bg-brand-100 text-brand rounded-xl text-[12px] font-semibold transition-all duration-200">
 
             <Compass className="w-3.5 h-3.5" /> View Journey
           </Link>}
@@ -161,12 +161,12 @@ export const ChatHeader = ({
           <button
           onClick={() => setShowHeaderOptions(!showHeaderOptions)}
           aria-label="More options"
-          className="p-1.5 sm:p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-lg transition-all">
+          className="p-1.5 sm:p-2 text-text-muted hover:text-text-primary hover rounded-lg transition-all">
 
             <MoreVertical className="w-4 h-4" />
           </button>
           {showHeaderOptions &&
-          <div className="absolute right-0 top-10 z-[9999] w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-soft border border-[#E5E7EB]/60 overflow-hidden py-1 flex flex-col">
+          <div className="absolute right-0 top-10 z-[9999] w-56 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-soft border border-border-default/60 overflow-hidden py-1 flex flex-col">
               {activeRoom.type === "direct" &&
             (() => {
               const otherUser = activeRoom.members?.find(
@@ -180,30 +180,30 @@ export const ChatHeader = ({
                 <>
                       <button
                   onClick={(e) => { e.stopPropagation(); handleReportUser(); }}
-                  className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
+                  className="w-full text-left px-4 py-3 text-sm font-semibold text-text-primary hover:bg-brand-50/30 transition-colors flex items-center gap-2">
 
-                        <Flag className="w-4 h-4 text-slate-500" /> Report User
+                        <Flag className="w-4 h-4 text-text-muted" /> Report User
                       </button>
                       <button
                   onClick={(e) => { e.stopPropagation(); handleBlockUser(); }}
-                  className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
+                  className="w-full text-left px-4 py-3 text-sm font-semibold text-text-primary hover:bg-brand-50/30 transition-colors flex items-center gap-2">
 
-                        <Ban className="w-4 h-4 text-slate-500" /> {isBlocked ? "Unblock User" : "Block User"}
+                        <Ban className="w-4 h-4 text-text-muted" /> {isBlocked ? "Unblock User" : "Block User"}
                       </button>
-                      <div className="border-t border-[#E5E7EB]"></div>
+                      <div className="border-t border-border-default"></div>
                     </>);
 
             })()}
               <button
             onClick={(e) => { e.stopPropagation(); handleClearChat(); }}
-            className="w-full text-left px-4 py-3 text-sm font-semibold text-[#1E293B] hover:bg-[#F3E8FF]/30 transition-colors flex items-center gap-2">
+            className="w-full text-left px-4 py-3 text-sm font-semibold text-text-primary hover:bg-brand-50/30 transition-colors flex items-center gap-2">
 
-                <Eraser className="w-4 h-4 text-slate-500" /> Clear Chat
+                <Eraser className="w-4 h-4 text-text-muted" /> Clear Chat
               </button>
               <button
             onClick={(e) => { e.stopPropagation(); handleDeleteChat(activeRoom); }}
             className={`w-full text-left px-4 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${
-            activeRoom.journeyId ? "text-slate-700 hover:bg-slate-50" : "text-red-500 hover:bg-red-50"
+            activeRoom.journeyId ? "text-text-primary hover" : "text-red-500 hover:bg-red-50"
             }`}>
 
                 {activeRoom.journeyId ?

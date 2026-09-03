@@ -34,12 +34,14 @@ const fonts = [
 
 
 const textColors = [
-"#ffffff",
-"#000000",
-"#7c3aed",
-"#F43F5E",
-"#F59E0B",
-"#10B981"];
+  "#ffffff",
+  "#0f172a",
+  "#0ea5e9",
+  "#f43f5e",
+  "#f59e0b",
+  "#10b981",
+  "#8b5cf6"
+];
 
 
 const popularLanguages = [
@@ -402,7 +404,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       videoElem.onloadedmetadata = () => {
         window.URL.revokeObjectURL(videoElem.src);
         if (videoElem.duration > 61) {
-          return showToast.error("Dispatch video duration cannot exceed 1 minute (60 seconds)!");
+          return showToast.error("Moment video duration cannot exceed 1 minute (60 seconds)!");
         }
         setMediaType("video");
         setMediaUrl(URL.createObjectURL(file));
@@ -694,13 +696,13 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       );
 
       if (res.data.success) {
-        showToast.success("Dispatch published successfully!");
+        showToast.success("Moment shared successfully!");
         onSuccess();
         handleClose();
       }
     } catch (err) {
       console.error("Story publish error:", err);
-      showToast.error(err.response?.data?.message || "Failed to publish Dispatch.");
+      showToast.error(err.response?.data?.message || "Failed to share Moment.");
     } finally {
       setIsSubmitting(false);
     }
@@ -727,9 +729,8 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    className={`fixed inset-0 z-[100000] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-slate-900/60 backdrop-blur-sm" : "bg-black"}`}>
+    className={`fixed inset-0 z-[100000] flex items-center justify-center sm:p-4 transition-colors duration-300 ${step === 1 ? "bg-brand/60 backdrop-blur-sm" : "bg-black"}`}>
 
-          {}
           <input
       type="file"
       ref={fileInputRef}
@@ -737,7 +738,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       className="hidden"
       onChange={handleFileChange} />
 
-          {}
           <input
       type="file"
       ref={cameraInputRef}
@@ -752,7 +752,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       initial={{ scale: 0.95, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       exit={{ scale: 0.95, opacity: 0 }}
-      className="w-full max-w-[400px] max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl flex flex-col p-4 sm:p-6 m-2 sm:m-4"
+      className="w-full max-w-[400px] max-h-[90vh] overflow-y-auto bg-surface rounded-[var(--radius-card)] shadow-2xl flex flex-col p-4 sm:p-6 m-2 sm:m-4"
       onDragOver={(e) => {
         e.preventDefault();
       }}
@@ -764,34 +764,31 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
         });
       }}>
 
-              {}
               <div
         className="flex-1 border-2 border-dashed border-brand-200 rounded-2xl flex flex-col items-center justify-center p-6 sm:p-8 text-center hover:bg-brand-50/50 hover:border-brand-300 transition-all cursor-pointer group min-h-[190px] sm:min-h-[220px] active:bg-brand-50"
         onClick={() => fileInputRef.current?.click()}>
 
                 <div className="w-14 h-14 sm:w-16 sm:h-16 bg-brand-100 rounded-full flex items-center justify-center mb-4 sm:mb-5 group-hover:scale-110 transition-transform duration-200">
-                  <ImagePlus className="w-7 h-7 sm:w-8 sm:h-8 text-brand-600" />
+                  <ImagePlus className="w-7 h-7 sm:w-8 sm:h-8 text-brand" />
                 </div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-800 mb-1.5 sm:mb-2">
+                <h3 className="text-lg sm:text-xl font-bold text-text-primary mb-1.5 sm:mb-2">
                   Share Your Journey
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-500 mb-3 sm:mb-4">
+                <p className="text-xs sm:text-sm text-text-muted mb-3 sm:mb-4">
                   Tap to pick from gallery, or use the buttons below.
                 </p>
-                <div className="text-[10px] sm:text-[11px] font-bold text-slate-400 bg-slate-100 px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wider">
+                <div className="text-[10px] sm:text-[11px] font-bold text-text-muted bg-background px-3 sm:px-4 py-1.5 rounded-full uppercase tracking-wider">
                   JPG · PNG · MP4 (MAX 1 MIN)
                 </div>
               </div>
 
-              {}
               <div className="mt-4 sm:mt-5 flex flex-wrap sm:flex-nowrap gap-2 shrink-0">
                 <button
           onClick={handleClose}
-          className="w-full sm:w-auto py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors order-3 sm:order-1">
+          className="w-full sm:w-auto py-3 px-4 rounded-xl font-bold text-xs sm:text-sm text-text-secondary bg-background hover transition-colors order-3 sm:order-1">
 
                   Cancel
                 </button>
-                {}
                 <button
           onClick={() => cameraInputRef.current?.click()}
           className="flex-1 py-3 px-3 rounded-xl font-bold text-xs sm:text-sm text-primary-600 border-2 border-primary-600/30 bg-primary-600/5 hover:bg-primary-600/10 transition-all flex items-center justify-center gap-1.5 order-1 sm:order-2">
@@ -835,7 +832,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
               </div>
 
-              {}
               <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                 {stickers.map((sticker) => {
             if (activeOverlay && sticker.id === editingStickerId)
@@ -936,14 +932,14 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 setEditingStickerId(null);
                 setActiveOverlay("caption");
               }}
-              className="w-11 h-11 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Text">
 
                         <Type className="w-6 h-6" />
                       </button>
                       <button
               onClick={() => setActiveOverlay("music")}
-              className="w-11 h-11 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Music">
 
                         <Music className="w-6 h-6" />
@@ -954,14 +950,14 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 setEditingStickerId(null);
                 setActiveOverlay("location");
               }}
-              className="w-11 h-11 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Location">
 
                         <MapPin className="w-6 h-6" />
                       </button>
                       <button
               onClick={() => setActiveOverlay("emoji")}
-              className="w-11 h-11 flex items-center justify-center text-slate-700 hover:bg-slate-100 rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Emoji">
 
                         <Smile className="w-6 h-6" />
@@ -971,7 +967,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     <div className="flex items-center gap-2 pr-1 shrink-0">
                       <button
               onClick={() => setActiveOverlay("privacy")}
-              className="h-11 px-3 bg-slate-100 hover:bg-slate-200 rounded-full text-slate-700 flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
+              className="h-11 px-3 bg-background hover rounded-full text-text-primary flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
               aria-label="Audience">
 
                         <Users className="w-5 h-5" />
@@ -993,9 +989,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 </motion.div>}
 
 
-              {}
               <AnimatePresence>
-                {}
                 {activeOverlay === "caption" &&
           <motion.div
           initial={{ opacity: 0 }}
@@ -1035,7 +1029,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 setActiveMenu(null);
                 setEditingStickerId(null);
               }}
-              className="text-slate-900 bg-white font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:scale-105 transition-all">
+              className="text-text-primary bg-white font-bold text-sm px-5 py-2 rounded-full shadow-lg hover:scale-105 transition-all">
 
                         Done
                       </button>
@@ -1043,7 +1037,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
                     <div className="flex-1 flex flex-col justify-center items-center px-4 relative">
                       <div
-              className={`relative transition-all duration-300 inline-grid max-w-full ${textStyle.bg === "glass" ? "bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-2xl" : textStyle.bg === "solid" ? "bg-white text-slate-900 px-4 py-1.5 rounded-2xl shadow-xl" : "px-2 py-0.5"}`}>
+              className={`relative transition-all duration-300 inline-grid max-w-full ${textStyle.bg === "glass" ? "bg-black/40 backdrop-blur-md px-4 py-1.5 rounded-2xl" : textStyle.bg === "solid" ? "bg-white text-text-primary px-4 py-1.5 rounded-2xl shadow-xl" : "px-2 py-0.5"}`}>
 
                         <div
                 className="invisible whitespace-pre-wrap text-4xl font-bold text-center drop-shadow-xl leading-tight p-0 m-0 break-words min-w-[2ch]"
@@ -1073,7 +1067,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                       </div>
                     </div>
 
-                    {}
                     <div className="flex flex-col items-center gap-4 pb-8 pt-6 relative z-20">
                       <AnimatePresence>
                         {activeMenu === "color" &&
@@ -1111,7 +1104,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     font: f.family
                   }))}
 
-                  className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${textStyle.font === f.family ? "bg-white text-slate-900 shadow-md" : "text-white hover:bg-white/20"}`}
+                  className={`px-4 py-2 rounded-full whitespace-nowrap text-sm font-bold transition-all ${textStyle.font === f.family ? "bg-white text-text-primary shadow-md" : "text-white hover:bg-white/20"}`}
                   style={{ fontFamily: f.family }}>
 
                                 {f.name}
@@ -1146,7 +1139,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 activeMenu === "color" ? null : "color"
                 )}
 
-                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${activeMenu === "color" ? "bg-white text-slate-900 border-white shadow-md" : "bg-white/20 text-white border-white/10 backdrop-blur-md hover:bg-white/30"}`}>
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${activeMenu === "color" ? "bg-white text-text-primary border-white shadow-md" : "bg-white/20 text-white border-white/10 backdrop-blur-md hover:bg-white/30"}`}>
 
                           Color
                         </button>
@@ -1155,7 +1148,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 onClick={() =>
                 setActiveMenu(activeMenu === "font" ? null : "font")}
 
-                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${activeMenu === "font" ? "bg-white text-slate-900 border-white shadow-md" : "bg-white/20 text-white border-white/10 backdrop-blur-md hover:bg-white/30"}`}>
+                className={`px-5 py-2.5 rounded-full text-sm font-bold transition-all border ${activeMenu === "font" ? "bg-white text-text-primary border-white shadow-md" : "bg-white/20 text-white border-white/10 backdrop-blur-md hover:bg-white/30"}`}>
 
                           Font
                         </button>
@@ -1164,7 +1157,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   </motion.div>}
 
 
-                {}
                 {activeOverlay === "location" &&
           <motion.div
           initial={{ y: "100%" }}
@@ -1184,16 +1176,16 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   setEditingStickerId(null);
                   setActiveOverlay(null);
                 }}
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100">
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand transition-all hover:bg-brand-100">
 
                           <ArrowLeft className="h-4 w-4" />
                         </button>
                         <div>
-                          <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                          <h3 className="text-base font-extrabold text-text-primary leading-tight">
                             Add Location
                           </h3>
-                          <p className="text-[11px] font-semibold text-slate-400 leading-tight">
-                            Tag where this Dispatch happened
+                          <p className="text-[11px] font-semibold text-text-muted leading-tight">
+                            Tag where this moment happened
                           </p>
                         </div>
                       </div>
@@ -1204,43 +1196,44 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 setEditingStickerId(null);
                 setActiveOverlay(null);
               }}
-              className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+              className="rounded-full p-1.5 text-text-muted hover:bg-background hover:text-text-secondary">
 
                         <X className="h-4 w-4" />
                       </button>
                     </div>
 
                     <div className="relative mb-3 shrink-0">
-                      <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
+                      <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500 pointer-events-none" />
                       <input
-              autoFocus
-              type="text"
-              placeholder="Search city, state, or landmark..."
-              value={locationQuery}
-              onChange={(e) => setLocationQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && locationQuery.trim()) {
-                  handleSaveLocation(locationQuery.trim());
-                }
-              }}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs" />
+                        autoFocus
+                        type="text"
+                        placeholder="Search city, state, or landmark..."
+                        value={locationQuery}
+                        onChange={(e) => setLocationQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && locationQuery.trim()) {
+                            handleSaveLocation(locationQuery.trim());
+                          }
+                        }}
+                        className="input-field !pl-10 !pr-10"
+                      />
 
-                      {locationQuery &&
-              <button
-              type="button"
-              onClick={() => setLocationQuery("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
-
+                      {locationQuery && (
+                        <button
+                          type="button"
+                          onClick={() => setLocationQuery("")}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-muted hover:text-text-secondary"
+                        >
                           <X className="h-3.5 w-3.5" />
-                        </button>}
-
+                        </button>
+                      )}
                     </div>
 
                     <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                       {isSearchingLocation ? (
-                        <div className="flex h-36 flex-col items-center justify-center gap-2 text-brand-600">
+                        <div className="flex h-36 flex-col items-center justify-center gap-2 text-brand">
                           <Loader2 className="h-5 w-5 animate-spin" />
-                          <span className="text-xs font-semibold text-slate-500">
+                          <span className="text-xs font-semibold text-text-muted">
                             Searching locations...
                           </span>
                         </div>
@@ -1263,15 +1256,15 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                                     onClick={() => handleSaveLocation(placeName)}
                                     className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
                                   >
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand transition-transform group-hover:scale-105 group-hover:bg-brand group-hover:text-white">
                                       <MapPin className="h-4 w-4" />
                                     </div>
                                     <span className="min-w-0 flex-1">
-                                      <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
+                                      <span className="block truncate text-xs font-bold text-text-primary group-hover:text-brand-900">
                                         {placeName}
                                       </span>
                                       {secondaryText && (
-                                        <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
+                                        <span className="mt-0.5 block truncate text-[11px] font-medium text-text-muted">
                                           {secondaryText}
                                         </span>
                                       )}
@@ -1286,10 +1279,10 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                             locationResults.length === 0 &&
                             !isSearchingLocation && (
                               <div className="flex flex-col items-center justify-center py-10 text-center">
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-400 mb-2">
+                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-background text-text-muted mb-2">
                                   <MapPin className="h-5 w-5" />
                                 </div>
-                                <p className="text-xs font-bold text-slate-500">
+                                <p className="text-xs font-bold text-text-muted">
                                   No locations found
                                 </p>
                               </div>
@@ -1300,7 +1293,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   </motion.div>}
 
 
-                {}
                 {activeOverlay === "emoji" &&
           <motion.div
           initial={{ y: "100%" }}
@@ -1311,12 +1303,12 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
                     <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto mb-4" />
                     <div className="flex justify-between items-center mb-6">
-                      <h3 className="text-slate-800 font-black text-lg">
+                      <h3 className="text-text-primary font-black text-lg">
                         Travel Emojis
                       </h3>
                       <button
               onClick={() => setActiveOverlay(null)}
-              className="text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1.5">
+              className="text-text-muted hover:text-text-secondary bg-background rounded-full p-1.5">
 
                         <X className="w-5 h-5" />
                       </button>
@@ -1338,7 +1330,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   </motion.div>}
 
 
-                {}
                 {activeOverlay === "music" &&
           <motion.div
           initial={{ y: "100%" }}
@@ -1349,26 +1340,35 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
                     <div className="p-4 border-b border-slate-100 flex items-center justify-between relative">
                       <div className="w-12 h-1 bg-slate-200 rounded-full mx-auto absolute top-2 left-1/2 -translate-x-1/2" />
-                      <h3 className="text-slate-800 font-black text-lg mt-2">
+                      <h3 className="text-text-primary font-black text-lg mt-2">
                         Add Music
                       </h3>
                       <button
               onClick={() => setActiveOverlay(null)}
-              className="mt-2 text-slate-400 hover:text-slate-600 bg-slate-100 rounded-full p-1.5">
+              className="mt-2 text-text-muted hover:text-text-secondary bg-background rounded-full p-1.5">
 
                         <X className="w-5 h-5" />
                       </button>
                     </div>
                     <div className="p-4 pb-2">
                       <div className="relative mb-3">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                         <input
-                type="text"
-                value={musicSearchQuery}
-                onChange={(e) => setMusicSearchQuery(e.target.value)}
-                placeholder="Search new movie songs, hits..."
-                className="w-full bg-slate-50 border border-slate-200 text-slate-800 placeholder:text-slate-400 px-11 py-3 rounded-2xl outline-none focus:ring-2 focus:ring-primary-600/30 font-semibold text-sm" />
-
+                          type="text"
+                          value={musicSearchQuery}
+                          onChange={(e) => setMusicSearchQuery(e.target.value)}
+                          placeholder="Search new movie songs, hits..."
+                          className="input-field !pl-10 !pr-10"
+                        />
+                        {musicSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setMusicSearchQuery("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-muted hover:text-text-secondary"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </button>
+                        )}
                       </div>
                       {!musicSearchQuery.trim() &&
               <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -1377,7 +1377,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 key={lang.value}
                 type="button"
                 onClick={() => setSelectedMusicLang(lang.value)}
-                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${selectedMusicLang === lang.value ? "bg-primary-600 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${selectedMusicLang === lang.value ? "bg-primary-600 text-white shadow-md" : "bg-background text-text-secondary hover"}`}>
 
                               {lang.label}
                             </button>
@@ -1395,13 +1395,13 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
               <>
                           {!musicSearchQuery.trim() &&
                 trendingSongs.length > 0 &&
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
+                <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 px-2">
                                 TRENDING SONGS
                               </p>}
 
                           {musicSearchQuery.trim() &&
                 spotifyResults.length > 0 &&
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 px-2">
+                <p className="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 px-2">
                                 SEARCH RESULTS
                               </p>}
 
@@ -1433,11 +1433,11 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 .map((track) =>
                 <div
                 key={track.id}
-                className={`group flex items-center justify-between p-2 h-[62px] rounded-2xl transition-all cursor-pointer ${selectedSong?.songTitle === track.title ? "bg-brand-50 border border-brand-100" : "bg-white hover:bg-slate-50 border border-transparent"}`}
+                className={`group flex items-center justify-between p-2 h-[62px] rounded-2xl transition-all cursor-pointer ${selectedSong?.songTitle === track.title ? "bg-brand-50 border border-brand-100" : "bg-white hover border border-transparent"}`}
                 onClick={() => handleSelectAndClose(track)}>
 
                                 <div className="flex items-center gap-3 min-w-0 flex-1">
-                                  <div className="relative w-[46px] h-[46px] shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                  <div className="relative w-[46px] h-[46px] shrink-0 rounded-xl overflow-hidden bg-background border border-slate-200">
                                     {track.albumImage ?
                       <img
                       src={track.albumImage}
@@ -1451,10 +1451,10 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
                                   </div>
                                   <div className="min-w-0 flex-1 pr-2">
-                                    <p className="text-sm font-black text-slate-800 truncate">
+                                    <p className="text-sm font-black text-text-primary truncate">
                                       {track.title}
                                     </p>
-                                    <p className="text-xs font-medium text-slate-500 truncate">
+                                    <p className="text-xs font-medium text-text-muted truncate">
                                       {track.artist}
                                     </p>
                                   </div>
@@ -1493,7 +1493,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                                     {spotifyError}
                                   </p> :
 
-                  <p className="text-xs font-bold text-slate-500">
+                  <p className="text-xs font-bold text-text-muted">
                                     No songs found.
                                   </p>}
 
@@ -1505,27 +1505,26 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   </motion.div>}
 
 
-                {}
                 {activeOverlay === "privacy" &&
           <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-40 bg-slate-900/40 backdrop-blur-md flex flex-col items-center justify-center p-6">
+          className="absolute inset-0 z-40 bg-brand/40 backdrop-blur-md flex flex-col items-center justify-center p-6">
 
                     <div className="bg-white w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl border border-slate-100 flex flex-col max-h-[80vh]">
                       <div className="p-4 border-b border-slate-100 flex items-start justify-between shrink-0">
                         <div>
-                          <h3 className="text-slate-800 font-black text-lg">
-                            Dispatch Privacy
+                          <h3 className="text-text-primary font-black text-lg">
+                            Moment Privacy
                           </h3>
-                          <p className="text-xs text-slate-500 mt-1">
-                            Choose who can see your dispatch
+                          <p className="text-xs text-text-muted mt-1">
+                            Choose who can see your moment
                           </p>
                         </div>
                         <button
                 onClick={() => setActiveOverlay(null)}
-                className="text-slate-400 hover:text-slate-600 p-1 bg-slate-100 rounded-full shrink-0">
+                className="text-text-muted hover:text-text-secondary p-1 bg-background rounded-full shrink-0">
 
                           <X className="w-4 h-4" />
                         </button>
@@ -1538,7 +1537,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     id: "public",
                     label: "Public",
                     icon:
-                    <Globe className="w-5 h-5 text-slate-600" />,
+                    <Globe className="w-5 h-5 text-text-secondary" />,
 
                     desc: "Anyone can view"
                   },
@@ -1546,7 +1545,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     id: "friends",
                     label: "Friends",
                     icon:
-                    <Users className="w-5 h-5 text-slate-600" />,
+                    <Users className="w-5 h-5 text-text-secondary" />,
 
                     desc: "People you're connected with"
                   },
@@ -1554,7 +1553,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     id: "tripMates",
                     label: "Trip Mates",
                     icon:
-                    <Briefcase className="w-5 h-5 text-slate-600" />,
+                    <Briefcase className="w-5 h-5 text-text-secondary" />,
 
                     desc: "People connected to this trip"
                   }]
@@ -1562,16 +1561,16 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   <div
                   key={opt.id}
                   onClick={() => setVisibility(opt.id)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${visibility === opt.id ? "bg-slate-50 ring-1 ring-slate-200" : "hover:bg-slate-50"}`}>
+                  className={`flex items-center gap-4 p-4 rounded-2xl cursor-pointer transition-all ${visibility === opt.id ? "bg-slate-50 ring-1 ring-slate-200" : "hover"}`}>
 
-                                <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-lg shadow-inner border border-slate-200">
+                                <div className="w-10 h-10 rounded-full bg-background flex items-center justify-center text-lg shadow-inner border border-slate-200">
                                   {opt.icon}
                                 </div>
                                 <div className="flex-1">
-                                  <p className="text-sm font-bold text-slate-800">
+                                  <p className="text-sm font-bold text-text-primary">
                                     {opt.label}
                                   </p>
-                                  <p className="text-xs text-slate-500">
+                                  <p className="text-xs text-text-muted">
                                     {opt.desc}
                                   </p>
                                 </div>
@@ -1588,7 +1587,7 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                           <div className="p-4 pt-2 shrink-0">
                             <button
                   onClick={() => setActiveOverlay(null)}
-                  className="w-full bg-[#1E293B] text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition shadow-md">
+                  className="w-full bg-slate-800 text-white py-3 rounded-xl font-bold text-sm hover:bg-black transition shadow-md">
 
                               Done
                             </button>

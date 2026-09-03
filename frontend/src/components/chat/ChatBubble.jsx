@@ -1,12 +1,13 @@
 import React, { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { SmilePlus, Reply, X, Play, Image, Loader2, Check, CheckCheck, Eye } from 'lucide-react';
 import EmojiPicker from 'emoji-picker-react';
 
 const renderReadReceipt = (msg, isSelf) => {
   const statusClass = isSelf ?
   "text-white/60 whitespace-nowrap flex items-center gap-1 text-[10px] font-medium" :
-  "text-slate-400 whitespace-nowrap flex items-center gap-1 text-[10px] font-medium";
-  const iconClass = isSelf ? "w-3 h-3 text-white/60" : "w-3 h-3 text-slate-400";
+  "text-text-muted whitespace-nowrap flex items-center gap-1 text-[10px] font-medium";
+  const iconClass = isSelf ? "w-3 h-3 text-white/60" : "w-3 h-3 text-text-muted";
 
   if (msg.isPending) {
     return (
@@ -65,7 +66,7 @@ const renderClickableText = (text, isSelf = false) => {
         href={safeUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className={`underline hover:opacity-80 font-medium ${isSelf ? "text-white" : "text-brand-600"}`}
+        className={`underline hover:opacity-80 font-medium ${isSelf ? "text-white" : "text-brand"}`}
         style={{ overflowWrap: 'anywhere', wordBreak: 'break-all' }}
         onClick={(e) => e.stopPropagation()}>
 
@@ -95,11 +96,14 @@ const ChatBubble = ({
   setActiveMessageOptions,
   hideStoryPreview = false
 }) => {
+  const navigate = useNavigate();
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [lightboxData, setLightboxData] = useState({ isOpen: false, url: '', type: 'image' });
   const [swipeOffset, setSwipeOffset] = useState(0);
   const touchStart = useRef({ x: 0, y: 0 });
   const messageRef = useRef(null);
+
+  const senderId = typeof msg.sender === "object" ? (msg.sender?._id || msg.sender?.id) : msg.sender;
 
   const handleEmojiClick = (emojiObj) => {
     onReaction(msg._id, emojiObj.emoji);
@@ -134,18 +138,27 @@ const ChatBubble = ({
     ref={messageRef}
     className={`flex w-full mb-3 items-end gap-2.5 ${isSelf ? "justify-end" : "justify-start"}`}>
 
-      {}
-      {!isSelf && showAvatar &&
-      <div className="w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0 shadow-xs border border-slate-100">
+      {!isSelf && showAvatar && activeRoomType === "group" && (
+        <div
+          onClick={(e) => {
+            if (senderId) {
+              e.stopPropagation();
+              navigate(`/profile/${senderId}`);
+            }
+          }}
+          className={`w-8 h-8 rounded-full overflow-hidden bg-slate-200 shrink-0 shadow-xs border border-slate-100 ${
+            senderId ? "cursor-pointer hover:opacity-80 transition-opacity" : ""
+          }`}
+        >
           <img
-        src={senderPic}
-        alt={senderName}
-        className="w-full h-full object-cover" />
-
-        </div>}
+            src={senderPic}
+            alt={senderName}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      )}
 
       
-      {}
       <div
       className="flex flex-col max-w-[80%] sm:max-w-[65%] lg:max-w-[60%] transition-transform duration-150 ease-out"
       style={{ transform: `translateX(${swipeOffset}px)` }}
@@ -153,19 +166,30 @@ const ChatBubble = ({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}>
 
-        {!isSelf && activeRoomType === "group" && showAvatar &&
-        <span className="text-xs font-semibold text-slate-500 mb-1 ml-1">
+        {!isSelf && activeRoomType === "group" && showAvatar && (
+          <span
+            onClick={(e) => {
+              if (senderId) {
+                e.stopPropagation();
+                navigate(`/profile/${senderId}`);
+              }
+            }}
+            className={`text-xs font-semibold text-text-muted mb-1 ml-1 ${
+              senderId ? "cursor-pointer hover:text-brand hover:underline transition-colors" : ""
+            }`}
+          >
             {senderName}
-          </span>}
+          </span>
+        )}
 
         
         <div
         className={`relative px-4 py-2.5 cursor-pointer group transition-all duration-200 hover:-translate-y-[1px] min-w-[80px] ${
         msg.isUnsent ?
-        "bg-slate-50 border border-slate-200 text-slate-400 italic rounded-2xl" :
+        "bg-slate-50 border border-slate-200 text-text-muted italic rounded-2xl" :
         isSelf ?
-        "bg-brand-600 hover:bg-brand-700 text-white rounded-2xl rounded-br-sm shadow-md shadow-brand-600/15 font-medium" :
-        "bg-white border border-slate-200/80 text-slate-800 rounded-2xl rounded-bl-sm shadow-sm hover:shadow-md"
+        "bg-brand hover:bg-brand-dark text-white rounded-2xl rounded-br-sm shadow-md shadow-brand-600/15 font-medium" :
+        "bg-white border border-slate-200/80 text-text-primary rounded-2xl rounded-bl-sm shadow-sm hover:shadow-md"
         }`}
         style={{ overflowWrap: 'anywhere' }}
         onContextMenu={(e) => {
@@ -184,10 +208,8 @@ const ChatBubble = ({
             </p> :
 
           <>
-              {}
               {msg.storyId ?
             <div className="flex flex-col gap-2 min-w-[200px]">
-                  {}
                   <div
               className={`p-2 rounded-xl text-xs flex gap-2.5 items-center cursor-pointer border backdrop-blur-sm shadow-sm ${
               isSelf ?
@@ -200,7 +222,6 @@ const ChatBubble = ({
                 if (onStoryClick) onStoryClick(dispatchId);
               }}>
 
-                    {}
                     <div className="relative shrink-0 w-11 h-16 rounded-lg overflow-hidden bg-black/40 shadow-sm border border-white/10">
                       {typeof msg.storyId === 'object' && msg.storyId.media ?
                   msg.storyId.mediaType === 'video' ?
@@ -219,23 +240,21 @@ const ChatBubble = ({
                           </> :
 
 
-                  <div className="w-full h-full bg-brand-100 flex items-center justify-center text-brand-600 text-lg">
+                  <div className="w-full h-full bg-brand-100 flex items-center justify-center text-brand text-lg">
                           📷
                         </div>}
 
                     </div>
-                    {}
                     <div className="flex-1 min-w-0 pr-1">
-                      <div className={`font-bold mb-0.5 text-xs uppercase tracking-wider ${isSelf ? "text-brand-200" : "text-brand-600"}`}>
+                      <div className={`font-bold mb-0.5 text-xs uppercase tracking-wider ${isSelf ? "text-brand-200" : "text-brand"}`}>
                         {(msg.text || msg.content || "").startsWith("Reacted") ? "✨ Dispatch Reaction" : "💬 Dispatch Reply"}
                       </div>
-                      <div className={`truncate text-xs font-medium opacity-80 ${isSelf ? "text-white" : "text-slate-600"}`}>
+                      <div className={`truncate text-xs font-medium opacity-80 ${isSelf ? "text-white" : "text-text-secondary"}`}>
                         {typeof msg.storyId === 'object' ? msg.storyId.caption || "View Dispatch attachment" : "View Dispatch"}
                       </div>
                     </div>
                   </div>
 
-                  {}
                   {msg.text &&
               <div className="px-1 py-0.5 text-sm leading-relaxed whitespace-pre-wrap">
                       {renderClickableText(msg.text, isSelf)}
@@ -244,9 +263,8 @@ const ChatBubble = ({
                 </div> :
 
             <>
-                  {}
                   {msg.replyTo && msg.replyTo._id && (msg.replyTo.text || msg.replyTo.media || msg.replyTo.senderName) &&
-              <div className={`mb-2 pl-2 border-l-2 text-xs opacity-80 ${isSelf ? "border-white/50 text-white" : "border-slate-400 text-slate-600"}`}>
+              <div className={`mb-2 pl-2 border-l-2 text-xs opacity-80 ${isSelf ? "border-white/50 text-white" : "border-slate-400 text-text-secondary"}`}>
                       <div className="font-semibold">
                         {msg.replyTo.senderName === currentUserName || msg.replyTo.senderName === "You" ? "You" : msg.replyTo.senderName}
                       </div>
@@ -254,7 +272,6 @@ const ChatBubble = ({
                     </div>}
 
 
-                  {}
                   {msg.media &&
               <div className="mb-1 rounded-xl overflow-hidden">
                       <img
@@ -269,7 +286,6 @@ const ChatBubble = ({
                     </div>}
 
 
-                  {}
                   {msg.text &&
               <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ overflowWrap: 'anywhere' }}>
                       {renderClickableText(msg.text, isSelf)}
@@ -280,12 +296,11 @@ const ChatBubble = ({
             </>}
 
 
-          {}
           {activeMessageOptions === msg._id &&
           <div className={`absolute top-full mt-1 z-50 bg-white shadow-lg rounded-xl border border-slate-100 w-36 overflow-hidden ${isSelf ? "right-0" : "left-0"}`}>
               <button
             onClick={(e) => {e.stopPropagation();onDelete(msg._id);setActiveMessageOptions(null);}}
-            className="w-full text-left px-4 py-2.5 text-xs font-semibold text-slate-800 hover:bg-slate-50 transition-colors">
+            className="w-full text-left px-4 py-2.5 text-xs font-semibold text-text-primary hover transition-colors">
 
                 Delete for me
               </button>
@@ -300,10 +315,9 @@ const ChatBubble = ({
             </div>}
 
 
-          {}
           <div
           className={`flex items-center justify-end gap-1 mt-1.5 ${
-          isSelf ? "text-white/50" : "text-slate-400"
+          isSelf ? "text-white/50" : "text-text-muted"
           }`}>
 
             <span className="text-[10px] font-medium">{formatTime(msg.createdAt)}</span>
@@ -315,27 +329,25 @@ const ChatBubble = ({
 
           </div>
           
-          {}
           {!msg.isUnsent &&
-          <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${isSelf ? "-left-[72px]" : "-right-[72px]"}`}>
+          <div className={`absolute top-1/2 -translate-y-1/2 flex items-center gap-1 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity ${isSelf ? "-left-9 sm:-left-[72px]" : "-right-9 sm:-right-[72px]"}`}>
               <button
             onClick={(e) => {e.stopPropagation();setShowEmojiPicker(!showEmojiPicker);}}
-            className="p-1.5 bg-white border border-slate-100 shadow-sm rounded-full text-slate-400 hover:text-brand-600 transition-colors">
+            className="hidden sm:flex p-1.5 bg-white border border-slate-100 shadow-sm rounded-full text-text-muted hover:text-brand transition-colors">
 
                 <SmilePlus className="w-3.5 h-3.5" />
               </button>
               <button
             onClick={(e) => {e.stopPropagation();onReply(msg);}}
-            className="p-1.5 bg-white border border-slate-100 shadow-sm rounded-full text-slate-400 hover:text-brand-600 transition-colors">
+            className="p-1.5 bg-white border border-slate-100 shadow-sm rounded-full text-text-muted hover:text-brand transition-colors">
 
                 <Reply className="w-3.5 h-3.5" />
               </button>
             </div>}
 
 
-          {}
           {showEmojiPicker &&
-          <div className={`absolute bottom-full mb-2 z-50 ${isSelf ? "right-0" : "left-0"}`}>
+          <div className={`hidden sm:block absolute bottom-full mb-2 z-50 ${isSelf ? "right-0" : "left-0"}`}>
               <div
             className="fixed inset-0 z-40"
             onClick={(e) => {e.stopPropagation();setShowEmojiPicker(false);}} />
@@ -347,7 +359,6 @@ const ChatBubble = ({
 
         </div>
 
-        {}
         {msg.reactions && msg.reactions.length > 0 &&
         <div className={`flex flex-wrap gap-1 mt-1 ${isSelf ? "justify-end" : "justify-start"}`}>
             {msg.reactions.map((r, idx) =>
@@ -359,7 +370,6 @@ const ChatBubble = ({
 
       </div>
 
-      {}
       {lightboxData.isOpen &&
       <div
       className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4"

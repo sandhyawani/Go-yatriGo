@@ -100,27 +100,26 @@ const HelpSupport = () => {
     <div className=" bg-slate-50 pt-14 md:pt-0 pb-20">
       <div className="max-w-3xl mx-auto p-4 md:p-8 space-y-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2">
+          <h1 className="text-2xl font-black text-text-primary flex items-center gap-2">
             <HelpCircle className="w-6 h-6 text-brand-500" />
             Help & Support
           </h1>
-          <p className="text-sm text-slate-500 font-medium mt-1">
+          <p className="text-sm text-text-muted font-medium mt-1">
             We are here to ensure your safety and address any issues.
           </p>
         </div>
 
-        {}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Link
           to="/contactus"
           className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 hover:border-brand-200 hover:shadow-md transition-all group flex items-start gap-4">
 
-            <div className="p-3 bg-brand-50 rounded-2xl text-brand-600 group-hover:scale-110 transition-transform">
+            <div className="p-3 bg-brand-50 rounded-2xl text-brand group-hover:scale-110 transition-transform">
               <MessageSquare className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800">Contact Us</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <h3 className="font-bold text-text-primary">Contact Us</h3>
+              <p className="text-xs text-text-muted mt-1 leading-relaxed">
                 Reach out to our concierge team directly for dedicated support.
               </p>
             </div>
@@ -130,8 +129,8 @@ const HelpSupport = () => {
               <LifeBuoy className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800">Safety Center</h3>
-              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+              <h3 className="font-bold text-text-primary">Safety Center</h3>
+              <p className="text-xs text-text-muted mt-1 leading-relaxed">
                 Learn about our moderation, safety protocols, and community
                 rules.
               </p>
@@ -141,10 +140,9 @@ const HelpSupport = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8">
-            {}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6">
-                <FileText className="w-4 h-4 text-slate-400" />
+            <div className="bg-surface rounded-[var(--radius-card)] p-6 shadow-sm border border-slate-100">
+              <h2 className="text-sm font-bold text-text-primary flex items-center gap-2 mb-6">
+                <FileText className="w-4 h-4 text-text-muted" />
                 Frequently Asked Questions
               </h2>
               <div className="space-y-3">
@@ -155,19 +153,19 @@ const HelpSupport = () => {
 
                     <button
                   onClick={() => toggleFaq(idx)}
-                  className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-50 focus:outline-none">
+                  className="w-full flex items-center justify-between p-4 text-left hover focus:outline-none">
 
-                      <span className="text-sm font-bold text-slate-700 pr-4">
+                      <span className="text-sm font-bold text-text-primary pr-4">
                         {faq.question}
                       </span>
                       {activeFaq === idx ?
                     <ChevronUp className="w-4 h-4 text-brand-500 shrink-0" /> :
 
-                    <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />}
+                    <ChevronDown className="w-4 h-4 text-text-muted shrink-0" />}
 
                     </button>
                     {activeFaq === idx &&
-                  <div className="p-4 pt-0 text-sm text-slate-500 leading-relaxed border-t border-slate-100 bg-white">
+                  <div className="p-4 pt-0 text-sm text-text-muted leading-relaxed border-t border-slate-100 bg-white">
                         {faq.answer}
                       </div>}
 
@@ -176,20 +174,19 @@ const HelpSupport = () => {
               </div>
             </div>
 
-            {}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-2">
-                <ShieldCheck className="w-4 h-4 text-slate-400" />
+            <div className="bg-surface rounded-[var(--radius-card)] p-6 shadow-sm border border-slate-100">
+              <h2 className="text-sm font-bold text-text-primary flex items-center gap-2 mb-2">
+                <ShieldCheck className="w-4 h-4 text-text-muted" />
                 Report an Issue
               </h2>
-              <p className="text-xs text-slate-500 mb-6">
+              <p className="text-xs text-text-muted mb-6">
                 Encountered a bug or an unsafe situation? Let us know.
               </p>
 
               <form onSubmit={handleReportSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <label
-                  className={`p-3 rounded-xl border text-center cursor-pointer transition-colors text-sm font-bold ${reportType === "Bug" ? "bg-brand-50 border-brand-200 text-brand-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
+                  className={`p-3 rounded-xl border text-center cursor-pointer transition-colors text-sm font-bold ${reportType === "Bug" ? "bg-brand-50 border-brand-200 text-brand-dark" : "bg-slate-50 border-slate-200 text-text-muted hover:bg-background"}`}>
 
                     <input
                     type="radio"
@@ -201,7 +198,7 @@ const HelpSupport = () => {
                     Technical Bug
                   </label>
                   <label
-                  className={`p-3 rounded-xl border text-center cursor-pointer transition-colors text-sm font-bold ${reportType === "Safety" ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100"}`}>
+                  className={`p-3 rounded-xl border text-center cursor-pointer transition-colors text-sm font-bold ${reportType === "Safety" ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-slate-50 border-slate-200 text-text-muted hover:bg-background"}`}>
 
                     <input
                     type="radio"
@@ -236,10 +233,9 @@ const HelpSupport = () => {
           </div>
 
           <div className="space-y-8">
-            {}
-            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-              <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2 mb-6">
-                <Ticket className="w-4 h-4 text-slate-400" />
+            <div className="bg-surface rounded-[var(--radius-card)] p-6 shadow-sm border border-slate-100">
+              <h2 className="text-sm font-bold text-text-primary flex items-center gap-2 mb-6">
+                <Ticket className="w-4 h-4 text-text-muted" />
                 Recent Tickets
               </h2>
               <div className="space-y-3">
@@ -249,7 +245,7 @@ const HelpSupport = () => {
                 className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
 
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                      <span className="text-[10px] font-black uppercase text-text-muted tracking-wider">
                         {ticket.trackingId || "TICKET"}
                       </span>
                       <span
@@ -258,21 +254,20 @@ const HelpSupport = () => {
                         {ticket.status}
                       </span>
                     </div>
-                    <p className="text-xs font-bold text-slate-700 truncate">
+                    <p className="text-xs font-bold text-text-primary truncate">
                       {ticket.subject || ticket.category}
                     </p>
-                    <p className="text-[10px] text-slate-400 mt-1">
+                    <p className="text-[10px] text-text-muted mt-1">
                       {new Date(ticket.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 )}
                 {tickets.length === 0 &&
-                <p className="text-xs text-slate-400">No recent tickets.</p>}
+                <p className="text-xs text-text-muted">No recent tickets.</p>}
 
               </div>
             </div>
 
-            {}
             <div className="bg-gradient-to-br from-brand-600 to-brand-800 rounded-3xl p-6 text-white shadow-md">
               <h3 className="text-sm font-black mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4" /> Safety First

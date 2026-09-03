@@ -10,7 +10,7 @@ const GUIDELINES = [
   bg: '#FDF2F8',
   items: [
   'Treat every traveler with courtesy, regardless of background, nationality, or travel style.',
-  'Avoid offensive language, personal attacks, or discriminatory remarks in chats and posts.',
+  'Avoid offensive language, personal attacks, or discriminatory remarks in chats and travel memories.',
   'Disagreements happen — resolve them respectfully or disengage.']
 
 },
@@ -50,8 +50,8 @@ const GUIDELINES = [
 {
   icon: BadgeCheck,
   title: 'Authentic Content',
-  color: '#8B5CF6',
-  bg: '#F5F3FF',
+  color: '#30afff',
+  bg: '#F0FBFD',
   items: [
   'Share genuine travel experiences, photos, and reviews.',
   'Do not impersonate other travelers or misrepresent your identity.',
@@ -75,16 +75,16 @@ const GUIDELINES = [
   color: '#64748B',
   bg: '#F1F5F9',
   items: [
-  'All shared photos and posts should be appropriate for a general audience.',
-  'Do not post violent, explicit, or graphic content.',
+  'All shared photos and travel memories should be appropriate for a general audience.',
+  'Do not share violent, explicit, or graphic content.',
   'Travel memories should celebrate experiences — not promote illegal activities.']
 
 },
 {
   icon: MessageCircle,
   title: 'Journey Group Chats',
-  color: '#7C3AED',
-  bg: '#F3E8FF',
+  color: '#0284c7',
+  bg: '#E0F7FC',
   items: [
   'Keep group chat conversations relevant to the journey.',
   'Journey hosts can block disruptive participants from the chat.',
@@ -116,7 +116,7 @@ const GUIDELINES = [
 
 
 const GuidelineCard = ({ icon: Icon, title, color, bg, items }) =>
-<div className="bg-white p-6 rounded-3xl border border-[#E5E7EB] shadow-sm">
+<div className="bg-white p-6 rounded-3xl border border-border-default shadow-sm">
     <div className="flex items-center gap-3 mb-4">
       <div
     className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
@@ -124,7 +124,7 @@ const GuidelineCard = ({ icon: Icon, title, color, bg, items }) =>
 
         <Icon className="w-5 h-5" style={{ color }} />
       </div>
-      <h3 className="text-base font-bold text-[#1E293B]">{title}</h3>
+      <h3 className="text-base font-bold text-text-primary">{title}</h3>
     </div>
     <ul className="space-y-3">
       {items.map((text, i) =>
@@ -133,7 +133,7 @@ const GuidelineCard = ({ icon: Icon, title, color, bg, items }) =>
       className="mt-2 w-1.5 h-1.5 rounded-full shrink-0"
       style={{ background: color }} />
 
-          <span className="text-sm text-[#64748B] leading-relaxed">{text}</span>
+          <span className="text-sm text-text-muted leading-relaxed">{text}</span>
         </li>
     )}
     </ul>
@@ -150,27 +150,27 @@ const CommunityGuidelines = () => {
         <div className="flex items-center gap-3 mb-5">
           <button
           onClick={() => navigate('/settings')}
-          className="p-1.5 hover:bg-slate-200 rounded-full transition-colors">
+          className="p-1.5 hover rounded-full transition-colors">
 
-            <ChevronLeft className="w-5 h-5 text-slate-700" />
+            <ChevronLeft className="w-5 h-5 text-text-primary" />
           </button>
           <div>
-            <h1 className="text-xl font-black text-[#1E293B]">Community Guidelines</h1>
-            <p className="text-xs text-[#64748B] font-medium mt-0.5">Creating a respectful and trustworthy travel community</p>
+            <h1 className="text-xl font-black text-text-primary">Community Guidelines</h1>
+            <p className="text-xs text-text-muted font-medium mt-0.5">Creating a respectful and trustworthy travel community</p>
           </div>
         </div>
 
         <div
         className="p-6 shadow-sm"
-        style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '24px', borderLeft: '4px solid #7C3AED' }}>
+        style={{ background: '#FFFFFF', border: '1px solid #E5E7EB', borderRadius: '24px', borderLeft: '4px solid #0284c7' }}>
 
           <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#F3E8FF' }}>
-              <Heart className="w-5 h-5" style={{ color: '#7C3AED' }} />
+            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: '#E0F7FC' }}>
+              <Heart className="w-5 h-5" style={{ color: '#0284c7' }} />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-[#1E293B] mb-1">Travel Better, Together</h2>
-              <p className="text-sm text-[#64748B] leading-relaxed">
+              <h2 className="text-lg font-bold text-text-primary mb-1">Travel Better, Together</h2>
+              <p className="text-sm text-text-muted leading-relaxed">
                 Go YatriGo connects travelers who share a love of exploration. These guidelines help keep the community welcoming, safe, and genuine for everyone.
               </p>
             </div>
@@ -183,29 +183,29 @@ const CommunityGuidelines = () => {
           )}
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-[#E5E7EB] shadow-sm">
-          <h3 className="text-base font-bold text-[#1E293B] mb-3">Need Help?</h3>
+        <div className="bg-white p-6 rounded-3xl border border-border-default shadow-sm">
+          <h3 className="text-base font-bold text-text-primary mb-3">Need Help?</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Link
             to="/report"
-            className="flex items-center gap-3 p-4 rounded-2xl bg-[#F8FAFC] hover:bg-slate-100 transition-colors">
+            className="flex items-center gap-3 p-4 rounded-2xl bg-background hover:bg-background transition-colors">
 
-              <Flag className="w-4 h-4 text-[#F97316]" />
-              <span className="text-sm font-semibold text-[#1E293B]">Report a Problem</span>
+              <Flag className="w-4 h-4 text-warning" />
+              <span className="text-sm font-semibold text-text-primary">Report a Problem</span>
             </Link>
             <Link
             to="/blocked-users"
-            className="flex items-center gap-3 p-4 rounded-2xl bg-[#F8FAFC] hover:bg-slate-100 transition-colors">
+            className="flex items-center gap-3 p-4 rounded-2xl bg-background hover:bg-background transition-colors">
 
-              <ShieldAlert className="w-4 h-4 text-[#EF4444]" />
-              <span className="text-sm font-semibold text-[#1E293B]">Manage Blocked Users</span>
+              <ShieldAlert className="w-4 h-4 text-danger" />
+              <span className="text-sm font-semibold text-text-primary">Manage Blocked Users</span>
             </Link>
           </div>
         </div>
 
-        <div className="text-center p-4 bg-[#F8FAFC] rounded-2xl border border-[#E5E7EB]">
-          <p className="text-xs text-[#64748B]">
-            These guidelines apply to all interactions on Go YatriGo — posts, messages, journeys, and profiles. Thank you for helping build a better travel community.
+        <div className="text-center p-4 bg-background rounded-2xl border border-border-default">
+          <p className="text-xs text-text-muted">
+            These guidelines apply to all interactions on Go YatriGo — travel memories, messages, journeys, and profiles. Thank you for helping build a better travel community.
           </p>
         </div>
 

@@ -1,6 +1,6 @@
 import { useLayoutEffect, useEffect } from 'react';
 
-const SCROLL_KEY = 'home-feed-scroll-position';
+const SCROLL_KEY_PREFIX = 'feed-scroll-pos-';
 
 /**
  * Hook to save and restore scroll position for the home feed.
@@ -8,12 +8,16 @@ const SCROLL_KEY = 'home-feed-scroll-position';
  * @param {string} containerSelector - CSS selector for the scrollable container.
  */
 export const useScrollRestoration = (isReady, containerSelector) => {
+  const scrollKey = containerSelector
+    ? `${SCROLL_KEY_PREFIX}${containerSelector.replace(/[^a-zA-Z0-9]/g, '_')}`
+    : 'home-feed-scroll-position';
+
   // Save scroll position before unmount or when navigating away
   useEffect(() => {
     const handleScroll = () => {
       const container = document.querySelector(containerSelector);
       if (container) {
-        sessionStorage.setItem(SCROLL_KEY, container.scrollTop.toString());
+        sessionStorage.setItem(scrollKey, container.scrollTop.toString());
       }
     };
 
@@ -26,23 +30,33 @@ export const useScrollRestoration = (isReady, containerSelector) => {
     return () => {
       if (container) {
         container.removeEventListener('scroll', handleScroll);
-        sessionStorage.setItem(SCROLL_KEY, container.scrollTop.toString());
+        sessionStorage.setItem(scrollKey, container.scrollTop.toString());
       }
     };
-  }, [containerSelector]);
+  }, [containerSelector, scrollKey]);
 
   // Restore scroll position when data is ready
   useLayoutEffect(() => {
     if (isReady) {
-      const savedPosition = sessionStorage.getItem(SCROLL_KEY);
+      // On desktop, main-scroll-container must always stay at 0
+      if (containerSelector === '#main-scroll-container' && typeof window !== 'undefined' && window.innerWidth >= 1024) {
+        return;
+      }
+
+      const savedPosition = sessionStorage.getItem(scrollKey);
       const container = document.querySelector(containerSelector);
       
+      // Only restore if user had scrolled substantially (> 60px) down the feed
+      // This prevents minor scroll offsets from hiding the greeting/dashboard header
       if (savedPosition && container) {
-        // Use requestAnimationFrame to ensure the DOM has painted the feed
-        requestAnimationFrame(() => {
-          container.scrollTop = parseInt(savedPosition, 10);
-        });
+        const pos = parseInt(savedPosition, 10);
+        if (pos > 60) {
+          // Use requestAnimationFrame to ensure the DOM has painted the feed
+          requestAnimationFrame(() => {
+            container.scrollTop = pos;
+          });
+        }
       }
     }
-  }, [isReady, containerSelector]);
+  }, [isReady, containerSelector, scrollKey]);
 };

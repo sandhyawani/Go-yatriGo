@@ -59,12 +59,12 @@ select {
 }
 
 ::selection {
-  background: #dcd6ff;
-  color: #4c1d95;
+  background: var(--pop-border, #bae6fd);
+  color: var(--brand-dark, #0369a1);
 }
 
 *:focus-visible {
-  outline: 2px solid #7c3aed;
+  outline: 2px solid var(--pop-primary, var(--brand, #0284c7));
   outline-offset: 2px;
 }
 

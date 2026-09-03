@@ -1,14 +1,32 @@
 import React, {
-useState,
-useEffect,
-useContext,
-useRef,
-useCallback } from
-"react";
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  useCallback
+} from "react";
 import axios from "../../api/axios";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Users, Plus, Compass, BadgeCheck, ChevronDown, CalendarClock, Flame, Star, Clock, Check, ChevronLeft } from "lucide-react";
+import { 
+  Users, 
+  Plus, 
+  Compass, 
+  BadgeCheck, 
+  ChevronDown, 
+  CalendarClock, 
+  Flame, 
+  Star, 
+  Clock, 
+  Check, 
+  ChevronLeft,
+  Search,
+  X,
+  Sparkles,
+  MapPin,
+  SlidersHorizontal,
+  RotateCcw
+} from "lucide-react";
 import { showToast } from "../../utils/showToast";
 import CustomSelect from "../../components/ui/CustomSelect";
 import { AuthContext } from "../../context/authContext";
@@ -21,6 +39,20 @@ import {
   normalizeFilterStatus,
   normalizeJourneyStatus
 } from "../../utils/journeyLifecycle";
+
+const CATEGORY_EMOJI_MAP = {
+  "All": "🌐",
+  "Trekking": "⛰️",
+  "Roadtrip": "🚗",
+  "Heritage & Culture": "🏛️",
+  "Spiritual": "🛕",
+  "Beach": "🏖️",
+  "Wildlife & Safari": "🦁",
+  "Backpacking": "🎒",
+  "Wellness & Retreat": "🧘",
+  "City Exploration": "🏙️",
+  "Journey": "✈️"
+};
 
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -117,6 +149,8 @@ const TravelBuddyHub = () => {
   } else if (isCustomLocation) {
     currentLocationLabel = `${urlExploreCity}, ${urlExploreState || ""}`;
   }
+
+  const dynamicCityName = isUsingProfile ? user?.city?.trim() : isCustomLocation ? urlExploreCity?.trim() : "";
 
   const handleSelectLocation = (city, state) => {
     const newParams = new URLSearchParams(searchParams);
@@ -359,13 +393,13 @@ const TravelBuddyHub = () => {
       case "active":
         return "bg-green-500/90 text-white border border-white/20";
       case "upcoming":
-        return "bg-white/95 text-[#1E293B] border border-white/40 shadow-sm";
+        return "bg-white/95 text-text-primary border border-white/40 shadow-sm";
       case "completed":
         return "bg-black/60 text-white border border-white/20";
       case "cancelled":
         return "bg-red-500/90 text-white border border-white/20";
       default:
-        return "bg-white/90 text-slate-700 border border-white/20";
+        return "bg-white/90 text-text-primary border border-white/20";
     }
   };
 
@@ -383,23 +417,26 @@ const TravelBuddyHub = () => {
 
   const renderFilterChips = () => {
     const chips = [
-    {
-      id: "all-cats",
-      label: "All Categories",
-      onClick: () => {
-        updateUrlParams("category", "All");
-      },
-      isActive: selectedCategory === "All"
-    }];
-
+      {
+        id: "all-cats",
+        label: "All Categories",
+        emoji: "🌐",
+        onClick: () => {
+          updateUrlParams("category", "All");
+        },
+        isActive: selectedCategory === "All" || !selectedCategory
+      }
+    ];
 
     const otherCats =
-    metadata?.categories?.filter((c) => GROUP_CATEGORIES.includes(c.name)) ||
-    [];
+      metadata?.categories?.filter((c) => GROUP_CATEGORIES.includes(c.name)) ||
+      GROUP_CATEGORIES.map(name => ({ name }));
+
     otherCats.forEach((c) => {
       chips.push({
         id: `cat-${c.name}`,
         label: c.name,
+        emoji: CATEGORY_EMOJI_MAP[c.name] || "🎒",
         onClick: () => {
           updateUrlParams("category", c.name);
         },
@@ -408,84 +445,157 @@ const TravelBuddyHub = () => {
     });
 
     return (
-      <div className="flex overflow-x-auto gap-2 pb-1 pt-1 hide-scrollbar snap-x flex-1 min-w-0 whitespace-nowrap">
-        {chips.map((chip) =>
-        <button
-        key={chip.id}
-        onClick={chip.onClick}
-        className={`snap-start px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 hover:-translate-y-0.5 shrink-0 ${
-        chip.isActive ?
-        "bg-[#7C3AED] text-white shadow-soft" :
-        "bg-white border border-[#E5E7EB] text-[#64748B] hover:text-[#1E293B] hover:bg-slate-50"
-        }`}>
-
-            {chip.label}
+      <div className="flex overflow-x-auto gap-2 pb-1 pt-1 hide-scrollbar snap-x flex-1 min-w-0 whitespace-nowrap items-center">
+        {chips.map((chip) => (
+          <button
+            key={chip.id}
+            onClick={chip.onClick}
+            className={`snap-start inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
+              chip.isActive
+                ? "bg-sky-600 text-white shadow-xs font-semibold"
+                : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            <span>{chip.emoji}</span>
+            <span>{chip.label}</span>
           </button>
-        )}
-      </div>);
-
+        ))}
+      </div>
+    );
   };
 
+  const isAnyFilterActive = (selectedCategory && selectedCategory !== "All" && selectedCategory !== "all") || 
+    (selectedStatus && selectedStatus !== "all" && selectedStatus !== "All") || 
+    debouncedSearchQuery || 
+    isCustomLocation;
+
   return (
-    <main className="w-full min-w-0 min-h-[100dvh] overflow-x-hidden pb-24 lg:pb-6 max-w-none lg:max-w-7xl lg:mx-auto font-sans antialiased">
+    <main className="w-full min-w-0 min-h-[100dvh] overflow-x-hidden pb-6 lg:pb-8 max-w-none lg:max-w-7xl lg:mx-auto font-sans antialiased">
       <div className="w-full min-w-0 px-0 sm:px-2 lg:px-4 space-y-4">
-        <div className="flex justify-between items-center gap-4 select-none pt-0">
-          <div>
-            <h1 className="text-xl sm:text-2xl lg:text-4xl font-bold text-[#1E293B] tracking-tight leading-tight font-heading">
-              Explore <span className="text-[#7C3AED]">Journey</span>
-            </h1>
-            <p className="text-xs sm:text-sm text-[#64748B] font-normal sm:font-medium mt-1 font-sans">
-              {isUsingProfile && `Groups starting near ${user.city} and across ${user.state}.`}
-              {isCustomLocation && `Groups starting near ${urlExploreCity} and across ${urlExploreState}.`}
-              {isEverywhere && "Find groups and travelers heading somewhere you'll love."}
-              {!user?.city && !urlExploreCity && "Find groups and travelers heading somewhere you'll love."}
-            </p>
+        
+        {/* Sleek, Light & Airy Header */}
+        <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 md:p-6 shadow-xs">
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
+            <div className="max-w-2xl space-y-1 sm:space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-sky-50 border border-sky-100 text-[10px] sm:text-xs font-semibold text-sky-700">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-sky-600 shrink-0" />
+                <span>Social Travel & Adventure</span>
+              </div>
+
+              <h1 className="text-lg sm:text-2xl lg:text-3xl font-bold tracking-tight font-heading leading-snug sm:leading-tight text-slate-900">
+                Explore <span className="text-sky-600">journeys</span> & meet travelers
+              </h1>
+
+              <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-xl">
+                {!loading && totalFilteredTrips === 0
+                  ? (dynamicCityName
+                      ? `No active trips near ${dynamicCityName} yet. Create one and invite fellow travelers.`
+                      : "No active trips yet. Create one and invite fellow travelers.")
+                  : "Discover active trips and find people heading your way."}
+              </p>
+            </div>
+
+            {/* Create Trip CTA - Matches Brand Button */}
+            <div className="shrink-0 w-full sm:w-auto pt-0.5 sm:pt-0">
+              <Link
+                to="/social/buddy/new"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[40px] bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all duration-200 select-none active:scale-95"
+              >
+                <Plus className="w-4 h-4 text-white stroke-[2.5] shrink-0" />
+                <span>Create Trip Group</span>
+              </Link>
+            </div>
+          </div>
+
+          {/* Highlights & Live Stats Row */}
+          <div className="mt-3 pt-2.5 sm:mt-3.5 sm:pt-3 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0 sm:flex-wrap text-[11px] sm:text-xs">
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-lg shrink-0">
+              <span className="font-bold text-slate-900">{totalFilteredTrips}</span>
+              <span className="text-slate-500 font-medium">Trips Available</span>
+            </div>
+
+            {metadata?.onlineTravelers > 0 && (
+              <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200/60 px-2.5 py-1 rounded-lg shrink-0">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="font-semibold text-emerald-700">{metadata.onlineTravelers} Travelers Online</span>
+              </div>
+            )}
+
+            <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-lg text-slate-600 shrink-0 max-w-[220px] sm:max-w-none">
+              <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+              <span className="font-medium truncate">{currentLocationLabel}</span>
+            </div>
           </div>
         </div>
 
-        <div className="sticky top-12 sm:top-16 z-30 bg-[#F8FAFC]/95 backdrop-blur-xl pb-2 pt-2 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-2 sm:gap-3 select-none">
+        {/* Category Pills Sticky Bar */}
+        <div className="sticky top-12 sm:top-16 z-30 bg-background/95 backdrop-blur-xl pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-2 sm:gap-3 select-none">
           {renderFilterChips()}
-
-          <Link
-          to="/social/buddy/new"
-          className="inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white font-semibold text-xs rounded-xl transition-all duration-200 shadow-soft hover:-translate-y-0.5 shrink-0 mb-0.5">
-
-            <Plus className="w-4 h-4" /> <span className="hidden sm:inline">Create Trip Group</span><span className="sm:hidden font-bold">+ Create</span>
-          </Link>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 py-1 mt-1">
-          <div className="flex items-center justify-between sm:justify-start gap-3">
-            <h3 className="text-xs sm:text-sm font-bold text-[#64748B]">
-              {totalFilteredTrips} Trips
-            </h3>
-            {metadata?.onlineTravelers > 0 &&
-            <span className="text-[11px] text-[#22C55E] font-semibold flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] animate-pulse"></span>
-                {metadata.onlineTravelers} online
-              </span>}
+        {/* Search Bar & Filter Controls Container */}
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3 bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
+          {/* Sleek Search Box Row */}
+          <div className="flex items-center gap-2 flex-1 max-w-none lg:max-w-lg">
+            <div className="relative flex-1">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setPage(1);
+                }}
+                placeholder="Search destination, trek, fort (e.g. Manali, Rajgad)..."
+                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border border-slate-200/70 focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all duration-200"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setPage(1);
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
 
+            {isAnyFilterActive && (
+              <button
+                onClick={handleClearFilters}
+                className="inline-flex items-center justify-center gap-1 text-[11px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 px-2.5 py-2 rounded-xl transition-colors shrink-0 h-[38px]"
+                title="Reset filters"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span className="hidden sm:inline">Reset</span>
+              </button>
+            )}
           </div>
 
-          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2">
+          {/* Filters 3-column grid on mobile, flex on desktop */}
+          <div className="grid grid-cols-3 lg:flex lg:items-center gap-2 w-full lg:w-auto">
             <div className="relative z-45" ref={locationFilterRef}>
               <button
-              onClick={() => {
-                setShowLocationDropdown(!showLocationDropdown);
-                setIsCustomSelecting(false);
-              }}
-              className="text-xs font-semibold text-[#1E293B] flex items-center gap-2 hover:text-[#7C3AED] transition-colors bg-white px-3.5 py-2 rounded-xl border border-[#E5E7EB] shadow-soft duration-200">
-
-                <span className="hidden sm:inline">
-                  {isEverywhere ? "Explore everywhere" : `📍 ${currentLocationLabel}`}
+                onClick={() => {
+                  setShowLocationDropdown(!showLocationDropdown);
+                  setIsCustomSelecting(false);
+                }}
+                className="w-full text-xs font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-1.5 hover:text-brand transition-colors bg-slate-50 hover:bg-slate-100/80 px-2.5 sm:px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs hover:border-brand-300 duration-150 h-[38px]"
+              >
+                <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
+                <span className="hidden sm:inline truncate">
+                  {isEverywhere ? "Explore Everywhere" : currentLocationLabel}
                 </span>
-                <span className="sm:hidden max-w-[100px] truncate">
-                  {isEverywhere ? "Everywhere" : `📍 ${urlExploreCity || user?.city || "Everywhere"}`}
+                <span className="sm:hidden truncate">
+                  {isEverywhere ? "Everywhere" : (urlExploreCity || user?.city || "Everywhere")}
                 </span>
                 <ChevronDown
-                className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${showLocationDropdown ? "rotate-180" : ""}`} />
-
+                  className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${showLocationDropdown ? "rotate-180" : ""}`}
+                />
               </button>
+
               <AnimatePresence>
                 {showLocationDropdown &&
                 <>
@@ -507,7 +617,7 @@ const TravelBuddyHub = () => {
 
                       {!isCustomSelecting ?
                     <>
-                          <div className="px-2 py-1 text-slate-400 font-extrabold text-[10px] uppercase tracking-wider">
+                          <div className="px-2 py-1 text-text-muted font-extrabold text-[10px] uppercase tracking-wider">
                             Explore Location
                           </div>
                           
@@ -519,15 +629,15 @@ const TravelBuddyHub = () => {
                       }}
                       className={`w-full flex items-center justify-between p-2 rounded-xl text-[13px] font-bold transition-all text-left ${
                       isUsingProfile ?
-                      "bg-brand-50 text-brand-700" :
-                      "text-slate-700 hover:bg-slate-50"
+                      "bg-brand-50 text-brand-dark" :
+                      "text-text-primary hover"
                       }`}>
 
                               <div className="flex flex-col">
-                                <span className="text-[11px] font-semibold text-slate-400">Profile Location</span>
+                                <span className="text-[11px] font-semibold text-text-muted">Profile Location</span>
                                 <span className="truncate">📍 {user.city}, {user.state}</span>
                               </div>
-                              {isUsingProfile && <Check className="w-4 h-4 text-brand-600" />}
+                              {isUsingProfile && <Check className="w-4 h-4 text-brand" />}
                             </button>}
 
 
@@ -538,15 +648,15 @@ const TravelBuddyHub = () => {
                       }}
                       className={`w-full flex items-center justify-between p-2 rounded-xl text-[13px] font-bold transition-all text-left ${
                       isEverywhere ?
-                      "bg-brand-50 text-brand-700" :
-                      "text-slate-700 hover:bg-slate-50"
+                      "bg-brand-50 text-brand-dark" :
+                      "text-text-primary hover"
                       }`}>
 
                             <div className="flex flex-col">
-                              <span className="text-[11px] font-semibold text-slate-400">Everywhere</span>
+                              <span className="text-[11px] font-semibold text-text-muted">Everywhere</span>
                               <span>🌐 Explore Everywhere</span>
                             </div>
-                            {isEverywhere && <Check className="w-4 h-4 text-brand-600" />}
+                            {isEverywhere && <Check className="w-4 h-4 text-brand" />}
                           </button>
 
                           <div className="border-t border-slate-100 my-1"></div>
@@ -557,46 +667,46 @@ const TravelBuddyHub = () => {
                         setCustomState("");
                         setCustomCity("");
                       }}
-                      className="w-full flex items-center justify-between p-2 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-all text-left">
+                      className="w-full flex items-center justify-between p-2 rounded-xl text-[13px] font-bold text-text-primary hover transition-all text-left">
 
                             <div className="flex flex-col">
-                              <span className="text-[11px] font-semibold text-slate-400">Custom</span>
+                              <span className="text-[11px] font-semibold text-text-muted">Custom</span>
                               <span>🔍 Choose another city</span>
                             </div>
-                            <ChevronDown className="w-4 h-4 -rotate-90 text-slate-400" />
+                            <ChevronDown className="w-4 h-4 -rotate-90 text-text-muted" />
                           </button>
                         </> :
 
                     <div className="space-y-3 p-1">
                           <button
                       onClick={() => setIsCustomSelecting(false)}
-                      className="flex items-center gap-1 text-[11px] font-extrabold text-brand-600 hover:text-brand-700 transition-colors uppercase tracking-wider bg-transparent border-none p-0 cursor-pointer">
+                      className="flex items-center gap-1 text-[11px] font-extrabold text-brand hover:text-brand-dark transition-colors uppercase tracking-wider bg-transparent border-none p-0 cursor-pointer">
 
                             <ChevronLeft className="w-3.5 h-3.5" /> Back
                           </button>
 
                           <div className="space-y-2">
                             <div>
-                              <label className="text-[11px] font-bold text-slate-500 mb-1 block">Select State</label>
+                              <label className="text-[11px] font-bold text-text-muted mb-1 block">Select State</label>
                               <CustomSelect
                           value={customState}
                           onChange={(e) => {
                             setCustomState(e.target.value);
                             setCustomCity("");
                           }}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 focus:outline-none focus:border-brand-500 transition-all cursor-pointer"
+                          className="input-field"
                           placeholder="-- Choose State --"
                           options={Object.keys(INDIAN_STATES_AND_CITIES).map((s) => ({ label: s, value: s }))}
                               />
                             </div>
 
                             <div>
-                              <label className="text-[11px] font-bold text-slate-500 mb-1 block">Select City</label>
+                              <label className="text-[11px] font-bold text-text-muted mb-1 block">Select City</label>
                               <CustomSelect
                           value={customCity}
                           onChange={(e) => setCustomCity(e.target.value)}
                           disabled={!customState}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-[13px] font-bold text-slate-800 focus:outline-none focus:border-brand-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          className="input-field"
                           placeholder="-- Choose City --"
                           options={customState ? INDIAN_STATES_AND_CITIES[customState].map((c) => ({ label: c, value: c })) : []}
                               />
@@ -611,7 +721,7 @@ const TravelBuddyHub = () => {
                         }
                       }}
                       disabled={!customCity}
-                      className="w-full mt-2 py-2 bg-[#1E293B] text-white hover:bg-black font-bold text-[13px] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-center">
+                      className="w-full mt-2 py-2 bg-slate-800 text-white hover:bg-black font-bold text-[13px] rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed text-center">
 
                             Apply Location
                           </button>
@@ -624,23 +734,28 @@ const TravelBuddyHub = () => {
             </div>
 
             <div className="relative z-40" ref={statusFilterRef}>
-              <button
-                onClick={() => setShowStatusFilter(!showStatusFilter)}
-                className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
-              >
-                <BadgeCheck className="w-4 h-4 text-brand-600" />
-                <span className="hidden sm:inline">
-                  {STATUS_DISPLAY_LABELS[selectedStatus] || "All Status"}
-                </span>
-                <span className="sm:hidden">
-                  {STATUS_DISPLAY_LABELS[selectedStatus] || "All Status"}
-                </span>
-                <ChevronDown
-                  className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
-                    showStatusFilter ? "rotate-180" : ""
-                  }`}
-                />
-              </button>
+              {(() => {
+                const currentStatusObj = STATUS_DROPDOWN_OPTIONS.find(s => s.id === selectedStatus) || STATUS_DROPDOWN_OPTIONS[0];
+                return (
+                  <button
+                    onClick={() => setShowStatusFilter(!showStatusFilter)}
+                    className="w-full text-xs font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-1.5 hover:text-brand transition-colors bg-slate-50 hover:bg-slate-100/80 px-2.5 sm:px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs hover:border-brand-300 duration-150 h-[38px]"
+                  >
+                    <span className={`w-2 h-2 rounded-full shrink-0 ${currentStatusObj.colorDot || "bg-brand"}`} />
+                    <span className="hidden sm:inline truncate">
+                      {currentStatusObj.label}
+                    </span>
+                    <span className="sm:hidden truncate">
+                      {currentStatusObj.id === "all" ? "Status" : currentStatusObj.label}
+                    </span>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
+                        showStatusFilter ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                );
+              })()}
               <AnimatePresence>
                 {showStatusFilter && (
                   <motion.div
@@ -649,9 +764,9 @@ const TravelBuddyHub = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 8, scale: 0.96 }}
                     transition={{ duration: 0.15 }}
-                    className="absolute left-0 mt-2 w-44 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
+                    className="absolute left-0 mt-2 w-48 max-w-[calc(100vw-2rem)] bg-white/95 backdrop-blur-xl border border-slate-100 rounded-2xl shadow-xl z-50 overflow-hidden py-1.5"
                   >
-                    {STATUS_DROPDOWN_OPTIONS.map(({ id, label }) => {
+                    {STATUS_DROPDOWN_OPTIONS.map(({ id, label, colorDot }) => {
                       const isSelected = selectedStatus === id;
                       return (
                         <button
@@ -660,15 +775,18 @@ const TravelBuddyHub = () => {
                             updateUrlParams("status", id);
                             setShowStatusFilter(false);
                           }}
-                          className={`w-full flex text-left items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
+                          className={`w-full flex text-left items-center justify-between px-3.5 py-2.5 text-xs font-bold transition-colors ${
                             isSelected
-                              ? "bg-[#7C3AED]/10 text-[#7C3AED]"
-                              : "text-slate-600 hover:bg-slate-50"
+                              ? "bg-brand-50 text-brand-dark"
+                              : "text-slate-700 hover:bg-slate-50"
                           }`}
                         >
-                          <span>{label}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={`w-2.5 h-2.5 rounded-full ${colorDot || "bg-slate-300"}`} />
+                            <span>{label}</span>
+                          </div>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-[#7C3AED]" />
+                            <Check className="w-4 h-4 text-brand" />
                           )}
                         </button>
                       );
@@ -677,6 +795,7 @@ const TravelBuddyHub = () => {
                 )}
               </AnimatePresence>
             </div>
+
 
             <div className="relative z-30" ref={sortFilterRef}>
               {(() => {
@@ -687,12 +806,17 @@ const TravelBuddyHub = () => {
                 return (
                   <button
                     onClick={() => setShowSort(!showSort)}
-                    className="text-[13px] font-bold text-slate-700 flex items-center gap-2 hover:text-brand-600 transition-colors bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-sm active:scale-95"
+                    className="w-full text-xs font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-1.5 hover:text-brand transition-colors bg-slate-50 hover:bg-slate-100/80 px-2.5 sm:px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs hover:border-brand-300 duration-150 h-[38px]"
                   >
-                    <ActiveIcon className="w-4 h-4 text-brand-600" />
-                    <span>{currentSortObj.label}</span>
+                    <ActiveIcon className="w-3.5 h-3.5 text-brand shrink-0" />
+                    <span className="hidden sm:inline truncate">{currentSortObj.label}</span>
+                    <span className="sm:hidden truncate">
+                      {selectedSort === "Starting Soon" ? "Soon" :
+                       selectedSort === "Highest Rated" ? "Top" :
+                       currentSortObj.label}
+                    </span>
                     <ChevronDown
-                      className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                      className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
                         showSort ? "rotate-180" : ""
                       }`}
                     />
@@ -721,20 +845,20 @@ const TravelBuddyHub = () => {
                           }}
                           className={`w-full flex items-center justify-between px-4 py-2.5 text-[13px] font-semibold transition-colors ${
                             isSelected
-                              ? "bg-brand-50 text-brand-600"
-                              : "text-slate-600 hover:bg-slate-50"
+                              ? "bg-brand-50 text-brand"
+                              : "text-text-secondary hover:bg-slate-50"
                           }`}
                         >
                           <div className="flex items-center gap-2.5">
                             <Icon
                               className={`w-4 h-4 ${
-                                isSelected ? "text-brand-600" : "text-slate-400"
+                                isSelected ? "text-brand" : "text-text-muted"
                               }`}
                             />
                             <span>{label}</span>
                           </div>
                           {isSelected && (
-                            <Check className="w-4 h-4 text-brand-600" />
+                            <Check className="w-4 h-4 text-brand" />
                           )}
                         </button>
                       );
@@ -743,10 +867,26 @@ const TravelBuddyHub = () => {
                 )}
               </AnimatePresence>
             </div>
+
+          </div>
+        </div>
+
+        {/* Trips Found Header */}
+        <div className="flex items-center justify-between gap-3 px-1 pt-1">
+          <div className="flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-extrabold text-slate-800">
+              {totalFilteredTrips} {totalFilteredTrips === 1 ? 'Trip Available' : 'Trips Available'}
+            </h3>
+            {debouncedSearchQuery && (
+              <span className="text-xs font-semibold text-brand bg-brand-50 border border-brand-200/60 px-2.5 py-0.5 rounded-lg inline-flex items-center gap-1">
+                Searching for "{debouncedSearchQuery}"
+              </span>
+            )}
           </div>
         </div>
 
         <div className="space-y-4 pb-8">
+
           {loading ?
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full">
@@ -766,37 +906,37 @@ const TravelBuddyHub = () => {
                 </div>
             )}
             </div> :
-          trips.length === 0 ?
-
-          <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="bg-white border border-slate-200 rounded-[24px] text-center p-6 sm:p-12 shadow-sm mt-4 w-full">
-
-              <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Compass className="w-10 h-10 text-slate-300" />
+          trips.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white border border-slate-100 rounded-3xl text-center p-8 sm:p-14 shadow-sm mt-4 w-full"
+            >
+              <div className="w-20 h-20 bg-brand-50 border border-brand-100 rounded-3xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-inner">
+                🧭
               </div>
-              <h3 className="text-lg font-black text-[#1E293B] mb-2">
+              <h3 className="text-xl font-heading font-bold text-slate-900 mb-2">
                 {getEmptyStateMessage()}
               </h3>
-              <p className="text-[14px] text-slate-500 max-w-sm mx-auto mb-6">
-                Try changing your filters, or start your own adventure.
+              <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
+                No trips matching this criteria right now. Be the first to start an adventure or adjust your search filters!
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
-              onClick={handleClearFilters}
-              className="px-6 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold rounded-full transition-all shadow-sm active:scale-95 text-[13px]">
-
-                  Clear Filters
+                  onClick={handleClearFilters}
+                  className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all active:scale-95 text-xs sm:text-sm"
+                >
+                  Reset All Filters
                 </button>
                 <Link
-                to="/social/buddy/new"
-              className="px-6 py-2.5 bg-[#1E293B] hover:bg-black text-white font-bold rounded-full transition-all shadow-md active:scale-95 text-[13px] flex items-center gap-1.5">
-
+                  to="/social/buddy/new"
+                  className="px-6 py-2.5 bg-gradient-to-r from-brand to-brand-dark hover:brightness-110 text-white font-bold rounded-2xl transition-all shadow-md active:scale-95 text-xs sm:text-sm flex items-center gap-2"
+                >
                   <Plus className="w-4 h-4" /> Create Trip Group
                 </Link>
               </div>
-            </motion.div> :
+            </motion.div>
+          ) : (
 
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch w-full">
@@ -807,8 +947,8 @@ const TravelBuddyHub = () => {
                   <React.Fragment key={trip._id}>
                       {showHeader &&
                     <div className="col-span-full mt-4 mb-1 first:mt-1">
-                          <h2 className="text-[11px] font-black text-slate-500 dark:text-slate-400 flex items-center gap-2 select-none uppercase tracking-widest">
-                            <span className="w-1.5 h-3 bg-brand-600 rounded-full"></span>
+                          <h2 className="text-[11px] font-black text-text-muted flex items-center gap-2 select-none uppercase tracking-widest">
+                            <span className="w-1.5 h-3 bg-brand rounded-full"></span>
                             {trip.exploreSectionHeader}
                           </h2>
                         </div>}
@@ -822,7 +962,8 @@ const TravelBuddyHub = () => {
 
               })}
               </AnimatePresence>
-            </div>}
+            </div>
+          )}
 
 
           {!loading && trips.length > 0 && hasMore &&

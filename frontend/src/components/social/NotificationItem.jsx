@@ -79,12 +79,12 @@ export const NotificationItem = ({
     onClick={handleClick}
     className={`p-3.5 rounded-2xl border transition-all duration-300 relative flex items-start gap-3 cursor-pointer ${
     n.isRead ?
-    "bg-white border-slate-100/50 hover:bg-slate-50/50" :
-    "bg-brand-50/20 border-brand-100/30 hover:bg-brand-50/30 shadow-[0_2px_8px_rgba(108,77,246,0.02)]"
+    "bg-white border-slate-100/50 hover/50" :
+    "bg-brand-50/20 border-brand-100/30 hover:bg-brand-50/30 shadow-2xs"
     }`}>
 
       {!n.isRead &&
-      <div className="absolute right-3.5 top-3.5 w-1.5 h-1.5 bg-brand-500 rounded-full" />}
+      <div className="absolute right-3.5 top-3.5 w-1.5 h-1.5 bg-brand rounded-full" />}
 
 
       <div className="relative shrink-0">
@@ -99,26 +99,25 @@ export const NotificationItem = ({
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="text-[12.5px] leading-relaxed text-slate-700">
-          <span className="font-bold text-slate-900 pr-1 hover:underline">{n.sender?.name}</span>
+        <div className="text-[12.5px] leading-relaxed text-text-primary">
+          <span className="font-bold text-text-primary pr-1 hover:underline">{n.sender?.name}</span>
           {n.message || n.content || n.text || ""}
         </div>
-        <span className="text-[10px] text-slate-400 font-medium block mt-1.5">{formatTime(n.createdAt)}</span>
+        <span className="text-[10px] text-text-muted font-medium block mt-1.5">{formatTime(n.createdAt)}</span>
 
-        {}
         {!n.isRead &&
         <div className="mt-2.5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {n.type === "follow_request" &&
           <>
                 <button
             onClick={(e) => handleAcceptRequest(e, n.sender?._id)}
-            className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all">
+            className="btn-primary">
 
                   Accept
                 </button>
                 <button
             onClick={(e) => handleRejectRequest(e, n.sender?._id)}
-            className="px-3.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg hover:bg-slate-200 transition-all">
+            className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
 
                   Decline
                 </button>
@@ -129,13 +128,13 @@ export const NotificationItem = ({
           <>
                 <button
             onClick={(e) => handleAcceptMessage(e, n.relatedId, n._id)}
-            className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all">
+            className="btn-primary">
 
                   Accept Chat
                 </button>
                 <button
             onClick={(e) => handleRejectMessage(e, n.relatedId, n._id)}
-            className="px-3.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg hover:bg-slate-200 transition-all">
+            className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
 
                   Decline Chat
                 </button>
@@ -146,13 +145,13 @@ export const NotificationItem = ({
           <>
                 <button
             onClick={(e) => handleAcceptJoin(e, n.relatedId, n.requestId, n._id)}
-            className="px-3.5 py-1 bg-brand-500 text-white text-[11px] font-bold rounded-lg hover:bg-brand-600 active:scale-[0.98] transition-all">
+            className="btn-primary">
 
                   Approve Squad
                 </button>
                 <button
             onClick={(e) => handleRejectJoin(e, n.relatedId, n.requestId, n._id)}
-            className="px-3.5 py-1 bg-slate-100 text-slate-600 text-[11px] font-bold rounded-lg hover:bg-slate-200 transition-all">
+            className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
 
                   Reject Squad
                 </button>

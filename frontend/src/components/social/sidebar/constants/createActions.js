@@ -6,11 +6,10 @@ import { ROUTES } from "./routes";
 // these same actions so navigation/modal behaviour is consistent everywhere.
 export const createActions = [
   {
-    label: "Start Journey",
-    description: "Create a solo or group expedition",
-    icon: ICONS.Compass,
-    isAction: true,
-    action: "openCreateJourney",
+    label: "Group with Stranger",
+    description: "Create a group trip and find new travel companions",
+    icon: ICONS.Users,
+    path: ROUTES.CREATE_SQUAD,
   },
   {
     label: "Travel Memory",
@@ -20,9 +19,10 @@ export const createActions = [
     action: "openCreatePost",
   },
   {
-    label: "Travel Squad",
-    description: "Create a travel group",
-    icon: ICONS.Users,
-    path: ROUTES.CREATE_SQUAD,
+    label: "Journey with Trip Mates",
+    description: "Plan a private journey with your connections",
+    icon: ICONS.Compass,
+    isAction: true,
+    action: "openCreateJourney",
   },
 ];

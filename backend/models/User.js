@@ -101,7 +101,7 @@ const UserSchema = new mongoose.Schema(
   },
   bio: {
     type: String,
-    default: "Hey there! I am using Go YatriGo."
+    default: "Hey there! I’m using YatriGo. What about you?"
   },
   isVerified: {
     type: Boolean,

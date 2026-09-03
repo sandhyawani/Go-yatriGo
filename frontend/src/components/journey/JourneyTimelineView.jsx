@@ -272,7 +272,7 @@ const JourneyTimelineView = ({
         setSosActive(res.data.sosActive);
         showToast.success(
           isActivating
-            ? "SOS Alert Sent! Emergency contacts notified."
+            ? "SOS Activated. Note: Please manually contact emergency services. In-app alerts do not dispatch external SMS/calls."
             : "SOS Cancelled. Status updated to Safe."
         );
         setShowSosModal(false);
@@ -296,7 +296,7 @@ const JourneyTimelineView = ({
         );
       }
       return (
-        <div className="p-2.5 bg-[#7C3AED] text-white rounded-full shadow-md">
+        <div className="p-2.5 bg-brand text-white rounded-full shadow-md">
           <ShieldCheck className="w-4 h-4" />
         </div>
       );
@@ -305,7 +305,7 @@ const JourneyTimelineView = ({
     switch (eventType) {
       case "journey_started":
         return (
-          <div className="p-2.5 bg-[#7C3AED] text-white rounded-full shadow-md">
+          <div className="p-2.5 bg-brand text-white rounded-full shadow-md">
             <Navigation className="w-4 h-4" />
           </div>
         );
@@ -344,28 +344,28 @@ const JourneyTimelineView = ({
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Top Quiet Advisory */}
-      <div className="bg-slate-100/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
+      <div className="bg-background/80 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
-          <ShieldCheck className={`w-4 h-4 shrink-0 ${lifecycle.isOngoing ? "text-emerald-500" : "text-slate-400"}`} />
-          <p className="text-slate-600 dark:text-slate-300 m-0 font-medium">
+          <ShieldCheck className={`w-4 h-4 shrink-0 ${lifecycle.isOngoing ? "text-emerald-500" : "text-text-muted"}`} />
+          <p className="text-text-secondary m-0 font-medium">
             {lifecycle.isOngoing ? (
               <>
-                <strong className="font-bold text-slate-800 dark:text-slate-100">Smart Safety Active:</strong> Quiet
+                <strong className="font-bold text-text-primary">Smart Safety Active:</strong> Quiet
                 when everything is fine, visible when something needs attention.
               </>
             ) : lifecycle.isCompleted ? (
               <>
-                <strong className="font-bold text-slate-800 dark:text-slate-100">Journey Concluded:</strong> Safety
+                <strong className="font-bold text-text-primary">Journey Concluded:</strong> Safety
                 logs and verified history archived.
               </>
             ) : lifecycle.isCancelled ? (
               <>
-                <strong className="font-bold text-slate-800 dark:text-slate-100">Journey Cancelled:</strong> Safety
+                <strong className="font-bold text-text-primary">Journey Cancelled:</strong> Safety
                 monitoring is inactive.
               </>
             ) : (
               <>
-                <strong className="font-bold text-slate-800 dark:text-slate-100">Pre-trip standby:</strong> Live
+                <strong className="font-bold text-text-primary">Pre-trip standby:</strong> Live
                 safety tracking starts when your journey begins.
               </>
             )}
@@ -376,8 +376,8 @@ const JourneyTimelineView = ({
             onClick={handleToggleEnjoyMode}
             className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 shrink-0 ${
               isEnjoyMode
-                ? "bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 border-amber-300"
-                : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-50"
+                ? "bg-amber-100 text-amber-800 border-amber-300"
+                : "bg-white text-text-primary border-slate-200 hover"
             }`}
             title="Pause routine safety reminders while enjoying your trip"
           >
@@ -389,9 +389,9 @@ const JourneyTimelineView = ({
 
       {/* Enjoy Mode Active Banner */}
       {lifecycle.isOngoing && isEnjoyMode && (
-        <div className="bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 animate-fade-in">
+        <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 animate-fade-in">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-amber-500/20 rounded-xl text-amber-600 dark:text-amber-400">
+            <div className="p-2 bg-amber-500/20 rounded-xl text-amber-600">
               <Sun className="w-5 h-5" />
             </div>
             <div>
@@ -412,16 +412,16 @@ const JourneyTimelineView = ({
 
       {/* Snooze Active Banner */}
       {lifecycle.isOngoing && !isEnjoyMode && isSnoozed && (
-        <div className="bg-violet-50 dark:bg-violet-950/30 border border-violet-200 dark:border-violet-800/60 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs text-violet-900 dark:text-violet-200 animate-fade-in">
+        <div className="bg-primary-50 border border-primary-200 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs text-primary-900 animate-fade-in">
           <div className="flex items-center gap-2.5">
-            <BellOff className="w-4 h-4 text-[#7C3AED] shrink-0" />
+            <BellOff className="w-4 h-4 text-brand shrink-0" />
             <span className="font-semibold">
               Safety reminders snoozed until {new Date(snoozeUntil).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.
             </span>
           </div>
           <button
             onClick={handleCancelSnooze}
-            className="text-[11px] font-extrabold text-[#7C3AED] hover:underline shrink-0"
+            className="text-[11px] font-extrabold text-brand hover:underline shrink-0"
           >
             Cancel Snooze
           </button>
@@ -430,9 +430,9 @@ const JourneyTimelineView = ({
 
       {/* Gentle Overdue / Check-In Due Banner */}
       {lifecycle.isOngoing && !isEnjoyMode && !isSnoozed && (safetyStatus === "CHECK_IN_DUE" || safetyStatus === "CHECK_IN_OVERDUE" || safetyStatus === "ATTENTION_NEEDED") && (
-        <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 dark:text-amber-200 animate-fade-in">
+        <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 animate-fade-in">
           <div className="flex items-center gap-3">
-            <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0" />
+            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
             <div>
               <h4 className="text-xs font-black m-0">
                 {safetyStatus === "CHECK_IN_OVERDUE" || safetyStatus === "ATTENTION_NEEDED" ? "🟠 Check-in overdue" : "🟡 Quick safety check"}
@@ -455,34 +455,34 @@ const JourneyTimelineView = ({
             <div className="relative">
               <button
                 onClick={() => setShowSnoozeMenu(!showSnoozeMenu)}
-                className="px-3 py-1.5 bg-white dark:bg-slate-800 border border-amber-300 dark:border-slate-700 text-amber-900 dark:text-amber-200 rounded-xl text-xs font-bold flex items-center gap-1"
+                className="px-3 py-1.5 bg-white border border-amber-300 text-amber-900 rounded-xl text-xs font-bold flex items-center gap-1"
               >
                 <span>Remind Me Later</span>
                 <ChevronDown className="w-3.5 h-3.5" />
               </button>
               {showSnoozeMenu && (
-                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl z-20 overflow-hidden py-1">
+                <div className="absolute right-0 mt-1 w-40 bg-white border border-slate-200 rounded-xl shadow-xl z-20 overflow-hidden py-1">
                   <button
                     onClick={() => handleSnooze(30)}
-                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-background text-text-primary"
                   >
                     30 minutes
                   </button>
                   <button
                     onClick={() => handleSnooze(120)}
-                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-background text-text-primary"
                   >
                     2 hours
                   </button>
                   <button
                     onClick={() => handleSnooze(240)}
-                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-background text-text-primary"
                   >
                     4 hours
                   </button>
                   <button
                     onClick={() => handleSnooze(480)}
-                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200"
+                    className="w-full text-left px-3 py-1.5 text-xs font-semibold hover:bg-background text-text-primary"
                   >
                     Later today (8h)
                   </button>
@@ -494,10 +494,10 @@ const JourneyTimelineView = ({
       )}
 
       {/* Main Smart Safety Status Card */}
-      <div className="bg-[#1E293B] dark:bg-slate-950 p-6 rounded-3xl text-white shadow-xl border border-slate-800 space-y-6">
+      <div className="bg-slate-800 p-6 rounded-3xl text-white shadow-xl border border-slate-800 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="p-3 bg-[#7C3AED]/20 rounded-2xl border border-[#7C3AED]/40 text-[#7C3AED]">
+            <div className="p-3 bg-brand/20 rounded-2xl border border-brand/40 text-brand">
               <ShieldCheck className="w-8 h-8" />
             </div>
             <div>
@@ -548,7 +548,7 @@ const JourneyTimelineView = ({
                     ? "✖ CANCELLED"
                     : safetyStatus}
                 </span>
-                <span className="text-xs text-slate-400 font-medium">({safetyStatusText})</span>
+                <span className="text-xs text-text-muted font-medium">({safetyStatusText})</span>
               </div>
               <h3 className="text-lg font-black text-white m-0 tracking-tight">
                 🛡 Journey Safety & Status
@@ -574,8 +574,8 @@ const JourneyTimelineView = ({
         {/* State Information Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2 border-t border-slate-800/80">
           {/* Last Check-In */}
-          <div className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">
+          <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800">
+            <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               Last Check-In
             </span>
             {lastCheckIn ? (
@@ -584,41 +584,41 @@ const JourneyTimelineView = ({
                   {lastCheckIn.isQuickSafe ? (
                     <HeartHandshake className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
                   ) : (
-                    <MapPin className="w-3.5 h-3.5 text-[#7C3AED] shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
                   )}
                   <span className="truncate">{lastCheckIn.title}</span>
                 </p>
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                <span className="text-[10px] text-text-muted font-medium block mt-0.5">
                   {formatTime(lastCheckIn.time)} {lastCheckIn.location ? `• ${lastCheckIn.location}` : ""}
                 </span>
               </div>
             ) : (
-              <p className="text-xs font-bold text-slate-400 m-0">No check-in recorded yet</p>
+              <p className="text-xs font-bold text-text-muted m-0">No check-in recorded yet</p>
             )}
           </div>
 
           {/* Next Expected Milestone */}
-          <div className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">
+          <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800">
+            <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               NEXT EXPECTED MILESTONE
             </span>
             {!lifecycle.isOngoing && !lifecycle.isCompleted && !lifecycle.isCancelled ? (
               <div>
-                <p className="text-xs font-bold text-purple-300 m-0 truncate flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                <p className="text-xs font-bold text-primary-300 m-0 truncate flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5 text-text-muted shrink-0" />
                   <span className="truncate">Started Journey</span>
                 </p>
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                <span className="text-[10px] text-text-muted font-medium block mt-0.5">
                   Step 1 of {JOURNEY_MILESTONES.length} (Pre-trip Standby)
                 </span>
               </div>
             ) : nextExpectedMilestone ? (
               <div>
-                <p className="text-xs font-bold text-purple-300 m-0 truncate flex items-center gap-1.5">
-                  <Navigation className="w-3.5 h-3.5 text-[#7C3AED] shrink-0" />
+                <p className="text-xs font-bold text-primary-300 m-0 truncate flex items-center gap-1.5">
+                  <Navigation className="w-3.5 h-3.5 text-brand shrink-0" />
                   <span className="truncate">{nextExpectedMilestone}</span>
                 </p>
-                <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                <span className="text-[10px] text-text-muted font-medium block mt-0.5">
                   Step {completedMilestones.length + 1} of {JOURNEY_MILESTONES.length}
                 </span>
               </div>
@@ -630,14 +630,14 @@ const JourneyTimelineView = ({
           </div>
 
           {/* Active Protection / Status */}
-          <div className="bg-slate-900/80 p-3.5 rounded-2xl border border-slate-800 sm:col-span-2 lg:col-span-1">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">
+          <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800 sm:col-span-2 lg:col-span-1">
+            <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               Safety Signal Mode
             </span>
             <p className="text-xs font-bold text-slate-200 m-0 flex items-center gap-1.5">
               {!lifecycle.isOngoing && !lifecycle.isCompleted && !lifecycle.isCancelled ? (
                 <>
-                  <Clock className="w-3.5 h-3.5 text-slate-400" /> Pre-Trip Standby
+                  <Clock className="w-3.5 h-3.5 text-text-muted" /> Pre-Trip Standby
                 </>
               ) : isEnjoyMode ? (
                 <>
@@ -649,7 +649,7 @@ const JourneyTimelineView = ({
                 </>
               )}
             </p>
-            <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+            <span className="text-[10px] text-text-muted font-medium block mt-0.5">
               {!lifecycle.isOngoing && !lifecycle.isCompleted && !lifecycle.isCancelled
                 ? "Live safety tracking starts when your journey begins"
                 : isEnjoyMode
@@ -677,7 +677,7 @@ const JourneyTimelineView = ({
               <button
                 onClick={onTriggerCheckIn}
                 disabled={isSafetyComplete}
-                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs font-extrabold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full sm:flex-1 py-3 px-4 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 <ShieldCheck className="w-4 h-4" />
                 <span>
@@ -688,7 +688,7 @@ const JourneyTimelineView = ({
           </div>
         ) : (
           <div className="pt-2">
-            <div className="w-full py-3 px-4 rounded-xl bg-slate-900/60 border border-slate-800 text-center text-xs font-semibold text-slate-400">
+            <div className="w-full py-3 px-4 rounded-xl bg-brand/60 border border-slate-800 text-center text-xs font-semibold text-text-muted">
               {!lifecycle.isCompleted && !lifecycle.isCancelled
                 ? "Pre-trip standby — live safety tracking starts when your journey begins."
                 : lifecycle.isCompleted
@@ -701,32 +701,32 @@ const JourneyTimelineView = ({
 
       {/* Chronological Timeline Feed */}
 
-      <div className="bg-white dark:bg-slate-900 p-4 sm:p-7 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+      <div className="bg-white p-4 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4 text-[#7C3AED]" />
-            <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 uppercase tracking-wider">
+            <Clock className="w-4 h-4 text-brand" />
+            <h4 className="text-xs font-black text-text-primary uppercase tracking-wider">
               Safety Timeline & Verified Logs
             </h4>
           </div>
-          <span className="text-[11px] font-bold text-slate-400">
+          <span className="text-[11px] font-bold text-text-muted">
             {localTimeline.length} {localTimeline.length === 1 ? "Event" : "Events"}
           </span>
         </div>
 
         {localTimeline.length === 0 ? (
-          <div className="py-12 text-center text-slate-400">
+          <div className="py-12 text-center text-text-muted">
             <Clock className="w-10 h-10 mx-auto mb-2 opacity-30" />
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+            <p className="text-sm font-semibold text-text-primary">
               No timeline activity logged yet.
             </p>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-text-muted mt-1">
               Submit a safe check-in or quick safety confirmation to update your status.
             </p>
           </div>
 
         ) : (
-          <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-100 dark:border-slate-800 space-y-5 my-2">
+          <div className="relative pl-6 sm:pl-8 border-l-2 border-slate-100 space-y-5 my-2">
             {localTimeline.map((item) => {
               const isMilestone = JOURNEY_MILESTONES.includes(item.checkInType);
               const isQuickConfirmation = item.eventType === "safe_checkin" && !isMilestone;
@@ -734,40 +734,40 @@ const JourneyTimelineView = ({
               return (
                 <div key={item._id} className="relative group">
                   {/* Event Icon on Line */}
-                  <div className="absolute -left-[35px] sm:-left-[43px] top-0 ring-4 ring-white dark:ring-slate-900 transition-transform group-hover:scale-110">
+                  <div className="absolute -left-[35px] sm:-left-[43px] top-0 ring-4 ring-white transition-transform group-hover:scale-110">
                     {getEventIcon(item.eventType, item.checkInType)}
                   </div>
 
                   {/* Card Content */}
-                  <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 hover:border-slate-200 transition-all">
+                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover transition-all">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-xs font-black text-slate-800 dark:text-slate-100">
+                        <span className="text-xs font-black text-text-primary">
                           {item.title}
                         </span>
                         {isMilestone && (
-                          <span className="px-2 py-0.5 rounded-md bg-purple-100 dark:bg-purple-950/60 text-[#7C3AED] dark:text-purple-300 text-[10px] font-black tracking-wide">
+                          <span className="px-2 py-0.5 rounded-md bg-primary-100 text-brand text-[10px] font-black tracking-wide">
                             📍 Milestone
                           </span>
                         )}
                         {isQuickConfirmation && (
-                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black tracking-wide">
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-black tracking-wide">
                             🛡️ Safety Confirmation
                           </span>
                         )}
                       </div>
-                      <span className="text-[11px] text-slate-400 flex items-center gap-1 font-medium shrink-0">
-                        <Clock className="w-3 h-3 text-[#7C3AED]" /> {formatTime(item.createdAt)}
+                      <span className="text-[11px] text-text-muted flex items-center gap-1 font-medium shrink-0">
+                        <Clock className="w-3 h-3 text-brand" /> {formatTime(item.createdAt)}
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed mb-1 font-medium">
+                    <p className="text-xs text-text-secondary leading-relaxed mb-1 font-medium">
                       {item.description}
                     </p>
 
                     {item.locationName && (
-                      <div className="flex items-center gap-1 text-[11px] font-bold text-slate-500 dark:text-slate-400 mt-1">
-                        <MapPin className="w-3 h-3 text-[#7C3AED]" />
+                      <div className="flex items-center gap-1 text-[11px] font-bold text-text-muted mt-1">
+                        <MapPin className="w-3 h-3 text-brand" />
                         <span>{item.locationName}</span>
                       </div>
                     )}
@@ -783,7 +783,7 @@ const JourneyTimelineView = ({
                     )}
 
                     {item.userName && (
-                      <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 dark:border-slate-700/60 flex items-center gap-2">
+                      <div className="mt-2.5 pt-2.5 border-t border-slate-200/60 flex items-center gap-2">
                         <img
                           src={
                             item.userPic ||
@@ -792,7 +792,7 @@ const JourneyTimelineView = ({
                           alt={item.userName}
                           className="w-5 h-5 rounded-full object-cover"
                         />
-                        <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400">
+                        <span className="text-[11px] font-semibold text-text-muted">
                           Logged by {item.userName}
                         </span>
                       </div>

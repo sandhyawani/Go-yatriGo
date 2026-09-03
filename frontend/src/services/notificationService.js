@@ -111,6 +111,73 @@ export const notificationService = {
       { withCredentials: true }
     );
     return res.data;
+  },
+
+  getSentRequests: async () => {
+    const res = await axios.get("/notifications/sent", { withCredentials: true });
+    return res.data;
+  },
+
+  cancelSentRequest: async (requestOrId, cancelType) => {
+    if (typeof requestOrId === "object" && requestOrId !== null) {
+      const type = cancelType || requestOrId.cancelType;
+      const targetId = requestOrId.cancelId || requestOrId.targetId || requestOrId._id || requestOrId.id;
+
+      if (type === "follow") {
+        return notificationService.cancelFollowRequest(targetId);
+      }
+      if (type === "buddy") {
+        return notificationService.cancelBuddyJoinRequest(targetId);
+      }
+      if (type === "journey_join") {
+        return notificationService.cancelJourneyJoinRequest(targetId);
+      }
+      if (type === "journey_invite") {
+        return notificationService.cancelJourneyInvitation(targetId);
+      }
+
+      const res = await axios.delete(`/notifications/sent/${targetId}`, {
+        data: { cancelType: type, cancelId: targetId },
+        withCredentials: true
+      });
+      return res.data;
+    }
+
+    const res = await axios.delete(`/notifications/sent/${requestOrId}`, {
+      data: { cancelType },
+      withCredentials: true
+    });
+    return res.data;
+  },
+
+  cancelFollowRequest: async (targetUserId) => {
+    const res = await axios.delete(`/users/follow-requests/${targetUserId}`, {
+      withCredentials: true
+    });
+    return res.data;
+  },
+
+  cancelBuddyJoinRequest: async (groupId) => {
+    const res = await axios.post(
+      `/social/buddy/cancel-request/${groupId}`,
+      {},
+      { withCredentials: true }
+    );
+    return res.data;
+  },
+
+  cancelJourneyJoinRequest: async (requestId) => {
+    const res = await axios.delete(`/journeys/join-requests/${requestId}`, {
+      withCredentials: true
+    });
+    return res.data;
+  },
+
+  cancelJourneyInvitation: async (invitationId) => {
+    const res = await axios.delete(`/journeys/invitations/${invitationId}/cancel`, {
+      withCredentials: true
+    });
+    return res.data;
   }
 };
 

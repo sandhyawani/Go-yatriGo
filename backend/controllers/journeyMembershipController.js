@@ -44,9 +44,6 @@ const revokeSocketRoomAccess = (req, userId, roomId) => {
   }
 };
 
-// Invitations
-// ==========================================
-
 exports.inviteMembers = async (req, res) => {
   try {
     const { id } = req.params;
@@ -413,10 +410,6 @@ exports.cancelInvitation = async (req, res) => {
   }
 };
 
-// ==========================================
-// MEMBER ACTIONS & ROLES
-// ==========================================
-
 exports.leaveJourney = async (req, res) => {
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -603,10 +596,6 @@ exports.updateMemberRole = async (req, res) => {
     res.status(500).json({ success: false, message: "Server Error" });
   }
 };
-
-// ==========================================
-// CO-LEADER ACTIONS (ROLE: "Co-Organizer")
-// ==========================================
 
 exports.assignCoLeader = async (req, res) => {
   const session = await mongoose.startSession();
@@ -809,10 +798,6 @@ exports.removeCoLeader = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message || "Server Error" });
   }
 };
-
-// ==========================================
-// JOIN REQUESTS
-// ==========================================
 
 exports.requestToJoinJourney = async (req, res) => {
   try {

@@ -35,5 +35,25 @@ export const getAvatarUrl = (...args) => {
   }
 
   const displayName = foundName || "Explorer";
-  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=7c3aed&color=fff&bold=true`;
+  
+  // Palette of diverse, refined colors
+  const colors = [
+    "0284C7", // Sky / Brand
+    "0D9488", // Teal
+    "D97706", // Amber
+    "0369A1", // Ocean Blue
+    "E11D48", // Rose
+    "059669", // Emerald
+    "0284C7", // Brand Primary
+    "475569", // Slate
+  ];
+  
+  let hash = 0;
+  for (let i = 0; i < displayName.length; i++) {
+    hash = displayName.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const colorIndex = Math.abs(hash) % colors.length;
+  const bg = colors[colorIndex];
+
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=${bg}&color=fff&bold=true`;
 };

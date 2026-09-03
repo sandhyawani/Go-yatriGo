@@ -1,7 +1,7 @@
 .user-management-page {
   background:
-    radial-gradient(circle at 94% 2%, rgba(124, 58, 237, 0.12), transparent 28rem),
-    radial-gradient(circle at 10% 34%, rgba(124, 58, 237, 0.05), transparent 24rem),
+    radial-gradient(circle at 94% 2%, rgba(2, 132, 199, 0.12), transparent 28rem),
+    radial-gradient(circle at 10% 34%, rgba(2, 132, 199, 0.05), transparent 24rem),
     linear-gradient(145deg, #f8f9ff 0%, #f5f6fb 46%, #f7f8fc 100%);
 }
 
@@ -19,15 +19,15 @@
 
   &:hover {
     transform: translateY(-2px);
-    border-color: rgba(221, 214, 254, 0.88);
+    border-color: rgba(184, 239, 249, 0.88);
     box-shadow:
       0 1px 2px rgba(15, 23, 42, 0.04),
-      0 18px 37px rgba(76, 29, 149, 0.085);
+      0 18px 37px rgba(2, 132, 199, 0.085);
   }
 
   .metric-icon {
-    background: rgba(124, 58, 237, 0.09);
-    color: #7c3aed;
+    background: rgba(2, 132, 199, 0.09);
+    color: #0284c7;
   }
 
   &.user-metric-emerald .metric-icon {
@@ -59,8 +59,8 @@
 
     &:focus {
       box-shadow:
-        0 0 0 4px rgba(124, 58, 237, 0.1),
-        0 14px 32px rgba(124, 58, 237, 0.1);
+        0 0 0 4px rgba(2, 132, 199, 0.1),
+        0 14px 32px rgba(2, 132, 199, 0.1);
     }
   }
 
@@ -130,9 +130,9 @@
   }
 
   .premium-user-row:hover td {
-    border-color: rgba(196, 181, 253, 0.62);
+    border-color: rgba(184, 239, 249, 0.62);
     background: rgba(255, 255, 255, 0.97);
-    box-shadow: 0 8px 20px rgba(76, 29, 149, 0.04);
+    box-shadow: 0 8px 20px rgba(2, 132, 199, 0.04);
   }
 
   .loading-row td {
@@ -155,8 +155,8 @@
   padding: 7px 11px;
 
   &.role-admin {
-    background: #ede9fe;
-    color: #6d28d9;
+    background: #e0f7fc;
+    color: #0284c7;
   }
 
   &.role-guide {
@@ -223,10 +223,10 @@
   transition: all 160ms ease;
 
   &:hover:not(:disabled) {
-    border-color: #ddd6fe;
-    background: #f5f3ff;
-    color: #6d28d9;
-    box-shadow: 0 6px 14px rgba(109, 40, 217, 0.1);
+    border-color: #b8eff9;
+    background: #f0fbfd;
+    color: #0284c7;
+    box-shadow: 0 6px 14px rgba(2, 132, 199, 0.1);
   }
 
   &:disabled {
@@ -262,8 +262,8 @@
     }
 
     &:hover {
-      background: #f5f3ff;
-      color: #6d28d9;
+      background: #f0fbfd;
+      color: #0284c7;
     }
 
     &.danger-action:hover {

@@ -87,20 +87,20 @@ const SendWarningModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in">
-      <div className="bg-white dark:bg-slate-900 rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200/80 dark:border-slate-800 relative max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-brand/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in">
+      <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200/80 relative max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-4 pb-1">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
               <AlertTriangle className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white m-0 leading-tight">
+              <h3 className="text-base font-extrabold text-text-primary m-0 leading-tight">
                 Send Warning
               </h3>
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 m-0 mt-0.5">
-                Send a warning to <strong className="text-slate-800 dark:text-slate-200">{memberName}</strong>
+              <p className="text-xs font-semibold text-text-muted m-0 mt-0.5">
+                Send a warning to <strong className="text-text-primary">{memberName}</strong>
               </p>
             </div>
           </div>
@@ -108,14 +108,14 @@ const SendWarningModal = ({
             type="button"
             onClick={handleClose}
             disabled={isSubmitting}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
+            className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-background transition-colors shrink-0"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {formError && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300 text-xs font-semibold flex items-center gap-2 animate-fade-in">
+          <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2 animate-fade-in">
             <ShieldAlert className="w-4 h-4 text-rose-500 shrink-0" />
             <span>{formError}</span>
           </div>
@@ -124,7 +124,7 @@ const SendWarningModal = ({
         {/* Reason Select */}
         <form onSubmit={handleConfirmWarning} className="space-y-4">
           <div className="space-y-2">
-            <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+            <label className="text-xs font-bold text-text-primary block">
               Reason <span className="text-rose-500">*</span>
             </label>
             <div className="space-y-2">
@@ -135,8 +135,8 @@ const SendWarningModal = ({
                     key={reason}
                     className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl border text-xs font-semibold cursor-pointer transition-all ${
                       isSelected
-                        ? "bg-amber-50 dark:bg-amber-950/40 border-amber-400 dark:border-amber-600 text-amber-900 dark:text-amber-200 ring-1 ring-amber-400/30 shadow-xs"
-                        : "bg-slate-50 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                        ? "bg-amber-50 border-amber-400 text-amber-900 ring-1 ring-amber-400/30 shadow-xs"
+                        : "bg-slate-50 border-slate-200 text-text-primary hover:bg-background"
                     }`}
                   >
                     <input
@@ -160,7 +160,7 @@ const SendWarningModal = ({
           {/* Custom explanation if 'Other' */}
           {isOther && (
             <div className="space-y-1.5 pt-1 animate-fade-in">
-              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+              <label className="text-xs font-bold text-text-primary block">
                 Add a short explanation <span className="text-rose-500">*</span>
               </label>
               <textarea
@@ -171,10 +171,10 @@ const SendWarningModal = ({
                 }}
                 placeholder="Describe the reason for this warning..."
                 rows={3}
-                className="w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-xl p-3 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 placeholder:text-slate-400 resize-none leading-relaxed block"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-medium text-text-primary outline-none focus:border-amber-400 focus:ring-2 focus:ring-amber-400/20 placeholder:text-text-muted resize-none leading-relaxed block"
               />
               {customExplanation.trim().length > 0 && customExplanation.trim().length < 5 && (
-                <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold m-0">
+                <p className="text-[10px] text-amber-600 font-bold m-0">
                   Please enter at least 5 characters.
                 </p>
               )}
@@ -182,12 +182,12 @@ const SendWarningModal = ({
           )}
 
           {/* Actions */}
-          <div className="flex items-center justify-end gap-3 pt-3 mt-4 border-t border-slate-100 dark:border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-3 mt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={handleClose}
               disabled={isSubmitting}
-              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold text-xs transition-colors shrink-0"
+              className="px-4 py-2.5 rounded-xl bg-background hover text-text-primary font-bold text-xs transition-colors shrink-0"
             >
               Cancel
             </button>

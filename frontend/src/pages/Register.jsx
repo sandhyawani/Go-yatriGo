@@ -44,17 +44,37 @@ const Register = () => {
   const [govIdPreview, setGovIdPreview] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-    password: "",
-    repeatPassword: "",
-    acceptedPolicies: false,
-    govIdType: "",
-    state: "",
-    city: ""
+  const [formData, setFormData] = useState(() => {
+    const saved = sessionStorage.getItem("registerFormData");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...parsed,
+          password: "",
+          repeatPassword: ""
+        };
+      } catch (e) {
+        console.error("Failed to parse saved register data", e);
+      }
+    }
+    return {
+      name: "",
+      email: "",
+      mobile: "",
+      password: "",
+      repeatPassword: "",
+      acceptedPolicies: false,
+      govIdType: "",
+      state: "",
+      city: ""
+    };
   });
+
+  useEffect(() => {
+    const { password, repeatPassword, ...safeData } = formData;
+    sessionStorage.setItem("registerFormData", JSON.stringify(safeData));
+  }, [formData]);
 
   const [errors, setErrors] = useState({});
   const isMounted = useRef(true);
@@ -95,7 +115,7 @@ const Register = () => {
     0: { bar: "bg-white/10", text: "", textColor: "text-white/20" },
     1: { bar: "bg-red-500", text: "Weak", textColor: "text-red-400" },
     2: { bar: "bg-orange-500", text: "Fair", textColor: "text-orange-400" },
-    3: { bar: "bg-brand-500", text: "Good", textColor: "text-brand-400" },
+    3: { bar: "bg-brand", text: "Good", textColor: "text-brand-400" },
     4: { bar: "bg-emerald-500", text: "Strong", textColor: "text-emerald-400" }
   };
 
@@ -280,6 +300,13 @@ const Register = () => {
       "Welcome Aboard!",
       "Your account has been created successfully."
       );
+      sessionStorage.setItem("goyatrigo_just_registered", "true");
+      try {
+        localStorage.setItem(`goyatrigo_newly_registered_${payload.email.trim().toLowerCase()}`, "true");
+      } catch (e) {
+        // Safe fallback if localStorage is disabled
+      }
+      sessionStorage.removeItem("registerFormData");
       navigate("/login", { replace: true });
     } catch (err) {
       if (!isMounted.current) return;
@@ -304,13 +331,13 @@ const Register = () => {
   };
 
   const labelClass =
-  "text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1 mb-0.5 block";
+  "text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1 mb-0.5 block";
   const inputClass = (field) =>
   `w-full pl-11 pr-4 h-[44px] bg-slate-50 border ${
   errors[field] ?
   "border-red-300 focus:border-red-400 focus:ring-red-400/20" :
   "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
-  } rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-slate-400 text-sm shadow-sm flex items-center`;
+  } rounded-xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-text-muted text-sm shadow-sm flex items-center`;
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans overflow-hidden relative">
@@ -319,11 +346,10 @@ const Register = () => {
       style={{ backgroundImage: `url(${travelBg})` }} />
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] -translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-brand/5 rounded-full blur-[150px] -translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
-        {}
         <div className="hidden lg:flex flex-col lg:w-1/2 items-end justify-center p-8 lg:pr-12 relative">
           <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -332,11 +358,11 @@ const Register = () => {
           className="w-full max-w-lg">
 
             <div className="relative bg-white/50 backdrop-blur-xl border border-slate-200 rounded-[2rem] p-2 overflow-hidden shadow-xl group">
-              <div className="absolute -inset-4 bg-brand-500/10 blur-3xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <div className="absolute -inset-4 bg-brand/10 blur-3xl rounded-[3rem] opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
               <img
               src={stickerPack}
               alt="Indian city stickers"
-              className="w-full h-[80vh] object-cover rounded-[1.8rem] opacity-90 transform group-hover:scale-[1.02] transition-transform duration-700" />
+              className="w-full max-h-[80vh] h-full object-cover rounded-[1.8rem] opacity-90 transform group-hover:scale-[1.02] transition-transform duration-700" />
 
               <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/10 to-transparent rounded-[1.8rem]" />
               <div className="absolute bottom-6 left-6 right-6">
@@ -351,7 +377,6 @@ const Register = () => {
           </motion.div>
         </div>
 
-        {}
         <div className="w-full lg:w-1/2 flex flex-col items-center lg:items-start justify-center p-4 sm:p-6 lg:pl-10 overflow-y-auto custom-scrollbar">
           <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -362,15 +387,14 @@ const Register = () => {
             <div className="mb-2 flex flex-col items-center lg:items-start relative">
               <div className="flex items-center justify-between w-full">
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900 tracking-tighter mb-1 italic">
+                  <h1 className="text-2xl font-black text-text-primary tracking-tighter mb-1 italic">
                     Sign Up.
                   </h1>
-                  <p className="text-slate-500 font-medium text-[11px]">
+                  <p className="text-text-muted font-medium text-[11px]">
                     Create your profile Here
                   </p>
                 </div>
 
-                {}
                 <div className="relative group">
                   <motion.div
                   whileHover={{ scale: 1.05 }}
@@ -385,7 +409,7 @@ const Register = () => {
 
                     <div className="flex flex-col items-center gap-1">
                         <User className="w-5 h-5 text-slate-300 group-hover:text-brand-500 transition-colors" />
-                        <span className="text-[8px] font-black text-slate-400 uppercase tracking-tighter hidden sm:block">
+                        <span className="text-[8px] font-black text-text-muted uppercase tracking-tighter hidden sm:block">
                           Avatar
                         </span>
                       </div>}
@@ -393,11 +417,10 @@ const Register = () => {
                   </motion.div>
                   <label
                   htmlFor="file"
-                  className="absolute -bottom-2 -right-2 p-2 sm:p-2.5 bg-brand-600 text-white rounded-xl shadow-md cursor-pointer hover:bg-brand-500 transition-all border-2 border-white active:scale-90 z-10 overflow-hidden"
+                  className="absolute -bottom-2 -right-2 p-2 sm:p-2.5 bg-brand text-white rounded-xl shadow-md cursor-pointer hover:bg-brand transition-all border-2 border-white active:scale-90 z-10 overflow-hidden"
                   aria-label="Upload avatar photo">
 
                     <Camera className="w-3.5 h-3.5 sm:w-4 sm:h-4 relative z-10" />
-                    {}
                     <input
                     type="file"
                     id="file"
@@ -411,14 +434,13 @@ const Register = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-2.5" noValidate>
-              {}
               <div className="space-y-1">
                 <label htmlFor="name" className={labelClass}>
                   Full Name
                 </label>
                 <div className="relative group">
                   <User
-                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.name ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                  className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.name ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                   <motion.input
                   whileFocus={{ scale: 1.01 }}
@@ -453,7 +475,6 @@ const Register = () => {
                 </AnimatePresence>
               </div>
 
-              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="email" className={labelClass}>
@@ -461,7 +482,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <Mail
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.email ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.email ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <motion.input
                     whileFocus={{ scale: 1.01 }}
@@ -504,7 +525,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <Phone
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.mobile ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.mobile ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <motion.input
                     whileFocus={{ scale: 1.01 }}
@@ -543,7 +564,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="state" className={labelClass}>
@@ -577,7 +597,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="govIdType" className={labelClass}>
@@ -604,13 +623,13 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <ShieldCheck
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <label
                     htmlFor="govIdFile"
-                    className={`w-full pl-11 pr-4 h-[44px] bg-slate-50 border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer`}>
+                    className={`w-full pl-11 pr-4 h-[44px] bg-slate-50 border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer`}>
 
-                      <span className="truncate text-slate-500 font-medium">
+                      <span className="truncate text-text-muted font-medium">
                         {govIdFile ? govIdFile.name : "Upload Image..."}
                       </span>
                       {govIdPreview &&
@@ -650,7 +669,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="password" className={labelClass}>
@@ -658,7 +676,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <Lock
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.password ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <motion.input
                     whileFocus={{ scale: 1.01 }}
@@ -675,7 +693,7 @@ const Register = () => {
                     <button
                     type="button"
                     onClick={() => setShowPassword((p) => !p)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1"
                     aria-label={
                     showPassword ? "Hide password" : "Show password"}>
 
@@ -739,7 +757,7 @@ const Register = () => {
                   </label>
                   <div className="relative group">
                     <Lock
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.repeatPassword ? "text-red-500" : "text-slate-400 group-focus-within:text-brand-500"}`} />
+                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.repeatPassword ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
 
                     <motion.input
                     whileFocus={{ scale: 1.01 }}
@@ -761,7 +779,7 @@ const Register = () => {
                     !errors.password ?
                     "border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/20" :
                     "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
-                    } rounded-xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-slate-400 text-sm shadow-sm`} />
+                    } rounded-xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-text-muted text-sm shadow-sm`} />
 
 
                     {formData.repeatPassword &&
@@ -791,7 +809,6 @@ const Register = () => {
                 </div>
               </div>
 
-              {}
               <div className="space-y-1">
                 <div className="flex items-start gap-3">
                   <div className="relative flex items-center pt-1">
@@ -805,13 +822,13 @@ const Register = () => {
                   </div>
                   <label
                   htmlFor="acceptedPolicies"
-                  className="text-[11px] font-medium text-slate-600 leading-relaxed cursor-pointer select-none">
+                  className="text-[11px] font-medium text-text-secondary leading-relaxed cursor-pointer select-none">
 
                     I have read and agree to the{" "}
                     <Link
                     to="/terms"
                     target="_blank"
-                    className="text-brand-500 hover:text-brand-600 hover:underline">
+                    className="text-brand-500 hover:text-brand hover:underline">
 
                       Terms and Conditions
                     </Link>{" "}
@@ -819,7 +836,7 @@ const Register = () => {
                     <Link
                     to="/privacy-policy"
                     target="_blank"
-                    className="text-brand-500 hover:text-brand-600 hover:underline">
+                    className="text-brand-500 hover:text-brand hover:underline">
 
                       Privacy Policy
                     </Link>
@@ -850,7 +867,7 @@ const Register = () => {
               whileTap={{ scale: 0.98 }}
               disabled={loading}
               type="submit"
-              className="w-full py-2 bg-brand-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-brand-500 disabled:opacity-70 disabled:cursor-not-allowed group mt-4 overflow-hidden relative">
+              className="w-full py-2 bg-brand text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(2,132,199,0.3)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.4)] flex items-center justify-center gap-3 hover:bg-brand disabled:opacity-70 disabled:cursor-not-allowed group mt-4 overflow-hidden relative">
 
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite]" />
                 {loading ?
@@ -867,18 +884,18 @@ const Register = () => {
             </form>
 
             <div className="mt-2 pt-2 border-t border-slate-100 flex flex-col items-center gap-3">
-              <p className="text-center text-[11px] font-bold text-slate-500">
+              <p className="text-center text-[11px] font-bold text-text-muted">
                 Already known?
                 <Link
                 to="/login"
-                className="ml-2 text-brand-600 font-black hover:text-brand-700 transition-colors hover:underline underline-offset-4 decoration-2">
+                className="ml-2 text-brand font-black hover:text-brand-dark transition-colors hover:underline underline-offset-4 decoration-2">
 
                   Sign In
                 </Link>
               </p>
               <Link
               to="/"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
+              className="inline-flex items-center gap-2 text-text-muted hover:text-text-secondary font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
 
                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 Portal Exit

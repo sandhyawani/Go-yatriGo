@@ -1,10 +1,6 @@
 import React from "react";
 import { ShieldAlert, X, ShieldCheck } from "lucide-react";
 
-/**
- * Redesigned Emergency SOS Confirmation Modal
- * Strictly adheres to the Go YatriGo Journey Safety design system.
- */
 const SosConfirmModal = ({
   isOpen,
   isActivating = true,
@@ -17,7 +13,7 @@ const SosConfirmModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) onClose();
       }}
@@ -25,16 +21,15 @@ const SosConfirmModal = ({
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden relative animate-scale-up"
+        className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden relative animate-scale-up"
       >
-        {/* Top bar with close icon */}
         <div className="flex items-center justify-between p-6 pb-0">
           <div className="flex items-center gap-3">
             <div
               className={`p-3 rounded-2xl border ${
                 isActivating
-                  ? "bg-rose-50 dark:bg-rose-950/40 border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400"
-                  : "bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400"
+                  ? "bg-rose-50 border-rose-200 text-rose-600"
+                  : "bg-emerald-50 border-emerald-200 text-emerald-600"
               }`}
             >
               {isActivating ? (
@@ -44,10 +39,10 @@ const SosConfirmModal = ({
               )}
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-slate-100 m-0 tracking-tight">
+              <h3 className="text-base font-black text-text-primary m-0 tracking-tight">
                 {isActivating ? "Send Emergency SOS?" : "Cancel Emergency SOS?"}
               </h3>
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-semibold text-text-muted">
                 {isActivating ? "Emergency Safety Protocol" : "Safety Status Update"}
               </span>
             </div>
@@ -55,7 +50,7 @@ const SosConfirmModal = ({
           <button
             onClick={onClose}
             disabled={loading}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            className="p-2 rounded-xl text-text-muted hover:text-text-secondary hover:bg-background transition-colors disabled:opacity-50"
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -65,13 +60,13 @@ const SosConfirmModal = ({
         {/* Content Body */}
         <div className="p-6 space-y-4">
           <div className="space-y-2">
-            <p className="text-sm font-medium text-slate-700 dark:text-slate-300 leading-relaxed m-0">
+            <p className="text-sm font-medium text-text-primary leading-relaxed m-0">
               {isActivating
-                ? "This will send an emergency alert to your registered emergency contacts."
+                ? "This will activate your in-app SOS status flag."
                 : "Confirm that you are safe and want to deactivate the emergency alert."}
             </p>
             {isActivating && (
-              <p className="text-xs font-medium text-slate-500 dark:text-slate-400 leading-relaxed m-0">
+              <p className="text-xs font-medium text-text-muted leading-relaxed m-0">
                 Your current journey information will be included when available.
                 {journeyTitle ? ` (${journeyTitle})` : ""}
               </p>
@@ -80,9 +75,9 @@ const SosConfirmModal = ({
 
           {/* Quick Notice Card */}
           {isActivating && (
-            <div className="p-3.5 rounded-2xl bg-rose-50/70 dark:bg-rose-950/30 border border-rose-100 dark:border-rose-900/40">
-              <p className="text-xs font-bold text-rose-700 dark:text-rose-300 m-0">
-                🚨 Immediate notification will be dispatched to your emergency network.
+            <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-100">
+              <p className="text-xs font-bold text-rose-700 m-0">
+                🚨 Note: This does not dispatch external SMS/calls. Please dial emergency services manually if needed.
               </p>
             </div>
           )}
@@ -94,7 +89,7 @@ const SosConfirmModal = ({
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+            className="px-5 py-3 rounded-xl text-sm font-bold text-text-secondary bg-background hover transition-colors disabled:opacity-50"
           >
             Cancel
           </button>

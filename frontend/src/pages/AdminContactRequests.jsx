@@ -41,12 +41,12 @@ function CardSkeleton() {
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
         <div className="w-full lg:w-40 space-y-3">
           <div className="h-6 w-24 rounded-full bg-slate-200" />
-          <div className="h-4 w-28 rounded bg-slate-100" />
+          <div className="h-4 w-28 rounded bg-background" />
         </div>
         <div className="flex-1 space-y-3">
           <div className="h-5 w-48 rounded bg-slate-200" />
-          <div className="h-4 w-64 rounded bg-slate-100" />
-          <div className="h-24 rounded-2xl bg-slate-100" />
+          <div className="h-4 w-64 rounded bg-background" />
+          <div className="h-24 rounded-2xl bg-background" />
         </div>
         <div className="flex gap-2">
           <div className="h-9 w-24 rounded-xl bg-brand-50" />
@@ -74,14 +74,14 @@ function StatPill({ label, value, tone }) {
 function SearchBox({ value, onChange }) {
   return (
     <div className="relative w-full sm:w-72">
-      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
       <input
       type="search"
       value={value}
       onChange={onChange}
       placeholder="Search inquiries..."
       aria-label="Search inquiries"
-      className="w-full rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-medium text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100" />
+      className="w-full rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-medium text-text-primary outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100" />
 
     </div>);
 
@@ -90,12 +90,12 @@ function SearchBox({ value, onChange }) {
 function StatusFilter({ value, onChange }) {
   return (
     <div className="relative w-full sm:w-48">
-      <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+      <Filter className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted" />
       <CustomSelect
       value={value}
       onChange={onChange}
       aria-label="Filter by status"
-      className="w-full appearance-none rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-bold text-slate-700 outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
+      className="w-full appearance-none rounded-xl border border-slate-100 bg-slate-50 py-2.5 pl-10 pr-3 text-xs font-bold text-text-primary outline-none transition focus:border-brand-300 focus:bg-white focus:ring-4 focus:ring-brand-100"
       options={[
         { label: "All Status", value: STATUS.ALL },
         { label: "Pending", value: STATUS.PENDING },
@@ -134,11 +134,11 @@ function ErrorState({ message, onRetry, retrying }) {
 function EmptyState({ hasFilters }) {
   return (
     <div className="rounded-3xl border border-slate-100 bg-white px-4 py-12 text-center shadow-sm">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-slate-400">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-50 text-text-muted">
         <Mail className="h-8 w-8" />
       </div>
-      <h3 className="text-xl font-bold text-slate-900">No Inquiries Found</h3>
-      <p className="mx-auto mt-2 max-w-md text-sm font-medium text-slate-500">
+      <h3 className="text-xl font-bold text-text-primary">No Inquiries Found</h3>
+      <p className="mx-auto mt-2 max-w-md text-sm font-medium text-text-muted">
         {hasFilters ?
         "No contact requests match your current search or status filter." :
         "There are no contact requests yet."}
@@ -172,7 +172,7 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
             {contact.status}
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-text-muted">
             <Clock className="h-3.5 w-3.5" />
             {new Date(contact.createdAt).toLocaleDateString()}
           </div>
@@ -180,15 +180,15 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
 
         <div className="min-w-0 flex-1">
           <div className="mb-1 flex items-center gap-1.5">
-            <User className="h-3.5 w-3.5 shrink-0 text-brand-600" />
-            <h3 className="truncate text-base font-bold text-slate-900">{contact.name}</h3>
+            <User className="h-3.5 w-3.5 shrink-0 text-brand" />
+            <h3 className="truncate text-base font-bold text-text-primary">{contact.name}</h3>
           </div>
 
-          <div className="mb-3 flex items-center gap-1.5 text-xs font-medium text-slate-500">
+          <div className="mb-3 flex items-center gap-1.5 text-xs font-medium text-text-muted">
             <Mail className="h-3.5 w-3.5 shrink-0" />
             <a
             href={`mailto:${contact.email}`}
-            className="truncate transition hover:text-brand-600">
+            className="truncate transition hover:text-brand">
 
               {contact.email}
             </a>
@@ -196,12 +196,12 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
 
           <div className="rounded-2xl bg-slate-50 p-4 transition group-hover:bg-brand-50/30">
             <div className="mb-1.5 flex items-center gap-1.5">
-              <FileText className="h-3 w-3 shrink-0 text-slate-400" />
-              <span className="truncate text-xs font-bold uppercase tracking-wider text-brand-600">
+              <FileText className="h-3 w-3 shrink-0 text-text-muted" />
+              <span className="truncate text-xs font-bold uppercase tracking-wider text-brand">
                 {contact.subject || "No Subject"}
               </span>
             </div>
-            <p className="line-clamp-3 text-xs font-medium leading-relaxed text-slate-600">
+            <p className="line-clamp-3 text-xs font-medium leading-relaxed text-text-secondary">
               {contact.message}
             </p>
           </div>
@@ -211,7 +211,7 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
           <button
           type="button"
           onClick={() => onRespond(contact)}
-          className="inline-flex h-10 items-center gap-1.5 rounded-xl bg-brand-600 px-4 text-xs font-bold uppercase tracking-wider text-white transition hover:bg-brand-700 shadow-sm">
+          className="btn-primary">
 
             Respond
             <ChevronRight className="h-3.5 w-3.5" />
@@ -225,8 +225,8 @@ function ContactCard({ contact, index, onRespond, onToggleStatus, isUpdating }) 
           aria-label={isPending ? "Mark as Resolved" : "Mark as Pending"}
           className={`flex h-10 w-10 items-center justify-center rounded-xl transition border disabled:cursor-not-allowed disabled:opacity-50 ${
           isPending ?
-          "bg-brand-50 border-brand-100 text-brand-600 hover:bg-brand-600 hover:text-white hover:border-brand-600" :
-          "bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-500 hover:text-white hover:border-slate-500"
+          "bg-brand-50 border-brand-100 text-brand hover:bg-brand hover:text-white hover:border-brand" :
+          "bg-slate-50 border-slate-200 text-text-muted hover hover:text-white hover"
           }`}>
 
             {isPending ? <CheckCircle className="h-4 w-4" /> : <RotateCcw className="h-4 w-4" />}
@@ -350,7 +350,7 @@ const AdminContactRequests = () => {
         "The request has been marked as completed." :
         "The request has been marked as pending again.",
         confirmButtonColor:
-        nextStatus === STATUS.RESOLVED ? "#10b981" : "#7c3aed",
+        nextStatus === STATUS.RESOLVED ? "#10b981" : "#0284c7",
         customClass: { popup: "rounded-3xl" }
       });
     } catch (err) {
@@ -373,7 +373,7 @@ const AdminContactRequests = () => {
   const handleRespond = async (contact) => {
     const { value: replyText } = await Swal.fire({
       title: `Reply to ${contact.name}`,
-      html: `<p class="text-sm text-slate-500 mb-2">${contact.email}</p>`,
+      html: `<p class="text-sm text-text-muted mb-2">${contact.email}</p>`,
       input: "textarea",
       inputPlaceholder: "Type your reply here...",
       inputAttributes: { rows: 5 },
@@ -382,9 +382,9 @@ const AdminContactRequests = () => {
       buttonsStyling: false,
       customClass: {
         popup: "rounded-3xl border border-slate-100 shadow-xl bg-white",
-        title: "text-xl font-bold text-slate-800",
-        confirmButton: "bg-brand-600 hover:bg-brand-700 text-white rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
-        cancelButton: "bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
+        title: "text-xl font-bold text-text-primary",
+        confirmButton: "bg-brand hover:bg-brand-dark text-white rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
+        cancelButton: "bg-background hover text-text-primary rounded-xl px-6 py-2.5 font-bold text-sm transition-colors mx-2",
         input: "rounded-xl border border-slate-200 focus:border-brand-400 focus:ring-4 focus:ring-brand-500/10 text-sm p-3 w-[90%] mx-auto mt-4 transition-all outline-none"
       },
       inputValidator: (value) => {
@@ -416,15 +416,15 @@ const AdminContactRequests = () => {
         <div className="mb-10 flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2">
-              <div className="rounded-xl bg-brand-600 p-2 text-white shadow-md shadow-brand-500/20">
+              <div className="rounded-xl bg-brand p-2 text-white shadow-md shadow-brand-500/20">
                 <MessageCircle className="h-4 w-4" />
               </div>
-              <span className="text-xs font-bold uppercase tracking-wider text-brand-600">
+              <span className="text-xs font-bold uppercase tracking-wider text-brand">
                 Concierge Services
               </span>
             </div>
 
-            <h1 className="text-3xl font-bold tracking-tight text-slate-900 mt-1">
+            <h1 className="text-3xl font-bold tracking-tight text-text-primary mt-1">
               Contact Requests
             </h1>
 

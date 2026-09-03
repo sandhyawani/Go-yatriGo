@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const logger = require("../utils/logger");
 
 const connectDB = async () => {
   try {
@@ -13,11 +14,9 @@ const connectDB = async () => {
       maxPoolSize: 10
     });
 
-    console.log(
-    `MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`
-    );
+    logger.info(`MongoDB Connected: ${conn.connection.host}/${conn.connection.name}`);
   } catch (error) {
-    console.error("Database connection failed:", error.message);
+    logger.error(`Database connection failed: ${error.message}`);
     process.exit(1);
   }
 };

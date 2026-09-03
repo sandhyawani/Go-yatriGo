@@ -1,24 +1,12 @@
 const axios = require("axios");
 
-/**
- * Service to automatically select a relevant cover image for a trip based on its details.
- */
 class ImageService {
   constructor() {
     this.unsplashApiKey = process.env.IMAGE_PROVIDER_API_KEY;
-    // The deterministic default fallback image used if no image is found or API fails.
     this.defaultCoverImage = "https://images.unsplash.com/photo-1488646953014-85cb44e25828";
-    this.cache = new Map(); // Simple in-memory cache for queries
+    this.cache = new Map();
   }
 
-  /**
-   * Fetches an automatic cover image based on the trip's destination, title, and category.
-   * @param {Object} params - The trip details.
-   * @param {String} params.destination - The destination of the trip.
-   * @param {String} params.title - The title of the trip.
-   * @param {String} params.category - The category of the trip.
-   * @returns {Promise<String>} The selected image URL.
-   */
   async fetchAutoCoverImage({ destination = "", title = "", category = "" }) {
     if (!this.unsplashApiKey) {
       return this.defaultCoverImage;
@@ -67,9 +55,6 @@ class ImageService {
     }
   }
 
-  /**
-   * Fetches multiple automatic cover images based on the trip's details.
-   */
   async fetchAutoCoverImages({ destination = "", title = "", category = "" }, limit = 10) {
     if (!this.unsplashApiKey) {
       return [this.defaultCoverImage];

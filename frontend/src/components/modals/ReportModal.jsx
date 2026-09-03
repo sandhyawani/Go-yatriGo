@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import axios from "../../api/axios";
 import { showToast } from "../../utils/showToast";
-import { FiAlertCircle, FiUserX, FiShield, FiImage, FiMessageSquare, FiMoreHorizontal } from "react-icons/fi";
+import { AlertCircle, UserX, Shield, Image as ImageIcon, MessageSquare, MoreHorizontal } from "lucide-react";
 
 const REPORT_REASONS = [
-{ id: "Spam", label: "Spam", icon: FiMessageSquare, description: "Unwanted commercial content or repetitive messages" },
-{ id: "Harassment", label: "Harassment", icon: FiAlertCircle, description: "Bullying, threats, or abusive behavior" },
-{ id: "Fake profile", label: "Fake profile", icon: FiUserX, description: "Impersonation or deceptive identity" },
-{ id: "Inappropriate content", label: "Inappropriate content", icon: FiImage, description: "Offensive, graphic, or sensitive content" },
-{ id: "Scam/Fraud", label: "Scam/Fraud", icon: FiShield, description: "Suspicious, misleading, or fraudulent activity" },
-{ id: "Other", label: "Other", icon: FiMoreHorizontal, description: "Something else that violates our community guidelines" }];
+  { id: "Spam", label: "Spam", icon: MessageSquare, description: "Unwanted commercial content or repetitive messages" },
+  { id: "Harassment", label: "Harassment", icon: AlertCircle, description: "Bullying, threats, or abusive behavior" },
+  { id: "Fake profile", label: "Fake profile", icon: UserX, description: "Impersonation or deceptive identity" },
+  { id: "Inappropriate content", label: "Inappropriate content", icon: ImageIcon, description: "Offensive, graphic, or sensitive content" },
+  { id: "Scam/Fraud", label: "Scam/Fraud", icon: Shield, description: "Suspicious, misleading, or fraudulent activity" },
+  { id: "Other", label: "Other", icon: MoreHorizontal, description: "Something else that violates our community guidelines" },
+];
 
 
 const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) => {
@@ -48,12 +49,12 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
   // Map internal targetType values to user-friendly display names
   const getDisplayTitle = () => {
     const typeMap = {
-      post: "Memory",
-      story: "Dispatch",
+      post: "Travel Memory",
+      story: "Trip Moment",
       user: "User",
       group: "Group",
     };
-    return typeMap[targetType?.toLowerCase()] || targetType || "Memory";
+    return typeMap[targetType?.toLowerCase()] || targetType || "Travel Memory";
   };
 
   return (
@@ -118,14 +119,14 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
                       onBlur={(e) => e.target.parentElement.classList.remove("ring-2", "ring-brand-400", "ring-offset-1")}
                     />
                     <div className="flex items-center gap-2">
-                      <div className={`p-1.5 rounded-lg transition-colors duration-150 ${isSelected ? "bg-brand-100 text-brand-600" : "bg-white text-gray-400 shadow-sm"}`}>
+                      <div className={`p-1.5 rounded-lg transition-colors duration-150 ${isSelected ? "bg-brand-100 text-brand" : "bg-white text-gray-400 shadow-sm"}`}>
                         <Icon className="w-4 h-4" />
                       </div>
                       <span className={`font-semibold text-[13px] leading-tight ${isSelected ? "text-brand-900" : "text-gray-700"}`}>
                         {r.label}
                       </span>
                     </div>
-                    <p className={`text-[11px] leading-relaxed pl-0.5 ${isSelected ? "text-brand-700/80" : "text-gray-400"}`}>
+                    <p className={`text-[11px] leading-relaxed pl-0.5 ${isSelected ? "text-brand-dark/80" : "text-gray-400"}`}>
                       {r.description}
                     </p>
                     {isSelected && (
@@ -157,7 +158,7 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
                 px-5 py-2 text-sm font-semibold text-white rounded-lg transition-all duration-150
                 ${loading || !reason
                   ? "bg-gray-300 cursor-not-allowed opacity-70"
-                  : "bg-brand-600 hover:bg-brand-700 shadow-sm hover:shadow-brand-500/20 active:scale-[0.98]"}
+                  : "bg-brand hover:bg-brand-dark shadow-sm hover:shadow-brand-500/20 active:scale-[0.98]"}
               `}
             >
               {loading ? "Submitting…" : "Submit Report"}

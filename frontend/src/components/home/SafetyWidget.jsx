@@ -62,7 +62,7 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
       if (res.data.success) {
         showToast.success(
           isActivating
-            ? "SOS Alert Sent! Emergency contacts notified."
+            ? "SOS Activated. Note: Please manually contact emergency services. In-app alerts do not dispatch external SMS/calls."
             : "SOS Cancelled. Status updated to Safe."
         );
         setShowSosModal(false);
@@ -167,10 +167,10 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
             {sosActive ? <ShieldAlert className="w-5 h-5 animate-pulse" /> : <Shield className="w-5 h-5" />}
           </div>
           <div>
-            <h4 className="text-sm font-black text-slate-800 uppercase tracking-widest">
+            <h4 className="text-sm font-black text-text-primary uppercase tracking-widest">
               Journey Safety
             </h4>
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">
+            <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">
               Smart Protection
             </span>
           </div>
@@ -195,24 +195,24 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
       {/* Metrics Row */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-          <span className="text-[9px] text-slate-400 font-black block uppercase tracking-widest mb-1">
+          <span className="text-[9px] text-text-muted font-black block uppercase tracking-widest mb-1">
             Contacts
           </span>
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-slate-400" />
-            <span className="text-sm font-black text-slate-700">
+            <Users className="w-4 h-4 text-text-muted" />
+            <span className="text-sm font-black text-text-primary">
               {user?.emergencyContacts?.length || 0} Registered
             </span>
           </div>
         </div>
 
         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-          <span className="text-[9px] text-slate-400 font-black block uppercase tracking-widest mb-1">
+          <span className="text-[9px] text-text-muted font-black block uppercase tracking-widest mb-1">
             Milestones
           </span>
           <div className="flex items-center gap-2">
             <CheckCircle className="w-4 h-4 text-emerald-500" />
-            <span className="text-sm font-black text-slate-700">
+            <span className="text-sm font-black text-text-primary">
               {completedMilestones.length} / {JOURNEY_MILESTONES.length}
             </span>
           </div>
@@ -248,11 +248,11 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
         {isOngoing && !sosActive && (
           <div className="pt-3 border-t border-slate-100/60 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-[9px] text-slate-400 font-black uppercase tracking-widest block">
+              <span className="text-[9px] text-text-muted font-black uppercase tracking-widest block">
                 Quick Actions
               </span>
               {nextExpectedMilestone && (
-                <span className="text-[9px] font-bold text-[#7C3AED]">
+                <span className="text-[9px] font-bold text-brand">
                   Next: {nextExpectedMilestone}
                 </span>
               )}
@@ -274,7 +274,7 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
                 {!showMilestoneForm ? (
                   <button
                     onClick={() => setShowMilestoneForm(true)}
-                    className="w-full py-2 bg-violet-50 hover:bg-violet-100 border border-violet-100 text-[#7C3AED] rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                    className="w-full py-2 bg-primary-50 hover:bg-primary-100 border border-primary-100 text-brand rounded-xl font-black text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
                   >
                     <Navigation className="w-3.5 h-3.5" />
                     <span>Check In: {nextExpectedMilestone}</span>
@@ -286,20 +286,20 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
                       placeholder="Checkpoint Location (optional)"
                       value={locationStr}
                       onChange={(e) => setLocationStr(e.target.value)}
-                      className="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs font-bold focus:border-[#7C3AED] focus:outline-none"
+                      className="input-field"
                     />
                     <div className="flex gap-2">
                       <button
                         type="button"
                         onClick={() => setShowMilestoneForm(false)}
-                        className="flex-1 py-1.5 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold"
+                        className="flex-1 py-1.5 bg-background text-text-secondary rounded-xl text-xs font-bold"
                       >
                         Cancel
                       </button>
                       <button
                         type="submit"
                         disabled={milestoneLoading}
-                        className="flex-1 py-1.5 bg-[#7C3AED] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow-xs disabled:opacity-50"
+                        className="flex-1 py-1.5 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow-xs disabled:opacity-50"
                       >
                         <CheckCircle className="w-3.5 h-3.5" />
                         <span>{milestoneLoading ? "Checking In..." : `✓ Check In: ${nextExpectedMilestone}`}</span>
@@ -316,8 +316,8 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
 
         {!isOngoing && (
           <div className="flex items-center gap-2 p-3 bg-slate-50 rounded-2xl border border-slate-100/50">
-            <AlertTriangle className="w-4 h-4 text-slate-400 shrink-0" />
-            <p className="text-[10px] text-slate-400 font-bold leading-normal m-0">
+            <AlertTriangle className="w-4 h-4 text-text-muted shrink-0" />
+            <p className="text-[10px] text-text-muted font-bold leading-normal m-0">
               Safe Check-Ins are active during ongoing journeys. Start your trip in the workspace to enable milestone tracking.
             </p>
           </div>

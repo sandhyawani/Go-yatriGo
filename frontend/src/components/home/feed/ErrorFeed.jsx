@@ -14,7 +14,7 @@ export const ErrorFeed = ({ onRetry }) => (
     </p>
     <button
       onClick={onRetry}
-      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#7C3AED] text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-[#5b3ee0] shadow-[0_4px_12px_rgba(108,77,246,0.3)] transition-all"
+      className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand text-white font-extrabold text-xs uppercase tracking-widest rounded-xl hover:bg-brand-dark shadow-soft transition-all"
     >
       Try again
     </button>

@@ -48,38 +48,36 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
   if (loading) {
     return (
       <div className="space-y-8 animate-pulse pb-12 max-w-5xl mx-auto">
-        {}
-        <div className="h-56 rounded-3xl bg-slate-200 dark:bg-slate-800/80 relative overflow-hidden">
+        <div className="h-56 rounded-3xl bg-slate-200 relative overflow-hidden">
           <div
           className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-shimmer"
           style={{ animationDuration: '1.5s' }} />
 
           <div className="p-8 space-y-4">
-            <div className="h-4 w-24 bg-slate-300 dark:bg-slate-700 rounded-lg" />
-            <div className="h-8 w-64 bg-slate-300 dark:bg-slate-700 rounded-lg" />
-            <div className="h-16 w-full bg-slate-300 dark:bg-slate-700 rounded-lg" />
+            <div className="h-4 w-24 bg-slate-300 rounded-lg" />
+            <div className="h-8 w-64 bg-slate-300 rounded-lg" />
+            <div className="h-16 w-full bg-slate-300 rounded-lg" />
           </div>
         </div>
 
-        {}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-8 border border-slate-200/60 dark:border-slate-800 space-y-6 shadow-soft">
-              <div className="h-6 w-48 bg-slate-200 dark:bg-slate-800 rounded-lg" />
+            <div className="bg-white rounded-3xl p-8 border border-slate-200/60 space-y-6 shadow-soft">
+              <div className="h-6 w-48 bg-slate-200 rounded-lg" />
               <div className="space-y-4">
                 {[1, 2, 3].map((n) =>
-                <div key={n} className="h-16 w-full bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />
+                <div key={n} className="h-16 w-full bg-background rounded-2xl" />
                 )}
               </div>
             </div>
           </div>
           <div className="space-y-6">
-            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/60 dark:border-slate-800 space-y-6 shadow-soft">
-              <div className="h-6 w-32 bg-slate-200 dark:bg-slate-800 rounded-lg" />
-              <div className="h-10 w-full bg-slate-100 dark:bg-slate-800/60 rounded-xl" />
+            <div className="bg-white rounded-3xl p-6 border border-slate-200/60 space-y-6 shadow-soft">
+              <div className="h-6 w-32 bg-slate-200 rounded-lg" />
+              <div className="h-10 w-full bg-background rounded-xl" />
               <div className="space-y-3">
                 {[1, 2].map((n) =>
-                <div key={n} className="h-12 w-full bg-slate-100 dark:bg-slate-800/60 rounded-2xl" />
+                <div key={n} className="h-12 w-full bg-background rounded-2xl" />
                 )}
               </div>
             </div>
@@ -107,20 +105,18 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className="max-w-2xl mx-auto my-8 px-4">
 
-        <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 p-8 sm:p-12 text-center shadow-card hover:shadow-hover transition-all duration-300 group">
-          {}
+        <div className="relative overflow-hidden bg-white rounded-3xl border border-slate-200/80 p-8 sm:p-12 text-center shadow-card hover:shadow-hover transition-all duration-300 group">
           <div className="absolute -right-24 -top-24 w-48 h-48 bg-primary-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-primary-500/20 transition-all duration-500" />
           <div className="absolute -left-24 -bottom-24 w-48 h-48 bg-amber-500/10 rounded-full blur-3xl pointer-events-none group-hover:bg-amber-500/20 transition-all duration-500" />
           
           <div className="relative z-10 space-y-6">
-            {}
             <motion.div
             animate={{ y: [0, -6, 0] }}
             transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
             className={`w-20 h-20 rounded-2xl flex items-center justify-center mx-auto border shadow-soft ${
             isCancelled ?
-            "bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-700 text-slate-400" :
-            "bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-950/20 dark:to-primary-900/30 border-primary-200/60 dark:border-primary-800/60 text-primary-500"
+            "bg-slate-50 border-slate-200 text-text-muted" :
+            "bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200/60 text-primary-500"
             }`}>
 
               {isCancelled ?
@@ -138,13 +134,13 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
             </motion.div>
 
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight font-heading">
+              <h3 className="text-2xl font-bold text-text-primary tracking-tight font-heading">
                 {isCancelled ?
                 "Scrapbook Archived" :
                 "Your Journey Scrapbook"}
               </h3>
               
-              <p className="text-sm font-medium text-slate-500 dark:text-slate-400 max-w-md mx-auto leading-relaxed font-body">
+              <p className="text-sm font-medium text-text-muted max-w-md mx-auto leading-relaxed font-body">
                 {lockedMessage || (
                 isCancelled ?
                 "This journey was cancelled, so the scrapbook archive is not active." :
@@ -154,14 +150,14 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
 
             {!isCancelled && endDateFormatted ?
             <div className="pt-2">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50/80 dark:bg-primary-950/40 text-xs font-bold text-primary-600 dark:text-primary-400 border border-primary-100 dark:border-primary-900/60 shadow-xs">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-50/80 text-xs font-bold text-primary-600 border border-primary-100 shadow-xs">
                   <Clock className="w-4 h-4 animate-pulse" />
                   <span>Unlocks on {endDateFormatted}</span>
                 </div>
               </div> :
             !isCancelled ?
             <div className="pt-2">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 dark:bg-amber-950/40 text-xs font-bold text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/60">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 text-xs font-bold text-amber-600 border border-amber-100">
                   <Sparkles className="w-3.5 h-3.5 animate-spin-slow" />
                   <span>Unlocking soon after completion</span>
                 </div>
@@ -227,28 +223,28 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     if (idx === 0 || lowerTitle.includes("created")) {
       return {
         icon: Flag,
-        bgColor: "bg-violet-100 dark:bg-violet-950/60 text-violet-600 dark:text-violet-400",
-        borderColor: "border-violet-200 dark:border-violet-800"
+        bgColor: "bg-primary-100 text-primary-600",
+        borderColor: "border-primary-200"
       };
     }
     if (idx === total - 1 || lowerTitle.includes("completed") || lowerTitle.includes("success")) {
       return {
         icon: Trophy,
-        bgColor: "bg-amber-100 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400",
-        borderColor: "border-amber-200 dark:border-amber-800"
+        bgColor: "bg-amber-100 text-amber-600",
+        borderColor: "border-amber-200"
       };
     }
     if (lowerTitle.includes("started") || lowerTitle.includes("active")) {
       return {
         icon: Compass,
-        bgColor: "bg-brand-50 dark:bg-brand-950/60 text-brand-700 dark:text-brand-400",
-        borderColor: "border-brand-200 dark:border-brand-800"
+        bgColor: "bg-brand-50 text-brand-dark",
+        borderColor: "border-brand-200"
       };
     }
     return {
       icon: CheckCircle2,
-      bgColor: "bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400",
-      borderColor: "border-emerald-200 dark:border-emerald-800"
+      bgColor: "bg-emerald-100 text-emerald-600",
+      borderColor: "border-emerald-200"
     };
   };
 
@@ -256,7 +252,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
   const getAvatarGradient = (name) => {
     const len = name ? name.length : 0;
     const gradients = [
-    "from-violet-500 to-fuchsia-500",
+    "from-primary-400 to-brand-600",
     "from-brand-500 to-brand-700",
     "from-rose-500 to-orange-500",
     "from-emerald-500 to-teal-500",
@@ -272,20 +268,20 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     transition={{ duration: 0.4 }}
     className="space-y-6 pb-12 max-w-5xl mx-auto px-1">
 
-      <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800 p-5 sm:p-6 shadow-soft hover:shadow-hover transition-all duration-300 relative overflow-hidden">
+      <div className="bg-white rounded-3xl border border-slate-200/60 p-5 sm:p-6 shadow-soft hover:shadow-hover transition-all duration-300 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
         
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-[10px] font-extrabold uppercase text-emerald-600 dark:text-emerald-400 border border-emerald-100/50 dark:border-emerald-800/40 mb-3">
-            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" /> 
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-[10px] font-extrabold uppercase text-emerald-600 border border-emerald-100/50 mb-3">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" /> 
             <span>Journey Complete</span>
           </div>
           
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-slate-800 dark:text-slate-100 font-heading mb-1">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-text-primary font-heading mb-1">
             {journey.title}
           </h2>
 
-          <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+          <p className="text-xs sm:text-sm font-medium text-text-muted mb-2">
             {journey.destination} • {(() => {
               const d = journey.durationDays || memData?.durationDays;
               if (d) return `${d} ${d === 1 ? "Day" : "Days"}`;
@@ -300,13 +296,13 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
             })()}
           </p>
 
-          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800 text-[11px] font-bold text-slate-600 dark:text-slate-300">
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 text-[11px] font-bold text-text-secondary">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/50 border border-slate-200/40">
               <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
               <span>{journey.destination}</span>
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
-              <Calendar className="w-3.5 h-3.5 text-violet-500 shrink-0" />
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/50 border border-slate-200/40">
+              <Calendar className="w-3.5 h-3.5 text-primary-500 shrink-0" />
               <span>
                 {(() => {
                   const d = journey.durationDays || memData?.durationDays;
@@ -319,7 +315,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                 })()}
               </span>
             </span>
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/50 border border-slate-200/40">
               <Users className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
               <span>
                 {(() => {
@@ -329,7 +325,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
               </span>
             </span>
 
-            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/50 dark:bg-slate-800/60 border border-slate-200/40 dark:border-slate-700/40">
+            <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-background/50 border border-slate-200/40">
               <Award className="w-3.5 h-3.5 text-amber-500 shrink-0" />
               <span>Completed Milestone</span>
             </span>
@@ -337,25 +333,21 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
         </div>
       </div>
 
-      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200/70 dark:border-slate-800 shadow-soft space-y-8">
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-4">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2.5 font-heading">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/70 shadow-soft space-y-8">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+              <h3 className="text-xl font-bold text-text-primary flex items-center gap-2.5 font-heading">
                 <Clock className="w-5.5 h-5.5 text-primary-500" />
                 <span>Journey Milestones Timeline</span>
               </h3>
-              <span className="px-2.5 py-1 rounded-lg bg-primary-50 dark:bg-primary-950/40 text-[10px] font-extrabold uppercase text-primary-600 dark:text-primary-400 border border-primary-100/60 dark:border-primary-900/60">
+              <span className="px-2.5 py-1 rounded-lg bg-primary-50 text-[10px] font-extrabold uppercase text-primary-600 border border-primary-100/60">
                 Log Archive
               </span>
             </div>
 
-            {}
             <div className="relative pl-6 sm:pl-8 space-y-6">
-              {}
-              <div className="absolute left-[29px] sm:left-[37px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-slate-200 dark:border-slate-800" />
+              <div className="absolute left-[29px] sm:left-[37px] top-4 bottom-4 w-0.5 border-l-2 border-dashed border-slate-200" />
 
               {milestonesList.map((hl, idx) => {
                 const config = getMilestoneConfig(hl.title, idx, milestonesList.length);
@@ -368,15 +360,13 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                   transition={{ duration: 0.2 }}
                   className="relative flex gap-4 items-start">
 
-                    {}
-                    <div className={`absolute -left-6 sm:-left-8 w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 border-white dark:border-slate-900 shadow-soft z-10 shrink-0 ${config.bgColor} ${config.borderColor}`}>
+                    <div className={`absolute -left-6 sm:-left-8 w-7.5 h-7.5 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 border-white shadow-soft z-10 shrink-0 ${config.bgColor} ${config.borderColor}`}>
                       <IconComponent className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
 
-                    {}
-                    <div className="flex-1 bg-slate-50 dark:bg-slate-800/40 rounded-2xl p-4 border border-slate-100 dark:border-slate-800/60 shadow-[0_2px_12px_rgba(30,41,59,0.01)] hover:shadow-soft transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ml-4">
+                    <div className="flex-1 bg-slate-50 rounded-2xl p-4 border border-slate-100 shadow-[0_2px_12px_rgba(30,41,59,0.01)] hover:shadow-soft transition-all duration-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 ml-4">
                       <div className="space-y-1">
-                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block font-body">
+                        <span className="text-xs font-bold text-text-primary block font-body">
                           {hl.title}
                         </span>
                         {idx === milestonesList.length - 1 &&
@@ -385,7 +375,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                           </span>}
 
                       </div>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-bold bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg shrink-0 self-start sm:self-center">
+                      <span className="text-[10px] text-text-muted font-bold bg-background px-2.5 py-1 rounded-lg shrink-0 self-start sm:self-center">
                         {hl.createdAt ? new Date(hl.createdAt).toLocaleDateString("en-US", {
                           month: "short",
                           day: "numeric",
@@ -400,13 +390,11 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
           </div>
         </div>
 
-        {}
         <div className="space-y-6">
-          <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200/70 dark:border-slate-800 shadow-soft flex flex-col justify-between space-y-6">
+          <div className="bg-white rounded-3xl p-6 border border-slate-200/70 shadow-soft flex flex-col justify-between space-y-6">
             
-            {}
             <div>
-              <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 flex items-center gap-2 mb-4 font-heading">
+              <h3 className="text-base font-bold text-text-primary flex items-center gap-2 mb-4 font-heading">
                 <span className="text-base leading-none">✨</span>
                 <span>Relive & React ({reactionsList.length})</span>
               </h3>
@@ -421,15 +409,15 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                     whileHover={{ scale: 1.15, y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => handleReact(em)}
-                    className={`px-3 py-1.5 rounded-2xl hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-bold flex items-center gap-2 shadow-xs transition-all border ${
+                    className={`px-3 py-1.5 rounded-2xl hover text-sm font-bold flex items-center gap-2 shadow-xs transition-all border ${
                     count > 0 ?
-                    "bg-primary-50/50 dark:bg-primary-950/20 border-primary-200/50 dark:border-primary-800 text-primary-600 dark:text-primary-400" :
-                    "bg-slate-100/60 dark:bg-slate-800/60 border-slate-200/40 dark:border-slate-700/60 text-slate-700 dark:text-slate-300"
+                    "bg-primary-50/50 border-primary-200/50 text-primary-600" :
+                    "bg-background/60 border-slate-200/40 text-text-primary"
                     }`}>
 
                       <span>{em}</span>
                       {count > 0 &&
-                      <span className="text-xs font-extrabold px-1.5 py-0.2 rounded-md bg-white dark:bg-slate-900 border border-primary-100 dark:border-primary-800">
+                      <span className="text-xs font-extrabold px-1.5 py-0.2 rounded-md bg-white border border-primary-100">
                           {count}
                         </span>}
 
@@ -439,19 +427,17 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
               </div>
             </div>
 
-            {}
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-5 space-y-4">
-              <h4 className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+            <div className="border-t border-slate-100 pt-5 space-y-4">
+              <h4 className="text-xs font-bold text-text-muted uppercase tracking-wider flex items-center gap-1.5">
                 <MessageSquare className="w-4 h-4 text-primary-500" /> 
                 <span>Guestbook Comments ({commentsList.length})</span>
               </h4>
 
-              {}
               <div className="space-y-3.5 max-h-64 overflow-y-auto pr-1 scrollbar-none">
                 <AnimatePresence initial={false}>
                   {commentsList.length === 0 ?
-                  <div className="text-center py-8 bg-slate-50/50 dark:bg-slate-800/30 rounded-2xl border border-slate-100 dark:border-slate-800/60">
-                      <p className="text-xs text-slate-400 font-medium">
+                  <div className="text-center py-8 bg-slate-50/50 rounded-2xl border border-slate-100">
+                      <p className="text-xs text-text-muted font-medium">
                         Be the first to drop a congratulatory note!
                       </p>
                     </div> :
@@ -461,24 +447,23 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                   key={cIdx}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="p-3.5 rounded-2xl bg-slate-50/60 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 text-xs space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
+                  className="p-3.5 rounded-2xl bg-slate-50/60 border border-slate-100 text-xs space-y-2 shadow-[0_2px_8px_rgba(0,0,0,0.01)]">
 
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            {}
                             <div className={`w-7 h-7 rounded-full bg-gradient-to-tr ${getAvatarGradient(comm.userName)} text-white flex items-center justify-center font-black text-[10px] uppercase shadow-xs`}>
                               {comm.userName ? comm.userName.substring(0, 2) : "TR"}
                             </div>
-                            <span className="font-extrabold text-slate-700 dark:text-slate-300">
+                            <span className="font-extrabold text-text-primary">
                               {comm.userName || "Traveler"}
                             </span>
                           </div>
                           
-                          <span className="text-[9px] text-slate-400 font-bold bg-slate-200/50 dark:bg-slate-800 px-2 py-0.5 rounded-md">
+                          <span className="text-[9px] text-text-muted font-bold bg-slate-200/50 px-2 py-0.5 rounded-md">
                             {new Date(comm.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <p className="text-slate-600 dark:text-slate-300 leading-relaxed font-body pl-1">
+                        <p className="text-text-secondary leading-relaxed font-body pl-1">
                           {comm.text}
                         </p>
                       </motion.div>
@@ -487,7 +472,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                 </AnimatePresence>
               </div>
 
-              {}
               <form onSubmit={handleAddComment} className="flex gap-2 pt-3">
                 <input
                 type="text"
@@ -495,7 +479,7 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
                 value={commentText}
                 onChange={(e) => setCommentText(e.target.value)}
                 placeholder="Leave a memory note..."
-                className="flex-1 px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-xs outline-none focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 transition-all font-body text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500" />
+                className="input-field" />
 
                 <motion.button
                 type="submit"

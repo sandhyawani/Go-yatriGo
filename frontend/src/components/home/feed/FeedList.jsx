@@ -1,5 +1,5 @@
 import React from "react";
-import PostCard from "../Post/PostCard";
+import FeedCard from "./FeedCard";
 import { isPostCreator } from "../../../utils/postUtils";
 
 export const FeedList = ({
@@ -43,7 +43,7 @@ export const FeedList = ({
         const isCreator = isPostCreator(post, myUserId);
 
         return (
-          <PostCard
+          <FeedCard
             key={post._id}
             post={post}
             myUserId={myUserId}

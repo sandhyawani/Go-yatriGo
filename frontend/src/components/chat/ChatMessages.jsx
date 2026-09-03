@@ -30,11 +30,10 @@ export const ChatMessages = ({
     ref={chatContainerRef}
     onScroll={handleScroll}>
 
-      {}
       {loadingMessages && messages.length === 0 &&
       <div className="h-full flex flex-col items-center justify-center text-center p-8 select-none">
           <Loader2 className="w-6 h-6 text-brand-400 animate-spin mb-3" />
-          <p className="text-xs font-medium text-slate-400">Loading messages...</p>
+          <p className="text-xs font-medium text-text-muted">Loading messages...</p>
         </div>}
 
 
@@ -47,19 +46,19 @@ export const ChatMessages = ({
         activeRoom.requestStatus === "pending" &&
         activeRoom.requestedBy?.toString() !== currentUserId?.toString() ?
         <>
-              <h4 className="text-sm font-bold text-slate-600">
+              <h4 className="text-sm font-bold text-text-secondary">
                 Message Request
               </h4>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 Accept the request below to reply.
               </p>
             </> :
 
         <>
-              <h4 className="text-sm font-bold text-slate-600">
+              <h4 className="text-sm font-bold text-text-secondary">
                 No messages yet
               </h4>
-              <p className="text-[13px] text-slate-400 mt-1.5 max-w-[250px] leading-relaxed">
+              <p className="text-[13px] text-text-muted mt-1.5 max-w-[250px] leading-relaxed">
                 Say hello and start planning your next adventure.
               </p>
             </>}
@@ -103,7 +102,7 @@ export const ChatMessages = ({
           <div key={msg._id || index}>
               {showDate &&
             <div className="flex items-center justify-center my-4">
-                  <span className="bg-slate-100 text-slate-500 px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide">
+                  <span className="bg-background text-text-muted px-3.5 py-1 rounded-full text-[11px] font-semibold tracking-wide">
                     {formatDateLabel(msg.createdAt)}
                   </span>
                 </div>}

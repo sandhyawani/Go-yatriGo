@@ -61,6 +61,15 @@ export const chatService = {
     return res.data;
   },
 
+  reactToMessage: async (roomId, messageId, emoji) => {
+    const res = await axios.post(
+      `/chat/room/${roomId}/messages/${messageId}/react`,
+      { emoji },
+      { withCredentials: true }
+    );
+    return res.data;
+  },
+
   unsendMessage: async (roomId, messageId) => {
     const res = await axios.delete(
     `/chat/room/${roomId}/messages/${messageId}/unsend`,

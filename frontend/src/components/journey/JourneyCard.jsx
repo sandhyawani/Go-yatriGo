@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Calendar, MapPin, ShieldCheck, ArrowRight, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Calendar, MapPin, ShieldCheck, ArrowRight, Image as ImageIcon, Sparkles, Clock, CheckCircle2, XCircle } from "lucide-react";
 import Avatar from "../common/Avatar";
 import { getJourneyLifecycle } from "../../utils/journeyLifecycle";
 
@@ -15,7 +15,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
       return "Explore Group";
     }
     if (isSolo) {
-      return "Solo Expedition";
+      return "Solo Journey";
     }
     return "Friends Journey";
   };
@@ -54,9 +54,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
     : 0;
 
   return (
-    <div className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(124,58,237,0.1)] hover:border-[#7C3AED]/40 dark:hover:border-[#7C3AED]/40 transition-all duration-200 flex flex-col justify-between overflow-hidden h-full hover:-translate-y-0.5">
+    <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(2,132,199,0.1)] hover:border-brand/40:border-brand/40 transition-all duration-200 flex flex-col justify-between overflow-hidden h-full hover:-translate-y-0.5">
       {/* Compact Media Header */}
-      <div className="relative h-[140px] w-full overflow-hidden bg-slate-100 dark:bg-slate-800 shrink-0">
+      <div className="relative h-[140px] w-full overflow-hidden bg-background shrink-0">
         <img
           src={journey.coverImage || defaultCover}
           alt={journey.title}
@@ -69,23 +69,23 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 z-10">
           {/* Status Badge */}
           {isOngoing ? (
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-emerald-600/90 backdrop-blur-md border border-emerald-400/40 shadow-xs">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-gradient-to-r from-sky-600/95 to-cyan-600/95 backdrop-blur-md border border-cyan-300/40 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               <span>IN PROGRESS</span>
             </div>
           ) : isUpcoming ? (
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-amber-500/90 backdrop-blur-md border border-amber-300/40 shadow-xs">
-              <span>⏳</span>
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-gradient-to-r from-slate-900/90 to-indigo-950/90 backdrop-blur-md border border-sky-400/30 shadow-sm">
+              <Clock className="w-2.5 h-2.5 text-sky-300" />
               <span>UPCOMING</span>
             </div>
           ) : isCompleted ? (
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-slate-800/90 backdrop-blur-md border border-slate-600/40 shadow-xs">
-              <span>✓</span>
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-slate-900/90 backdrop-blur-md border border-slate-700/50 shadow-sm">
+              <CheckCircle2 className="w-2.5 h-2.5 text-slate-300" />
               <span>COMPLETED</span>
             </div>
           ) : (
-            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-rose-600/90 backdrop-blur-md border border-rose-400/40 shadow-xs">
-              <span>✕</span>
+            <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-rose-950/90 backdrop-blur-md border border-rose-500/40 shadow-sm">
+              <XCircle className="w-2.5 h-2.5 text-rose-300" />
               <span>CANCELLED</span>
             </div>
           )}
@@ -106,7 +106,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           </div>
 
           <h3
-            className="text-sm sm:text-[15px] font-black leading-snug text-white line-clamp-1 drop-shadow-md group-hover:text-purple-200 transition-colors font-heading"
+            className="text-sm sm:text-[15px] font-black leading-snug text-white line-clamp-1 drop-shadow-md group-hover:text-primary-200 transition-colors font-heading"
             title={journey.title}
           >
             {journey.title}
@@ -118,9 +118,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
       <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
         
         {/* Info Row: Date/Duration + Squad Avatars */}
-        <div className="flex items-center justify-between text-xs font-semibold text-slate-600 dark:text-slate-300">
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-            <Calendar className="w-3 h-3 text-[#7C3AED] shrink-0" />
+        <div className="flex items-center justify-between text-xs font-semibold text-text-secondary">
+          <div className="flex items-center gap-1.5 text-[11px] text-text-muted font-medium">
+            <Calendar className="w-3 h-3 text-brand shrink-0" />
             <span>
               {journey.startDate
                 ? new Date(journey.startDate).toLocaleDateString("en-US", {
@@ -129,7 +129,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
                   })
                 : "TBD"}
             </span>
-            <span className="text-slate-300 dark:text-slate-600">•</span>
+            <span className="text-slate-300">•</span>
             <span>{durationDays} {durationDays === 1 ? "Day" : "Days"}</span>
           </div>
 
@@ -140,7 +140,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
                 journey.members.slice(0, 2).map((m, i) => (
                   <div
                     key={i}
-                    className="w-5 h-5 rounded-full border border-white dark:border-slate-900 overflow-hidden bg-slate-200 shrink-0 shadow-xs"
+                    className="w-5 h-5 rounded-full border border-white overflow-hidden bg-slate-200 shrink-0 shadow-xs"
                     title={m.user?.name || "Traveler"}
                   >
                     <Avatar
@@ -150,12 +150,12 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
                   </div>
                 ))
               ) : (
-                <div className="w-5 h-5 rounded-full bg-purple-100 text-[#7C3AED] flex items-center justify-center text-[10px] font-bold border border-white shadow-xs">
+                <div className="w-5 h-5 rounded-full bg-primary-100 text-brand flex items-center justify-center text-[10px] font-bold border border-white shadow-xs">
                   👤
                 </div>
               )}
             </div>
-            <span className="text-[10.5px] font-bold text-slate-600 dark:text-slate-400">
+            <span className="text-[10.5px] font-bold text-text-secondary">
               {isSolo ? "Solo" : `${Math.max(1, journey.members?.length || journey.memberCount || 1)}`}
             </span>
           </div>
@@ -163,28 +163,28 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
 
         {/* Status indicator / Countdown (Compact) */}
         {isOngoing ? (
-          <div className="space-y-1 bg-emerald-50/70 dark:bg-emerald-950/30 px-2.5 py-1.5 rounded-xl border border-emerald-100 dark:border-emerald-900/40">
-            <div className="flex items-center justify-between text-[10px] font-bold text-emerald-800 dark:text-emerald-300">
-              <span className="flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping" />
+          <div className="space-y-1.5 bg-slate-50/90 px-3 py-2 rounded-xl border border-slate-200/80">
+            <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-800">
+              <span className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-500 animate-pulse" />
                 Day {Math.min(currentDay, durationDays)} of {durationDays}
               </span>
-              <span>{progressPercent}% Complete</span>
+              <span className="text-brand font-extrabold">{progressPercent}% Complete</span>
             </div>
-            <div className="w-full h-1 bg-emerald-200/60 dark:bg-emerald-900/50 rounded-full overflow-hidden">
+            <div className="w-full h-1.5 bg-slate-200/80 rounded-full overflow-hidden">
               <div
-                className="h-full bg-emerald-500 rounded-full transition-all duration-300"
+                className="h-full bg-gradient-to-r from-[#0284c7] via-[#0ea5e9] to-[#06b6d4] rounded-full transition-all duration-500"
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
           </div>
         ) : isUpcoming && journey.startDate ? (
-          <div className="flex items-center justify-between text-[10px] font-bold text-purple-700 dark:text-purple-300 bg-purple-50/70 dark:bg-purple-950/30 px-2.5 py-1 rounded-xl border border-purple-100 dark:border-purple-900/40">
-            <span className="flex items-center gap-1">
-              <Sparkles className="w-2.5 h-2.5 text-[#7C3AED]" />
+          <div className="flex items-center justify-between text-[10.5px] font-semibold text-slate-700 bg-sky-50/70 px-3 py-1.5 rounded-xl border border-sky-100">
+            <span className="flex items-center gap-1.5 font-bold text-slate-800">
+              <Sparkles className="w-3 h-3 text-brand" />
               Countdown
             </span>
-            <span>
+            <span className="text-brand font-extrabold">
               {(() => {
                 const diffDays = Math.ceil((new Date(journey.startDate) - Date.now()) / (1000 * 60 * 60 * 24));
                 if (diffDays <= 0) return "Departs today";
@@ -194,9 +194,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
             </span>
           </div>
         ) : isCompleted && journey.stats && (journey.stats.photosCount > 0 || journey.stats.postsCount > 0) ? (
-          <div className="flex items-center gap-2.5 text-[10.5px] font-bold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/40 px-2.5 py-1 rounded-xl border border-slate-100 dark:border-slate-800">
-            <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3 text-purple-500" /> {journey.stats.photosCount || 0} Photos</span>
-            <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-amber-500" /> {(journey.stats.postsCount || 0) + (journey.stats.checkInsCount || 0)} Memories</span>
+          <div className="flex items-center gap-2.5 text-[10.5px] font-bold text-text-secondary bg-slate-50 px-2.5 py-1 rounded-xl border border-slate-100">
+            <span className="flex items-center gap-1"><ImageIcon className="w-3 h-3 text-primary-500" /> {journey.stats.photosCount || 0} Photos</span>
+            <span className="flex items-center gap-1"><Sparkles className="w-3 h-3 text-brand" /> {(journey.stats.postsCount || 0) + (journey.stats.checkInsCount || 0)} Memories</span>
           </div>
         ) : null}
 
@@ -205,7 +205,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           <div className="flex items-center gap-1.5">
             <Link
               to={`/social/journeys/${journey._id}`}
-              className="flex-1 py-2 px-3 rounded-xl font-bold text-[11px] uppercase tracking-wider text-white bg-gradient-to-r from-[#7C3AED] to-[#6D28D9] hover:from-[#6D28D9] hover:to-[#5B21B6] shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 group/btn active:scale-[0.98]"
+              className="flex-1 py-2 px-3 rounded-xl font-bold text-[11px] uppercase tracking-wider text-white bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 group/btn active:scale-[0.98]"
             >
               <span>Open Journey</span>
               <ArrowRight className="w-3 h-3 transition-transform group-hover/btn:translate-x-1" />
@@ -213,7 +213,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
             {isOngoing && onCheckInClick && (
               <button
                 onClick={() => onCheckInClick(journey)}
-                className="w-8 h-8 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-600 border border-emerald-200/80 flex items-center justify-center shrink-0 transition-all shadow-xs hover:scale-105 active:scale-95 cursor-pointer"
+                className="w-8 h-8 rounded-xl bg-sky-50 hover:bg-sky-100 text-brand border border-sky-200/80 flex items-center justify-center shrink-0 transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
                 title="Safe Check-In"
               >
                 <ShieldCheck className="w-4 h-4" />
@@ -221,9 +221,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
             )}
           </div>
 
-          <div className="flex items-center justify-between text-[8.5px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.1em] px-0.5">
+          <div className="flex items-center justify-between text-[8.5px] font-bold text-text-muted tracking-[0.1em] px-0.5">
             <span>{getSignatureCode()}</span>
-            <span className="text-[8px] text-[#7C3AED] uppercase font-extrabold">YatriGo</span>
+            <span className="text-[8px] text-brand uppercase font-extrabold">YatriGo</span>
           </div>
         </div>
       </div>

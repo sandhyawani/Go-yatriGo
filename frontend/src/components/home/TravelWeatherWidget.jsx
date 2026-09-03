@@ -70,20 +70,20 @@ const TravelWeatherWidget = ({ destination }) => {
     >
       <div className="relative z-10 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <h3 className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-slate-400 flex items-center gap-1.5 font-sans">
-            <MapPin className="w-3.5 h-3.5 text-brand-600 shrink-0" />
+          <h3 className="text-[10.5px] font-bold uppercase tracking-[0.08em] text-text-muted flex items-center gap-1.5 font-sans">
+            <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
             <span>Weather at Destination</span>
           </h3>
-          <p className="text-base sm:text-lg font-extrabold mt-0.5 text-slate-900 font-heading truncate">
+          <p className="text-base sm:text-lg font-extrabold mt-0.5 text-text-primary font-heading truncate">
             {destName}
           </p>
         </div>
 
         <div className="text-right shrink-0">
-          <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-heading leading-tight">
+          <p className="text-2xl sm:text-3xl font-extrabold text-text-primary font-heading leading-tight">
             {loading ? "..." : (weather ? `${weather.temp}°C` : "--°C")}
           </p>
-          <p className="text-[11px] font-bold text-brand-600 flex items-center justify-end gap-1 font-sans">
+          <p className="text-[11px] font-bold text-brand flex items-center justify-end gap-1 font-sans">
             {weather ? getWeatherIcon(weather.desc) : <Sun className="w-3.5 h-3.5" />} 
             <span className="ml-1">{loading ? "Loading..." : (weather ? weather.desc : "--")}</span>
           </p>
@@ -92,19 +92,19 @@ const TravelWeatherWidget = ({ destination }) => {
 
       <div className="relative z-10 grid grid-cols-3 gap-2 mt-3 pt-3 border-t border-slate-100 font-sans">
         <div className="flex flex-col items-center text-center">
-          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">Tomorrow</p>
-          <Sun className="w-3.5 h-3.5 my-1 text-slate-600" />
-          <p className="text-[11px] font-bold text-slate-800">{loading ? "..." : (weather ? `${weather.tomorrowTemp}°C` : "--°C")}</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-text-muted">Tomorrow</p>
+          <Sun className="w-3.5 h-3.5 my-1 text-text-secondary" />
+          <p className="text-[11px] font-bold text-text-primary">{loading ? "..." : (weather ? `${weather.tomorrowTemp}°C` : "--°C")}</p>
         </div>
         <div className="flex flex-col items-center text-center border-x border-slate-100 px-1">
-          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">Wind</p>
-          <Wind className="w-3.5 h-3.5 my-1 text-slate-600" />
-          <p className="text-[11px] font-bold text-slate-800">{loading ? "..." : (weather ? `${weather.wind} km/h` : "--")}</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-text-muted">Wind</p>
+          <Wind className="w-3.5 h-3.5 my-1 text-text-secondary" />
+          <p className="text-[11px] font-bold text-text-primary">{loading ? "..." : (weather ? `${weather.wind} km/h` : "--")}</p>
         </div>
         <div className="flex flex-col items-center text-center">
-          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-slate-400">Humidity</p>
-          <Droplets className="w-3.5 h-3.5 my-1 text-slate-600" />
-          <p className="text-[11px] font-bold text-slate-800">{loading ? "..." : (weather ? `${weather.humidity}%` : "--")}</p>
+          <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-text-muted">Humidity</p>
+          <Droplets className="w-3.5 h-3.5 my-1 text-text-secondary" />
+          <p className="text-[11px] font-bold text-text-primary">{loading ? "..." : (weather ? `${weather.humidity}%` : "--")}</p>
         </div>
       </div>
     </Card>

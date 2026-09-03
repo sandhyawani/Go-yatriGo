@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const mongoose = require("mongoose");
 const Post = require("../models/Post");
 const User = require("../models/User");
 const { getBlockedUserIds } = require("../utils/blockHelper");

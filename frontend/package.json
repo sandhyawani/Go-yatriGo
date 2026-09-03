@@ -5,11 +5,7 @@
   "dependencies": {
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
-    "@fortawesome/fontawesome-free": "^6.4.0",
     "@headlessui/react": "^1.7.14",
-    "@heroicons/react": "^2.0.17",
-    "@material-tailwind/html": "^2.0.0",
-    "@mui/icons-material": "^5.11.16",
     "@mui/material": "^5.12.0",
     "@mui/x-data-grid": "^6.1.0",
     "@tanstack/react-query": "^5.102.5",
@@ -18,7 +14,6 @@
     "browser-image-compression": "^2.0.2",
     "cookie-parser": "^1.4.7",
     "emoji-picker-react": "^4.19.1",
-    "font-awesome-icons": "^1.6.0",
     "formik": "^2.2.9",
     "framer-motion": "^10.18.0",
     "js-cookie": "^3.0.5",
@@ -31,7 +26,6 @@
     "react-dom": "^18.2.0",
     "react-easy-crop": "^5.5.7",
     "react-file-base64": "^1.0.3",
-    "react-icons": "^4.8.0",
     "react-router-dom": "^6.10.0",
     "react-scripts": "^5.0.1",
     "recharts": "^2.6.2",
@@ -39,7 +33,6 @@
     "socket.io-client": "^4.8.3",
     "sonner": "^2.0.7",
     "sweetalert2": "^11.4.8",
-    "tw-elements": "^1.0.0-beta2",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
@@ -69,7 +62,6 @@
   "devDependencies": {
     "autoprefixer": "^10.4.14",
     "postcss": "^8.4.22",
-    "tailwindcss": "^3.3.1",
-    "ts-morph": "^28.0.0"
+    "tailwindcss": "^3.3.1"
   }
 }

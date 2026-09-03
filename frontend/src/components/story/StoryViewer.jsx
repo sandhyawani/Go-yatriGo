@@ -62,7 +62,6 @@ const StoryViewer = ({
     };
   }, [activeStoryGroup]);
 
-  // Story reply
   const handleStoryReply = async () => {
     if (!storyReplyText.trim() || !activeStoryGroup) return;
     setReplyingToStory(true);
@@ -113,7 +112,7 @@ const StoryViewer = ({
   };
 
   const handleAvatarError = useCallback((e, name) => {
-    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=6C4DF6&color=fff`;
+    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name || "User")}&background=0284c7&color=fff`;
   }, []);
 
   const videoRef = useRef(null);
@@ -125,7 +124,6 @@ const StoryViewer = ({
 
   const prefersReducedMotion = useReducedMotion();
 
-  // Mark story viewed
   useEffect(() => {
     if (!activeStoryGroup || !myUserId) return;
     const currentStory = activeStoryGroup.stories[activeStoryIndex];
@@ -145,7 +143,6 @@ const StoryViewer = ({
     }
   }, [activeStoryGroup, activeStoryIndex, myUserId, onStoryViewed]);
 
-  // Tab visibility
   useEffect(() => {
     const handle = () => setIsTabActive(!document.hidden);
     document.addEventListener("visibilitychange", handle);
@@ -162,7 +159,6 @@ const StoryViewer = ({
     };
   }, []);
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handle = (e) => {
       const tag = document.activeElement.tagName;
@@ -179,7 +175,6 @@ const StoryViewer = ({
     return () => window.removeEventListener("keydown", handle);
   }, [nextStory, prevStory, closeStoryViewer, setIsStoryPaused]);
 
-  // Reset on story change
   useEffect(() => {
     setStoryProgress(0);
     storyProgressRef.current = 0;
@@ -210,7 +205,6 @@ const StoryViewer = ({
     };
   }, [activeStoryGroup, activeStoryIndex]);
 
-  // Handle mute toggle
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isStoryMuted;
@@ -228,7 +222,6 @@ const StoryViewer = ({
     }
   }, [isStoryMuted, isStoryPaused, isTabActive]);
 
-  // Handle pause/resume for programmatic audio when state changes
   useEffect(() => {
     if (audioRef.current) {
       if (isStoryPaused || !isTabActive) {
@@ -241,7 +234,6 @@ const StoryViewer = ({
     }
   }, [isStoryPaused, isTabActive]);
 
-  // Progress ticker
   useEffect(() => {
     if (
       !activeStoryGroup ||
@@ -398,7 +390,7 @@ const StoryViewer = ({
         {/* Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-rose-500 via-fuchsia-500 to-brand-600 shrink-0">
+            <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-sky-400 via-primary-500 to-brand shrink-0">
               <div className="w-full h-full rounded-full border-[1.5px] border-black overflow-hidden bg-zinc-800">
                 <img
                   src={getAvatarUrl(
@@ -410,7 +402,7 @@ const StoryViewer = ({
                   className="w-full h-full object-cover"
                   onError={(e) => {
                     e.target.onerror = null;
-                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStoryGroup.userName || "Explorer")}&background=6C4DF6&color=fff&bold=true`;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(activeStoryGroup.userName || "Explorer")}&background=0284c7&color=fff&bold=true`;
                   }}
                 />
               </div>
@@ -527,7 +519,7 @@ const StoryViewer = ({
             ) : (
               <img
                 src={mediaUrl}
-                alt="Story"
+                alt="Moment"
                 className="w-full h-full object-contain"
                 onLoad={() => setStoryMediaLoaded(true)}
               />
@@ -610,7 +602,21 @@ const StoryViewer = ({
                       transition={{ delay: 0.1, duration: 0.4, type: "spring" }}
                       className={`absolute w-full px-5 text-center font-black text-xl z-30 tracking-tight pointer-events-none leading-snug
                       ${currentStory.captionPosition === "top" ? "top-32" : currentStory.captionPosition === "bottom" ? "bottom-32" : "top-1/2 -translate-y-1/2"}
-                      ${currentStory.captionColor === "black" ? "text-black" : currentStory.captionColor === "purple" ? "text-purple-400" : "text-white"}`}
+                      ${
+                        currentStory.captionColor === "black" || currentStory.captionColor === "#0f172a" || currentStory.captionColor === "#000000"
+                          ? "text-slate-900"
+                          : currentStory.captionColor === "sky" || currentStory.captionColor === "purple" || currentStory.captionColor === "brand" || currentStory.captionColor === "#0ea5e9" || currentStory.captionColor === "#0284c7"
+                          ? "text-sky-400"
+                          : currentStory.captionColor === "ruby" || currentStory.captionColor === "red" || currentStory.captionColor === "#f43f5e"
+                          ? "text-rose-400"
+                          : currentStory.captionColor === "amber" || currentStory.captionColor === "yellow" || currentStory.captionColor === "#f59e0b"
+                          ? "text-amber-300"
+                          : currentStory.captionColor === "emerald" || currentStory.captionColor === "green" || currentStory.captionColor === "#10b981"
+                          ? "text-emerald-400"
+                          : currentStory.captionColor === "violet" || currentStory.captionColor === "#8b5cf6"
+                          ? "text-violet-400"
+                          : "text-white"
+                      }`}
                       style={{ textShadow: "0 2px 12px rgba(0,0,0,0.9)" }}
                     >
                       {currentStory.caption}
@@ -656,8 +662,8 @@ const StoryViewer = ({
                     setReportModal({ isOpen: true });
                   }}
                   className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-rose-500/80 text-white border border-white/20 rounded-full transition-all shrink-0"
-                  aria-label="Report Dispatch"
-                  title="Report Dispatch"
+                  aria-label="Report Moment"
+                  title="Report Moment"
                 >
                   <ShieldAlert className="w-4 h-4" />
                 </button>
@@ -672,7 +678,7 @@ const StoryViewer = ({
                     if (e.key === "Enter" && storyReplyText.trim())
                       handleStoryReply();
                   }}
-                  aria-label="Reply to story"
+                  aria-label="Reply to moment"
                 />
                 <button
                   onClick={handleStoryReply}
@@ -717,7 +723,7 @@ const StoryViewer = ({
                       inputValue: currentStory?.caption || "",
                       inputPlaceholder: "Enter your caption...",
                       showCancelButton: true,
-                      confirmButtonColor: "#7C3AED",
+                      confirmButtonColor: "#0284c7",
                       cancelButtonColor: "#ef4444",
                       confirmButtonText: "Save",
                       background: document.documentElement.classList.contains(
@@ -730,11 +736,11 @@ const StoryViewer = ({
                         : "#0f172a",
                       customClass: {
                         popup:
-                          "rounded-3xl shadow-2xl border border-slate-100 dark:border-slate-700",
+                          "rounded-3xl shadow-2xl border border-slate-100",
                         title:
-                          "text-xl font-black text-slate-800 dark:text-white",
+                          "text-xl font-black text-text-primary",
                         input:
-                          "rounded-xl border-slate-200 dark:border-slate-600 focus:border-[#7C3AED] focus:ring-[#7C3AED]",
+                          "rounded-xl border-slate-200 focus:border-brand focus:ring-brand",
                         confirmButton: "rounded-xl font-bold px-6 py-2.5",
                         cancelButton: "rounded-xl font-bold px-6 py-2.5",
                       },
@@ -771,7 +777,7 @@ const StoryViewer = ({
                     handleDeleteStory(currentStory._id);
                   }}
                   className="w-9 h-9 flex items-center justify-center bg-rose-500/70 hover:bg-rose-500/90 border border-rose-400/40 rounded-full text-white transition-all"
-                  aria-label="Delete Dispatch"
+                  aria-label="Delete Moment"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -815,16 +821,16 @@ const StoryViewer = ({
                 animate={{ y: 0 }}
                 exit={{ y: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="fixed bottom-0 inset-x-0 sm:max-w-[400px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 dark:bg-slate-800/95 backdrop-blur-xl rounded-t-[32px] z-[100001] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20 dark:border-white/5"
+                className="fixed bottom-0 inset-x-0 sm:max-w-[400px] sm:mx-auto h-auto max-h-[60vh] min-h-[220px] bg-white/95 backdrop-blur-xl rounded-t-[32px] z-[100001] shadow-[0_-10px_40px_rgba(0,0,0,0.15)] flex flex-col overflow-hidden border-t border-white/20"
               >
                 <div className="w-full flex justify-center pt-3 pb-1 shrink-0">
-                  <div className="w-12 h-1.5 bg-slate-300/50 dark:bg-slate-600/50 rounded-full" />
+                  <div className="w-12 h-1.5 bg-slate-300/50 rounded-full" />
                 </div>
 
-                <div className="px-5 pb-3 pt-1 border-b border-slate-200/30 dark:border-slate-700/30 flex items-center justify-between shrink-0">
-                  <h3 className="font-black text-slate-800 dark:text-white text-lg flex items-center gap-2">
+                <div className="px-5 pb-3 pt-1 border-b border-slate-200/30 flex items-center justify-between shrink-0">
+                  <h3 className="font-black text-text-primary text-lg flex items-center gap-2">
                     <span className="text-xl">👁</span> Viewers
-                    <span className="text-xs bg-slate-100/80 dark:bg-slate-700/80 text-slate-500 dark:text-slate-300 px-2 py-0.5 rounded-full font-bold">
+                    <span className="text-xs bg-background/80 text-text-muted px-2 py-0.5 rounded-full font-bold">
                       {activeStoryGroup.stories[activeStoryIndex]?.viewers?.length ?? 0}
                     </span>
                   </h3>
@@ -834,7 +840,7 @@ const StoryViewer = ({
                       setIsStoryPaused(false);
                     }}
                     aria-label="Close viewers"
-                    className="p-2 bg-slate-100/80 hover:bg-slate-200/80 dark:bg-slate-700/80 dark:hover:bg-slate-600/80 rounded-full text-slate-500 dark:text-slate-300 transition-colors"
+                    className="p-2 bg-background/80 hover/80/80 rounded-full text-text-muted transition-colors"
                   >
                     <X className="w-4 h-4" />
                   </button>
@@ -842,15 +848,15 @@ const StoryViewer = ({
 
                 <div className="flex-1 overflow-y-auto p-2 scrollbar-none pointer-events-auto">
                   {!activeStoryGroup.stories[activeStoryIndex]?.viewers?.length ? (
-                    <div className="flex flex-col items-center justify-center h-full min-h-[140px] text-slate-500 dark:text-slate-400">
-                      <div className="w-12 h-12 rounded-full bg-slate-100/50 dark:bg-slate-800/50 flex items-center justify-center mb-3">
-                        <svg className="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <div className="flex flex-col items-center justify-center h-full min-h-[140px] text-text-muted">
+                      <div className="w-12 h-12 rounded-full bg-background/50 flex items-center justify-center mb-3">
+                        <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </div>
-                      <p className="font-bold text-[15px] text-slate-700 dark:text-slate-300">No viewers yet</p>
-                      <p className="text-xs text-center mt-1 px-4 opacity-80 leading-relaxed">When someone views your story,<br />they'll appear here.</p>
+                      <p className="font-bold text-[15px] text-text-primary">No viewers yet</p>
+                      <p className="text-xs text-center mt-1 px-4 opacity-80 leading-relaxed">When someone views your moment,<br />they'll appear here.</p>
                     </div>
                   ) : (
                     <div className="space-y-1 p-2">
@@ -859,20 +865,20 @@ const StoryViewer = ({
                           (r) => r.userId?._id === v.userId?._id || r.userId === v.userId?._id
                         );
                         return (
-                          <div key={v._id || v.userId?._id} className="flex items-center justify-between p-2.5 hover:bg-slate-100/50 dark:hover:bg-slate-700/50 rounded-2xl transition-colors group">
+                          <div key={v._id || v.userId?._id} className="flex items-center justify-between p-2.5 hover:bg-background/50/50 rounded-2xl transition-colors group">
                             <div className="flex items-center gap-3">
                               <img
                                 loading="lazy"
                                 src={getAvatarUrl(v.userId?.pic, v.userId?.img, v.userId?.name)}
                                 alt={v.userId?.name}
-                                className="w-11 h-11 rounded-full object-cover border border-slate-200/50 dark:border-slate-700/50 shadow-sm"
+                                className="w-11 h-11 rounded-full object-cover border border-slate-200/50 shadow-sm"
                                 onError={(e) => handleAvatarError(e, v.userId?.name)}
                               />
                               <div>
-                                <p className="text-[14px] font-bold text-slate-800 dark:text-white group-hover:text-[#7C3AED] transition-colors">
+                                <p className="text-[14px] font-bold text-text-primary group-hover:text-brand transition-colors">
                                   {v.userId?.name}
                                 </p>
-                                <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-0.5">
+                                <p className="text-[11px] text-text-muted font-medium mt-0.5">
                                   Viewed {moment(v.viewedAt).fromNow()}
                                 </p>
                               </div>

@@ -95,7 +95,7 @@ const SearchPanel = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={() => setIsSearchOpen(false)}
-        className="fixed inset-0 z-[1000] bg-slate-900/20 backdrop-blur-[2px]"
+        className="fixed inset-0 z-[1000] bg-brand/20 backdrop-blur-[2px]"
       />
 
       <motion.div
@@ -109,12 +109,12 @@ const SearchPanel = () => {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
-          <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
+          <h3 className="text-base font-bold text-text-primary flex items-center gap-2 font-heading">
             <Search className="w-4 h-4 text-brand-500" /> Search
           </h3>
           <button
             onClick={() => setIsSearchOpen(false)}
-            className="p-1.5 rounded-lg bg-slate-100 text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors font-sans"
+            className="p-1.5 rounded-lg bg-background text-text-muted hover:text-text-primary hover transition-colors font-sans"
           >
             <X className="w-4 h-4" />
           </button>
@@ -128,14 +128,14 @@ const SearchPanel = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search people, trips, destinations..."
-              className="w-full pl-9 pr-9 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 outline-none focus:border-brand-500/50 focus:bg-white focus:shadow-[0_2px_8px_rgba(108,77,246,0.08)] transition-all"
+              className="input-field !pl-10 !pr-12"
               autoFocus
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 hover:text-slate-600"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-bold text-text-muted hover:text-text-secondary"
               >
                 Clear
               </button>
@@ -151,11 +151,11 @@ const SearchPanel = () => {
               onClick={() => setSearchTab(tab)}
               className={`px-3 py-1 rounded-xl text-xs font-bold transition-all capitalize whitespace-nowrap shrink-0 ${
                 searchTab === tab
-                  ? "bg-brand-600 text-white shadow-xs"
-                  : "bg-white text-slate-600 hover:bg-brand-50 border border-slate-200"
+                  ? "bg-brand text-white shadow-xs"
+                  : "bg-white text-text-secondary hover:bg-brand-50 border border-slate-200"
               }`}
             >
-              {tab === "posts" ? "Memories" : tab}
+              {tab === "posts" ? "Travel Memories" : tab}
             </button>
           ))}
         </div>
@@ -172,16 +172,16 @@ const SearchPanel = () => {
                   <div className="w-9 h-9 rounded-full bg-slate-200 shrink-0" />
                   <div className="flex-1 space-y-2">
                     <div className="h-3 bg-slate-200 rounded w-1/2" />
-                    <div className="h-2 bg-slate-100 rounded w-1/3" />
+                    <div className="h-2 bg-background rounded w-1/3" />
                   </div>
                 </div>
               ))}
             </div>
           ) : !searchQuery ? (
-            <div className="text-center py-10 text-slate-500">
+            <div className="text-center py-10 text-text-muted">
               <Search className="w-10 h-10 mx-auto text-slate-300 mb-2" />
               <p className="text-sm font-medium">Start exploring</p>
-              <p className="text-xs text-slate-400 mt-1">
+              <p className="text-xs text-text-muted mt-1">
                 Search destinations, travelers, or groups
               </p>
             </div>
@@ -190,7 +190,7 @@ const SearchPanel = () => {
               {/* Travelers */}
               {filteredResults.travelers?.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">
+                  <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
                     Travelers
                   </span>
                   {filteredResults.travelers.map((traveler) => (
@@ -200,18 +200,18 @@ const SearchPanel = () => {
                         setIsSearchOpen(false);
                         navigate(`/profile/${traveler._id}`);
                       }}
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                      className="flex items-center gap-3 p-3 rounded-xl hover transition-colors cursor-pointer group"
                     >
                       <Avatar
                         user={traveler}
                         className="w-9 h-9 rounded-full object-cover border-2 border-white shadow-sm shrink-0"
                       />
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-[13px] font-bold text-slate-800 truncate">
+                        <h4 className="text-[13px] font-bold text-text-primary truncate">
                           {traveler.name}
                         </h4>
                         {(traveler.city || traveler.state) && (
-                          <div className="flex items-center gap-1 mt-0.5 text-slate-400">
+                          <div className="flex items-center gap-1 mt-0.5 text-text-muted">
                             <MapPin className="w-3 h-3 shrink-0" />
                             <span className="text-[10px] truncate">
                               {traveler.city && traveler.state
@@ -221,7 +221,7 @@ const SearchPanel = () => {
                           </div>
                         )}
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-600 transition-colors shrink-0" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand transition-colors shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -230,7 +230,7 @@ const SearchPanel = () => {
               {/* Trips */}
               {filteredResults.trips?.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">
+                  <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
                     Active Trips
                   </span>
                   {filteredResults.trips.map((trip) => (
@@ -240,7 +240,7 @@ const SearchPanel = () => {
                         setIsSearchOpen(false);
                         navigate(`/social/buddy/${trip._id}`);
                       }}
-                      className="flex flex-col gap-2.5 p-3 rounded-xl hover:bg-slate-50 border border-slate-100/50 hover:border-brand-500/15 transition-all cursor-pointer group"
+                      className="flex flex-col gap-2.5 p-3 rounded-xl hover border border-slate-100/50 hover:border-brand-500/15 transition-all cursor-pointer group"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex items-center gap-2.5 min-w-0">
@@ -250,10 +250,10 @@ const SearchPanel = () => {
                               : "TR"}
                           </div>
                           <div className="min-w-0">
-                            <h4 className="text-[13px] font-bold text-slate-800 truncate group-hover:text-brand-600 transition-colors">
+                            <h4 className="text-[13px] font-bold text-text-primary truncate group-hover:text-brand transition-colors">
                               {trip.title}
                             </h4>
-                            <div className="flex items-center gap-1 text-[10px] text-slate-400 mt-0.5">
+                            <div className="flex items-center gap-1 text-[10px] text-text-muted mt-0.5">
                               <MapPin className="w-3 h-3 shrink-0" />
                               <span className="truncate">
                                 {trip.destination}
@@ -267,14 +267,14 @@ const SearchPanel = () => {
                               ? "bg-emerald-50 text-emerald-600"
                               : trip.status === "full"
                               ? "bg-amber-50 text-amber-600"
-                              : "bg-slate-100 text-slate-500"
+                              : "bg-background text-text-muted"
                           }`}
                         >
                           {trip.status || "open"}
                         </span>
                       </div>
                       {(trip.startDate || trip.endDate) && (
-                        <div className="flex items-center gap-1 text-[10px] text-slate-400 border-t border-slate-100/60 pt-2">
+                        <div className="flex items-center gap-1 text-[10px] text-text-muted border-t border-slate-100/60 pt-2">
                           <Calendar className="w-3.5 h-3.5 shrink-0" />
                           <span>
                             {moment(trip.startDate).format("MMM D")} -{" "}
@@ -287,11 +287,11 @@ const SearchPanel = () => {
                 </div>
               )}
 
-              {/* Memories */}
+              {/* Travel Memories */}
               {filteredResults.memories?.length > 0 && (
                 <div className="space-y-2">
-                  <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">
-                    Memories
+                  <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
+                    Travel Memories
                   </span>
                   {filteredResults.memories.map((memory) => (
                     <div
@@ -305,9 +305,9 @@ const SearchPanel = () => {
                           { state: { selectedMemory: memory } }
                         );
                       }}
-                      className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-slate-50 border border-transparent hover:border-brand-500/15 transition-all cursor-pointer group"
+                      className="flex items-center gap-3 p-2.5 rounded-xl hover border border-transparent hover:border-brand-500/15 transition-all cursor-pointer group"
                     >
-                      <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-100 bg-slate-100 flex items-center justify-center">
+                      <div className="relative w-12 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-100 bg-background flex items-center justify-center">
                         {memory.image ||
                         memory.mediaUrl ||
                         memory.mediaUrls?.[0] ? (
@@ -325,22 +325,22 @@ const SearchPanel = () => {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h4 className="text-[13px] font-bold text-slate-800 truncate group-hover:text-brand-600 transition-colors">
+                        <h4 className="text-[13px] font-bold text-text-primary truncate group-hover:text-brand transition-colors">
                           {memory.title ||
                             (memory.caption
                               ? memory.caption.substring(0, 30) + "..."
                               : "Travel Memory")}
                         </h4>
-                        <p className="text-[10px] text-slate-400 flex items-center gap-1 mt-0.5">
+                        <p className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
                           <span>by</span>
-                          <span className="font-semibold text-slate-500 truncate">
+                          <span className="font-semibold text-text-muted truncate">
                             {memory.userId?.name ||
                               memory.userName ||
                               "Traveler"}
                           </span>
                         </p>
                       </div>
-                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand-600 transition-colors shrink-0" />
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-300 group-hover:text-brand transition-colors shrink-0" />
                     </div>
                   ))}
                 </div>
@@ -350,10 +350,10 @@ const SearchPanel = () => {
               {filteredResults.travelers?.length === 0 &&
                 filteredResults.trips?.length === 0 &&
                 filteredResults.memories?.length === 0 && (
-                  <div className="text-center py-10 text-slate-500">
+                  <div className="text-center py-10 text-text-muted">
                     <Search className="w-10 h-10 mx-auto text-slate-300 mb-2" />
                     <p className="text-sm font-medium">No results found</p>
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-text-muted mt-1">
                       Try a different search term
                     </p>
                   </div>

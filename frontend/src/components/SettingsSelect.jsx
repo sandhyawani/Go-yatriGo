@@ -56,11 +56,11 @@ const SettingsSelect = ({
   return (
     <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80 relative">
       <div className="mr-4">
-        <span id={labelId} className="text-sm font-semibold text-[#1E293B] block">
+        <span id={labelId} className="text-sm font-semibold text-text-primary block">
           {title ?? "Setting"}
         </span>
         {description && typeof description === "string" &&
-        <p id={descId} className="text-xs text-[#64748B] mt-0.5 leading-relaxed">
+        <p id={descId} className="text-xs text-text-muted mt-0.5 leading-relaxed">
             {description}
           </p>}
 
@@ -79,7 +79,7 @@ const SettingsSelect = ({
 
         {isLoading &&
         <span className="absolute -right-6 top-1/2 -translate-y-1/2">
-            <Loader2 className="w-4 h-4 text-[#64748B] animate-spin" />
+            <Loader2 className="w-4 h-4 text-text-muted animate-spin" />
           </span>}
 
       </div>

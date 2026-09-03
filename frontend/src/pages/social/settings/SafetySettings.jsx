@@ -30,18 +30,18 @@ const SafetySettings = () => {
       <div className="max-w-2xl mx-auto p-4 md:p-8 space-y-6">
         <Link
         to="/settings"
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-[#E5E7EB] text-[#1E293B] text-sm font-semibold shadow-soft transition-all duration-200">
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover border border-border-default text-text-primary text-sm font-semibold shadow-soft transition-all duration-200">
 
-          <ArrowLeft className="w-4 h-4 text-[#7C3AED]" />
+          <ArrowLeft className="w-4 h-4 text-brand" />
           <span>Back to Settings</span>
         </Link>
         <div className="mb-8 flex items-center gap-4">
-          <div className="rounded-xl bg-[#F3E8FF] p-3 text-[#7C3AED]">
+          <div className="rounded-xl bg-brand-50 p-3 text-brand">
             <ShieldAlert className="h-6 w-6" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-[#1E293B]">Safety & Emergency</h1>
-            <p className="text-sm text-[#64748B] mt-1">Manage SOS alerts and location sharing</p>
+            <h1 className="text-2xl font-bold text-text-primary">Safety & Emergency</h1>
+            <p className="text-sm text-text-muted mt-1">Manage SOS alerts and location sharing</p>
           </div>
         </div>
 
@@ -53,11 +53,11 @@ const SafetySettings = () => {
 
 
         {loading ?
-        <div className="p-8 text-center text-slate-500 flex justify-center items-center h-48">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#7C3AED]"></div>
+        <div className="p-8 text-center text-text-muted flex justify-center items-center h-48">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
           </div> :
         settings ?
-        <div className="bg-white rounded-3xl p-6 shadow-soft border border-[#E5E7EB]/60 space-y-2">
+        <div className="bg-surface rounded-[var(--radius-card)] p-6 shadow-soft border border-border-default/60 space-y-2">
             <SettingsToggle
           title="Safety Check-in Reminders"
           description="Get safety check-in prompts during active journeys."
@@ -83,18 +83,18 @@ const SafetySettings = () => {
         null}
 
         <div className="mt-8">
-          <h3 className="text-xs font-bold text-[#64748B] mb-3 ml-2 uppercase tracking-wider">Resources</h3>
-          <Link to="/settings/safety-guidelines" className="bg-white rounded-3xl p-6 shadow-soft border border-[#E5E7EB]/60 flex items-center justify-between group hover:border-[#7C3AED]/30 transition-all duration-200">
+          <h3 className="text-xs font-bold text-text-muted mb-3 ml-2 uppercase tracking-wider">Resources</h3>
+          <Link to="/settings/safety-guidelines" className="bg-surface rounded-[var(--radius-card)] p-6 shadow-soft border border-border-default/60 flex items-center justify-between group hover:border-brand/30 transition-all duration-200">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-[#F3E8FF] flex items-center justify-center text-[#7C3AED] group-hover:bg-[#E9D5FF] transition-colors duration-200">
+              <div className="w-10 h-10 rounded-xl bg-brand-50 flex items-center justify-center text-brand group-hover:bg-brand-100 transition-colors duration-200">
                 <BookOpen className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-[#1E293B] text-base">Travel Safety Guidelines</h4>
-                <p className="text-xs text-[#64748B] mt-0.5">Read our best practices for safe travel</p>
+                <h4 className="font-bold text-text-primary text-base">Travel Safety Guidelines</h4>
+                <p className="text-xs text-text-muted mt-0.5">Read our best practices for safe travel</p>
               </div>
             </div>
-            <div className="text-[#7C3AED] font-semibold text-xs bg-[#F3E8FF] px-3 py-1.5 rounded-xl group-hover:bg-[#7C3AED] group-hover:text-white transition-all duration-200">
+            <div className="text-brand font-semibold text-xs bg-brand-50 px-3 py-1.5 rounded-xl group-hover:bg-brand group-hover:text-white transition-all duration-200">
               View
             </div>
           </Link>

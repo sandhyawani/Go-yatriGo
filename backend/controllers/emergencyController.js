@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const EmergencyContact = require("../models/EmergencyContact");
 const User = require("../models/User");
+const Journey = require("../models/Journey");
+const { createAndSendNotification } = require("../utils/notificationHelper");
 
 const getContacts = asyncHandler(async (req, res) => {
   const contacts = await EmergencyContact.find({
@@ -145,6 +147,37 @@ const toggleSOS = asyncHandler(async (req, res) => {
     });
 
     primaryContacts = merged.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
+
+    // Send in-app Safety notifications to members of active journeys
+    try {
+      const io = req.app.get("io");
+      const activeJourneys = await Journey.find({
+        "members.user": req.user._id,
+        status: { $in: ["Ongoing", "Active", "upcoming", "Upcoming"] }
+      });
+
+      const notifiedMemberIds = new Set();
+      activeJourneys.forEach((j) => {
+        (j.members || []).forEach((m) => {
+          const mId = (m.user?._id || m.user).toString();
+          if (mId !== req.user._id.toString()) {
+            notifiedMemberIds.add(mId);
+          }
+        });
+      });
+
+      for (const memberId of notifiedMemberIds) {
+        await createAndSendNotification(io, {
+          sender: req.user._id,
+          receiver: memberId,
+          type: "sos_alert",
+          category: "Safety",
+          message: `🚨 EMERGENCY ALERT: ${user.name || "A traveler"} has triggered Emergency SOS!`
+        });
+      }
+    } catch (notifErr) {
+      console.error("[EmergencyController] SOS notification dispatch error:", notifErr.message);
+    }
   }
 
   res.status(200).json({

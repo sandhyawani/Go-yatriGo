@@ -11,7 +11,8 @@ const {
   warnUser,
   getPendingVerifications,
   approveVerification,
-  rejectVerification
+  rejectVerification,
+  toggleVerification
 } = require("../controllers/adminController");
 
 const { verifyAdmin } = require("../middleware/verifyToken");
@@ -35,6 +36,9 @@ router.post("/users/:id/warn", verifyAdmin, warnUser);
 router.post("/user/:id/warn", verifyAdmin, warnUser);
 
 router.get("/verifications", verifyAdmin, getPendingVerifications);
+
+router.put("/users/:id/verify", verifyAdmin, toggleVerification);
+router.put("/user/:id/verify", verifyAdmin, toggleVerification);
 
 router.put("/users/:id/verify/approve", verifyAdmin, approveVerification);
 router.put("/user/:id/verify/approve", verifyAdmin, approveVerification);

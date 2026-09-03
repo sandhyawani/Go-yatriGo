@@ -2,6 +2,20 @@ import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
 import axios from '../../api/axios';
 import moment from 'moment';
 
+export const useRecentMemoriesQuery = (limit = 5) => {
+  return useQuery({
+    queryKey: ['recentMemories', limit],
+    queryFn: async () => {
+      const res = await axios.get(`/social/memory?page=1&limit=${limit}`, {
+        withCredentials: true,
+      });
+      return res.data;
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 30 * 60 * 1000, // 30 minutes
+  });
+};
+
 export const useInfiniteMemoriesQuery = () => {
   return useInfiniteQuery({
     queryKey: ['memories'],

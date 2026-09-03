@@ -93,11 +93,7 @@ router.put("/story/:id", verifyToken, updateStory);
 router.delete("/story/:id", verifyToken, deleteStory);
 
 router.get("/blocked-users", verifyToken, getBlockedUsers);
-router.post("/unblock/:userId", verifyToken, unblockUser);
-router.get("/emergency-contacts", verifyToken, getEmergencyContacts);
-router.post("/emergency-contacts", verifyToken, addEmergencyContact);
-router.put("/emergency-contacts/:id", verifyToken, updateEmergencyContact);
-router.delete("/emergency-contacts/:id", verifyToken, deleteEmergencyContact);
+    router.post("/unblock/:userId", verifyToken, unblockUser);
 const socialTravelController = require("../controllers/socialTravelController");
 
 router.delete("/buddy-trips/:groupId/member/:memberId", verifyToken, socialTravelController.removeMember);

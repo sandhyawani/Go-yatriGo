@@ -192,10 +192,15 @@ const updateUser = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
+  const userObj = updatedUser.toObject ? updatedUser.toObject() : { ...updatedUser };
+  const isActuallyVerified = Boolean(userObj.isVerified === true && userObj.verificationStatus === "verified");
+  userObj.isVerified = isActuallyVerified;
+  userObj.verificationStatus = userObj.verificationStatus || (isActuallyVerified ? "verified" : "unverified");
+
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    user: updatedUser.toObject ? updatedUser.toObject() : updatedUser,
+    user: userObj,
   });
 });
 
@@ -308,7 +313,13 @@ const getUser = asyncHandler(async (req, res) => {
   const followingSet = new Set((user.following || []).map((f) => (f._id || f).toString()));
   user.mutualsCount = followersList.filter((id) => followingSet.has(id)).length;
 
+  const isActuallyVerified = Boolean(
+    user.isVerified === true && user.verificationStatus === "verified"
+  );
+  user.isVerified = isActuallyVerified;
+
   if (!isOwner && !req.user?.isAdmin) {
+    user.verificationStatus = isActuallyVerified ? "verified" : "unverified";
     delete user.email;
     delete user.mobile;
     delete user.govId;
@@ -401,9 +412,17 @@ const getUser = asyncHandler(async (req, res) => {
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await User.find().select(
-    "name username pic img avatar profilePic profilePicture role type isVerified rating",
-  );
+  const rawUsers = await User.find().select(
+    "name username pic img avatar profilePic profilePicture role type isVerified verificationStatus rating",
+  ).lean();
+  const users = rawUsers.map((u) => {
+    const isActuallyVerified = Boolean(u.isVerified === true && u.verificationStatus === "verified");
+    return {
+      ...u,
+      isVerified: isActuallyVerified,
+      verificationStatus: isActuallyVerified ? "verified" : "unverified",
+    };
+  });
   res.status(200).json({ success: true, users });
 });
 
@@ -442,9 +461,18 @@ const searchUsers = asyncHandler(async (req, res) => {
     queryConditions.state = { $regex: filterState, $options: "i" };
   }
 
-  const users = await User.find(queryConditions).select(
+  const rawUsers = await User.find(queryConditions).select(
     "-password -email -mobile -govId -blockedUsers",
-  );
+  ).lean();
+
+  const users = rawUsers.map((u) => {
+    const isActuallyVerified = Boolean(u.isVerified === true && u.verificationStatus === "verified");
+    return {
+      ...u,
+      isVerified: isActuallyVerified,
+      verificationStatus: isActuallyVerified ? "verified" : "unverified",
+    };
+  });
 
   res.status(200).json({ success: true, users });
 });
@@ -1120,7 +1148,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     userInterests.add(currentUser.preferredTravelStyle.toLowerCase());
   }
 
-  // 1. Fetch current user's journeys and travel groups
   const [currentUserJourneys, currentUserGroups] = await Promise.all([
     Journey.find({
       $or: [{ creator: currentUserId }, { "members.user": currentUserId }],
@@ -1251,7 +1278,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     }
   });
 
-  // 2. Fetch all public non-cancelled journeys and travel groups for candidate matching
   const [allJourneys, allGroups] = await Promise.all([
     Journey.find({
       isCancelled: { $ne: true },
@@ -1397,9 +1423,18 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
 
   const candidates = await User.find(candidateQuery)
     .select(
-      "name username pic img avatar profilePic profilePicture userPic role type isVerified rating completedTrips interests preferredTravelStyle favoriteDestinations followers following followRequests privateAccount city state bio createdAt",
+      "name username pic img avatar profilePic profilePicture userPic role type isVerified verificationStatus rating completedTrips interests preferredTravelStyle favoriteDestinations followers following followRequests privateAccount city state bio createdAt",
     )
     .lean();
+
+  const sanitizedCandidates = candidates.map((u) => {
+    const isActuallyVerified = Boolean(u.isVerified === true && u.verificationStatus === "verified");
+    return {
+      ...u,
+      isVerified: isActuallyVerified,
+      verificationStatus: isActuallyVerified ? "verified" : "unverified",
+    };
+  });
 
   const filterUsers = (users) => {
     const bannedNames = /^(test|admin|owner|seed|demo)/i;
@@ -1411,7 +1446,7 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     );
   };
 
-  const filteredCandidates = filterUsers(candidates);
+  const filteredCandidates = filterUsers(sanitizedCandidates);
 
   const checkDateOverlap = (tripStart, tripEnd, userDateRanges) => {
     if (!tripStart || !userDateRanges.length) return false;
@@ -1439,7 +1474,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     const cState = (c.state || "").trim().toLowerCase();
     const cTrips = candidateTripsMap[cId] || [];
 
-    // 1. Travel Match Signals
     let hasSameDestination = false;
     let matchedDestinationName = "";
     for (const t of cTrips) {
@@ -1478,13 +1512,11 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
       }
     }
 
-    // 2. Local Signals
     const isSameCity = Boolean(userBaseCity && cCity && cCity === userBaseCity);
     const isSameState = Boolean(
       userBaseState && cState && cState === userBaseState,
     );
 
-    // 3. Social / Interests Signals
     let hasCommonGroup = false;
     const cGroupIds = candidateGroupMap[cId] || new Set();
     for (const gId of cGroupIds) {
@@ -1512,7 +1544,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
       if (userInterests.has(ci)) sharedInterestsCount++;
     });
 
-    // 4. New User Status
     const isNewUser =
       (!c.completedTrips || c.completedTrips === 0) &&
       (!c.createdAt ||
@@ -1615,25 +1646,20 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
       let secondaryDetail = "";
 
       if (ongoingTrip) {
-        // Rule 4: If the traveler is currently on a trip
         primaryDetail = cleanDest
           ? `Currently in ${cleanDest}`
           : "Currently traveling";
 
         if (hasSharedDest && sharedDatesStr) {
-          // Rule 2: Shared destination with intersecting dates
           secondaryDetail = `Also traveling ${sharedDatesStr}`;
         } else if (hasSharedDest && cleanDest) {
-          // Rule 3: Shared destination with different dates
           secondaryDetail = `Also visiting ${cleanDest}`;
         } else if (interestsStr) {
-          // Rule 6: Travel interests
           secondaryDetail = interestsStr;
         } else if (c.city) {
           secondaryDetail = `From ${c.city}`;
         }
       } else if (upcomingTrip) {
-        // Rule 1: Upcoming trip with destination and dates
         if (cleanDest && dateRangeStr) {
           primaryDetail = `Going to ${cleanDest} · ${dateRangeStr}`;
         } else if (cleanDest) {
@@ -1643,13 +1669,10 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
         }
 
         if (hasSharedDest && sharedDatesStr) {
-          // Rule 2: Shared destination with intersecting dates
           secondaryDetail = `Also traveling ${sharedDatesStr}`;
         } else if (hasSharedDest && cleanDest) {
-          // Rule 3: Shared destination with different dates
           secondaryDetail = `Also visiting ${cleanDest}`;
         } else if (interestsStr) {
-          // Rule 6: Travel interests
           secondaryDetail = interestsStr;
         } else if (countdownStr) {
           secondaryDetail = countdownStr;
@@ -1659,7 +1682,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
           secondaryDetail = `Based in ${c.city}`;
         }
       } else if (completedTrip) {
-        // Rule 5: If the traveler has completed a trip
         primaryDetail = cleanDest
           ? `Recently visited ${cleanDest}`
           : c.completedTrips > 0
@@ -1667,10 +1689,8 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
           : "Recently traveled";
 
         if (hasSharedDest && cleanDest) {
-          // Rule 3: Shared destination
           secondaryDetail = `Also visiting ${cleanDest}`;
         } else if (interestsStr) {
-          // Rule 6: Travel interests
           secondaryDetail = interestsStr;
         } else if (c.completedTrips > 1) {
           secondaryDetail = `${c.completedTrips} trips completed`;
@@ -1685,7 +1705,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
           secondaryDetail = `Based in ${c.city}`;
         }
       } else if (isNewUser) {
-        // Rule 6: No useful trip information
         if (interestsStr) {
           primaryDetail = interestsStr;
           secondaryDetail = "New to YatriGo";
@@ -1694,7 +1713,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
           secondaryDetail = c.city ? `From ${c.city}` : "";
         }
       } else {
-        // Rule 6: No useful trip information
         if (interestsStr) {
           primaryDetail = interestsStr;
           secondaryDetail = c.city ? `Based in ${c.city}` : "";
@@ -1730,6 +1748,8 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
         interestMatchesCount: sharedInterestsCount,
         isSameCity,
         isSameState,
+        isOngoing: Boolean(ongoingTrip),
+        isUpcoming: Boolean(upcomingTrip),
         primaryDetail,
         secondaryDetail,
         suggestionReasonText: primaryDetail,

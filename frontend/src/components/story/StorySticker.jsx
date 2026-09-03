@@ -36,7 +36,7 @@ const StorySticker = ({
       {sticker.type === 'text' &&
     <div
     onClick={() => isEdit && onTextClick && onTextClick()}
-    className={`px-4 py-1.5 ${isEdit ? 'cursor-pointer' : ''} ${sticker.style?.bg === 'glass' ? 'bg-black/40 backdrop-blur-md rounded-2xl border border-white/10' : sticker.style?.bg === 'solid' ? 'bg-white text-slate-900 rounded-2xl shadow-xl' : ''}`}
+    className={`px-4 py-1.5 ${isEdit ? 'cursor-pointer' : ''} ${sticker.style?.bg === 'glass' ? 'bg-black/40 backdrop-blur-md rounded-2xl border border-white/10' : sticker.style?.bg === 'solid' ? 'bg-white text-text-primary rounded-2xl shadow-xl' : ''}`}
     style={{ fontFamily: sticker.style?.font, color: sticker.style?.bg === 'solid' && sticker.style?.color === '#ffffff' ? '#000000' : sticker.style?.color, textAlign: sticker.style?.align }}>
 
           <p className="whitespace-pre-wrap text-4xl font-bold drop-shadow-md leading-tight">{sticker.text}</p>
@@ -49,7 +49,7 @@ const StorySticker = ({
     className={`bg-white/90 backdrop-blur-md rounded-full px-5 py-2.5 flex items-center gap-2 shadow-lg border border-white/20 ${isEdit ? 'cursor-pointer' : ''}`}>
 
           <span className="text-rose-500 text-lg">📍</span>
-          <span className="font-bold text-slate-800 text-sm whitespace-nowrap">{sticker.text || sticker.emoji || "Location"}</span>
+          <span className="font-bold text-text-primary text-sm whitespace-nowrap">{sticker.text || sticker.emoji || "Location"}</span>
         </div>}
 
 
@@ -66,8 +66,8 @@ const StorySticker = ({
             <span className="text-sm">🎵</span>
           </div>
           <div className="overflow-hidden min-w-0 flex-1">
-            <p className="text-[12px] font-black text-slate-800 truncate">{sticker.data?.songTitle}</p>
-            <p className="text-[10px] font-bold text-slate-500 truncate">{sticker.data?.artistName}</p>
+            <p className="text-[12px] font-black text-text-primary truncate">{sticker.data?.songTitle}</p>
+            <p className="text-[10px] font-bold text-text-muted truncate">{sticker.data?.artistName}</p>
           </div>
           {isEdit &&
       <button

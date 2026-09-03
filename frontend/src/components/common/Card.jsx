@@ -22,11 +22,12 @@ const Card = ({
     default: "bg-white border border-[var(--border-default)]",
     outlined: "bg-transparent border border-[var(--border-default)]",
     elevated: "bg-white border-none shadow-[var(--shadow-card-md)]",
+    glass: "glass-card",
     transparent: "bg-transparent border-none"
   };
 
   const interactiveClasses = interactive ?
-  "cursor-pointer transition-all duration-300 hover:-translate-y-[2px] hover:shadow-[var(--shadow-card-lg)]" :
+  "cursor-pointer transition-all duration-300 ease-spring hover:-translate-y-1 hover:shadow-[var(--shadow-card-lg)] active:scale-[0.99]" :
   "";
 
   const defaultShadow = variant === "default" ? "shadow-[var(--shadow-card-sm)]" : "";

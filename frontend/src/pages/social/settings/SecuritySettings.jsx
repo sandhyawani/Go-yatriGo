@@ -285,21 +285,21 @@ const SessionCard = ({ session, onRevoke }) => {
 
 };
 
-const SectionHeader = ({ icon: Icon, iconBg = "#F3E8FF", iconColor = "#7C3AED", title, subtitle }) =>
+const SectionHeader = ({ icon: Icon, iconBg = "#E0F7FC", iconColor = "#0284c7", title, subtitle }) =>
 <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
     <div
   style={{
     width: "38px",
     height: "38px",
     borderRadius: "12px",
-    background: "#F3E8FF",
+    background: "#E0F7FC",
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0
   }}>
 
-      <Icon style={{ width: "18px", height: "18px", color: "#7C3AED" }} />
+      <Icon style={{ width: "18px", height: "18px", color: "#0284c7" }} />
     </div>
     <div>
       <h2 style={{ fontSize: "16px", fontWeight: 700, color: "#1E293B", margin: 0 }}>
@@ -495,7 +495,7 @@ const SecuritySettings = () => {
             width: "36px",
             height: "36px",
             border: "3px solid #e2e8f0",
-            borderTopColor: "#7c3aed",
+            borderTopColor: "#0284c7",
             borderRadius: "50%",
             margin: "0 auto 12px",
             animation: "spin 0.8s linear infinite"
@@ -544,9 +544,9 @@ const SecuritySettings = () => {
     }}>
 
       <style>{`
-        .pw-input-wrap input:focus { border-color: #7C3AED !important; background: #fff !important; box-shadow: 0 0 0 4px rgba(124, 90, 237, 0.1) !important; }
-        .submit-btn { background: #7C3AED !important; border-radius: 12px !important; transition: all 0.2s ease-out !important; }
-        .submit-btn:hover:not(:disabled) { background: #6D28D9 !important; }
+        .pw-input-wrap input:focus { border-color: #0284c7 !important; background: #fff !important; box-shadow: 0 0 0 4px rgba(2,132,199,0.1) !important; }
+        .submit-btn { background: #0284c7 !important; border-radius: 12px !important; transition: all 0.2s ease-out !important; }
+        .submit-btn:hover:not(:disabled) { background: #0369a1 !important; }
         .submit-btn:active:not(:disabled) { transform: scale(0.99); }
         .submit-btn:disabled { opacity: 0.65; cursor: not-allowed; }
         .logout-btn { transition: all 0.2s ease-out !important; }
@@ -556,13 +556,13 @@ const SecuritySettings = () => {
       <div style={{ maxWidth: "720px", margin: "0 auto", padding: "32px 20px" }}>
         <Link
         to={backPath}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover:bg-slate-50 border border-[#E5E7EB] text-[#1E293B] text-sm font-semibold shadow-soft transition-all duration-200"
+        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white hover border border-border-default text-text-primary text-sm font-semibold shadow-soft transition-all duration-200"
         style={{
           marginBottom: "20px",
           textDecoration: "none"
         }}>
 
-          <ArrowLeft style={{ width: "16px", height: "16px", color: "#7C3AED" }} />
+          <ArrowLeft style={{ width: "16px", height: "16px", color: "#0284c7" }} />
           <span>{pageMeta.backLabel}</span>
         </Link>
 
@@ -572,13 +572,13 @@ const SecuritySettings = () => {
             width: "42px",
             height: "42px",
             borderRadius: "12px",
-            background: "#F3E8FF",
+            background: "#E0F7FC",
             display: "flex",
             alignItems: "center",
             justifyContent: "center"
           }}>
 
-            <Shield style={{ width: "20px", height: "20px", color: "#7C3AED" }} />
+            <Shield style={{ width: "20px", height: "20px", color: "#0284c7" }} />
           </div>
           <div>
             <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#1E293B", margin: 0 }}>
@@ -590,7 +590,6 @@ const SecuritySettings = () => {
           </div>
         </div>
 
-        {}
         <div
         style={{
           display: "flex",
@@ -619,8 +618,8 @@ const SecuritySettings = () => {
                 gap: "8px",
                 padding: "10px 16px",
                 borderRadius: "12px",
-                border: isActive ? "1px solid #7C3AED" : "1px solid #E5E7EB",
-                background: isActive ? "#7C3AED" : "#ffffff",
+                border: isActive ? "1px solid #0284c7" : "1px solid #E5E7EB",
+                background: isActive ? "#0284c7" : "#ffffff",
                 color: isActive ? "#ffffff" : "#64748B",
                 fontSize: "13px",
                 fontWeight: 600,
@@ -628,7 +627,7 @@ const SecuritySettings = () => {
                 transition: "all 0.2s ease",
                 whiteSpace: "nowrap",
                 boxShadow: isActive ?
-                "0 4px 12px rgba(124, 58, 237, 0.15)" :
+                "0 4px 12px rgba(2,132,199,0.15)" :
                 "0 4px 20px rgba(30, 41, 59, 0.03)"
               }}>
 
@@ -636,7 +635,7 @@ const SecuritySettings = () => {
                 style={{
                   width: "16px",
                   height: "16px",
-                  color: isActive ? "#ffffff" : "#7C3AED"
+                  color: isActive ? "#ffffff" : "#0284c7"
                 }} />
 
                 {tab.label}
@@ -650,8 +649,8 @@ const SecuritySettings = () => {
           <Card>
               <SectionHeader
             icon={Key}
-            iconBg="#ede9fe"
-            iconColor="#7c3aed"
+            iconBg="#f0fbfd"
+            iconColor="#0284c7"
             title="Change password"
             subtitle="Use a strong, unique password you don't use elsewhere" />
 
@@ -782,7 +781,7 @@ const SecuritySettings = () => {
               style={{
                 width: "100%",
                 padding: "11px",
-                background: "#7c3aed",
+                background: "#0284c7",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: "14px",
@@ -823,8 +822,8 @@ const SecuritySettings = () => {
           <Card>
               <SectionHeader
             icon={Activity}
-            iconBg="#f3e8ff"
-            iconColor="#7c3aed"
+            iconBg="#e0f7fc"
+            iconColor="#0284c7"
             title="Active sessions"
             subtitle={`${sessions.length} device${sessions.length !== 1 ? "s" : ""} currently signed in`} />
 

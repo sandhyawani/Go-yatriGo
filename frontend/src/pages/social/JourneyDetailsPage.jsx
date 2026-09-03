@@ -51,14 +51,26 @@ const JourneyDetailsPage = () => {
 
   const validTabs = ["overview", "workspace", "timeline", "members", "gallery", "memories"];
   const urlTab = searchParams.get("tab");
-  const initialTab = urlTab && validTabs.includes(urlTab) ? urlTab : "overview";
+  const normalizedUrlTab = urlTab === "safety" ? "timeline" : urlTab;
+  const initialTab = normalizedUrlTab && validTabs.includes(normalizedUrlTab) ? normalizedUrlTab : "overview";
 
   const [journey, setJourney] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
 
+  useEffect(() => {
+    const currentParam = searchParams.get("tab");
+    const norm = currentParam === "safety" ? "timeline" : currentParam;
+    if (norm && validTabs.includes(norm)) {
+      setActiveTab(norm);
+    } else if (!currentParam) {
+      setActiveTab("overview");
+    }
+  }, [searchParams]);
+
   const handleTabChange = (tabId) => {
-    setActiveTab(tabId);
-    setSearchParams(tabId === "overview" ? {} : { tab: tabId }, { replace: true });
+    const targetTab = tabId === "safety" ? "timeline" : tabId;
+    setActiveTab(targetTab);
+    setSearchParams(targetTab === "overview" ? {} : { tab: targetTab }, { replace: true });
   };
   const [loading, setLoading] = useState(true);
   const [myJoinRequest, setMyJoinRequest] = useState(null);
@@ -78,7 +90,7 @@ const JourneyDetailsPage = () => {
 
   const getJourneyBadge = (j) => {
     if (j?.journeyType === "Solo Journey" || j?.journeyType === "Solo")
-    return "Solo Expedition";
+    return "Solo Journey";
     return "Shared Journey";
   };
 
@@ -205,10 +217,10 @@ const JourneyDetailsPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
-        <div className="w-14 h-14 rounded-2xl bg-[#7C3AED]/10 flex items-center justify-center">
-          <Compass className="w-7 h-7 text-[#7C3AED] animate-spin" />
+        <div className="w-14 h-14 rounded-2xl bg-brand/10 flex items-center justify-center">
+          <Compass className="w-7 h-7 text-brand animate-spin" />
         </div>
-        <p className="text-sm font-bold text-slate-500">
+        <p className="text-sm font-bold text-text-muted">
           Entering Journey Hub...
         </p>
       </div>);
@@ -300,43 +312,43 @@ const JourneyDetailsPage = () => {
   "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80";
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-[#F7F6FB] dark:bg-slate-950 pb-28 lg:pb-10">
+    <div className="min-h-screen flex flex-col justify-between bg-background pb-28 lg:pb-10">
       <div className="flex-1 min-h-[calc(100vh-14rem)] flex flex-col">
 
         {/* Top Sticky Bar on Mobile */}
-        <div className="lg:hidden sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-100 dark:border-slate-800 h-12 flex items-center justify-between px-4">
+        <div className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 h-12 flex items-center justify-between px-4">
           <Link
           to="/social/journeys"
-          className="flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-bold text-sm">
+          className="flex items-center gap-1.5 text-text-primary font-bold text-sm">
 
-            <ChevronLeft className="w-4 h-4 text-[#7C3AED]" />
+            <ChevronLeft className="w-4 h-4 text-brand" />
             Journey Hub
           </Link>
           <div className="flex items-center gap-2">
             {journey.chatRoomId && journey.journeyType !== "Solo" && isMember && (
               <button
                 onClick={() => navigate(`/social/chat/${journey.chatRoomId}`)}
-                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                className="p-2 rounded-xl bg-background text-text-primary"
                 title="Open Group Chat"
               >
-                <MessageSquare className="w-4 h-4 text-[#7C3AED]" />
+                <MessageSquare className="w-4 h-4 text-brand" />
               </button>
             )}
 
             {canInvite && (
               <button
                 onClick={() => setIsInviteOpen(true)}
-                className="p-2 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-200"
+                className="p-2 rounded-xl bg-background text-text-primary"
                 title="Invite Companions"
               >
-                <UserPlus className="w-4 h-4 text-[#7C3AED]" />
+                <UserPlus className="w-4 h-4 text-brand" />
               </button>
             )}
 
             {canCancel && (
               <button
                 onClick={() => setIsCancelModalOpen(true)}
-                className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500"
+                className="p-2 rounded-xl bg-rose-50 text-rose-500"
                 title="Cancel Journey"
               >
                 <XCircle className="w-4 h-4" />
@@ -347,7 +359,7 @@ const JourneyDetailsPage = () => {
               <button
                 onClick={handleLeaveJourney}
                 disabled={leavingJourney}
-                className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-500"
+                className="p-2 rounded-xl bg-rose-50 text-rose-500"
                 title="Leave Journey"
               >
                 <XCircle className="w-4 h-4" />
@@ -361,9 +373,9 @@ const JourneyDetailsPage = () => {
         <div className="hidden lg:flex max-w-6xl mx-auto px-4 sm:px-6 pt-5 items-center justify-between w-full">
           <Link
           to="/social/journeys"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs font-bold text-slate-700 dark:text-slate-200 transition-all shadow-xs">
+          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover text-xs font-bold text-text-primary transition-all shadow-xs">
 
-            <ArrowLeft className="w-4 h-4 text-slate-500" /> Back to Journey Hub
+            <ArrowLeft className="w-4 h-4 text-text-muted" /> Back to Journey Hub
           </Link>
         </div>
 
@@ -371,7 +383,7 @@ const JourneyDetailsPage = () => {
 
 
           {journey.status === "Cancelled" && (
-            <div className="bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 p-4 rounded-2xl flex items-center gap-3 text-rose-700 dark:text-rose-300 shadow-sm animate-fade-in">
+            <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center gap-3 text-rose-700 shadow-sm animate-fade-in">
               <XCircle className="w-5 h-5 shrink-0 text-rose-500" />
               <div>
                 <h3 className="font-extrabold text-sm m-0">This Journey Has Been Cancelled</h3>
@@ -385,11 +397,11 @@ const JourneyDetailsPage = () => {
           )}
 
           {lifecycle.isOngoing && (
-            <div className="bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 p-4 rounded-2xl flex items-center gap-3 text-emerald-800 dark:text-emerald-300 shadow-sm animate-fade-in">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+            <div className="bg-cyan-50/80 border border-cyan-200/80 p-4 rounded-2xl flex items-center gap-3 text-cyan-950 shadow-sm animate-fade-in">
+              <div className="w-2.5 h-2.5 rounded-full bg-cyan-500 animate-pulse shrink-0" />
               <div>
                 <h3 className="font-extrabold text-sm m-0">Journey in Progress</h3>
-                <p className="text-xs opacity-90 m-0">
+                <p className="text-xs text-cyan-800/90 m-0">
                   This journey has started and is no longer accepting new travelers.
                 </p>
               </div>
@@ -406,12 +418,12 @@ const JourneyDetailsPage = () => {
 
 
           {/* Banner Media Hero */}
-          <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 dark:border-slate-800 bg-slate-950 group">
+          <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 bg-slate-950 group">
             <div className="min-h-[190px] sm:min-h-[220px] lg:min-h-[240px] w-full relative flex flex-col justify-between p-4 sm:p-6">
               <img
                 src={journey.coverImage || defaultBanner}
                 alt={journey.title}
-                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 dark:opacity-50 pointer-events-none"
+                className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 pointer-events-none"
               />
 
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/30 pointer-events-none" />
@@ -420,7 +432,7 @@ const JourneyDetailsPage = () => {
               <div className="relative z-10 flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   <JourneyStatusBadge status={journey.status} size="sm" />
-                  <span className="px-2.5 py-1 rounded-xl bg-slate-900/70 backdrop-blur-md text-white text-[11px] font-bold border border-white/20 shadow-xs flex items-center gap-1.5">
+                  <span className="btn-primary">
                     <User className="w-3 h-3 text-slate-300" /> {getJourneyBadge(journey)}
                   </span>
                 </div>
@@ -429,7 +441,7 @@ const JourneyDetailsPage = () => {
                   {journey.journeyType !== "Solo" && isMember && (
                     <button
                       onClick={() => navigate(journey.chatRoomId ? `/social/chat/${journey.chatRoomId}` : `/social/chat`)}
-                      className="px-3 py-1.5 rounded-xl bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                      className="px-3 py-1.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95"
                       title="Open Group Chat"
                     >
                       <MessageSquare className="w-3.5 h-3.5" />
@@ -504,7 +516,7 @@ const JourneyDetailsPage = () => {
                       <button
                         onClick={handleRequestJoin}
                         disabled={requestingJoin}
-                        className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95 bg-[#7C3AED] hover:bg-[#6D28D9] text-white border border-[#7C3AED]/50 disabled:opacity-50"
+                        className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center gap-1.5 active:scale-95 bg-brand hover:bg-brand-dark text-white border border-brand/50 disabled:opacity-50"
                       >
                         <UserPlus className="w-3.5 h-3.5" /> {requestingJoin ? "Sending..." : "Request to Join"}
                       </button>
@@ -521,12 +533,12 @@ const JourneyDetailsPage = () => {
 
                 <div className="flex items-center gap-3 sm:gap-4 text-slate-200 text-xs font-medium sm:font-semibold flex-wrap font-sans">
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3.5 h-3.5 text-[#FF5A7A] shrink-0" />
+                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                     <span className="font-semibold">{journey.destination || "Destination TBD"}</span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <Calendar className="w-3.5 h-3.5 text-text-muted shrink-0" />
                     <span>
                       {journey.startDate
                         ? `${new Date(journey.startDate).toLocaleDateString("en-US", { month: "short", day: "numeric" })} – ${
@@ -539,13 +551,25 @@ const JourneyDetailsPage = () => {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    <Users className="w-3.5 h-3.5 text-primary-400 shrink-0" />
                     <span>{journey.members?.length ?? 1} Travelers</span>
                   </div>
 
                   <div className="flex items-center gap-1.5 text-slate-300">
                     <span className="w-1 h-1 rounded-full bg-slate-400" />
-                    <span>Host: <strong className="text-white">{journey.creator?.name || "Host"}</strong></span>
+                    <span>
+                      Host:{" "}
+                      {journey.creator?._id || journey.creator?.id || (typeof journey.creator === "string" ? journey.creator : null) ? (
+                        <Link
+                          to={`/profile/${journey.creator?._id || journey.creator?.id || journey.creator}`}
+                          className="text-white hover:text-primary-300 hover:underline font-bold transition-colors"
+                        >
+                          {journey.creator?.name || "Host"}
+                        </Link>
+                      ) : (
+                        <strong className="text-white">{journey.creator?.name || "Host"}</strong>
+                      )}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -553,7 +577,7 @@ const JourneyDetailsPage = () => {
           </div>
 
           {/* Navigation Tabs Bar */}
-          <div className="flex bg-white dark:bg-slate-900 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs items-center gap-1 overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap">
+          <div className="flex bg-white backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-xs items-center gap-1 overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
               return (
@@ -562,11 +586,11 @@ const JourneyDetailsPage = () => {
                   onClick={() => handleTabChange(tab.id)}
                   className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all select-none shrink-0 whitespace-nowrap cursor-pointer ${
                     isActive
-                      ? "bg-[#7C3AED] text-white shadow-sm font-bold"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/40"
+                      ? "bg-brand text-white shadow-sm font-bold"
+                      : "text-text-secondary hover:text-text-primary hover:bg-background/40"
                   }`}
                 >
-                  <tab.icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-slate-400"}`} />
+                  <tab.icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-text-muted"}`} />
                   <span>{tab.label}</span>
                 </button>
               );
@@ -575,14 +599,14 @@ const JourneyDetailsPage = () => {
 
           {/* Recruitment Analytics (Planning/Upcoming Only) */}
           {activeTab === "overview" && isOrganizer && (lifecycle.isPlanning || lifecycle.isUpcoming) && ((journey.pendingInvitationCount || 0) > 0 || (journey.acceptedInvitationCount || 0) > 0) && (
-            <div className="bg-white dark:bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
+            <div className="bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-[#7C3AED]/15 rounded-lg flex items-center justify-center text-[#7C3AED] shrink-0">
+                <div className="w-6 h-6 bg-brand/15 rounded-lg flex items-center justify-center text-brand shrink-0">
                   <Sparkles className="w-3.5 h-3.5" />
                 </div>
-                <span className="text-xs font-bold text-slate-800 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                <span className="text-xs font-bold text-text-primary uppercase tracking-wider flex items-center gap-1.5">
                   Recruitment Analytics
-                  <span className="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.2 rounded font-black border border-slate-200 dark:border-slate-700">
+                  <span className="text-[9px] bg-background text-text-primary px-1.5 py-0.2 rounded font-black border border-slate-200">
                     LIVE
                   </span>
                 </span>
@@ -590,16 +614,16 @@ const JourneyDetailsPage = () => {
 
               <div className="flex items-center gap-3 text-xs">
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Pending:</span>
+                  <span className="text-[10px] font-bold text-text-muted uppercase">Pending:</span>
                   <span className="font-bold text-amber-600">{journey.pendingInvitationCount || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Accepted:</span>
+                  <span className="text-[10px] font-bold text-text-muted uppercase">Accepted:</span>
                   <span className="font-bold text-emerald-600">{journey.acceptedInvitationCount || 0}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase">Members:</span>
-                  <span className="font-bold text-slate-700 dark:text-slate-300">{journey.members?.length ?? 0}</span>
+                  <span className="text-[10px] font-bold text-text-muted uppercase">Members:</span>
+                  <span className="font-bold text-text-primary">{journey.members?.length ?? 0}</span>
                 </div>
               </div>
             </div>
@@ -656,8 +680,7 @@ const JourneyDetailsPage = () => {
         </div>
       </div>
 
-      {}
-      <nav className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-100 dark:border-slate-800 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <nav className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
         <div className="flex items-center justify-between overflow-x-auto scrollbar-none px-1 h-14 w-full">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -666,7 +689,7 @@ const JourneyDetailsPage = () => {
               key={tab.id}
               onClick={() => handleTabChange(tab.id)}
               className={`flex-1 flex flex-col items-center justify-center gap-0.5 min-w-0 py-1.5 px-0.5 rounded-xl transition-all shrink-0 ${
-              isActive ? "text-[#7C3AED]" : "text-slate-400"
+              isActive ? "text-brand" : "text-text-muted"
               }`}>
 
                 <tab.icon className="w-5 h-5 shrink-0" />
@@ -677,7 +700,6 @@ const JourneyDetailsPage = () => {
         </div>
       </nav>
 
-      {}
       <InviteBuddyModal
       journey={journey}
       isOpen={isInviteOpen}
@@ -685,7 +707,6 @@ const JourneyDetailsPage = () => {
       onInvited={fetchJourney} />
 
 
-      {}
       <SafeCheckInModal
         journey={journey}
         isOpen={isCheckInOpen && lifecycle.isOngoing}

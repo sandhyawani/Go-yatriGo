@@ -2,22 +2,26 @@ export const JOURNEY_STATUS_VALUES = {
   ALL: "all",
   ACTIVE: "active",
   UPCOMING: "upcoming",
-  COMPLETED: "completed"
+  COMPLETED: "completed",
+  CANCELLED: "cancelled"
 };
 
 export const STATUS_DISPLAY_LABELS = {
   all: "All Status",
-  active: "Active Now",
+  active: "Going on Trip",
   upcoming: "Upcoming",
-  completed: "Completed"
+  completed: "Completed",
+  cancelled: "Cancelled"
 };
 
 export const STATUS_DROPDOWN_OPTIONS = [
-  { id: "all", label: "All Status" },
-  { id: "active", label: "Active" },
-  { id: "upcoming", label: "Upcoming" },
-  { id: "completed", label: "Completed" }
+  { id: "all", label: "All Status", colorDot: "bg-slate-400" },
+  { id: "active", label: "Going on Trip", colorDot: "bg-emerald-500" },
+  { id: "upcoming", label: "Upcoming", colorDot: "bg-sky-500" },
+  { id: "completed", label: "Completed", colorDot: "bg-purple-600" },
+  { id: "cancelled", label: "Cancelled", colorDot: "bg-rose-500" }
 ];
+
 
 export const normalizeJourneyStatus = (status, trip) => {
   const tripObj = typeof status === "object" && status !== null ? status : trip;

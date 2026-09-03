@@ -103,7 +103,7 @@ const CompactMemoryCard = ({ item }) => {
       className={`relative overflow-hidden cursor-pointer group shrink-0 transition-all duration-300 w-full sm:w-[220px] rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs hover:shadow-lg hover:border-primary-200 hover:-translate-y-1`}
     >
       {/* Media 16:9 */}
-      <div className="relative w-full aspect-[16/9] bg-slate-100 overflow-hidden">
+      <div className="relative w-full aspect-[16/9] bg-background overflow-hidden">
         {mediaList.length > 0 ? (
           <>
             {mediaList[currentMediaIndex].match(/\.(mp4|webm)$/i) ||
@@ -145,9 +145,9 @@ const CompactMemoryCard = ({ item }) => {
             )}
           </>
         ) : (
-          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br from-primary-50/40 via-white to-purple-50/20">
+          <div className="w-full h-full flex flex-col items-center justify-center p-3 text-center bg-gradient-to-br from-primary-50/40 via-white to-primary-50/20">
             <MapPin className="w-5 h-5 text-primary-400 mb-1" />
-            <span className="text-xs font-bold text-slate-700 line-clamp-1">
+            <span className="text-xs font-bold text-text-primary line-clamp-1">
               {item.caption || item.title || "Travel Memory"}
             </span>
           </div>
@@ -166,22 +166,22 @@ const CompactMemoryCard = ({ item }) => {
 
       {/* Content */}
       <div className="p-3 text-left space-y-1 font-sans">
-        <h4 className="text-xs font-bold text-slate-900 line-clamp-1 font-heading leading-tight">
+        <h4 className="text-xs font-bold text-text-primary line-clamp-1 font-heading leading-tight">
           {item.title || item.caption || "Travel Memory"}
         </h4>
 
         {item.location && (
-          <div className="flex items-center gap-1 text-slate-500 text-[10px] font-semibold truncate">
+          <div className="flex items-center gap-1 text-text-muted text-[10px] font-semibold truncate">
             <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
             <span className="truncate">{item.location}</span>
           </div>
         )}
 
         {/* Action Row */}
-        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold text-slate-500 select-none">
+        <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold text-text-muted select-none">
           <div className="flex items-center gap-2.5">
-            <span className="flex items-center gap-1 text-[#7C3AED]">
-              <Sparkles className="w-3 h-3 text-[#7C3AED] fill-[#7C3AED]" />
+            <span className="flex items-center gap-1 text-brand">
+              <Sparkles className="w-3 h-3 text-brand fill-brand" />
               <span>{item.likesCount || 0} Felt</span>
             </span>
             <span className="flex items-center gap-0.5">
@@ -190,7 +190,7 @@ const CompactMemoryCard = ({ item }) => {
             </span>
           </div>
 
-          <span className="text-[9px] font-bold text-slate-400">
+          <span className="text-[9px] font-bold text-text-muted">
             {item.createdAt ? moment(item.createdAt).fromNow(true) : ""}
           </span>
         </div>

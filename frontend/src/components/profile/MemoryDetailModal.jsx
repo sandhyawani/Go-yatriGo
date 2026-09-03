@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../utils/avatar";
 import { renderClickableText } from "../home/feed/utils/feedHelpers";
 import ChangeCoverModal from "../modals/ChangeCoverModal";
+import { isActuallyVerified } from "../../utils/verification";
 
 export const MemoryDetailModal = ({
   selectedMemory,
@@ -36,6 +38,7 @@ export const MemoryDetailModal = ({
   handleAvatarError,
   audioRefs,
 }) => {
+  const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [showChangeCoverModal, setShowChangeCoverModal] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
@@ -186,12 +189,22 @@ export const MemoryDetailModal = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl text-slate-900 flex flex-col"
+            className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl text-text-primary flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             {/* ─── 1. MEMORY HEADER (User, Badge, Date, Location, Owner Menu) ──── */}
             <div className="sticky top-0 z-40 flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 bg-white/95 backdrop-blur-md border-b border-slate-100 min-h-[58px]">
-              <div className="flex items-center gap-3 min-w-0 flex-1">
+              <div
+                className={`flex items-center gap-3 min-w-0 flex-1 ${
+                  memoryAuthorId ? "cursor-pointer group/author" : ""
+                }`}
+                onClick={() => {
+                  if (memoryAuthorId) {
+                    setSelectedMemory(null);
+                    navigate(`/profile/${memoryAuthorId}`);
+                  }
+                }}
+              >
                 <img
                   src={authorAvatar}
                   alt={authorName}
@@ -200,17 +213,17 @@ export const MemoryDetailModal = ({
                       ? handleAvatarError(e, authorName)
                       : null
                   }
-                  className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-primary-100"
+                  className="w-10 h-10 rounded-full object-cover shrink-0 ring-2 ring-primary-100 group-hover/author:opacity-80 transition-opacity"
                 />
 
                 <div className="flex flex-col min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-slate-900 truncate font-heading">
+                    <span className="text-sm font-bold text-text-primary truncate font-heading group-hover/author:text-brand transition-colors">
                       {authorName}
                     </span>
-                    {(selectedMemory.userId?.isVerified ||
-                      profileUser?.isVerified) && (
-                      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white text-[9px]">
+                    {(isActuallyVerified(selectedMemory.userId) ||
+                      isActuallyVerified(profileUser)) && (
+                      <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white text-[9px]" title="Verified Traveler">
                         ✓
                       </span>
                     )}
@@ -219,9 +232,9 @@ export const MemoryDetailModal = ({
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-2 text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                  <div className="flex items-center gap-2 text-[11px] text-text-muted font-medium truncate mt-0.5">
                     {selectedMemory.location && (
-                      <span className="flex items-center gap-0.5 text-slate-600 truncate max-w-[170px] sm:max-w-[220px]">
+                      <span className="flex items-center gap-0.5 text-text-secondary truncate max-w-[170px] sm:max-w-[220px]">
                         <MapPin className="w-3 h-3 text-rose-500 shrink-0" />
                         <span className="truncate">
                           {selectedMemory.location}
@@ -230,7 +243,7 @@ export const MemoryDetailModal = ({
                     )}
                     {selectedMemory.location && <span>•</span>}
                     <span className="flex items-center gap-1 shrink-0">
-                      <Calendar className="w-3 h-3 text-slate-400" />
+                      <Calendar className="w-3 h-3 text-text-muted" />
                       {moment(selectedMemory.createdAt).fromNow()}
                     </span>
                   </div>
@@ -244,7 +257,7 @@ export const MemoryDetailModal = ({
                   <button
                     type="button"
                     onClick={() => setShowMenu((prev) => !prev)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-background transition-colors"
                     aria-label="More options"
                   >
                     <MoreVertical className="w-4 h-4" />
@@ -272,7 +285,7 @@ export const MemoryDetailModal = ({
                                   setShowEditPostModal(true);
                                 }
                               }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
+                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                             >
                               <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                               <span>Edit Memory</span>
@@ -284,7 +297,7 @@ export const MemoryDetailModal = ({
                                 setShowMenu(false);
                                 setShowChangeCoverModal(true);
                               }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-purple-50 hover:text-primary-600 transition-colors whitespace-nowrap"
+                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                             >
                               <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                               <span>Change Cover</span>
@@ -320,9 +333,9 @@ export const MemoryDetailModal = ({
                                 });
                               }
                             }}
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors whitespace-nowrap"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover transition-colors whitespace-nowrap"
                           >
-                            <ShieldAlert className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                            <ShieldAlert className="w-3.5 h-3.5 text-text-muted shrink-0" />
                             <span>Report Memory</span>
                           </button>
                         )}
@@ -336,7 +349,7 @@ export const MemoryDetailModal = ({
                   type="button"
                   onClick={() => setSelectedMemory(null)}
                   aria-label="Close details"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-900 transition-colors ml-1"
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background hover text-text-muted hover:text-text-primary transition-colors ml-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -346,17 +359,17 @@ export const MemoryDetailModal = ({
             {/* ─── 2. COMPACT MUSIC SECTION ─────────────────────────────────── */}
             {(audioSrc || songTitle) && (
               <div className="px-4 sm:px-5 pt-2.5 pb-1 select-none">
-                <div className="flex items-center justify-between rounded-xl border border-primary-100 bg-purple-50/70 px-3 py-1.5 shadow-2xs">
+                <div className="flex items-center justify-between rounded-xl border border-primary-100 bg-primary-50/70 px-3 py-1.5 shadow-2xs">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-600 text-white shadow-xs">
                       <Music2 className="h-3.5 w-3.5" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-xs font-bold text-slate-900 leading-tight">
+                      <p className="truncate text-xs font-bold text-text-primary leading-tight">
                         {songTitle || "Audio Track"}
                       </p>
                       {artistName && (
-                        <p className="truncate text-[10px] text-slate-500 font-medium">
+                        <p className="truncate text-[10px] text-text-muted font-medium">
                           {artistName}
                         </p>
                       )}
@@ -395,11 +408,11 @@ export const MemoryDetailModal = ({
 
             {/* ─── 3. COVER IMAGE SECTION (16:9 Aspect Ratio & Hover Change Cover) ── */}
             <div className="px-4 sm:px-5 pt-2.5 select-none">
-              <div className="group/cover relative w-full aspect-[16/9] max-h-[340px] overflow-hidden rounded-2xl bg-slate-100 border border-slate-200">
+              <div className="group/cover relative w-full aspect-[16/9] max-h-[340px] overflow-hidden rounded-2xl bg-background border border-slate-200">
                 {mediaList.length === 0 ? (
-                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-primary-50/40 via-white to-purple-50/20">
+                  <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-primary-50/40 via-white to-primary-50/20">
                     <MapPin className="w-8 h-8 text-primary-400 mb-2" />
-                    <p className="text-xs font-bold text-slate-800">
+                    <p className="text-xs font-bold text-text-primary">
                       {selectedMemory.caption || "Travel Memory"}
                     </p>
                   </div>
@@ -496,7 +509,7 @@ export const MemoryDetailModal = ({
                     className="absolute inset-0 flex items-center justify-center pointer-events-none z-30"
                   >
                     <div className="flex flex-col items-center justify-center gap-2 drop-shadow-xl select-none">
-                      <Sparkles className="w-16 h-16 text-[#7C3AED] fill-[#7C3AED]" />
+                      <Sparkles className="w-16 h-16 text-brand fill-brand" />
                       <span className="text-xs sm:text-sm font-black text-white px-3 py-1 rounded-full bg-black/60 backdrop-blur-md">Journey Felt</span>
                     </div>
                   </motion.div>
@@ -508,14 +521,14 @@ export const MemoryDetailModal = ({
             <div className="px-4 sm:px-5 pt-3.5 pb-2 text-left space-y-2">
               {/* Memory Title */}
               {selectedMemory.title && (
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 leading-snug font-heading">
+                <h2 className="text-base sm:text-lg font-bold text-text-primary leading-snug font-heading">
                   {selectedMemory.title}
                 </h2>
               )}
 
               {/* Caption / Description */}
               {selectedMemory.caption && (
-                <p className="text-xs sm:text-sm text-slate-700 font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
+                <p className="text-xs sm:text-sm text-text-primary font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
                   {renderClickableText(selectedMemory.caption)}
                 </p>
               )}
@@ -523,7 +536,7 @@ export const MemoryDetailModal = ({
               {/* Travel Metadata Pills Row */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {selectedMemory.location && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
                     <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
                     <span className="truncate max-w-[200px]">
                       {selectedMemory.location}
@@ -532,14 +545,14 @@ export const MemoryDetailModal = ({
                 )}
 
                 {travelDateFormatted && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
                     <Calendar className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                     <span>{travelDateFormatted}</span>
                   </div>
                 )}
 
                 {selectedMemory.journeyId && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 text-primary-700 border border-primary-100 text-[11px] font-semibold">
+                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 border border-primary-100 text-[11px] font-semibold">
                     <Compass className="w-3.5 h-3.5 text-primary-600 shrink-0" />
                     <span>Journey Escape</span>
                   </div>
@@ -550,7 +563,7 @@ export const MemoryDetailModal = ({
                   selectedMemory.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-block px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-medium"
+                      className="inline-block px-2 py-0.5 rounded-full bg-background text-text-secondary text-[10px] font-medium"
                     >
                       #{tag}
                     </span>
@@ -570,22 +583,22 @@ export const MemoryDetailModal = ({
                   }}
                   className={`inline-flex items-center gap-1.5 text-xs font-bold transition-transform active:scale-95 ${
                     hasFelt
-                      ? "text-[#7C3AED]"
-                      : "text-slate-600 hover:text-[#7C3AED]"
+                      ? "text-brand"
+                      : "text-text-secondary hover:text-brand"
                   }`}
-                  title="Felt this memory"
+                  title="Felt this travel memory"
                   aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
                 >
                   <Sparkles
                     className={`w-4 h-4 transition-all duration-300 ${
-                      hasFelt ? "fill-[#7C3AED] text-[#7C3AED] scale-110" : "text-slate-400"
+                      hasFelt ? "fill-brand text-brand scale-110" : "text-text-muted"
                     }`}
                   />
                   <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
                 </button>
 
                 {/* Comments count */}
-                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                <div className="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary">
                   <MessageCircle className="w-4 h-4 text-primary-600" />
                   <span>{commentsCount} Thoughts</span>
                 </div>
@@ -596,7 +609,7 @@ export const MemoryDetailModal = ({
                   onClick={() => {
                     if (handleDispatch) handleDispatch(postId);
                   }}
-                  className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-primary-600 transition-transform active:scale-95"
+                  className="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-95"
                 >
                   <Share2 className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Share</span>
@@ -613,7 +626,7 @@ export const MemoryDetailModal = ({
                 className={`inline-flex items-center gap-1.5 text-xs font-bold transition-transform active:scale-95 ${
                   isSaved
                     ? "text-primary-600"
-                    : "text-slate-600 hover:text-primary-600"
+                    : "text-text-secondary hover:text-primary-600"
                 }`}
               >
                 <Bookmark
@@ -629,17 +642,17 @@ export const MemoryDetailModal = ({
 
             {/* ─── 6. COMMENTS THREAD & INPUT ───────────────────────────────── */}
             <div className="px-4 sm:px-5 py-3 flex-1 flex flex-col min-h-[160px]">
-              <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2.5">
+              <h4 className="text-[11px] font-bold uppercase tracking-wider text-text-muted mb-2.5">
                 Thoughts & Comments ({comments.length})
               </h4>
 
               {commentsLoadingMap[postId] && comments.length === 0 ? (
-                <div className="py-6 flex items-center justify-center gap-2 text-xs font-semibold text-slate-400">
+                <div className="py-6 flex items-center justify-center gap-2 text-xs font-semibold text-text-muted">
                   <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
                   <span>Loading thoughts...</span>
                 </div>
               ) : comments.length === 0 ? (
-                <p className="py-4 text-center text-xs text-slate-400 font-medium">
+                <p className="py-4 text-center text-xs text-text-muted font-medium">
                   No comments yet. Share your thoughts on this travel memory!
                 </p>
               ) : (
@@ -674,41 +687,72 @@ export const MemoryDetailModal = ({
                       comment.userId?.avatar ||
                       comment.user?.pic;
 
+                    const cmtAuthorId = (
+                      comment.userId?._id ||
+                      comment.userId?.id ||
+                      comment.userId ||
+                      comment.user?._id ||
+                      comment.user?.id ||
+                      comment.user
+                    )?.toString();
+
                     return (
                       <div
                         key={commentId}
-                        className="group/comment relative flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 text-xs transition-colors"
+                        className="group/comment relative flex items-start gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-background/80 border border-slate-100 text-xs transition-colors"
                       >
                         <img
                           src={
                             cmtUserPic ||
                             `https://ui-avatars.com/api/?name=${encodeURIComponent(
                               cmtUserName
-                            )}&background=7C3AED&color=fff&bold=true`
+                            )}&background=0284c7&color=fff&bold=true`
                           }
                           alt={cmtUserName}
-                          className="h-6 w-6 rounded-full object-cover shrink-0 ring-1 ring-slate-200 mt-0.5"
+                          className={`h-6 w-6 rounded-full object-cover shrink-0 ring-1 ring-slate-200 mt-0.5 ${
+                            cmtAuthorId
+                              ? "cursor-pointer hover:opacity-80 transition-opacity"
+                              : ""
+                          }`}
+                          onClick={() => {
+                            if (cmtAuthorId) {
+                              setSelectedMemory(null);
+                              navigate(`/profile/${cmtAuthorId}`);
+                            }
+                          }}
                           onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                               cmtUserName
-                            )}&background=7C3AED&color=fff&bold=true`;
+                            )}&background=0284c7&color=fff&bold=true`;
                           }}
                         />
 
                         <div className="min-w-0 flex-1 pr-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="font-bold text-slate-900 font-heading">
+                            <span
+                              onClick={() => {
+                                if (cmtAuthorId) {
+                                  setSelectedMemory(null);
+                                  navigate(`/profile/${cmtAuthorId}`);
+                                }
+                              }}
+                              className={`font-bold text-text-primary font-heading ${
+                                cmtAuthorId
+                                  ? "cursor-pointer hover:text-brand hover:underline transition-colors"
+                                  : ""
+                              }`}
+                            >
                               {cmtUserName}
                             </span>
                             {comment.createdAt && (
-                              <span className="text-[10px] text-slate-400">
+                              <span className="text-[10px] text-text-muted">
                                 {moment(comment.createdAt).fromNow()}
                               </span>
                             )}
                           </div>
 
-                          <div className="text-slate-700 mt-0.5 leading-relaxed break-words font-sans">
+                          <div className="text-text-primary mt-0.5 leading-relaxed break-words font-sans">
                             {renderClickableText(comment.text)}
                           </div>
                         </div>
@@ -722,7 +766,7 @@ export const MemoryDetailModal = ({
                                 handleDeleteComment(postId, commentId);
                               }
                             }}
-                            className="absolute right-2 top-2 p-1 text-slate-400 hover:text-rose-500 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                            className="absolute right-2 top-2 p-1 text-text-muted hover:text-rose-500 opacity-0 group-hover/comment:opacity-100 transition-opacity"
                           >
                             <Trash2 className="h-3 w-3" />
                           </button>
@@ -752,7 +796,7 @@ export const MemoryDetailModal = ({
                     e.target.onerror = null;
                     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
                       currentUser?.name || "User"
-                    )}&background=7C3AED&color=fff&bold=true`;
+                    )}&background=0284c7&color=fff&bold=true`;
                   }}
                 />
 
@@ -770,7 +814,7 @@ export const MemoryDetailModal = ({
                     }}
                     placeholder="Add a comment..."
                     maxLength={500}
-                    className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-3.5 pr-9 text-xs text-slate-900 placeholder:text-slate-400 outline-none transition-all focus:border-primary-400 focus:bg-white focus:ring-2 focus:ring-primary-100 font-sans"
+                    className="input-field"
                   />
 
                   <button
@@ -779,7 +823,7 @@ export const MemoryDetailModal = ({
                       isSubmittingComment[postId] ||
                       !commentText[postId]?.trim()
                     }
-                    aria-label="Post comment"
+                    aria-label="Share thought"
                     className="absolute right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 text-white shadow-xs transition-all hover:bg-primary-700 active:scale-90 disabled:opacity-0 disabled:pointer-events-none"
                   >
                     {isSubmittingComment[postId] ? (

@@ -68,7 +68,6 @@ const ForgotPassword = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex font-sans overflow-hidden relative">
-      {}
       <div
       className="absolute inset-0 z-0 bg-cover bg-center opacity-10 scale-105"
       style={{ backgroundImage: `url(${travelBg})` }}
@@ -76,12 +75,10 @@ const ForgotPassword = () => {
 
       <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
 
-      {}
-      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand-500/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
-      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand-500/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
+      <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
+      <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-brand/5 rounded-full blur-[150px] translate-x-1/3 translate-y-1/3 z-10 pointer-events-none" />
 
       <div className="relative z-20 w-full flex flex-col lg:flex-row min-h-screen">
-        {}
         <div className="hidden lg:flex lg:w-3/5 items-center justify-center p-12">
           <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -89,12 +86,12 @@ const ForgotPassword = () => {
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="relative group w-full max-w-2xl">
 
-            <div className="absolute -inset-4 bg-brand-500/20 blur-3xl rounded-[3rem] group-hover:bg-brand-500/30 transition-all duration-700" />
+            <div className="absolute -inset-4 bg-brand/20 blur-3xl rounded-[3rem] group-hover:bg-brand/30 transition-all duration-700" />
             <div className="relative bg-white/5 backdrop-blur-3xl border border-white/10 rounded-[2.5rem] p-2 overflow-hidden shadow-2xl">
               <img
               src={stickerPack}
               alt="Travel hero"
-              className="w-full h-[80vh] object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700 opacity-80" />
+              className="w-full max-h-[80vh] h-full object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700 opacity-80" />
 
               <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-black/20">
                 <motion.div
@@ -122,7 +119,6 @@ const ForgotPassword = () => {
           </motion.div>
         </div>
 
-        {}
         <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto">
           <motion.div
           initial={{ opacity: 0, x: 20 }}
@@ -130,15 +126,14 @@ const ForgotPassword = () => {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="w-full max-w-[420px] bg-white border border-slate-100 p-6 sm:p-8 rounded-[2rem] shadow-xl my-4 lg:my-0">
 
-            {}
             <div className="mb-5 flex flex-col items-center lg:items-start">
               <div className="inline-flex items-center justify-center w-10 h-10 bg-slate-50 border border-slate-200 rounded-xl mb-3 shadow-sm text-brand-500">
                 <Fingerprint className="w-5 h-5" />
               </div>
-              <h1 className="text-2xl font-black text-slate-900 tracking-tighter">
+              <h1 className="text-2xl font-black text-text-primary tracking-tighter">
                 Forgot Password
               </h1>
-              <p className="text-slate-500 font-medium text-[11px] mt-1 leading-relaxed">
+              <p className="text-text-muted font-medium text-[11px] mt-1 leading-relaxed">
                 Enter your registered email address. We'll send you a secure
                 link to reset your password.
               </p>
@@ -148,7 +143,7 @@ const ForgotPassword = () => {
               <div className="space-y-1">
                 <label
                 htmlFor="forgot-email"
-                className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                className="text-[10px] font-black text-text-muted uppercase tracking-widest ml-1">
 
                   Email Address
                 </label>
@@ -157,7 +152,7 @@ const ForgotPassword = () => {
                   className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${
                   error ?
                   "text-red-500" :
-                  "text-slate-400 group-focus-within:text-brand-500"
+                  "text-text-muted group-focus-within:text-brand-500"
                   }`} />
 
                   <input
@@ -173,7 +168,7 @@ const ForgotPassword = () => {
                   error ?
                   "border-red-300 focus:border-red-400 focus:ring-red-400/20" :
                   "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
-                  } rounded-2xl text-slate-900 font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-slate-400 shadow-sm`} />
+                  } rounded-2xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm placeholder:text-text-muted shadow-sm`} />
 
                 </div>
 
@@ -197,7 +192,7 @@ const ForgotPassword = () => {
               <button
               type="submit"
               disabled={loading}
-              className="w-full py-2 bg-brand-600 text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(124,58,237,0.3)] hover:shadow-[0_6px_20px_rgba(124,58,237,0.4)] flex items-center justify-center gap-3 hover:bg-brand-500 disabled:opacity-70 disabled:cursor-not-allowed mt-2 relative overflow-hidden group">
+              className="w-full py-2 bg-brand text-white font-black rounded-xl transition-all duration-300 shadow-[0_4px_14px_rgba(2,132,199,0.3)] hover:shadow-[0_6px_20px_rgba(2,132,199,0.4)] flex items-center justify-center gap-3 hover:bg-brand disabled:opacity-70 disabled:cursor-not-allowed mt-2 relative overflow-hidden group">
 
                 {loading ?
                 <span className="text-xs uppercase tracking-widest">
@@ -217,7 +212,7 @@ const ForgotPassword = () => {
             <div className="mt-5 pt-4 border-t border-slate-100 flex flex-col items-center">
               <Link
               to="/login"
-              className="inline-flex items-center gap-2 text-slate-400 hover:text-slate-600 font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
+              className="inline-flex items-center gap-2 text-text-muted hover:text-text-secondary font-black text-[9px] uppercase tracking-[0.4em] transition-colors group">
 
                 <ChevronLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
                 Back to Login

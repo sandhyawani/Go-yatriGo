@@ -1,20 +1,20 @@
 import { showToast } from "../../utils/showToast";
 import { DataGrid } from "@mui/x-data-grid";
-import CircularProgress from "@mui/material/CircularProgress";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-AlertTriangle,
-Ban,
-ChevronLeft,
-ChevronRight,
-Edit3,
-Eye,
-MoreHorizontal,
-Search,
-ShieldCheck,
-Trash2,
-FileText } from
-"lucide-react";
+  AlertTriangle,
+  Ban,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+  Eye,
+  MoreHorizontal,
+  Search,
+  ShieldCheck,
+  Trash2,
+  FileText,
+  Loader2,
+} from "lucide-react";
 import { createPortal } from "react-dom";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -160,7 +160,7 @@ const UserActionMenu = ({ user, isOpen, isBusy, onToggle, onAction }) => {
       aria-expanded={isOpen}
       className="user-action-trigger">
 
-        {isBusy ? <CircularProgress size={16} color="inherit" /> : <MoreHorizontal className="h-4 w-4" />}
+        {isBusy ? <Loader2 className="h-4 w-4 animate-spin text-brand" /> : <MoreHorizontal className="h-4 w-4" />}
       </button>
       {typeof document !== "undefined" && createPortal(menu, document.body)}
     </>);
@@ -271,7 +271,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       width: 'auto',
       imageHeight: 400,
       confirmButtonText: "Close",
-      confirmButtonColor: "#9333ea",
+      confirmButtonColor: "#0284c7",
       customClass: { popup: "moderation-dialog" }
     });
   };
@@ -287,7 +287,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       icon: "question",
       showCancelButton: true,
       confirmButtonText: actionLabel,
-      confirmButtonColor: "#9333ea",
+      confirmButtonColor: "#0284c7",
       customClass: { popup: "moderation-dialog" }
     });
 
@@ -364,7 +364,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
       inputAttributes: { "aria-label": "Warning message" },
       showCancelButton: true,
       confirmButtonText: "Send warning",
-      confirmButtonColor: "#7c3aed",
+      confirmButtonColor: "#0284c7",
       customClass: { popup: "moderation-dialog" },
       inputValidator: (value) => !value?.trim() ? "A warning message is required." : undefined
     });
@@ -451,19 +451,19 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
 
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
           <div>
-            <h2 className="text-lg font-semibold text-slate-900">Directory</h2>
-            <p className="text-xs text-slate-500">
+            <h2 className="text-lg font-semibold text-text-primary">Directory</h2>
+            <p className="text-xs text-text-muted">
               {filteredList.length} account{filteredList.length === 1 ? "" : "s"} visible
             </p>
           </div>
           <label className="directory-search group relative w-full md:max-w-[470px]">
-            <Search className="absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
+            <Search className="absolute left-3.5 top-1/2 h-[16px] w-[16px] -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-brand" />
             <input
             type="search"
             value={searchQuery}
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search users, email, role or location..."
-            className="h-9 w-full rounded-lg border border-brand-100 bg-white/55 pl-10 pr-3 text-xs text-slate-700 outline-none backdrop-blur-xl transition-all placeholder:text-slate-400 focus:border-brand-300 focus:bg-white/90 focus:ring-4 focus:ring-brand-500/10" />
+            className="h-9 w-full rounded-lg border border-brand-100 bg-white/55 pl-10 pr-3 text-xs text-text-primary outline-none backdrop-blur-xl transition-all placeholder:text-text-muted focus:border-brand-300 focus:bg-white/90 focus:ring-4 focus:ring-brand-500/10" />
 
           </label>
         </div>
@@ -511,27 +511,27 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
                           user.pic ||
                           `https://ui-avatars.com/api/?name=${encodeURIComponent(
                           user.name || "User"
-                          )}&background=ede9fe&color=6d28d9&bold=true`}
+                          )}&background=e0f7fc&color=0284c7&bold=true`}
 
                           alt="" />
 
                               <div className="min-w-0">
-                                <p className="truncate text-xs font-semibold text-slate-900">{user.name}</p>
-                                <p className="truncate text-[10px] text-slate-500">{user.email}</p>
+                                <p className="truncate text-xs font-semibold text-text-primary">{user.name}</p>
+                                <p className="truncate text-[10px] text-text-muted">{user.email}</p>
                               </div>
                             </div>
                           </td>
                           <td>
                             <span className={`user-role-badge ${role.className}`}>{role.label}</span>
                           </td>
-                           <td className="text-xs text-slate-500">{user.city && user.state ? `${user.city}, ${user.state}` : "Not specified"}</td>
+                           <td className="text-xs text-text-muted">{user.city && user.state ? `${user.city}, ${user.state}` : "Not specified"}</td>
                           <td>
                             <span className={`user-status ${status.className}`}>
                               <span />
                               {status.label}
                             </span>
                           </td>
-                          <td className="whitespace-nowrap text-xs text-slate-500">
+                          <td className="whitespace-nowrap text-xs text-text-muted">
                             {user.createdAt ? moment(user.createdAt).format("MMM D, YYYY") : "-"}
                           </td>
                           <td className="text-center">
@@ -550,13 +550,13 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
             </table>
             {!dataLoading && !visibleUsers.length &&
             <div className="my-4 rounded-xl border border-dashed border-brand-200 bg-white/50 p-6 text-center">
-                <p className="text-xs font-medium text-slate-700">No users match your search.</p>
-                <p className="mt-1 text-[10px] text-slate-400">Try a name, email address, role, or location.</p>
+                <p className="text-xs font-medium text-text-primary">No users match your search.</p>
+                <p className="mt-1 text-[10px] text-text-muted">Try a name, email address, role, or location.</p>
               </div>}
 
           </div>
 
-          <footer className="flex flex-col gap-2 border-t border-brand-100 px-2 pb-1 pt-2 text-[10px] text-slate-500 sm:flex-row sm:items-center sm:justify-between">
+          <footer className="flex flex-col gap-2 border-t border-brand-100 px-2 pb-1 pt-2 text-[10px] text-text-muted sm:flex-row sm:items-center sm:justify-between">
             <p>
               Showing {filteredList.length ? page * USER_PAGE_SIZE + 1 : 0}-
               {Math.min((page + 1) * USER_PAGE_SIZE, filteredList.length)} of {filteredList.length}
@@ -571,7 +571,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
 
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              <span className="min-w-[68px] text-center font-medium text-slate-600">
+              <span className="min-w-[68px] text-center font-medium text-text-secondary">
                 {page + 1} / {pageCount}
               </span>
               <button
@@ -605,7 +605,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
         <div className="flex items-center space-x-2">
             <button
           title="View"
-          className="rounded-lg bg-slate-100 p-1.5 text-slate-600 shadow-sm transition-all hover:bg-slate-900 hover:text-white"
+          className="rounded-lg bg-background p-1.5 text-text-secondary shadow-sm transition-all hover:bg-brand hover:text-white"
           onClick={() => handleView(params.row._id)}>
 
               <Eye className="h-3.5 w-3.5" />
@@ -623,7 +623,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
           <Link to={`/${path}/update/${params.row._id}`}>
                 <button
             title="Edit"
-            className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white">
+            className="rounded-lg bg-brand-50 p-1.5 text-brand shadow-sm transition-all hover:bg-brand hover:text-white">
 
                   <Edit3 className="h-3.5 w-3.5" />
                 </button>
@@ -633,7 +633,7 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
           <button
           title="Delete"
           onClick={() => handleDelete(params.row._id)}
-          className="rounded-lg bg-brand-50 p-1.5 text-brand-600 shadow-sm transition-all hover:bg-brand-600 hover:text-white">
+          className="rounded-lg bg-brand-50 p-1.5 text-brand shadow-sm transition-all hover:bg-brand hover:text-white">
 
                 <Trash2 className="h-3.5 w-3.5" />
               </button>}
@@ -648,9 +648,9 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
     <div className="mx-auto flex max-w-7xl flex-col gap-4 px-6 pb-12 pt-0">
       <div className="flex justify-end">
         <label className="group relative w-full md:max-w-sm">
-          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400 transition-colors group-focus-within:text-brand-600" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-text-muted transition-colors group-focus-within:text-brand" />
           <input
-          className="w-full rounded-lg border border-brand-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-slate-700 shadow-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
+          className="w-full rounded-lg border border-brand-200 bg-white py-2 pl-10 pr-4 text-[10px] font-medium text-text-primary shadow-sm outline-none transition-all focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10"
           placeholder="Filter data..."
           type="text"
           value={searchQuery}
@@ -674,23 +674,23 @@ const Datatable = ({ columns, onDirectoryChange, activeFilter = "all" }) => {
         sx={{
           border: "none",
           "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: "#faf5ff",
-            color: "#7e22ce",
+            backgroundColor: "#f0fbfd",
+            color: "#0369a1",
             fontSize: "9px",
             fontWeight: "800",
             textTransform: "uppercase",
             letterSpacing: "0.05em",
-            borderBottom: "1px solid #f3e8ff"
+            borderBottom: "1px solid #e0f7fc"
           },
           "& .MuiDataGrid-cell": {
-            borderBottom: "1px solid #faf5ff",
+            borderBottom: "1px solid #f0fbfd",
             color: "#475569",
             fontSize: "10px",
             fontWeight: "500"
           },
-          "& .MuiDataGrid-row:hover": { backgroundColor: "#faf5ff" },
+          "& .MuiDataGrid-row:hover": { backgroundColor: "#f0fbfd" },
           "& .MuiDataGrid-footerContainer": {
-            borderTop: "1px solid #f3e8ff",
+            borderTop: "1px solid #e0f7fc",
             minHeight: "36px"
           }
         }} />

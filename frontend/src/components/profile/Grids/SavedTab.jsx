@@ -30,7 +30,7 @@ export const SavedTab = ({
           No Saved Memories
         </h3>
         <p className="text-[13px] text-muted font-medium">
-          Posts and travel memories you bookmark will appear here.
+          Travel memories you bookmark will appear here.
         </p>
       </div>
     );

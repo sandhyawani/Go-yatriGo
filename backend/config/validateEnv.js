@@ -19,12 +19,12 @@ const validateEnv = () => {
   });
 
   if (missing.length > 0) {
-    logger.error(`[Fatal Startup Error] Missing required environment variables: ${missing.join(", ")}`);
+    logger.error(`Missing required environment variables: ${missing.join(", ")}`);
     process.exit(1);
   }
 
   if (!process.env.CLIENT_URL) {
-    logger.warn("[Startup Warning] CLIENT_URL is not set. CORS will fallback to default configurations.");
+    logger.warn("CLIENT_URL is not set. CORS will fallback to default configurations.");
   }
 };
 

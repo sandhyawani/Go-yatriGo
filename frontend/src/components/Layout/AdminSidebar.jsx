@@ -3,6 +3,7 @@ import { Link, NavLink } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import {
 ArrowLeft,
+Flag,
 LayoutDashboard,
 Mail,
 ShieldAlert,
@@ -14,7 +15,7 @@ X } from
 const navigation = [
 { label: "Overview", to: "/admin", end: true, Icon: LayoutDashboard },
 { label: "Verification Requests", to: "/admin/verifications", Icon: ShieldAlert, priority: true },
-{ label: "Reports & Moderation", to: "/admin/reports", Icon: ShieldAlert },
+{ label: "Reports & Moderation", to: "/admin/reports", Icon: Flag },
 { label: "User Directory", to: "/users", Icon: Users },
 { label: "Contact Requests", to: "/admin/contacts", Icon: Mail },
 { label: "Create Operator", to: "/adduser", Icon: UserPlus }];
@@ -35,10 +36,10 @@ const AdminSidebar = ({ isOpen, onClose }) => {
             <ShieldAlert className="h-4 w-4" />
           </span>
           <span>
-            <span className="block text-xs font-bold uppercase tracking-wider text-brand-600 font-heading">
+            <span className="block text-xs font-bold uppercase tracking-wider text-brand font-heading">
               Go YatriGo
             </span>
-            <span className="block text-[15px] font-semibold tracking-tight text-slate-900 font-sans">
+            <span className="block text-[15px] font-semibold tracking-tight text-text-primary font-sans">
               Admin Console
             </span>
           </span>
@@ -46,7 +47,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         <button
       type="button"
       onClick={onClose}
-      className="rounded-xl p-1.5 text-slate-400 hover:bg-brand-50 hover:text-brand-700 md:hidden"
+      className="rounded-xl p-1.5 text-text-muted hover:bg-brand-50 hover:text-brand-dark md:hidden"
       aria-label="Close navigation">
 
           <X className="h-5 w-5" />
@@ -55,7 +56,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
       <div className="overflow-y-auto flex-1 pr-1 space-y-4 custom-scrollbar">
         <div>
-          <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-slate-400">
+          <div className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-text-muted">
             Workspace
           </div>
           <nav className="space-y-1">
@@ -69,7 +70,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           `group relative flex items-center gap-3 overflow-hidden rounded-2xl px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
           isActive ?
           "bg-brand-50 text-brand-900 shadow-sm border border-brand-100" :
-          "text-slate-600 hover:bg-brand-50/50 hover:text-brand-700"
+          "text-text-secondary hover:bg-brand-50/50 hover:text-brand-dark"
           }`}>
 
 
@@ -83,7 +84,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
 
                     <Icon
               className={`h-[18px] w-[18px] ${
-              isActive ? "text-brand-600" : "text-slate-400 group-hover:text-brand-500"
+              isActive ? "text-brand" : "text-text-muted group-hover:text-brand-500"
               }`} />
 
                     <span className="min-w-0 flex-1">{label}</span>
@@ -103,7 +104,7 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       <div className="mt-auto border-t border-slate-100 pt-3 flex-shrink-0">
         <Link
       to="/"
-      className="flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+      className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand py-2.5 text-sm font-semibold text-white transition hover">
 
           <ArrowLeft className="h-4 w-4" />
           Back to User App

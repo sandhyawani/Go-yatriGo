@@ -6,7 +6,7 @@ export const JOURNEY_STATUS = {
     description: "Acclimatizing notes, checklists, and group budgets setup"
   },
   Upcoming: {
-    color: "bg-brand-50 text-brand-700 border-brand-200",
+    color: "bg-brand-50 text-brand-dark border-brand-200",
     themeColor: "brand",
     label: "Confirmed Upcoming",
     description: "Itinerary confirmed. Preparing gear and countdown tracker"
@@ -18,7 +18,7 @@ export const JOURNEY_STATUS = {
     description: "Trip active. Safety check-ins, coordination, and SOS online"
   },
   Completed: {
-    color: "bg-slate-50 text-slate-600 border-slate-200",
+    color: "bg-slate-50 text-text-secondary border-slate-200",
     themeColor: "slate",
     label: "Journey Complete",
     description: "Trip completed. Explore footprint highlights and replay logs"
@@ -27,6 +27,6 @@ export const JOURNEY_STATUS = {
     color: "bg-rose-50 text-rose-700 border-rose-200",
     themeColor: "rose",
     label: "Trip Cancelled",
-    description: "Expedition cancelled. Timelines and notes archived"
+    description: "Trip cancelled. Timelines and notes archived"
   }
 };

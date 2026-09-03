@@ -139,39 +139,39 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full sm:max-w-md bg-white dark:bg-slate-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="bg-white dark:bg-slate-900 p-5 border-b border-slate-100 dark:border-slate-800 text-slate-900 dark:text-white relative">
+        <div className="bg-white p-5 border-b border-slate-100 text-text-primary relative">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-background text-text-muted hover:text-text-primary transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-[#7C3AED] rounded-2xl shadow-md shadow-[#7C3AED]/20">
+            <div className="p-2.5 bg-brand rounded-2xl shadow-md shadow-brand/20">
               <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h3 className="text-base font-black text-slate-900 dark:text-white">
+              <h3 className="text-base font-black text-text-primary">
                 Journey Safety Check-In
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-text-muted font-medium">
                 Auto-syncs status with travel group & trusted contacts
               </p>
             </div>
           </div>
 
           {/* Action Tabs */}
-          <div className="flex bg-slate-100 dark:bg-slate-800/60 p-1 rounded-xl mt-4 text-xs font-bold">
+          <div className="flex bg-background p-1 rounded-xl mt-4 text-xs font-bold">
             <button
               type="button"
               onClick={() => setActiveTab("milestone")}
               className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === "milestone"
-                  ? "bg-white dark:bg-slate-900 text-[#7C3AED] shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  ? "bg-white text-brand shadow-xs"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -182,8 +182,8 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               onClick={() => setActiveTab("quick_safe")}
               className={`flex-1 py-2 rounded-lg transition-all flex items-center justify-center gap-1.5 ${
                 activeTab === "quick_safe"
-                  ? "bg-white dark:bg-slate-900 text-emerald-600 dark:text-emerald-400 shadow-xs"
-                  : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                  ? "bg-white text-emerald-600 shadow-xs"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
               <HeartHandshake className="w-3.5 h-3.5" />
@@ -198,10 +198,10 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
             {/* Sequential State Machine Progression */}
             <div>
               <div className="flex items-center justify-between mb-2.5">
-                <label className="text-xs font-extrabold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                <label className="text-xs font-extrabold text-text-primary uppercase tracking-wider">
                   Journey Progression
                 </label>
-                <span className="text-[10px] font-bold text-slate-400">
+                <span className="text-[10px] font-bold text-text-muted">
                   {completedMilestones.length} of {JOURNEY_MILESTONES.length} Completed
                 </span>
               </div>
@@ -218,10 +218,10 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                       key={milestone}
                       className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-3 ${
                         isCompleted
-                          ? "bg-emerald-50/60 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900/50 text-slate-700 dark:text-slate-300"
+                          ? "bg-emerald-50/60 border-emerald-200 text-text-primary"
                           : isNext
-                          ? "bg-[#7C3AED]/5 dark:bg-[#7C3AED]/15 border-[#7C3AED] ring-2 ring-[#7C3AED]/20 text-slate-900 dark:text-white shadow-xs"
-                          : "bg-slate-50 dark:bg-slate-800/30 border-slate-200/70 dark:border-slate-800 text-slate-400 dark:text-slate-500 opacity-75"
+                          ? "bg-brand/5 border-brand ring-2 ring-brand/20 text-text-primary shadow-xs"
+                          : "bg-slate-50 border-slate-200/70 text-text-muted opacity-75"
                       }`}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -230,8 +230,8 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                             isCompleted
                               ? "bg-emerald-500 text-white shadow-xs"
                               : isNext
-                              ? "bg-[#7C3AED] text-white shadow-xs animate-pulse"
-                              : "bg-slate-200 dark:bg-slate-700 text-slate-400 dark:text-slate-500"
+                              ? "bg-brand text-white shadow-xs animate-pulse"
+                              : "bg-slate-200 text-text-muted"
                           }`}
                         >
                           {isCompleted ? <CheckCircle className="w-4 h-4" /> : isNext ? (idx + 1) : <Lock className="w-3.5 h-3.5" />}
@@ -240,15 +240,15 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                           <span
                             className={`text-xs font-bold truncate block ${
                               isCompleted
-                                ? "text-emerald-900 dark:text-emerald-300"
+                                ? "text-emerald-900"
                                 : isNext
-                                ? "text-[#7C3AED] dark:text-purple-300 font-extrabold"
-                                : "text-slate-500 dark:text-slate-400"
+                                ? "text-brand font-extrabold"
+                                : "text-text-muted"
                             }`}
                           >
                             {milestone}
                           </span>
-                          <span className="text-[10px] text-slate-400 dark:text-slate-500 block truncate">
+                          <span className="text-[10px] text-text-muted block truncate">
                             {isCompleted
                               ? `Checked in ${detail?.time ? formatTime(detail.time) : ""}`
                               : isNext
@@ -259,17 +259,17 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                       </div>
 
                       {isCompleted && (
-                        <span className="px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-[10px] font-black uppercase tracking-wider shrink-0">
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider shrink-0">
                           Done
                         </span>
                       )}
                       {isNext && (
-                        <span className="px-2 py-0.5 rounded-md bg-[#7C3AED]/15 text-[#7C3AED] dark:text-purple-300 text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-md bg-brand/15 text-brand text-[10px] font-black uppercase tracking-wider shrink-0 flex items-center gap-1">
                           <ArrowRight className="w-3 h-3" /> Next
                         </span>
                       )}
                       {isFuture && (
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-600 shrink-0">
+                        <span className="text-[10px] font-bold text-text-muted shrink-0">
                           Locked
                         </span>
                       )}
@@ -280,12 +280,12 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
             </div>
 
             {isSafetyComplete ? (
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
                 <span className="text-xl">🎉</span>
-                <h4 className="text-xs font-extrabold text-emerald-800 dark:text-emerald-300">
+                <h4 className="text-xs font-extrabold text-emerald-800">
                   All Milestones Completed
                 </h4>
-                <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
+                <p className="text-[11px] text-emerald-600 font-medium">
                   Your journey has safely reached home.
                 </p>
               </div>
@@ -293,29 +293,29 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               <>
                 {/* Location Input */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center">
-                    <MapPin className="w-4 h-4 mr-1 text-[#7C3AED]" /> Checkpoint Location
+                  <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
+                    <MapPin className="w-4 h-4 mr-1 text-brand" /> Checkpoint Location
                   </label>
                   <input
                     type="text"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g. Pune Highway / Hotel Grand"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-[#7C3AED] outline-none"
+                    className="input-field"
                   />
                 </div>
 
                 {/* Optional Note */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center">
-                    <MessageSquare className="w-4 h-4 mr-1 text-[#7C3AED]" /> Optional note
+                  <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
+                    <MessageSquare className="w-4 h-4 mr-1 text-brand" /> Optional note
                   </label>
                   <textarea
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     placeholder="Add a short note about your check-in..."
                     rows="2"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-[#7C3AED] outline-none resize-none"
+                    className="input-field"
                   />
                 </div>
               </>
@@ -326,7 +326,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+                className="px-5 py-3 rounded-xl text-sm font-bold text-text-secondary bg-background hover transition-colors"
               >
                 Close
               </button>
@@ -334,7 +334,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                 <button
                   type="submit"
                   disabled={loading || !lifecycle.isOngoing}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs sm:text-sm font-bold shadow-lg shadow-[#7C3AED]/25 transition-all active:scale-[0.98] disabled:opacity-50 min-w-0"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand/25 transition-all active:scale-[0.98] disabled:opacity-50 min-w-0"
                 >
                   <CheckCircle className="w-4 h-4 shrink-0" />
                   <span className="truncate">
@@ -348,20 +348,20 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
 
         ) : (
           <form onSubmit={handleQuickSafeConfirm} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
-            <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 flex items-start gap-3">
-              <ShieldCheck className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
               <div>
-                <h4 className="text-xs font-black text-emerald-900 dark:text-emerald-200">
+                <h4 className="text-xs font-black text-emerald-900">
                   Quick Safety Confirmation
                 </h4>
-                <p className="text-xs text-emerald-700 dark:text-emerald-300/90 leading-relaxed mt-0.5">
+                <p className="text-xs text-emerald-700 leading-relaxed mt-0.5">
                   Reassure your travel group & trusted contacts that you are safe right now without advancing or skipping your journey milestones.
                 </p>
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center">
+              <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
                 <MapPin className="w-4 h-4 mr-1 text-emerald-500" /> Current Location
               </label>
               <input
@@ -369,12 +369,12 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 placeholder="e.g. Current Location / Hotel Lobby"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="input-field"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2 flex items-center">
+              <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
                 <MessageSquare className="w-4 h-4 mr-1 text-emerald-500" /> Quick Reassurance Note (Optional)
               </label>
               <textarea
@@ -382,7 +382,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                 onChange={(e) => setMessage(e.target.value)}
                 placeholder="e.g. All good here, grabbing dinner with the squad!"
                 rows="3"
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-slate-800 dark:text-slate-100 text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
+                className="input-field"
               />
             </div>
 
@@ -390,7 +390,7 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               <button
                 type="button"
                 onClick={onClose}
-                className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors"
+                className="px-5 py-3 rounded-xl text-sm font-bold text-text-secondary bg-background hover transition-colors"
               >
                 Cancel
               </button>

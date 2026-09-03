@@ -7,7 +7,7 @@ const rowClass = (danger, extra = "") =>
 "w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 text-left",
 danger ?
 "bg-white border border-rose-100 hover:bg-rose-50/50" :
-"bg-slate-50/80 hover:bg-slate-100/80",
+"bg-slate-50/80 hover:bg-background/80",
 extra]
 
 .filter(Boolean)
@@ -20,7 +20,7 @@ const SettingsRow = ({
   to,
   onClick,
   showChevron,
-  colorClass = "text-[#7C3AED] bg-[#F3E8FF]",
+  colorClass = "text-brand bg-brand-50",
   danger = false
 }) => {
   if (process.env.NODE_ENV !== "production" && !Icon) {
@@ -50,13 +50,13 @@ const SettingsRow = ({
 
         <div>
           <span
-        className={`text-sm font-semibold block ${danger ? "text-rose-600" : "text-[#1E293B]"}`}>
+        className={`text-sm font-semibold block ${danger ? "text-rose-600" : "text-text-primary"}`}>
 
             {title}
           </span>
           {subtitle &&
         <p
-        className={`text-xs mt-0.5 ${danger ? "text-rose-400" : "text-[#64748B]"}`}>
+        className={`text-xs mt-0.5 ${danger ? "text-rose-400" : "text-text-muted"}`}>
 
               {subtitle}
             </p>}
@@ -66,7 +66,7 @@ const SettingsRow = ({
 
       {chevronVisible &&
     <ChevronRight
-    className="w-5 h-5 text-slate-400 shrink-0"
+    className="w-5 h-5 text-text-muted shrink-0"
     aria-hidden="true" />}
 
 

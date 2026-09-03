@@ -751,7 +751,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.96 }}
       transition={{ duration: 0.25, ease: "easeOut" }}
-      className="relative flex w-full lg:max-w-[980px] max-h-[90dvh] lg:max-h-[92vh] min-h-0 sm:min-h-[480px] flex-col overflow-y-auto lg:overflow-visible rounded-t-3xl lg:rounded-[32px] border border-white/50 bg-white/95 text-slate-900 shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
+      className="relative flex w-full lg:max-w-[980px] max-h-[90dvh] lg:max-h-[92vh] min-h-0 sm:min-h-[480px] flex-col overflow-y-auto lg:overflow-visible rounded-t-3xl lg:rounded-[32px] border border-white/50 bg-white/95 text-text-primary shadow-[0_24px_70px_rgba(15,23,42,0.18)] backdrop-blur-xl">
 
             <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-200/70 px-4">
               <div className="flex flex-1 justify-start">
@@ -765,7 +765,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
               setMediaFiles([]);
               setCurrentMediaIndex(0);
             }}
-            className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-brand-600 active:scale-95"
+            className="rounded-full p-2 text-text-secondary transition-all hover:bg-background hover:text-brand active:scale-95"
             aria-label="Back">
 
                     <ArrowLeft className="h-5 w-5" />
@@ -777,7 +777,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
             setStep("crop") :
             setStep("upload")}
 
-            className="rounded-full p-2 text-slate-600 transition-all hover:bg-slate-100 hover:text-brand-600 active:scale-95"
+            className="rounded-full p-2 text-text-secondary transition-all hover:bg-background hover:text-brand active:scale-95"
             aria-label="Back">
 
                     <ArrowLeft className="h-5 w-5" />
@@ -832,7 +832,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 showToast.error("Failed to crop image.");
               }
             }}
-            className="text-[14px] font-bold text-brand-600 transition-all hover:text-brand-700 active:scale-95">
+            className="text-[14px] font-bold text-brand transition-all hover:text-brand-dark active:scale-95">
 
                     {mediaFiles.length > 1 &&
               mediaFiles.some(
@@ -845,7 +845,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
             <button
             onClick={handleSubmit}
             disabled={loading}
-            className="inline-flex items-center gap-1.5 rounded-full bg-brand-600 px-4 py-1.5 text-[13px] font-bold text-white transition-all hover:bg-brand-700 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60">
+            className="btn-primary">
 
                     {loading ?
               <Loader2 className="h-4 w-4 animate-spin" /> :
@@ -856,7 +856,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
             <button
             onClick={handleClose}
-            className="rounded-full p-2 text-slate-500 transition-all hover:bg-slate-100 hover:text-slate-900 active:scale-95"
+            className="rounded-full p-2 text-text-muted transition-all hover:bg-background hover:text-text-primary active:scale-95"
             aria-label="Close">
 
                     <X className="h-5 w-5" />
@@ -881,10 +881,10 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
             }`}>
 
                     <div className="mb-6 flex h-24 w-24 items-center justify-center rounded-[28px] bg-white shadow-xl shadow-brand-500/10">
-                      <ImagePlus className="h-11 w-11 text-brand-600" />
+                      <ImagePlus className="h-11 w-11 text-brand" />
                     </div>
 
-                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-brand-600 shadow-sm">
+                    <div className="mb-2 inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-xs font-extrabold uppercase tracking-[0.22em] text-brand shadow-sm">
                       <Sparkles className="h-4 w-4" />
                       Travel Memory
                     </div>
@@ -893,36 +893,33 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       Share your travel memory
                     </h2>
 
-                    <p className="mt-3 max-w-md text-sm font-medium leading-6 text-slate-500">
+                    <p className="mt-3 max-w-md text-sm font-medium leading-6 text-text-muted">
                       Upload a photo or video from your latest adventure and
                       inspire other travelers on Go YatriGo.
                     </p>
 
-                    {}
-                    {}
                     <div className="mt-7 sm:hidden flex gap-3 w-full">
                       <button
                 onClick={() => cameraInputRef.current?.click()}
-                className="flex-1 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95">
+                className="btn-primary">
 
                         📷 Camera
                       </button>
                       <button
                 onClick={() => fileInputRef.current?.click()}
-                className="flex-1 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95">
+                className="btn-primary">
 
                         🖼️ Gallery
                       </button>
                     </div>
-                    {}
                     <button
               onClick={() => fileInputRef.current?.click()}
-              className="hidden sm:block mt-7 rounded-2xl bg-brand-600 px-6 py-3 text-sm font-extrabold text-white shadow-lg shadow-brand-500/25 transition-all hover:-translate-y-0.5 hover:bg-brand-700 hover:shadow-brand-500/40 active:scale-95">
+              className="btn-primary">
 
                       Select Media
                     </button>
 
-                    <p className="mt-4 text-xs font-semibold text-slate-400">
+                    <p className="mt-4 text-xs font-semibold text-text-muted">
                       Drag & drop • JPG, PNG 10MB • MP4, WEBM 25MB • Up to 10
                       files
                     </p>
@@ -935,7 +932,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
               multiple
               onChange={handleFileChange} />
 
-                    {}
                     <input
               type="file"
               ref={cameraInputRef}
@@ -1014,7 +1010,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   <div className="flex flex-col border-t border-slate-200 bg-white px-5 py-4 w-full">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 w-full max-w-2xl mx-auto mb-4">
                       <div className="flex w-full items-center justify-between">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-12">
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider w-12">
                           Zoom
                         </span>
                         <input
@@ -1026,13 +1022,13 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   onChange={(e) => setZoom(Number(e.target.value))}
                   className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600" />
 
-                        <span className="text-xs font-bold text-brand-600 w-10 text-right">
+                        <span className="text-xs font-bold text-brand w-10 text-right">
                           {Math.round(zoom * 100)}%
                         </span>
                       </div>
 
                       <div className="flex w-full items-center justify-between">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider w-12">
+                        <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider w-12">
                           Rotate
                         </span>
                         <input
@@ -1044,7 +1040,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   onChange={(e) => setRotation(Number(e.target.value))}
                   className="h-1.5 flex-1 mx-3 cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600" />
 
-                        <span className="text-xs font-bold text-brand-600 w-10 text-right">
+                        <span className="text-xs font-bold text-brand w-10 text-right">
                           {rotation}°
                         </span>
                       </div>
@@ -1062,8 +1058,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   onClick={() => setAspect(item.value)}
                   className={`rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${
                   aspect === item.value ?
-                  "bg-brand-600 text-white shadow-md shadow-brand-500/25" :
-                  "bg-slate-50 text-slate-600 hover:bg-slate-100"
+                  "bg-brand text-white shadow-md shadow-brand-500/25" :
+                  "bg-slate-50 text-text-secondary hover:bg-background"
                   }`}>
 
                             {item.label}
@@ -1074,7 +1070,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       <div className="flex items-center gap-2">
                         <button
                   onClick={() => setShowGrid(!showGrid)}
-                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${showGrid ? "bg-brand-100 text-brand-700" : "bg-slate-50 text-slate-600 hover:bg-slate-100"}`}
+                  className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-[11px] font-bold transition-all active:scale-95 ${showGrid ? "bg-brand-100 text-brand-dark" : "bg-slate-50 text-text-secondary hover:bg-background"}`}
                   title="Toggle Grid">
 
                           <Sliders className="h-3 w-3" />{" "}
@@ -1085,7 +1081,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   onClick={() => {
                     setRotation((prev) => (prev + 90) % 360);
                   }}
-                  className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-slate-600 transition-all hover:bg-slate-100 active:scale-95">
+                  className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-1.5 text-[11px] font-bold text-text-secondary transition-all hover:bg-background active:scale-95">
 
                           <RotateCcw className="h-3 w-3" />{" "}
                           <span className="hidden sm:inline">90°</span>
@@ -1131,7 +1127,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
               mediaFiles[currentMediaIndex]?.preview}
 
               alt="Preview"
-              className="h-[260px] w-full object-contain bg-slate-100 md:h-full md:max-h-[500px]" /> :
+              className="h-[260px] w-full object-contain bg-background md:h-full md:max-h-[500px]" /> :
 
               null}
 
@@ -1141,7 +1137,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 <div
                 key={idx}
                 onClick={() => setCurrentMediaIndex(idx)}
-                className={`h-2 rounded-full cursor-pointer transition-all ${idx === currentMediaIndex ? "w-6 bg-brand-600" : "w-2 bg-slate-300 hover:bg-brand-400"}`} />
+                className={`h-2 rounded-full cursor-pointer transition-all ${idx === currentMediaIndex ? "w-6 bg-brand" : "w-2 bg-slate-300 hover:bg-brand-400"}`} />
 
                 )}
                       </div>}
@@ -1163,15 +1159,15 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                               <button
                       type="button"
                       onClick={() => setShowLocationPicker(false)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100">
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand transition-all hover:bg-brand-100">
 
                                 <ArrowLeft className="h-4 w-4" />
                               </button>
                               <div>
-                                <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                                <h3 className="text-base font-extrabold text-text-primary leading-tight">
                                   Add Location
                                 </h3>
-                                <p className="text-[11px] font-semibold text-slate-400 leading-tight">
+                                <p className="text-[11px] font-semibold text-text-muted leading-tight">
                                   Tag where this memory happened
                                 </p>
                               </div>
@@ -1179,7 +1175,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             <button
                     type="button"
                     onClick={() => setShowLocationPicker(false)}
-                    className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                    className="rounded-full p-1.5 text-text-muted hover:bg-background hover:text-text-secondary">
 
                               <X className="h-4 w-4" />
                             </button>
@@ -1191,7 +1187,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             disabled={isLocatingCurrent}
                             className="mb-3 flex w-full items-center gap-3 rounded-2xl border border-brand-200 bg-brand-50/80 p-2.5 text-left transition-all hover:border-brand-300 hover:bg-brand-100/70 hover:shadow-xs active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60 shrink-0"
                           >
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white shadow-xs">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white shadow-xs">
                               {isLocatingCurrent ? (
                                 <Loader2 className="h-4 w-4 animate-spin" />
                               ) : (
@@ -1202,28 +1198,28 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                               <span className="block truncate text-xs font-extrabold text-brand-900">
                                 {isLocatingCurrent ? "Locating you..." : "Use my current location"}
                               </span>
-                              <span className="block truncate text-[11px] font-medium text-brand-600">
+                              <span className="block truncate text-[11px] font-medium text-brand">
                                 {isLocatingCurrent ? "Fetching coordinates & address..." : "Detect your current city using GPS"}
                               </span>
                             </div>
                           </button>
 
                           <div className="relative mb-3 shrink-0">
-                            <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500" />
+                            <MapPin className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-500 pointer-events-none" />
                             <input
                               autoFocus
                               type="text"
                               placeholder="Search city, state, or type custom location..."
                               value={locationQuery}
                               onChange={(e) => handleLocationSearch(e.target.value)}
-                              className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs"
+                              className="input-field !pl-10 !pr-10"
                             />
 
                             {locationQuery && (
                               <button
                                 type="button"
                                 onClick={() => handleLocationSearch("")}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-muted hover:text-text-secondary"
                               >
                                 <X className="h-3.5 w-3.5" />
                               </button>
@@ -1243,14 +1239,14 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                                   }}
                                   className="group flex w-full items-center gap-3 rounded-2xl border border-brand-300 bg-brand-50/90 p-2.5 text-left transition-all hover:bg-brand-100 hover:shadow-xs active:scale-[0.99]"
                                 >
-                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-600 text-white transition-transform group-hover:scale-105">
+                                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-white transition-transform group-hover:scale-105">
                                     <MapPin className="h-4 w-4" />
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <span className="block truncate text-xs font-extrabold text-brand-900">
                                       Use "{locationQuery.trim()}"
                                     </span>
-                                    <span className="block truncate text-[11px] font-medium text-brand-600">
+                                    <span className="block truncate text-[11px] font-medium text-brand">
                                       Select this custom location
                                     </span>
                                   </div>
@@ -1259,9 +1255,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             )}
 
                             {searchingLocation ? (
-                              <div className="flex h-36 flex-col items-center justify-center gap-2.5 text-brand-600">
+                              <div className="flex h-36 flex-col items-center justify-center gap-2.5 text-brand">
                                 <Loader2 className="h-6 w-6 animate-spin" />
-                                <span className="text-xs font-bold text-slate-500">
+                                <span className="text-xs font-bold text-text-muted">
                                   Searching destinations...
                                 </span>
                               </div>
@@ -1269,7 +1265,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                               <>
                                 {!locationQuery.trim() && (
                                   <div className="mb-2">
-                                    <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                    <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-text-muted">
                                       🔥 Popular Destinations
                                     </p>
                                     <div className="flex flex-col gap-1.5">
@@ -1288,7 +1284,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-base shadow-2xs group-hover:scale-110 transition-transform">
                                             {dest.label.split(" ")[0]}
                                           </div>
-                                          <span className="min-w-0 flex-1 truncate text-xs font-bold text-slate-800 group-hover:text-brand-900">
+                                          <span className="min-w-0 flex-1 truncate text-xs font-bold text-text-primary group-hover:text-brand-900">
                                             {dest.label.split(" ").slice(1).join(" ")}
                                           </span>
                                         </button>
@@ -1299,7 +1295,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                                 {locationQuery.trim() && locationResults.length > 0 && (
                                   <div className="flex flex-col gap-1.5">
-                                    <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                    <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-text-muted">
                                       MATCHING PLACES
                                     </p>
                                     {locationResults.map((res, i) => {
@@ -1318,14 +1314,14 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                                           }}
                                           className="group flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-2.5 text-left transition-all hover:border-brand-200 hover:bg-brand-50/70 hover:shadow-2xs active:scale-[0.99]"
                                         >
-                                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-600 transition-transform group-hover:scale-105 group-hover:bg-brand-600 group-hover:text-white">
+                                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand transition-transform group-hover:scale-105 group-hover:bg-brand group-hover:text-white">
                                             <MapPin className="h-4 w-4" />
                                           </div>
                                           <span className="min-w-0 flex-1">
-                                            <span className="block truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
+                                            <span className="block truncate text-xs font-bold text-text-primary group-hover:text-brand-900">
                                               {placeName}
                                             </span>
-                                            <span className="mt-0.5 block truncate text-[11px] font-medium text-slate-500">
+                                            <span className="mt-0.5 block truncate text-[11px] font-medium text-text-muted">
                                               {secondaryText || res.display_name}
                                             </span>
                                           </span>
@@ -1337,11 +1333,11 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                                 {locationQuery.trim() && locationResults.length === 0 && !searchingLocation && (
                                   <div className="flex h-32 flex-col items-center justify-center text-center px-4">
-                                    <p className="text-xs font-bold text-slate-700">
+                                    <p className="text-xs font-bold text-text-primary">
                                       No exact matching map results
                                     </p>
-                                    <p className="mt-1 text-[11px] font-medium text-slate-400">
-                                      You can click <span className="font-bold text-brand-600">"Use '{locationQuery.trim()}'"</span> above to save this custom location.
+                                    <p className="mt-1 text-[11px] font-medium text-text-muted">
+                                      You can click <span className="font-bold text-brand">"Use '{locationQuery.trim()}'"</span> above to save this custom location.
                                     </p>
                                   </div>
                                 )}
@@ -1369,15 +1365,15 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                         audioRef.current.pause();
                         setIsPlayingMusic(false);
                       }}
-                      className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand-600 transition-all hover:bg-brand-100">
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-50 text-brand transition-all hover:bg-brand-100">
 
                                 <ArrowLeft className="h-4 w-4" />
                               </button>
                               <div>
-                                <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                                <h3 className="text-base font-extrabold text-text-primary leading-tight">
                                   Add Music
                                 </h3>
-                                <p className="text-[11px] font-semibold text-slate-400 leading-tight">
+                                <p className="text-[11px] font-semibold text-text-muted leading-tight">
                                   Search and attach soundtrack
                                 </p>
                               </div>
@@ -1389,7 +1385,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       if (audioRef.current) audioRef.current.pause();
                       setIsPlayingMusic(false);
                     }}
-                    className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600">
+                    className="rounded-full p-1.5 text-text-muted hover:bg-background hover:text-text-secondary">
 
                               <X className="h-4 w-4" />
                             </button>
@@ -1403,13 +1399,13 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                     placeholder="Search movies, artists, hits..."
                     value={musicQuery}
                     onChange={(e) => setMusicQuery(e.target.value)}
-                    className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-9 text-xs font-bold text-slate-800 outline-none transition-all placeholder:text-slate-400 focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-500/10 shadow-2xs" />
+                    className="input-field" />
 
                             {musicQuery &&
                     <button
                     type="button"
                     onClick={() => setMusicQuery("")}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600">
+                    className="absolute right-2.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-text-muted hover hover:text-text-secondary">
 
                                 <X className="h-3.5 w-3.5" />
                               </button>}
@@ -1427,8 +1423,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                     className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap shrink-0 transition-all ${
                     selectedMusicLang === lang.value ?
-                    "bg-brand-600 text-white shadow-xs" :
-                    "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    "bg-brand text-white shadow-xs" :
+                    "bg-background text-text-secondary hover"
                     }`}>
 
                                   {lang.label}
@@ -1439,9 +1435,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                           <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                             {isSearchingMusic ?
-                    <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand-600">
+                    <div className="flex h-40 flex-col items-center justify-center gap-2.5 text-brand">
                                 <Loader2 className="h-6 w-6 animate-spin" />
-                                <span className="text-xs font-bold text-slate-500">
+                                <span className="text-xs font-bold text-text-muted">
                                   Searching songs...
                                 </span>
                               </div> :
@@ -1449,13 +1445,13 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                     <>
                                 {!musicQuery.trim() &&
                       trendingMusic.length > 0 &&
-                      <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                      <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-text-muted">
                                       TRENDING SONGS
                                     </p>}
 
                                 {musicQuery.trim() &&
                       musicResults.length > 0 &&
-                      <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                      <p className="mb-2 px-1 text-[10px] font-extrabold uppercase tracking-wider text-text-muted">
                                       SEARCH RESULTS
                                     </p>}
 
@@ -1531,10 +1527,10 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                                         </div>
                                         <div className="min-w-0 flex-1 pr-2">
-                                          <p className="truncate text-xs font-bold text-slate-900 group-hover:text-brand-900">
+                                          <p className="truncate text-xs font-bold text-text-primary group-hover:text-brand-900">
                                             {song.title}
                                           </p>
-                                          <p className="truncate text-[11px] font-medium text-slate-500">
+                                          <p className="truncate text-[11px] font-medium text-text-muted">
                                             {song.artist}
                                           </p>
                                         </div>
@@ -1547,7 +1543,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           onClick={(e) =>
                           handlePreviewToggle(song, e)}
 
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-white shadow-2xs transition-all hover:scale-110">
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-brand text-white shadow-2xs transition-all hover:scale-110">
 
                                             <div className="flex h-3 items-end gap-[2px]">
                                               <motion.span
@@ -1582,7 +1578,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           onClick={(e) =>
                           handlePreviewToggle(song, e)}
 
-                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-slate-200/80 text-brand-600 shadow-2xs transition-all hover:bg-brand-600 hover:border-brand-600 hover:text-white hover:scale-110">
+                          className="flex h-8 w-8 items-center justify-center rounded-full bg-white border border-slate-200/80 text-brand shadow-2xs transition-all hover:bg-brand hover:border-brand hover:text-white hover:scale-110">
 
                                             <Play className="h-3.5 w-3.5 translate-x-[1px] fill-current" />
                                           </button>}
@@ -1596,13 +1592,13 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       .length === 0 &&
                       !isSearchingMusic &&
                       <div className="flex h-40 flex-col items-center justify-center text-center">
-                                      <div className="mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+                                      <div className="mb-2.5 flex h-11 w-11 items-center justify-center rounded-full bg-background text-text-muted">
                                         <Music2 className="h-5 w-5" />
                                       </div>
-                                      <p className="text-xs font-bold text-slate-800">
+                                      <p className="text-xs font-bold text-text-primary">
                                         No songs found.
                                       </p>
-                                      <p className="mt-0.5 text-[11px] font-medium text-slate-400">
+                                      <p className="mt-0.5 text-[11px] font-medium text-text-muted">
                                         Try searching for another song or artist
                                       </p>
                                     </div>}
@@ -1622,7 +1618,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-brand-100" /> :
 
 
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-extrabold text-white ring-2 ring-brand-100">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white ring-2 ring-brand-100">
                           {username?.charAt(0)?.toUpperCase() || "T"}
                         </div>}
 
@@ -1631,8 +1627,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                         <h4 className="text-sm font-extrabold text-slate-950">
                           {username}
                         </h4>
-                        <p className="text-xs font-semibold text-slate-400">
-                          Posting publicly
+                        <p className="text-xs font-semibold text-text-muted">
+                          Sharing memory publicly
                         </p>
                       </div>
                     </div>
@@ -1643,14 +1639,14 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 value={postTitle}
                 onChange={(e) => setPostTitle(e.target.value)}
                 placeholder="Give your memory a title... (optional)"
-                className="w-full bg-transparent text-sm font-bold text-slate-900 outline-none placeholder:text-slate-400 mb-2 border-b border-slate-200/50 pb-2" />
+                className="w-full bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-muted mb-2 border-b border-slate-200/50 pb-2" />
 
                       <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="Write a caption about this journey... Use #hashtags to automatically tag it!"
                 maxLength={2200}
-                className="min-h-[90px] flex-1 resize-none bg-transparent text-sm font-medium leading-6 text-slate-800 outline-none placeholder:text-slate-400" />
+                className="min-h-[90px] flex-1 resize-none bg-transparent text-sm font-medium leading-6 text-text-primary outline-none placeholder:text-text-muted" />
 
 
                       {extractedTags.length > 0 &&
@@ -1658,7 +1654,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           {extractedTags.map((tag) =>
                   <span
                   key={tag}
-                  className="text-[10px] font-bold text-brand-600 bg-brand-100 px-2 py-0.5 rounded-full">
+                  className="text-[10px] font-bold text-brand bg-brand-100 px-2 py-0.5 rounded-full">
 
                               #{tag}
                             </span>
@@ -1678,8 +1674,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       }}
                       className={`rounded-full p-2 transition-all ${
                       showEmojiPicker ?
-                      "bg-brand-100 text-brand-600" :
-                      "text-slate-400 hover:bg-white hover:text-brand-600"
+                      "bg-brand-100 text-brand" :
+                      "text-text-muted hover:bg-white hover:text-brand"
                       }`}>
 
                               <Smile className="h-4 w-4" />
@@ -1721,8 +1717,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       }}
                       className={`rounded-full p-2 transition-all ${
                       showLocationPicker ?
-                      "bg-brand-100 text-brand-600" :
-                      "text-slate-400 hover:bg-white hover:text-brand-600"
+                      "bg-brand-100 text-brand" :
+                      "text-text-muted hover:bg-white hover:text-brand"
                       }`}>
 
                               <MapPin className="h-4 w-4" />
@@ -1739,8 +1735,8 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       }}
                       className={`rounded-full p-2 transition-all ${
                       showMusicPicker ?
-                      "bg-brand-100 text-brand-600" :
-                      "text-slate-400 hover:bg-white hover:text-brand-600"
+                      "bg-brand-100 text-brand" :
+                      "text-text-muted hover:bg-white hover:text-brand"
                       }`}>
 
                               <Music2 className="h-4 w-4" />
@@ -1748,13 +1744,13 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           </div>
                         </div>
 
-                        <span className="text-xs font-bold text-slate-400">
+                        <span className="text-xs font-bold text-text-muted">
                           {caption.length}/2200
                         </span>
                       </div>
 
                       {location &&
-                <div className="mt-3 flex w-fit max-w-full items-center gap-1 rounded-xl bg-brand-50 px-3 py-2 text-[11px] font-bold text-brand-600">
+                <div className="mt-3 flex w-fit max-w-full items-center gap-1 rounded-xl bg-brand-50 px-3 py-2 text-[11px] font-bold text-brand">
                           <MapPin className="h-3.5 w-3.5 shrink-0" />
                           <span className="truncate">
                             {location.length > 42 ?
@@ -1763,7 +1759,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           </span>
                           <button
                   onClick={() => setLocation("")}
-                  className="ml-1 text-slate-400 transition-all hover:text-rose-500">
+                  className="ml-1 text-text-muted transition-all hover:text-rose-500">
 
                             <X className="h-3.5 w-3.5" />
                           </button>
@@ -1821,7 +1817,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                                 </span>}
 
                             </span>
-                            <span className="truncate text-[10px] font-medium text-slate-500">
+                            <span className="truncate text-[10px] font-medium text-text-muted">
                               {selectedMusic.title}
                             </span>
                           </div>
@@ -1846,7 +1842,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 onClick={() =>
                 setShowAdvancedSettings(!showAdvancedSettings)}
 
-                className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold text-slate-700 transition-all hover:bg-slate-100">
+                className="flex items-center justify-between rounded-2xl bg-slate-50 px-4 py-3 text-xs font-bold text-text-primary transition-all hover:bg-background">
 
                         Advanced Settings
                         <span
@@ -1866,7 +1862,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                             <div className="flex flex-col gap-3 p-4">
                               <label className="flex cursor-pointer items-center justify-between">
-                                <span className="text-sm font-semibold text-slate-800">
+                                <span className="text-sm font-semibold text-text-primary">
                                   Hide like counts
                                 </span>
                                 <div className="relative inline-flex items-center">
@@ -1878,7 +1874,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
 
                           className="peer sr-only" />
 
-                                  <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand-600 peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
+                                  <div className="h-6 w-11 rounded-full bg-slate-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-gray-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-brand peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
                                 </div>
                               </label>
                             </div>
@@ -1894,15 +1890,15 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
             {loading &&
         <div className="absolute inset-0 z-[100000] flex items-center justify-center rounded-[32px] bg-white/65 backdrop-blur-sm">
                 <div className="flex flex-col items-center gap-4 rounded-3xl bg-white px-8 py-6 shadow-2xl w-[280px]">
-                  <Loader2 className="h-9 w-9 animate-spin text-brand-600" />
+                  <Loader2 className="h-9 w-9 animate-spin text-brand" />
                   <div className="flex flex-col items-center gap-1.5 w-full">
-                    <p className="text-sm font-extrabold text-slate-700 text-center">
+                    <p className="text-sm font-extrabold text-text-primary text-center">
                       {uploadProgress > 0 && uploadProgress < 100 ? `Uploading (${uploadProgress}%)` : "Sharing your memory..."}
                     </p>
                     {uploadProgress > 0 && uploadProgress < 100 &&
-              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div className="h-1.5 w-full bg-background rounded-full overflow-hidden">
                         <div
-                className="h-full bg-brand-600 transition-all duration-300 rounded-full"
+                className="h-full bg-brand transition-all duration-300 rounded-full"
                 style={{ width: `${uploadProgress}%` }} />
 
                       </div>}

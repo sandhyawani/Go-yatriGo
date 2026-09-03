@@ -179,63 +179,24 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/health", require("./routes/healthRoutes"));
-app.use("/health", require("./routes/healthRoutes"));
-
 app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/auth", require("./routes/authRoutes"));
-
 app.use("/api/users", require("./routes/userRoutes"));
-app.use("/users", require("./routes/userRoutes"));
-
-
 app.use("/api/chat", require("./routes/chatRoutes"));
-app.use("/chat", require("./routes/chatRoutes"));
-
 app.use("/api/social", require("./routes/socialTravelRoute"));
-app.use("/social", require("./routes/socialTravelRoute"));
-
 app.use("/api/posts", require("./routes/postRoutes"));
-app.use("/posts", require("./routes/postRoutes"));
-
 app.use("/api/stories", require("./routes/storyRoutes"));
-app.use("/stories", require("./routes/storyRoutes"));
-
 app.use("/api/admin", require("./routes/adminRoutes"));
-app.use("/admin", require("./routes/adminRoutes"));
-
 app.use("/api/contact", require("./routes/contactRoutes"));
-app.use("/contact", require("./routes/contactRoutes"));
-
 app.use("/api/emergency", require("./routes/emergencyRoutes"));
-app.use("/emergency", require("./routes/emergencyRoutes"));
-
 app.use("/api/notifications", require("./routes/notificationRoutes"));
-app.use("/notifications", require("./routes/notificationRoutes"));
-
 app.use("/api/support", require("./routes/supportRoutes"));
-app.use("/support", require("./routes/supportRoutes"));
-
 app.use("/api/upload", require("./routes/uploadRoute"));
-app.use("/upload", require("./routes/uploadRoute"));
-
 app.use("/api/security", require("./routes/securityRoutes"));
-app.use("/security", require("./routes/securityRoutes"));
-
 app.use("/api/settings", require("./routes/settings"));
-app.use("/settings", require("./routes/settings"));
-
 app.use("/api/legal", require("./routes/legal"));
-app.use("/legal", require("./routes/legal"));
-
-
 app.use("/api/journeys", require("./routes/journeyRoutes"));
-app.use("/journeys", require("./routes/journeyRoutes"));
-
 app.use("/api/music", require("./routes/musicRoute"));
-app.use("/music", require("./routes/musicRoute"));
-
 app.use("/api/trip-mates", require("./routes/tripMateRoutes"));
-app.use("/trip-mates", require("./routes/tripMateRoutes"));
 
 app.use(notFound);
 app.use(errorHandler);
@@ -464,6 +425,10 @@ io.on("connection", (socket) => {
 
   socket.on("stop_typing", (data) => {
     socket.to(data.roomId).emit("not_typing", data);
+  });
+
+  socket.on("message_reaction", (data) => {
+    socket.to(data.roomId).emit("message_reaction_updated", data);
   });
 
   socket.on("mark_messages_read", async (data) => {

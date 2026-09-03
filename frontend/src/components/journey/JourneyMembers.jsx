@@ -239,21 +239,27 @@ const JourneyMembers = ({
         key={userIdStr}
         className={`p-3.5 sm:p-4 rounded-2xl border transition-all duration-200 flex flex-col justify-between ${
           isSelf
-            ? "bg-gradient-to-br from-brand-500/10 via-white dark:via-slate-900 to-brand-500/5 border-brand-300 dark:border-brand-800 shadow-sm"
-            : "bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-slate-200/80 dark:border-slate-800 hover:border-[#7C3AED]/40 shadow-xs"
+            ? "bg-gradient-to-br from-brand-500/10 via-white to-brand-500/5 border-brand-300 shadow-sm"
+            : "bg-white/90 backdrop-blur-md border-slate-200/80 hover:border-brand/40 shadow-xs"
         }`}
       >
         {/* Main Member Summary Row */}
         <div className="flex items-center justify-between gap-2 w-full">
-          <div className="flex items-center gap-3 min-w-0 pr-1">
+          <div
+            onClick={() => {
+              const memberUserId = u._id || u.id || (typeof u === "string" ? u : null);
+              if (memberUserId) navigate(`/profile/${memberUserId}`);
+            }}
+            className="flex items-center gap-3 min-w-0 pr-1 cursor-pointer group/member transition-opacity hover:opacity-90"
+          >
             <div className="relative shrink-0">
               <Avatar
                 user={u}
-                className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-500/20 shadow-xs"
+                className="w-10 h-10 rounded-xl object-cover ring-1 ring-brand-500/20 shadow-xs group-hover/member:ring-brand"
               />
               {u.online && (
                 <span
-                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900"
+                  className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white"
                   title="Online"
                 />
               )}
@@ -261,16 +267,16 @@ const JourneyMembers = ({
 
             <div className="min-w-0">
               <div className="flex items-center gap-1.5 flex-wrap">
-                <h4 className="text-xs font-black text-slate-900 dark:text-white truncate">
+                <h4 className="text-xs font-black text-text-primary truncate group-hover/member:text-brand transition-colors">
                   {u.name || "Traveler"}
                 </h4>
                 {isSelf && (
-                  <span className="text-[9px] bg-[#7C3AED] text-white px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
+                  <span className="text-[9px] bg-brand text-white px-1.5 py-0.5 rounded font-black tracking-wider uppercase">
                     YOU
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 font-medium">
+              <p className="text-[11px] text-text-muted line-clamp-1 font-medium">
                 {u.bio || "Passionate travel explorer"}
               </p>
             </div>
@@ -278,19 +284,19 @@ const JourneyMembers = ({
 
           <div className="flex items-center gap-1.5 shrink-0">
             {standardRole === "Host" && (
-              <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border border-amber-200 dark:border-amber-800/60">
+              <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border border-amber-200">
                 <Crown className="w-3 h-3 stroke-[2.5] text-amber-500" /> Host
               </span>
             )}
 
             {standardRole === "Co-Leader" && (
-              <span className="px-2.5 py-1 rounded-lg bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border border-purple-200 dark:border-purple-800/60">
-                <ShieldAlert className="w-3 h-3 stroke-[2.5] text-purple-500" /> Co-Leader
+              <span className="px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 text-[9px] font-bold uppercase tracking-wider flex items-center gap-1 border border-primary-200">
+                <ShieldAlert className="w-3 h-3 stroke-[2.5] text-primary-500" /> Co-Leader
               </span>
             )}
 
             {standardRole === "Member" && (
-              <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 text-[9px] font-bold uppercase tracking-wider border border-slate-200 dark:border-slate-700">
+              <span className="px-2.5 py-1 rounded-lg bg-background text-text-primary text-[9px] font-bold uppercase tracking-wider border border-slate-200">
                 Member
               </span>
             )}
@@ -299,13 +305,13 @@ const JourneyMembers = ({
               <button
                 type="button"
                 onClick={() => setOpenMenuId(isMenuOpen ? null : userIdStr)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="p-1.5 rounded-lg text-text-muted hover:text-text-primary hover:bg-background transition-colors"
                 title={isMenuOpen ? "Collapse Member Options" : "Expand Member Options"}
                 aria-expanded={isMenuOpen}
               >
                 <ChevronDown
                   className={`w-3.5 h-3.5 transition-transform duration-200 ${
-                    isMenuOpen ? "rotate-180 text-[#7C3AED]" : ""
+                    isMenuOpen ? "rotate-180 text-brand" : ""
                   }`}
                 />
               </button>
@@ -315,7 +321,7 @@ const JourneyMembers = ({
 
         {/* In-Flow Expanded Actions Panel */}
         {isMenuOpen && hasActions && (
-          <div className="mt-3 pt-2.5 border-t border-slate-100 dark:border-slate-800/80 space-y-1.5 animate-fade-in text-[11px] font-semibold">
+          <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5 animate-fade-in text-[11px] font-semibold">
             {canManage && (
               <>
                 {/* Co-Leader Actions (Host only) */}
@@ -323,9 +329,9 @@ const JourneyMembers = ({
                   <button
                     type="button"
                     onClick={() => handleAssignCoLeader(userIdStr)}
-                    className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/60 hover:bg-[#7C3AED]/10 hover:text-[#7C3AED] dark:hover:bg-[#7C3AED]/20 dark:hover:text-white flex items-center gap-2 transition-colors"
+                    className="w-full px-3 py-2 rounded-xl text-left text-text-primary bg-slate-50 hover:bg-brand/10 hover:text-brand:bg-brand/20:text-white flex items-center gap-2 transition-colors"
                   >
-                    <Award className="w-3.5 h-3.5 text-[#7C3AED]" /> Assign Co-Leader
+                    <Award className="w-3.5 h-3.5 text-brand" /> Assign Co-Leader
                   </button>
                 )}
 
@@ -333,9 +339,9 @@ const JourneyMembers = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveCoLeader(userIdStr)}
-                    className="w-full px-3 py-2 rounded-xl text-left text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors"
+                    className="w-full px-3 py-2 rounded-xl text-left text-text-primary bg-slate-50 hover:bg-background flex items-center gap-2 transition-colors"
                   >
-                    <UserCheck className="w-3.5 h-3.5 text-slate-400" /> Remove Co-Leader
+                    <UserCheck className="w-3.5 h-3.5 text-text-muted" /> Remove Co-Leader
                   </button>
                 )}
 
@@ -349,7 +355,7 @@ const JourneyMembers = ({
                     });
                     setOpenMenuId(null);
                   }}
-                  className="w-full px-3 py-2 rounded-xl text-left text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 flex items-center gap-2 transition-colors font-bold"
+                  className="w-full px-3 py-2 rounded-xl text-left text-amber-700 bg-amber-50 hover:bg-amber-100:bg-amber-900/50 flex items-center gap-2 transition-colors font-bold"
                 >
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-500 shrink-0" />
                   <span>Send Warning</span>
@@ -364,7 +370,7 @@ const JourneyMembers = ({
                         handleRoleChange(userIdStr, "Organizer");
                       }
                     }}
-                    className="w-full px-3 py-2 rounded-xl text-left text-amber-700 dark:text-amber-300 bg-amber-50/50 dark:bg-amber-950/30 hover:bg-amber-50 dark:hover:bg-amber-950/50 flex items-center gap-2 transition-colors"
+                    className="w-full px-3 py-2 rounded-xl text-left text-amber-700 bg-amber-50/50 hover:bg-amber-50:bg-amber-950/50 flex items-center gap-2 transition-colors"
                   >
                     <Crown className="w-3.5 h-3.5 text-amber-500" /> Transfer Host Role
                   </button>
@@ -380,7 +386,7 @@ const JourneyMembers = ({
                         setOpenMenuId(null);
                       }
                     }}
-                    className="w-full px-3 py-2 rounded-xl text-left text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/30 hover:bg-rose-50 dark:hover:bg-rose-950/50 flex items-center gap-2 font-bold transition-colors"
+                    className="w-full px-3 py-2 rounded-xl text-left text-rose-600 bg-rose-50/50 hover:bg-rose-50:bg-rose-950/50 flex items-center gap-2 font-bold transition-colors"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-rose-500" /> Remove from Roster
                   </button>
@@ -392,7 +398,7 @@ const JourneyMembers = ({
               <button
                 type="button"
                 onClick={handleLeaveJourney}
-                className="w-full px-3 py-2 rounded-xl text-left text-rose-600 dark:text-rose-400 bg-rose-50/50 dark:bg-rose-950/30 hover:bg-rose-50 dark:hover:bg-rose-950/50 flex items-center gap-2 font-bold transition-colors"
+                className="w-full px-3 py-2 rounded-xl text-left text-rose-600 bg-rose-50/50 hover:bg-rose-50:bg-rose-950/50 flex items-center gap-2 font-bold transition-colors"
               >
                 <XCircle className="w-3.5 h-3.5 text-rose-500" /> Leave Journey
               </button>
@@ -406,20 +412,20 @@ const JourneyMembers = ({
   return (
     <div className="space-y-5 animate-fade-in pb-8">
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-brand-600/10 via-brand-600/10 to-brand-600/10 dark:from-brand-900/40 dark:via-brand-900/40 dark:to-brand-900/40 border border-brand-200/60 dark:border-brand-800/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
-        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-brand-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-brand-600/10 via-brand-600/10 to-brand-600/10 border border-brand-200/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
+        <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-brand-100 dark:bg-brand-900/60 text-[#7C3AED] dark:text-brand-300 flex items-center justify-center shrink-0 border border-brand-200/50">
+          <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand flex items-center justify-center shrink-0 border border-brand-200/50">
             <Users className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <h3 className="text-base sm:text-lg font-black text-slate-900 dark:text-white tracking-tight leading-none">
+            <h3 className="text-base sm:text-lg font-black text-text-primary tracking-tight leading-none">
               Journey Members ({journey?.members?.length ?? 0})
             </h3>
-            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium mt-1">
+            <p className="text-[11px] text-text-muted font-medium mt-1">
               Type:{" "}
-              <span className="font-extrabold text-[#7C3AED] uppercase">
+              <span className="font-extrabold text-brand uppercase">
                 {journey?.journeyType || "Private Journey"}
               </span>
             </p>
@@ -431,7 +437,7 @@ const JourneyMembers = ({
             onClick={() => {
               navigate(journey?.chatRoomId ? `/social/chat/${journey.chatRoomId}` : `/social/chat`);
             }}
-            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all border shadow-xs bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 text-[#7C3AED] border-slate-200 dark:border-slate-700 active:scale-95"
+            className="flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-black transition-all border shadow-xs bg-white hover text-brand border-slate-200 active:scale-95"
             title="Open Group Chat"
           >
             <MessageSquare className="w-3.5 h-3.5" />
@@ -440,7 +446,7 @@ const JourneyMembers = ({
           {canInvite && (
             <button
               onClick={onInviteClick}
-              className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#7C3AED] to-[#7c3aed] hover:from-[#7c3aed] hover:to-[#7C3AED] text-white text-xs font-black shadow-md shadow-[#7C3AED]/20 transition-all active:scale-95 group"
+              className="flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand text-white text-xs font-black shadow-md shadow-brand/20 transition-all active:scale-95 group"
             >
               <UserPlus className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />{" "}
               Invite Companions
@@ -452,7 +458,7 @@ const JourneyMembers = ({
       {/* Journey Host Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
-          <h4 className="text-[11px] font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-1.5">
+          <h4 className="text-[11px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
             <Crown className="w-3.5 h-3.5 stroke-[2.5]" /> Journey Host
           </h4>
         </div>
@@ -465,7 +471,7 @@ const JourneyMembers = ({
       {coLeadersList.length > 0 && (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
-            <h4 className="text-[11px] font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-[11px] font-black text-primary-600 uppercase tracking-wider flex items-center gap-1.5">
               <ShieldAlert className="w-3.5 h-3.5 stroke-[2.5]" /> Co-Leaders
             </h4>
           </div>
@@ -479,7 +485,7 @@ const JourneyMembers = ({
       {regularMembersList.length > 0 ? (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
-            <h4 className="text-[11px] font-black text-brand-600 dark:text-brand-400 uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-[11px] font-black text-brand uppercase tracking-wider flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 stroke-[2.5]" /> Members (
               {regularMembersList.length})
             </h4>
@@ -489,14 +495,14 @@ const JourneyMembers = ({
           </div>
         </div>
       ) : (
-        <div className="py-8 px-6 text-center bg-white dark:bg-slate-900 rounded-2xl border border-dashed border-slate-200 dark:border-slate-800 space-y-2 mt-3">
-          <div className="w-10 h-10 rounded-xl bg-[#7C3AED]/10 text-[#7C3AED] flex items-center justify-center mx-auto">
+        <div className="py-8 px-6 text-center bg-white rounded-2xl border border-dashed border-slate-200 space-y-2 mt-3">
+          <div className="w-10 h-10 rounded-xl bg-brand/10 text-brand flex items-center justify-center mx-auto">
             <UserPlus className="w-5 h-5" />
           </div>
-          <h4 className="text-sm font-bold text-slate-800 dark:text-slate-100">
+          <h4 className="text-sm font-bold text-text-primary">
             {isOngoing ? "Journey Roster Locked" : "Build your travel group"}
           </h4>
-          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed font-medium">
+          <p className="text-xs text-text-muted max-w-sm mx-auto leading-relaxed font-medium">
             {isOngoing
               ? "This journey is in progress. The roster is locked."
               : "Invite companions to coordinate plans, check-ins and memories."}
@@ -504,7 +510,7 @@ const JourneyMembers = ({
           {canInvite && (
             <button
               onClick={onInviteClick}
-              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7C3AED] hover:bg-[#7c3aed] text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+              className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand text-white text-xs font-bold shadow-sm transition-all active:scale-95"
             >
               <UserPlus className="w-3.5 h-3.5" /> Invite Companions
             </button>
@@ -514,7 +520,7 @@ const JourneyMembers = ({
 
       {/* Pending Invitations (Upcoming only) */}
       {!isOngoing && isHost && invitations.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between px-1">
             <h4 className="text-[11px] font-black text-amber-500 uppercase tracking-wider flex items-center gap-1.5">
               <Clock className="w-3.5 h-3.5 animate-pulse stroke-[2.5]" />{" "}
@@ -524,22 +530,30 @@ const JourneyMembers = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
             {invitations.map((inv) => {
               const u = inv.inviteeId || {};
+              const inviteeId = u._id || u.id || (typeof u === "string" ? u : null);
               return (
                 <div
                   key={inv._id}
-                  className="bg-gradient-to-br from-amber-500/10 via-white dark:via-slate-900 to-amber-500/5 p-3 rounded-2xl border border-amber-200/80 dark:border-amber-900/40 flex items-center justify-between shadow-xs"
+                  className="bg-gradient-to-br from-amber-500/10 via-white to-amber-500/5 p-3 rounded-2xl border border-amber-200/80 flex items-center justify-between shadow-xs"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 pr-1.5">
+                  <div
+                    onClick={() => {
+                      if (inviteeId) navigate(`/profile/${inviteeId}`);
+                    }}
+                    className={`flex items-center gap-2.5 min-w-0 pr-1.5 ${
+                      inviteeId ? "cursor-pointer group/inv transition-opacity hover:opacity-90" : ""
+                    }`}
+                  >
                     <Avatar
                       user={u}
-                      className="w-9 h-9 rounded-xl object-cover grayscale opacity-80 shrink-0"
+                      className="w-9 h-9 rounded-xl object-cover grayscale opacity-80 shrink-0 group-hover/inv:ring-1 group-hover/inv:ring-amber-400"
                     />
 
                     <div className="min-w-0">
-                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block truncate">
+                      <span className="text-xs font-extrabold text-text-primary block truncate group-hover/inv:text-brand transition-colors">
                         {u.name || u.email}
                       </span>
-                      <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold flex items-center gap-1 mt-0.5">
+                      <span className="text-[10px] text-amber-600 font-bold flex items-center gap-1 mt-0.5">
                         <Clock className="w-2.5 h-2.5 shrink-0" /> Awaiting
                         Acceptance
                       </span>
@@ -550,7 +564,7 @@ const JourneyMembers = ({
                     <button
                       type="button"
                       onClick={() => handleResendInvite(inv._id)}
-                      className="p-2 rounded-lg bg-white dark:bg-slate-800 text-brand-600 hover:bg-brand-50 dark:hover:bg-slate-700 transition-all shadow-xs border border-slate-200/60 dark:border-slate-700/60"
+                      className="p-2 rounded-lg bg-white text-brand hover:bg-brand-50 transition-all shadow-xs border border-slate-200/60"
                       title="Resend Invite"
                     >
                       <RefreshCw className="w-3.5 h-3.5" />
@@ -558,7 +572,7 @@ const JourneyMembers = ({
                     <button
                       type="button"
                       onClick={() => handleCancelInvite(inv._id)}
-                      className="p-2 rounded-lg bg-white dark:bg-slate-800 text-rose-600 hover:bg-rose-50 dark:hover:bg-slate-700 transition-all shadow-xs border border-slate-200/60 dark:border-slate-700/60"
+                      className="p-2 rounded-lg bg-white text-rose-600 hover:bg-rose-50 transition-all shadow-xs border border-slate-200/60"
                       title="Cancel Invite"
                     >
                       <XCircle className="w-3.5 h-3.5" />
@@ -573,9 +587,9 @@ const JourneyMembers = ({
 
       {/* Pending Join Requests (Upcoming only) */}
       {!isOngoing && isHost && joinRequests.length > 0 && (
-        <div className="space-y-3 pt-4 border-t border-slate-200 dark:border-slate-800">
+        <div className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between px-1">
-            <h4 className="text-[11px] font-black text-[#7C3AED] uppercase tracking-wider flex items-center gap-1.5">
+            <h4 className="text-[11px] font-black text-brand uppercase tracking-wider flex items-center gap-1.5">
               <UserPlus className="w-3.5 h-3.5 stroke-[2.5]" />{" "}
               Pending Join Requests ({joinRequests.length})
             </h4>
@@ -583,22 +597,30 @@ const JourneyMembers = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 max-h-56 overflow-y-auto pr-1">
             {joinRequests.map((req) => {
               const u = req.userId || {};
+              const requesterId = u._id || u.id || (typeof u === "string" ? u : null);
               return (
                 <div
                   key={req._id}
-                  className="bg-gradient-to-br from-[#7C3AED]/10 via-white dark:via-slate-900 to-[#7C3AED]/5 p-3 rounded-2xl border border-[#7C3AED]/30 dark:border-[#7C3AED]/40 flex items-center justify-between shadow-xs"
+                  className="bg-gradient-to-br from-brand/10 via-white to-brand/5 p-3 rounded-2xl border border-brand/30 flex items-center justify-between shadow-xs"
                 >
-                  <div className="flex items-center gap-2.5 min-w-0 pr-1.5">
+                  <div
+                    onClick={() => {
+                      if (requesterId) navigate(`/profile/${requesterId}`);
+                    }}
+                    className={`flex items-center gap-2.5 min-w-0 pr-1.5 ${
+                      requesterId ? "cursor-pointer group/req transition-opacity hover:opacity-90" : ""
+                    }`}
+                  >
                     <Avatar
                       user={u}
-                      className="w-9 h-9 rounded-xl object-cover shrink-0"
+                      className="w-9 h-9 rounded-xl object-cover shrink-0 group-hover/req:ring-1 group-hover/req:ring-brand"
                     />
 
                     <div className="min-w-0">
-                      <span className="text-xs font-extrabold text-slate-800 dark:text-slate-200 block truncate">
+                      <span className="text-xs font-extrabold text-text-primary block truncate group-hover/req:text-brand transition-colors">
                         {u.name || u.email}
                       </span>
-                      <span className="text-[10px] text-[#7C3AED] dark:text-[#7C3AED] font-bold flex items-center gap-1 mt-0.5">
+                      <span className="text-[10px] text-brand font-bold flex items-center gap-1 mt-0.5">
                         {req.message ? `"${req.message.substring(0, 15)}..."` : "Wants to join"}
                       </span>
                     </div>
@@ -608,7 +630,7 @@ const JourneyMembers = ({
                     <button
                       type="button"
                       onClick={() => handleAcceptJoinRequest(req._id)}
-                      className="px-2.5 py-1.5 rounded-lg bg-[#7C3AED] text-white hover:bg-[#7c3aed] transition-all shadow-xs border border-[#7C3AED]/60 text-[10px] font-black uppercase tracking-wider"
+                      className="px-2.5 py-1.5 rounded-lg bg-brand text-white hover:bg-brand transition-all shadow-xs border border-brand/60 text-[10px] font-black uppercase tracking-wider"
                       title="Accept Request"
                     >
                       Accept
@@ -616,7 +638,7 @@ const JourneyMembers = ({
                     <button
                       type="button"
                       onClick={() => handleRejectJoinRequest(req._id)}
-                      className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-slate-800 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-700 transition-all shadow-xs border border-slate-200/60 dark:border-slate-700/60 text-[10px] font-black uppercase tracking-wider"
+                      className="px-2.5 py-1.5 rounded-lg bg-white text-text-muted hover transition-all shadow-xs border border-slate-200/60 text-[10px] font-black uppercase tracking-wider"
                       title="Reject Request"
                     >
                       Reject

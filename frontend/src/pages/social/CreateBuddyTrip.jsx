@@ -258,9 +258,9 @@ const CreateBuddyTrip = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDFCFE] text-slate-800 font-sans pb-12 selection:bg-purple-100 selection:text-purple-900 relative">
+    <div className="min-h-screen bg-background text-text-primary font-sans pb-12 selection:bg-primary-100 selection:text-primary-900 relative">
       {/* Decorative gradient top background */}
-      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-purple-50/80 to-transparent pointer-events-none z-0" />
+      <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary-50/80 to-transparent pointer-events-none z-0" />
 
       {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
@@ -274,24 +274,24 @@ const CreateBuddyTrip = () => {
                   navigate("/social/buddy");
                 }
               }}
-              className="p-1.5 sm:p-2 -ml-1 rounded-xl hover:bg-slate-100 text-slate-700 transition-colors shrink-0"
+              className="p-1.5 sm:p-2 -ml-1 rounded-xl hover:bg-background text-text-primary transition-colors shrink-0"
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="min-w-0">
-              <h1 className="text-sm sm:text-[17px] font-bold text-slate-900 tracking-tight truncate font-heading">Create New Trip</h1>
-              <p className="text-[11px] font-normal sm:font-medium text-slate-500 hidden sm:block font-sans">Plan your next adventure with the right travel buddies.</p>
+              <h1 className="text-sm sm:text-[17px] font-bold text-text-primary tracking-tight truncate font-heading">Create New Trip</h1>
+              <p className="text-[11px] font-normal sm:font-medium text-text-muted hidden sm:block font-sans">Plan your next adventure with the right travel buddies.</p>
             </div>
           </div>
           <div className="flex items-center gap-2 sm:gap-4 shrink-0 font-sans">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400 hidden md:inline-block bg-slate-100 px-2 py-1 rounded-md">Draft Auto-Saved</span>
+            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-text-muted hidden md:inline-block bg-background px-2 py-1 rounded-md">Draft Auto-Saved</span>
             <button
               disabled={!isFormValid || isSubmitting}
               onClick={handleSubmit}
               className={`px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-[13px] font-semibold transition-all flex items-center gap-1.5 sm:gap-2 ${
                 isFormValid && !isSubmitting
-                  ? "bg-purple-600 hover:bg-purple-700 text-white shadow-[0_4px_14px_rgba(124,58,237,0.25)] active:scale-95"
-                  : "bg-slate-100 text-slate-400 cursor-not-allowed"
+                  ? "bg-primary-600 hover:bg-primary-700 text-white shadow-[0_4px_14px_rgba(2,132,199,0.25)] active:scale-95"
+                  : "bg-background text-text-muted cursor-not-allowed"
               }`}
             >
               {isSubmitting ? "Launching..." : "Launch Trip →"}
@@ -311,7 +311,7 @@ const CreateBuddyTrip = () => {
                 type="button"
                 onClick={() => scrollToSection(step.id)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-extrabold tracking-wide transition-all ${
-                  activeSection === step.id ? "text-purple-700 bg-purple-50" : "text-slate-400 hover:text-slate-600 hover:bg-slate-50"
+                  activeSection === step.id ? "text-primary-700 bg-primary-50" : "text-text-muted hover:text-text-secondary hover"
                 }`}
               >
                 <span>{step.num}</span> <span>{step.label}</span>
@@ -331,16 +331,16 @@ const CreateBuddyTrip = () => {
             {/* Step 1: Basics */}
             <section id="basics" className="scroll-mt-28 space-y-3">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Let’s start with the basics</h2>
-                <p className="text-sm text-slate-500 font-medium mt-1">Give your trip a name and tell travelers where you're headed.</p>
+                <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Let’s start with the basics</h2>
+                <p className="text-sm text-text-muted font-medium mt-1">Give your trip a name and tell travelers where you're headed.</p>
               </div>
 
-              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+              <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
                 
                 <div className="w-full">
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Cover Image</label>
+                  <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Cover Image</label>
                     <div 
-                      className={`relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-[24px] border border-slate-200/80 overflow-hidden group bg-slate-50/50 flex flex-col items-center justify-center transition-all shadow-sm ${!file && autoCoverOptions.length === 0 ? "border-dashed hover:border-[#7C3AED]/40 hover:bg-[#7C3AED]/5 cursor-pointer" : ""}`}
+                      className={`relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-2xl sm:rounded-[24px] border border-slate-200/80 overflow-hidden group bg-slate-50/50 flex flex-col items-center justify-center transition-all shadow-sm ${!file && autoCoverOptions.length === 0 ? "border-dashed hover:border-brand/40 hover:bg-brand/5 cursor-pointer" : ""}`}
                       onClick={() => !file && autoCoverOptions.length === 0 && fileInputRef.current?.click()}
                     >
                       {file && imagePreview ? (
@@ -351,7 +351,7 @@ const CreateBuddyTrip = () => {
                               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
                               <span className="text-xs font-bold text-white tracking-wide uppercase">Your uploaded cover</span>
                             </div>
-                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-slate-800 hover:bg-slate-100 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-text-primary hover:bg-background px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
                               Change
                             </button>
                           </div>
@@ -365,7 +365,7 @@ const CreateBuddyTrip = () => {
                         <>
                           <img src={autoCoverOptions[selectedAutoCoverIndex]} alt="Auto Cover" className="w-full h-full object-cover" />
                           <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-slate-800 hover:bg-slate-100 px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
+                            <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white text-text-primary hover:bg-background px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-105">
                               Upload your own
                             </button>
                           </div>
@@ -378,16 +378,16 @@ const CreateBuddyTrip = () => {
                       ) : (
                         <div className="flex flex-col items-center justify-center p-6 text-center">
                            <div className="w-12 h-12 rounded-full bg-white shadow-sm border border-slate-100 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                              <Camera className="w-5 h-5 text-slate-400 group-hover:text-[#7C3AED]" />
+                              <Camera className="w-5 h-5 text-text-muted group-hover:text-brand" />
                            </div>
-                           <h3 className="text-sm font-bold text-slate-700 mb-1">Add a trip cover</h3>
-                           <p className="text-xs text-slate-500 max-w-[260px] mb-5">
+                           <h3 className="text-sm font-bold text-text-primary mb-1">Add a trip cover</h3>
+                           <p className="text-xs text-text-muted max-w-[260px] mb-5">
                              Upload your own photo or let Go YatriGo choose one for you.
                            </p>
-                           <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white border border-slate-200 text-slate-600 hover:text-slate-800 hover:border-slate-300 shadow-sm px-5 py-2 rounded-xl text-xs font-bold transition-all mb-3">
+                           <button type="button" onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }} className="bg-white border border-slate-200 text-text-secondary hover:text-text-primary hover shadow-sm px-5 py-2 rounded-xl text-xs font-bold transition-all mb-3">
                              + Upload photo
                            </button>
-                           <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider">JPG / PNG · Max 5 MB</p>
+                           <p className="text-[10px] font-semibold text-text-muted uppercase tracking-wider">JPG / PNG · Max 5 MB</p>
                         </div>
                       )}
                       
@@ -400,7 +400,7 @@ const CreateBuddyTrip = () => {
                           <div 
                             key={idx} 
                             onClick={() => setSelectedAutoCoverIndex(idx)}
-                            className={`flex-shrink-0 w-24 h-16 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${selectedAutoCoverIndex === idx ? "border-[#7C3AED] scale-105 shadow-md" : "border-transparent hover:border-slate-300 opacity-70 hover:opacity-100"}`}
+                            className={`flex-shrink-0 w-24 h-16 rounded-xl overflow-hidden cursor-pointer border-2 transition-all ${selectedAutoCoverIndex === idx ? "border-brand scale-105 shadow-md" : "border-transparent hover opacity-70 hover:opacity-100"}`}
                           >
                             <img src={url} alt={`Option ${idx + 1}`} className="w-full h-full object-cover" />
                           </div>
@@ -411,40 +411,40 @@ const CreateBuddyTrip = () => {
                   </div>
 
                   <div className="w-full">
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Trip Title</label>
+                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Trip Title</label>
                     <input
                       name="title"
                       value={formData.title}
                       onChange={handleInputChange}
                       placeholder="e.g. Weekend Escape to Manali"
-                      className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl px-5 py-4 text-[15px] font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
+                      className="input-field"
                     />
                   </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Starting from</label>
+                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Starting from</label>
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                       <input
                         name="from"
                         value={formData.from}
                         onChange={handleInputChange}
                         placeholder="City or landmark"
-                        className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
+                        className="input-field !pl-11"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Going to</label>
+                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Going to</label>
                     <div className="relative">
-                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                      <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                       <input
                         name="destination"
                         value={formData.destination}
                         onChange={handleInputChange}
                         placeholder="Where are you headed?"
-                        className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 placeholder:text-slate-400 placeholder:font-semibold outline-none transition-all"
+                        className="input-field !pl-11"
                       />
                     </div>
                   </div>
@@ -455,62 +455,62 @@ const CreateBuddyTrip = () => {
             {/* Step 2: Trip Plan */}
             <section id="plan" className="scroll-mt-28 space-y-3">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Plan the details</h2>
-                <p className="text-sm text-slate-500 font-medium mt-1">When are you going, and what will the experience be like?</p>
+                <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Plan the details</h2>
+                <p className="text-sm text-text-muted font-medium mt-1">When are you going, and what will the experience be like?</p>
               </div>
 
-              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+              <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
                 {/* Dates */}
                 <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Start date</label>
+                      <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Start date</label>
                       <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                         <input
                           type="date"
                           name="startDate"
                           value={formData.startDate}
                           min={todayStr}
                           onChange={handleInputChange}
-                          className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition-all cursor-pointer"
+                          className="input-field !pl-11"
                         />
                       </div>
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">End date</label>
+                      <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">End date</label>
                       <div className="relative">
-                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                        <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
                         <input
                           type="date"
                           name="endDate"
                           value={formData.endDate}
                           min={formData.startDate || todayStr}
                           onChange={handleInputChange}
-                          className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl pl-11 pr-4 py-3.5 text-sm font-bold text-slate-900 outline-none transition-all cursor-pointer"
+                          className="input-field !pl-11"
                         />
                       </div>
                     </div>
                   </div>
-                  <p className="text-[11px] font-extrabold text-purple-600 mt-3 inline-block px-3 py-1.5 rounded-lg bg-purple-50 border border-purple-100">
+                  <p className="text-[11px] font-extrabold text-primary-600 mt-3 inline-block px-3 py-1.5 rounded-lg bg-primary-50 border border-primary-100">
                     {getDurationString()}
                   </p>
                 </div>
 
                 {/* Description */}
                 <div>
-                  <label className="block text-[15px] font-extrabold text-slate-900 mb-1">Tell travelers about the trip</label>
-                  <p className="text-[13px] text-slate-500 font-medium mb-4">What will you do, where will you go, and what kind of travel buddies are you looking for?</p>
+                  <label className="block text-[15px] font-extrabold text-text-primary mb-1">Tell travelers about the trip</label>
+                  <p className="text-[13px] text-text-muted font-medium mb-4">What will you do, where will you go, and what kind of travel buddies are you looking for?</p>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
                     rows="4"
                     placeholder="“Exploring waterfalls, local food and forts around…”"
-                    className="w-full bg-slate-50/50 border border-slate-200 focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 rounded-2xl px-5 py-4 text-[14px] font-medium text-slate-900 placeholder:text-slate-400 outline-none transition-all resize-none leading-relaxed"
+                    className="input-field"
                   />
                   <div className="flex justify-between items-center mt-2.5">
-                    <p className="text-[11px] text-slate-400 font-bold">Tip: A clear itinerary helps you attract the right travel buddies.</p>
+                    <p className="text-[11px] text-text-muted font-bold">Tip: A clear itinerary helps you attract the right travel buddies.</p>
                     <span className={`text-[11px] font-bold ${(formData.description?.trim().length || 0) < 20 ? "text-rose-400" : "text-emerald-500"}`}>
                       {formData.description?.trim().length || 0}/500
                     </span>
@@ -519,8 +519,8 @@ const CreateBuddyTrip = () => {
 
                 {/* Vibe Tags */}
                 <div>
-                  <label className="block text-[15px] font-extrabold text-slate-900 mb-1">What’s the vibe?</label>
-                  <p className="text-[13px] text-slate-500 font-medium mb-4">Pick up to 8 · Tip: Choose tags that describe the actual experience.</p>
+                  <label className="block text-[15px] font-extrabold text-text-primary mb-1">What’s the vibe?</label>
+                  <p className="text-[13px] text-text-muted font-medium mb-4">Pick up to 8 · Tip: Choose tags that describe the actual experience.</p>
                   <div className="flex flex-wrap gap-2.5">
                     {predefinedTags.map((tag) => {
                       const isSelected = formData.tags?.includes(tag);
@@ -531,8 +531,8 @@ const CreateBuddyTrip = () => {
                           onClick={() => handleTagToggle(tag)}
                           className={`px-3 py-1.5 rounded-full text-[13px] font-bold transition-all border flex items-center gap-1.5 ${
                             isSelected
-                              ? "bg-purple-100 text-purple-700 border-purple-200 shadow-[0_2px_8px_rgba(124,58,237,0.15)]"
-                              : "bg-white text-slate-600 border-slate-200 hover:border-purple-300 hover:text-purple-600 hover:bg-purple-50"
+                              ? "bg-primary-100 text-primary-700 border-primary-200 shadow-[0_2px_8px_rgba(2,132,199,0.15)]"
+                              : "bg-white text-text-secondary border-slate-200 hover:border-primary-300 hover:text-primary-600 hover:bg-primary-50"
                           }`}
                         >
                           <span>{tagIcons[tag] || "🏷️"}</span> <span className="capitalize">{tag}</span>
@@ -547,34 +547,34 @@ const CreateBuddyTrip = () => {
             {/* Step 3: Group & Rules */}
             <section id="rules" className="scroll-mt-28 space-y-3">
               <div>
-                <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">Choose your crew</h2>
-                <p className="text-sm text-slate-500 font-medium mt-1">Decide who can join and how they get in.</p>
+                <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Choose your crew</h2>
+                <p className="text-sm text-text-muted font-medium mt-1">Decide who can join and how they get in.</p>
               </div>
 
-              <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
+              <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Group Size</label>
+                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Group Size</label>
                     <div className="flex items-center gap-4">
                       <button
                         type="button"
                         onClick={() => setFormData((p) => ({ ...p, maxMembers: Math.max(2, p.maxMembers - 1) }))}
-                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 font-bold transition-colors"
+                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-background text-text-secondary font-bold transition-colors"
                       >
                         −
                       </button>
-                      <div className="text-[15px] font-extrabold text-slate-900 w-24 text-center">{formData.maxMembers} travelers</div>
+                      <div className="text-[15px] font-extrabold text-text-primary w-24 text-center">{formData.maxMembers} travelers</div>
                       <button
                         type="button"
                         onClick={() => setFormData((p) => ({ ...p, maxMembers: Math.min(500, p.maxMembers + 1) }))}
-                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-slate-100 text-slate-600 font-bold transition-colors"
+                        className="w-11 h-11 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-center hover:bg-background text-text-secondary font-bold transition-colors"
                       >
                         +
                       </button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                    <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">Category</label>
                     <CustomSelect
                       id="category"
                       name="category"
@@ -587,45 +587,45 @@ const CreateBuddyTrip = () => {
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-3">Joining Method</label>
+                  <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-3">Joining Method</label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div
                       onClick={() => setFormData((p) => ({ ...p, isPrivate: false }))}
                       className={`p-5 rounded-[20px] border-2 transition-all cursor-pointer ${
-                        !formData.isPrivate ? "border-purple-500 bg-purple-50/30 shadow-[0_4px_16px_rgba(124,58,237,0.06)]" : "border-slate-200 bg-white hover:border-purple-200 hover:bg-slate-50/50"
+                        !formData.isPrivate ? "border-primary-500 bg-primary-50/30 shadow-[0_4px_16px_rgba(2,132,199,0.06)]" : "border-slate-200 bg-white hover:border-primary-200 hover/50"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <Globe className={`w-5 h-5 ${!formData.isPrivate ? "text-purple-600" : "text-slate-400"}`} />
-                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${!formData.isPrivate ? "bg-purple-500" : "border-2 border-slate-200"}`}>
+                        <Globe className={`w-5 h-5 ${!formData.isPrivate ? "text-primary-600" : "text-text-muted"}`} />
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${!formData.isPrivate ? "bg-primary-500" : "border-2 border-slate-200"}`}>
                           {!formData.isPrivate && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
                         </div>
                       </div>
-                      <h3 className={`text-[15px] font-extrabold ${!formData.isPrivate ? "text-purple-900" : "text-slate-700"}`}>Open Group</h3>
-                      <p className="text-[12px] font-semibold text-slate-500 mt-1 leading-relaxed">Anyone can join before the journey starts.</p>
+                      <h3 className={`text-[15px] font-extrabold ${!formData.isPrivate ? "text-primary-900" : "text-text-primary"}`}>Open Group</h3>
+                      <p className="text-[12px] font-semibold text-text-muted mt-1 leading-relaxed">Anyone can join before the journey starts.</p>
                     </div>
 
                     <div
                       onClick={() => setFormData((p) => ({ ...p, isPrivate: true }))}
                       className={`p-5 rounded-[20px] border-2 transition-all cursor-pointer ${
-                        formData.isPrivate ? "border-purple-500 bg-purple-50/30 shadow-[0_4px_16px_rgba(124,58,237,0.06)]" : "border-slate-200 bg-white hover:border-purple-200 hover:bg-slate-50/50"
+                        formData.isPrivate ? "border-primary-500 bg-primary-50/30 shadow-[0_4px_16px_rgba(2,132,199,0.06)]" : "border-slate-200 bg-white hover:border-primary-200 hover/50"
                       }`}
                     >
                       <div className="flex justify-between items-start mb-2">
-                        <ShieldCheck className={`w-5 h-5 ${formData.isPrivate ? "text-purple-600" : "text-slate-400"}`} />
-                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${formData.isPrivate ? "bg-purple-500" : "border-2 border-slate-200"}`}>
+                        <ShieldCheck className={`w-5 h-5 ${formData.isPrivate ? "text-primary-600" : "text-text-muted"}`} />
+                        <div className={`w-[22px] h-[22px] rounded-full flex items-center justify-center transition-colors ${formData.isPrivate ? "bg-primary-500" : "border-2 border-slate-200"}`}>
                           {formData.isPrivate && <Check className="w-3.5 h-3.5 text-white stroke-[3]" />}
                         </div>
                       </div>
-                      <h3 className={`text-[15px] font-extrabold ${formData.isPrivate ? "text-purple-900" : "text-slate-700"}`}>Approval Required</h3>
-                      <p className="text-[12px] font-semibold text-slate-500 mt-1 leading-relaxed">Travelers can request to join before the journey starts. You approve them.</p>
+                      <h3 className={`text-[15px] font-extrabold ${formData.isPrivate ? "text-primary-900" : "text-text-primary"}`}>Approval Required</h3>
+                      <p className="text-[12px] font-semibold text-text-muted mt-1 leading-relaxed">Travelers can request to join before the journey starts. You approve them.</p>
                     </div>
                   </div>
 
-                  <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-600">
+                  <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-200/70 text-text-secondary">
                     <span className="text-sm shrink-0">🔒</span>
-                    <p className="text-[12px] font-medium text-slate-600 leading-relaxed">
-                      <strong className="font-semibold text-slate-800">Roster locks when the journey starts.</strong> No new travelers can join after that.
+                    <p className="text-[12px] font-medium text-text-secondary leading-relaxed">
+                      <strong className="font-semibold text-text-primary">Roster locks when the journey starts.</strong> No new travelers can join after that.
                     </p>
                   </div>
                 </div>
@@ -635,17 +635,17 @@ const CreateBuddyTrip = () => {
 
           {/* Right Column: Sticky Summary */}
           <div className="lg:col-span-4 lg:sticky lg:top-[100px] order-last">
-            <div className="bg-white rounded-[24px] p-5 sm:p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-slate-200/60 flex flex-col h-full">
-              <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-6">Your Trip</h3>
+            <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-slate-200/60 flex flex-col h-full">
+              <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-6">Your Trip</h3>
               
               <div className="space-y-4 mb-6 flex-1">
                 <div className="flex gap-4 items-start">
-                  <div className="w-9 h-9 rounded-full bg-purple-50 flex items-center justify-center shrink-0">
-                    <MapPin className="w-4 h-4 text-purple-600" />
+                  <div className="w-9 h-9 rounded-full bg-primary-50 flex items-center justify-center shrink-0">
+                    <MapPin className="w-4 h-4 text-primary-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Destination</p>
-                    <p className={`text-[15px] ${formData.destination?.trim() ? "text-slate-900 font-extrabold" : "text-slate-300 font-semibold"}`}>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Destination</p>
+                    <p className={`text-[15px] ${formData.destination?.trim() ? "text-text-primary font-extrabold" : "text-slate-300 font-semibold"}`}>
                       {formData.destination?.trim() ? formData.destination : "Add destination"}
                     </p>
                   </div>
@@ -656,8 +656,8 @@ const CreateBuddyTrip = () => {
                     <Calendar className="w-4 h-4 text-emerald-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Dates</p>
-                    <p className={`text-[15px] ${formData.startDate && formData.endDate ? "text-slate-900 font-extrabold" : "text-slate-300 font-semibold"}`}>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Dates</p>
+                    <p className={`text-[15px] ${formData.startDate && formData.endDate ? "text-text-primary font-extrabold" : "text-slate-300 font-semibold"}`}>
                       {formData.startDate && formData.endDate ? `${moment(formData.startDate).format('MMM D')}–${moment(formData.endDate).format('MMM D')}` : "Add dates"}
                     </p>
                   </div>
@@ -665,29 +665,29 @@ const CreateBuddyTrip = () => {
 
                 <div className="flex gap-4 items-start">
                   <div className="w-9 h-9 rounded-full bg-brand-50 flex items-center justify-center shrink-0">
-                    <Users className="w-4 h-4 text-brand-600" />
+                    <Users className="w-4 h-4 text-brand" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Group & Rules</p>
-                    <p className="text-[15px] font-extrabold text-slate-900">Up to {formData.maxMembers} travelers</p>
-                    <p className="text-[12px] font-bold text-slate-500 mt-0.5">{formData.category} · {!formData.isPrivate ? "Open Group" : "Approval Required"}</p>
+                    <p className="text-[10px] font-bold text-text-muted uppercase tracking-wider mb-1">Group & Rules</p>
+                    <p className="text-[15px] font-extrabold text-text-primary">Up to {formData.maxMembers} travelers</p>
+                    <p className="text-[12px] font-bold text-text-muted mt-0.5">{formData.category} · {!formData.isPrivate ? "Open Group" : "Approval Required"}</p>
                   </div>
                 </div>
               </div>
 
               <div className="pt-6 border-t border-slate-100">
-                <h4 className="text-[12px] font-extrabold text-slate-900 mb-3">Ready to launch?</h4>
+                <h4 className="text-[12px] font-extrabold text-text-primary mb-3">Ready to launch?</h4>
                 <ul className="space-y-2.5 text-[12px] font-bold">
-                  <li className={`flex items-center gap-2.5 ${formData.title?.trim() ? "text-emerald-600" : "text-slate-400"}`}>
+                  <li className={`flex items-center gap-2.5 ${formData.title?.trim() ? "text-emerald-600" : "text-text-muted"}`}>
                     {formData.title?.trim() ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Trip title
                   </li>
-                  <li className={`flex items-center gap-2.5 ${formData.destination?.trim() ? "text-emerald-600" : "text-slate-400"}`}>
+                  <li className={`flex items-center gap-2.5 ${formData.destination?.trim() ? "text-emerald-600" : "text-text-muted"}`}>
                     {formData.destination?.trim() ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Destination
                   </li>
-                  <li className={`flex items-center gap-2.5 ${formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? "text-emerald-600" : "text-slate-400"}`}>
+                  <li className={`flex items-center gap-2.5 ${formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? "text-emerald-600" : "text-text-muted"}`}>
                     {formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Dates
                   </li>
-                  <li className={`flex items-center gap-2.5 ${(formData.description?.trim().length || 0) >= 20 ? "text-emerald-600" : "text-slate-400"}`}>
+                  <li className={`flex items-center gap-2.5 ${(formData.description?.trim().length || 0) >= 20 ? "text-emerald-600" : "text-text-muted"}`}>
                     {(formData.description?.trim().length || 0) >= 20 ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Itinerary
                   </li>
                 </ul>

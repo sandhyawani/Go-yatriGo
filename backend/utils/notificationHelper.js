@@ -19,7 +19,9 @@ const getNotificationCategory = (type) => {
   if (
     typeStr.includes('message') ||
     typeStr.includes('direct') ||
-    typeStr.includes('chat')
+    typeStr.includes('chat') ||
+    typeStr === 'new_message' ||
+    typeStr === 'message_request'
   ) {
     return 'Messages';
   }
@@ -37,7 +39,15 @@ const getNotificationCategory = (type) => {
 
 const normalizeNotification = (n) => {
   const obj = typeof n.toObject === 'function' ? n.toObject() : { ...n };
-  const category = obj.category || getNotificationCategory(obj.type);
+  let rawCategory = obj.category || getNotificationCategory(obj.type);
+  const catLower = (rawCategory || '').toLowerCase();
+  let category = 'Social';
+  if (catLower === 'journey' || catLower.includes('trip')) category = 'Journey';
+  else if (catLower === 'messages' || catLower === 'message' || catLower === 'chat') category = 'Messages';
+  else if (catLower === 'safety' || catLower === 'safe' || catLower === 'emergency') category = 'Safety';
+  else if (catLower === 'social') category = 'Social';
+  else category = getNotificationCategory(obj.type);
+
   const msg = obj.message || obj.content || obj.text || '';
   return {
     ...obj,
@@ -57,9 +67,6 @@ const normalizeNotification = (n) => {
   };
 };
 
-/**
- * Creates a notification document in MongoDB and optionally emits it via Socket.IO.
- */
 const createAndSendNotification = async (io, payload) => {
   try {
     const {
@@ -128,9 +135,6 @@ const createAndSendNotification = async (io, payload) => {
   }
 };
 
-/**
- * Verifies if target user is currently an authorized active Trip Mate.
- */
 const verifyTripMateEligibility = async (userId, targetUserId) => {
   try {
     const validTripMates = await getValidTripMates(userId);

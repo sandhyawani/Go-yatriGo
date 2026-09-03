@@ -20,6 +20,9 @@ export const NotificationProvider = ({ children }) => {
   const socket = useContext(SocketContext);
 
   const [notifications, setNotifications] = useState([]);
+  const [sentRequests, setSentRequests] = useState([]);
+  const [sentLoading, setSentLoading] = useState(false);
+  const [notificationTab, setNotificationTab] = useState("received"); // 'received' | 'sent'
   const [unreadCount, setUnreadCount] = useState(0);
   const [counts, setCounts] = useState({
     all: 0,
@@ -31,6 +34,24 @@ export const NotificationProvider = ({ children }) => {
   });
   const [activeCategory, setActiveCategory] = useState("All");
   const [loading, setLoading] = useState(false);
+
+  const fetchSentRequests = useCallback(async () => {
+    if (!user) {
+      setSentRequests([]);
+      return;
+    }
+    try {
+      setSentLoading(true);
+      const data = await notificationService.getSentRequests();
+      if (data && data.success) {
+        setSentRequests(data.sentRequests || []);
+      }
+    } catch (err) {
+      console.error("[NotificationProvider] Failed to fetch sent requests:", err);
+    } finally {
+      setSentLoading(false);
+    }
+  }, [user]);
 
   const fetchNotifications = useCallback(async () => {
     if (!user) {
@@ -72,9 +93,10 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     fetchNotifications();
-  }, [fetchNotifications]);
+    fetchSentRequests();
+  }, [fetchNotifications, fetchSentRequests]);
 
-  // Single authoritative Socket listener for new notifications
+  // Single authoritative Socket listener for notifications and sent request updates
   useEffect(() => {
     if (!socket || !user) return;
 
@@ -91,7 +113,17 @@ export const NotificationProvider = ({ children }) => {
 
       setUnreadCount((prev) => prev + 1);
 
-      const catKey = (newNotif.category || "Social").toLowerCase();
+      let catKey = (newNotif.category || "").toLowerCase();
+      if (catKey === "message" || catKey === "chat") catKey = "messages";
+      if (catKey === "safe" || catKey === "emergency") catKey = "safety";
+      if (!catKey || (catKey !== "journey" && catKey !== "social" && catKey !== "messages" && catKey !== "safety")) {
+        const type = (newNotif.type || "").toLowerCase();
+        if (type.includes("journey") || type.includes("trip") || type.includes("group") || type.includes("join")) catKey = "journey";
+        else if (type.includes("message") || type.includes("chat") || type.includes("direct")) catKey = "messages";
+        else if (type.includes("safe") || type.includes("sos") || type.includes("emergency") || type.includes("warning")) catKey = "safety";
+        else catKey = "social";
+      }
+
       setCounts((prev) => ({
         ...prev,
         all: (prev.all || 0) + 1,
@@ -100,12 +132,42 @@ export const NotificationProvider = ({ children }) => {
       }));
     };
 
+    const handleSentRequestUpdated = () => {
+      fetchSentRequests();
+    };
+
     socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
+    socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
+    socket.on("follow_request_sent", handleSentRequestUpdated);
+    socket.on("join_request_sent", handleSentRequestUpdated);
 
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+      socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
+      socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
+      socket.off("follow_request_sent", handleSentRequestUpdated);
+      socket.off("join_request_sent", handleSentRequestUpdated);
     };
-  }, [socket, user]);
+  }, [socket, user, fetchSentRequests]);
+
+  const handleCancelSentRequest = async (reqItem) => {
+    if (!reqItem) return false;
+    try {
+      const targetId = reqItem.cancelId || reqItem.targetId || reqItem._id || reqItem.id;
+      // Optimistic removal
+      setSentRequests((prev) => prev.filter((r) => (r._id || r.id) !== (reqItem._id || reqItem.id)));
+
+      await notificationService.cancelSentRequest(reqItem);
+      showToast.info("Request cancelled successfully");
+      return true;
+    } catch (err) {
+      console.error("[NotificationProvider] Error cancelling sent request:", err);
+      showToast.error(err.response?.data?.message || "Failed to cancel request");
+      fetchSentRequests();
+      return false;
+    }
+  };
 
   const markAsRead = async (id) => {
     if (!id) return;
@@ -168,10 +230,26 @@ export const NotificationProvider = ({ children }) => {
 
   const clearAllNotifications = async () => {
     try {
-      await notificationService.clearAllNotifications();
-      setNotifications([]);
-      setUnreadCount(0);
-      setCounts({
+      const res = await notificationService.clearAllNotifications();
+      const preservedTypes = [
+        "follow_request",
+        "journey_invitation",
+        "message_request",
+        "join_request",
+        "journey_join_request"
+      ];
+      
+      const remainingNotifications = notifications.filter(n => preservedTypes.includes(n.type));
+      setNotifications(remainingNotifications);
+      setUnreadCount(res?.unreadCount || 0);
+      
+      const newCounts = remainingNotifications.reduce((acc, notif) => {
+        acc.all++;
+        if (!notif.isRead) acc.unread++;
+        const cat = (notif.category || "").toLowerCase();
+        if (acc[cat] !== undefined) acc[cat]++;
+        return acc;
+      }, {
         all: 0,
         journey: 0,
         social: 0,
@@ -179,7 +257,9 @@ export const NotificationProvider = ({ children }) => {
         safety: 0,
         unread: 0
       });
-      showToast.success("All notifications cleared");
+      setCounts(newCounts);
+      
+      showToast.success("Notifications cleared (pending requests preserved)");
       return true;
     } catch (err) {
       console.error("[NotificationProvider] Error clearing notifications:", err);
@@ -309,6 +389,11 @@ export const NotificationProvider = ({ children }) => {
 
   const value = {
     notifications,
+    sentRequests,
+    sentCount: sentRequests.length,
+    sentLoading,
+    notificationTab,
+    setNotificationTab,
     unreadCount,
     counts,
     activeCategory,
@@ -325,6 +410,8 @@ export const NotificationProvider = ({ children }) => {
     handleAcceptMessage,
     handleRejectMessage,
     handleManageJoin,
+    cancelSentRequest: handleCancelSentRequest,
+    fetchSentRequests,
     refreshNotifications: fetchNotifications
   };
 

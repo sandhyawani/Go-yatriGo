@@ -22,8 +22,8 @@ const JourneyStatistics = ({ userId }) => {
 
   if (loading) {
     return (
-      <div className="py-12 text-center text-slate-400">
-        <Compass className="w-8 h-8 mx-auto mb-2 animate-spin text-[#7C3AED]" />
+      <div className="py-12 text-center text-text-muted">
+        <Compass className="w-8 h-8 mx-auto mb-2 animate-spin text-brand" />
         <p className="text-xs">Loading Profile & Journey Stats...</p>
       </div>);
 
@@ -46,7 +46,7 @@ const JourneyStatistics = ({ userId }) => {
   {
     label: "Total Journeys",
     val: s.totalJourneys ?? 0,
-    icon: <Globe className="w-5 h-5 text-[#7C3AED]" />
+    icon: <Globe className="w-5 h-5 text-brand" />
   },
   {
     label: "Completed Trips",
@@ -81,16 +81,16 @@ const JourneyStatistics = ({ userId }) => {
         {statCards.map((c, i) =>
         <div
         key={i}
-        className="bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
+        className="bg-white p-3 sm:p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-all">
 
             <div className="flex items-center justify-between mb-1.5">
-              <span className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider line-clamp-1 mr-1">
+              <span className="text-[9px] sm:text-[10px] font-bold text-text-muted uppercase tracking-wider line-clamp-1 mr-1">
                 {c.label}
               </span>
               {React.cloneElement(c.icon, { className: 'w-3.5 h-3.5 sm:w-4 sm:h-4 shrink-0 ' + c.icon.props.className.split(' ').filter(cls => !cls.startsWith('w-') && !cls.startsWith('h-')).join(' ') })}
             </div>
             <span
-          className={`font-black text-slate-800 dark:text-slate-100 ${c.isText ? "text-sm sm:text-base line-clamp-1" : "text-xl sm:text-2xl"}`}>
+          className={`font-black text-text-primary ${c.isText ? "text-sm sm:text-base line-clamp-1" : "text-xl sm:text-2xl"}`}>
 
               {c.val}
             </span>
@@ -99,34 +99,34 @@ const JourneyStatistics = ({ userId }) => {
       </div>
 
       {/* ...existing code for badges... */}
-      <div className="relative overflow-hidden bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-sm transition-all">
+      <div className="relative overflow-hidden bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm transition-all">
         {/* ...existing bg element... */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-[#7C3AED]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 bg-brand-50 dark:bg-brand-900/30 text-[#7C3AED] dark:text-brand-400 rounded-2xl border border-brand-100 dark:border-brand-800/50 shadow-sm">
+            <div className="p-2.5 bg-brand-50 text-brand rounded-2xl border border-brand-100 shadow-sm">
               <Award className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-text-primary tracking-tight flex items-center gap-2">
                 Unlocked Badges & Achievements ({s.achievements?.length || 0})
-                <button onClick={() => setShowInfoModal(true)} className="text-slate-400 hover:text-brand-500 transition-colors p-1 bg-slate-50 hover:bg-brand-50 rounded-full">
+                <button onClick={() => setShowInfoModal(true)} className="text-text-muted hover:text-brand-500 transition-colors p-1 bg-slate-50 hover:bg-brand-50 rounded-full">
                   <Info className="w-3.5 h-3.5" />
                 </button>
               </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              <p className="text-xs text-text-muted font-medium">
                 Milestones achieved across collaborative travel journeys.
               </p>
             </div>
           </div>
-          <span className="text-xs font-bold text-[#7C3AED] dark:text-brand-300 px-3.5 py-1.5 rounded-full bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800/60 shadow-sm self-start sm:self-center">
+          <span className="text-xs font-bold text-brand px-3.5 py-1.5 rounded-full bg-brand-50 border border-brand-200 shadow-sm self-start sm:self-center">
             Traveler Tier: {getTravelerTier(s.totalJourneys)}
           </span>
         </div>
 
         {!s.achievements || s.achievements.length === 0 ?
-        <div className="py-8 text-center text-slate-500 dark:text-slate-400 text-xs bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-200/60 dark:border-slate-700/60 relative z-10 font-medium">
+        <div className="py-8 text-center text-text-muted text-xs bg-slate-50 rounded-2xl border border-slate-200/60 relative z-10 font-medium">
             Complete your first collaborative travel journey to unlock your
             first badge!
           </div> :
@@ -135,16 +135,16 @@ const JourneyStatistics = ({ userId }) => {
             {s.achievements.map((badge, bIdx) =>
           <div
           key={bIdx}
-          className="p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 hover:bg-brand-50/50 dark:hover:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 hover:border-brand-200 dark:hover:border-brand-500/30 transition-all flex items-center gap-3 group shadow-sm">
+          className="p-4 rounded-2xl bg-slate-50 hover:bg-brand-50/50 border border-slate-200/80 hover:border-brand-200:border-brand-500/30 transition-all flex items-center gap-3 group shadow-sm">
 
-                <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-700/50 flex items-center justify-center text-amber-500 dark:text-amber-400 group-hover:scale-110 transition-transform font-bold text-lg shadow-sm">
+                <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 group-hover:scale-110 transition-transform font-bold text-lg shadow-sm">
                   🏆
                 </div>
                 <div>
-                  <h4 className="text-xs font-bold text-slate-800 dark:text-slate-100 group-hover:text-[#7C3AED] dark:group-hover:text-brand-300 transition-colors">
+                  <h4 className="text-xs font-bold text-text-primary group-hover:text-brand:text-brand-300 transition-colors">
                     {badge.title}
                   </h4>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400 font-medium line-clamp-1">
+                  <p className="text-[10px] text-text-muted font-medium line-clamp-1">
                     {badge.desc}
                   </p>
                 </div>
@@ -155,41 +155,41 @@ const JourneyStatistics = ({ userId }) => {
       </div>
       
       {showInfoModal && (
-        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowInfoModal(false)}>
-          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200 dark:border-slate-800" onClick={e => e.stopPropagation()}>
-            <div className="p-5 sm:p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+        <div className="fixed inset-0 bg-brand/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowInfoModal(false)}>
+          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200" onClick={e => e.stopPropagation()}>
+            <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-brand-100 dark:bg-brand-900/40 text-brand-600 dark:text-brand-400 rounded-xl">
+                <div className="p-2 bg-brand-100 text-brand rounded-xl">
                   <Award className="w-5 h-5" />
                 </div>
-                <h3 className="font-extrabold text-slate-900 dark:text-white">Achievements Guide</h3>
+                <h3 className="font-extrabold text-text-primary">Achievements Guide</h3>
               </div>
-              <button onClick={() => setShowInfoModal(false)} className="p-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-colors text-slate-500">
+              <button onClick={() => setShowInfoModal(false)} className="p-2 bg-background hover rounded-full transition-colors text-text-muted">
                 <X className="w-4 h-4" />
               </button>
             </div>
             
             <div className="p-5 sm:p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
               <div>
-                <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Traveler Tiers</h4>
+                <h4 className="text-xs font-black text-text-muted uppercase tracking-wider mb-3">Traveler Tiers</h4>
                 <div className="space-y-2">
                   {[
-                    { name: 'Novice', req: '0 Journeys', color: 'bg-slate-100 text-slate-600' },
+                    { name: 'Novice', req: '0 Journeys', color: 'bg-background text-text-secondary' },
                     { name: 'Explorer', req: '1-2 Journeys', color: 'bg-emerald-50 text-emerald-600' },
-                    { name: 'Adventurer', req: '3-5 Journeys', color: 'bg-brand-50 text-brand-700' },
-                    { name: 'Veteran', req: '6-10 Journeys', color: 'bg-purple-100 text-purple-800' },
+                    { name: 'Adventurer', req: '3-5 Journeys', color: 'bg-brand-50 text-brand-dark' },
+                    { name: 'Veteran', req: '6-10 Journeys', color: 'bg-primary-100 text-primary-800' },
                     { name: 'Legend', req: '11+ Journeys', color: 'bg-amber-50 text-amber-600' }
                   ].map(tier => (
-                    <div key={tier.name} className="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 dark:border-slate-800/60 bg-white dark:bg-slate-900">
+                    <div key={tier.name} className="flex justify-between items-center p-2.5 rounded-xl border border-slate-100 bg-white">
                       <span className={`text-[11px] font-bold px-2 py-0.5 rounded-md ${tier.color}`}>{tier.name}</span>
-                      <span className="text-[11px] font-medium text-slate-500">{tier.req}</span>
+                      <span className="text-[11px] font-medium text-text-muted">{tier.req}</span>
                     </div>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h4 className="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-3">Available Badges</h4>
+                <h4 className="text-xs font-black text-text-muted uppercase tracking-wider mb-3">Available Badges</h4>
                 <div className="grid gap-2">
                   {[
                     { title: "First Steps", desc: "Complete 1 collaborative journey." },
@@ -198,11 +198,11 @@ const JourneyStatistics = ({ userId }) => {
                     { title: "Social Butterfly", desc: "Travel with 3 or more mates." },
                     { title: "Explorer", desc: "Visit at least 3 distinct destinations." }
                   ].map(b => (
-                    <div key={b.title} className="p-3 rounded-xl border border-slate-100 dark:border-slate-800/60 flex items-start gap-3">
+                    <div key={b.title} className="p-3 rounded-xl border border-slate-100 flex items-start gap-3">
                       <div className="text-xl leading-none">🏆</div>
                       <div>
-                        <div className="text-[11px] font-bold text-slate-800 dark:text-slate-200">{b.title}</div>
-                        <div className="text-[10px] text-slate-500 mt-0.5">{b.desc}</div>
+                        <div className="text-[11px] font-bold text-text-primary">{b.title}</div>
+                        <div className="text-[10px] text-text-muted mt-0.5">{b.desc}</div>
                       </div>
                     </div>
                   ))}
@@ -210,8 +210,8 @@ const JourneyStatistics = ({ userId }) => {
               </div>
             </div>
             
-            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/30">
-              <button onClick={() => setShowInfoModal(false)} className="w-full py-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold rounded-xl transition-colors">
+            <div className="p-4 border-t border-slate-100 bg-slate-50/50">
+              <button onClick={() => setShowInfoModal(false)} className="w-full py-2 bg-brand hover:bg-brand-dark text-white text-xs font-bold rounded-xl transition-colors">
                 Got it
               </button>
             </div>

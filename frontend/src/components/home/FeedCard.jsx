@@ -1,3 +1,3 @@
-// Compatibility wrapper — re-exports the modular FeedCard
-// so existing imports throughout the project continue to work.
-export { default } from "./feed/FeedCard";
+import FeedCard from "./feed/FeedCard";
+export default FeedCard;
+export * from "./feed/FeedCard";

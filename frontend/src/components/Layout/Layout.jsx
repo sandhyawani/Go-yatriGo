@@ -14,12 +14,14 @@ const Layout = () => {
   const [adminNavOpen, setAdminNavOpen] = useState(false);
 
   const isAuthPage =
-  location.pathname === "/login" ||
-  location.pathname === "/register" ||
-  location.pathname === "/reset-password";
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname === "/forgot-password" ||
+    location.pathname.startsWith("/reset-password");
 
   const hasNavigation = user && !isAuthPage;
   const isChatPage = location.pathname.startsWith("/social/chat");
+  const isHomePage = location.pathname === "/";
   const isBuddyDetailPage = location.pathname.startsWith("/social/buddy/") && location.pathname !== "/social/buddy/new";
   const secondaryAdminRoutes = ["/users", "/userpage", "/update", "/adduser"];
   const isAdminWorkspace =
@@ -50,10 +52,18 @@ const Layout = () => {
   if (hasNavigation) {
     return (
       <SocialSidebar>
-        <div className={isChatPage ? "w-full h-full p-0" : "px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6"}>
+        <div
+          className={
+            isChatPage
+              ? "w-full h-full p-0"
+              : isHomePage
+              ? "w-full h-full min-h-0 flex flex-col px-3 sm:px-4 lg:pl-4 lg:pr-4 xl:pl-5 xl:pr-5 pt-2 lg:pt-3 pb-24 lg:pb-3 lg:overflow-hidden"
+              : "px-4 lg:pl-8 lg:pr-8 pt-2 pb-24 lg:pb-6"
+          }
+        >
           <RouteTour />
         </div>
-        {!isBuddyDetailPage && !isChatPage && <Footer />}
+        {!isBuddyDetailPage && !isChatPage && !isHomePage && <Footer />}
       </SocialSidebar>
     );
   }

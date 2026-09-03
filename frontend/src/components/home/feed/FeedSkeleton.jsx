@@ -2,7 +2,7 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
 export const PostSkeleton = () => (
-  <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-[#8b5cf614] dark:border-slate-700 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:shadow-none animate-pulse transition-colors duration-300">
+  <div className="bg-white dark:bg-slate-800 rounded-3xl overflow-hidden border border-border dark:border-slate-700 shadow-soft animate-pulse transition-colors duration-300">
     <div className="p-4 flex items-center gap-3">
       <div className="w-10 h-10 rounded-full bg-slate-200" />
       <div className="space-y-2 flex-1">

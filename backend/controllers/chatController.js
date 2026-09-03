@@ -4,6 +4,7 @@ const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const Journey = require("../models/Journey");
 const { isBlockedPair, getBlockedUserIds, blockUserAction } = require("../utils/blockHelper");
+const { createAndSendNotification } = require("../utils/notificationHelper");
 
 const emitRequestStatusUpdate = (req, room, userId) => {
   const io = req.app.get("io");
@@ -102,6 +103,19 @@ exports.getOrCreateDirectRoom = async (req, res) => {
         requestedBy: initialStatus === "pending" ? userId : null
       });
       await room.save();
+
+      if (initialStatus === "pending") {
+        const io = req.app.get("io");
+        const senderUser = await User.findById(userId).select("name");
+        createAndSendNotification(io, {
+          sender: userId,
+          receiver: targetUserId,
+          type: "message_request",
+          category: "Messages",
+          room: room._id,
+          message: `${senderUser?.name || "A traveler"} sent you a message request.`
+        });
+      }
     }
 
     res.status(200).json({ success: true, room });
@@ -428,6 +442,22 @@ exports.sendMessage = async (req, res) => {
         clientMsgId: socketPayload.clientMsgId,
         message: socketPayload
       });
+
+      // Send persistent notification for direct chat recipients
+      if (room.type === "direct") {
+        const otherMemberId = (room.members || []).find((m) => m.toString() !== userId.toString());
+        if (otherMemberId) {
+          const previewText = (text || (media ? "Sent a media file" : "Sent a message")).slice(0, 80);
+          createAndSendNotification(io, {
+            sender: userId,
+            receiver: otherMemberId,
+            type: "new_message",
+            category: "Messages",
+            room: roomId,
+            message: `${senderUser?.name || "Traveler"}: ${previewText}`
+          });
+        }
+      }
     }
 
     res.status(201).json({ success: true, message: populatedMessage });
@@ -725,6 +755,54 @@ exports.deleteChatForMe = async (req, res) => {
     );
 
     res.status(200).json({ success: true, message: "Chat deleted and exited successfully" });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+exports.reactToMessage = async (req, res) => {
+  try {
+    const { roomId, messageId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.user._id || req.user.id;
+
+    if (!emoji) {
+      return res.status(400).json({ success: false, message: "Emoji is required" });
+    }
+
+    const message = await Message.findOne({ _id: messageId, roomId });
+    if (!message) {
+      return res.status(404).json({ success: false, message: "Message not found" });
+    }
+
+    const existingIndex = message.reactions.findIndex(
+      (r) => r.user.toString() === userId.toString() && r.emoji === emoji
+    );
+
+    if (existingIndex > -1) {
+      message.reactions.splice(existingIndex, 1);
+    } else {
+      message.reactions = message.reactions.filter(
+        (r) => r.user.toString() !== userId.toString()
+      );
+      message.reactions.push({ user: userId, emoji });
+    }
+
+    await message.save();
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(roomId).emit("message_reaction_updated", {
+        roomId,
+        messageId,
+        reactions: message.reactions
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      reactions: message.reactions
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }

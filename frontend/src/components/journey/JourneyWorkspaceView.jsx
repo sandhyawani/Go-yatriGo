@@ -248,16 +248,16 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           <div
           key={idx}
           onClick={() => toggleChecklistItem(note, idx)}
-          className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/80 dark:bg-slate-800/50 cursor-pointer hover:bg-brand-50/60 dark:hover:bg-slate-800 transition-all border border-slate-200/50 dark:border-slate-700/50">
+          className="flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/80 cursor-pointer hover:bg-brand-50/60 transition-all border border-slate-200/50">
 
               <div
             className={`w-4 h-4 rounded-lg flex items-center justify-center border transition-all shrink-0 ${
-            it.isCompleted ? "bg-[#7C3AED] border-[#7C3AED] text-white shadow-xs" : "border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900"
+            it.isCompleted ? "bg-brand border-brand text-white shadow-xs" : "border-slate-300 bg-white"
             }`}>
 
                 {it.isCompleted && <Check className="w-3 h-3 stroke-[3]" />}
               </div>
-              <span className={`text-xs font-semibold select-none break-all ${it.isCompleted ? "line-through text-slate-400 dark:text-slate-500" : "text-slate-700 dark:text-slate-200"}`}>
+              <span className={`text-xs font-semibold select-none break-all ${it.isCompleted ? "line-through text-text-muted" : "text-text-primary"}`}>
                 {it.text}
               </span>
             </div>
@@ -277,19 +277,19 @@ const JourneyWorkspaceView = ({ journeyId }) => {
         <div className="space-y-2 mt-1 flex-1 flex flex-col justify-between">
           <div className="space-y-1.5">
             {address &&
-            <p className="text-xs font-bold text-slate-500 dark:text-slate-400 flex items-start gap-1.5 m-0">
+            <p className="text-xs font-bold text-text-muted flex items-start gap-1.5 m-0">
                 <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0 mt-0.5" />
                 <span>{address}</span>
               </p>}
 
             {time &&
-            <p className="text-xs font-extrabold text-[#7C3AED] dark:text-brand-300 flex items-center gap-1.5 m-0">
+            <p className="text-xs font-extrabold text-brand flex items-center gap-1.5 m-0">
                 <Clock className="w-3.5 h-3.5 shrink-0" />
                 <span>{time}</span>
               </p>}
 
             {instructions &&
-            <p className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-medium m-0 pt-1 leading-relaxed">
+            <p className="text-xs text-text-secondary whitespace-pre-wrap font-medium m-0 pt-1 leading-relaxed">
                 💬 {instructions}
               </p>}
 
@@ -299,7 +299,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           href={`https://www.google.com/maps/search/?api=1&query=${mapsQuery}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 text-xs font-black transition-all border border-slate-200 dark:border-slate-700 active:scale-95">
+          className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-background hover text-text-primary text-xs font-black transition-all border border-slate-200 active:scale-95">
 
             <span>🗺️ View on Map / Get Directions</span>
           </a>
@@ -316,13 +316,13 @@ const JourneyWorkspaceView = ({ journeyId }) => {
         <div className="space-y-2 mt-1 flex-1 flex flex-col justify-between">
           <div className="space-y-1.5">
             {phone &&
-            <p className="text-xs font-black text-rose-600 dark:text-rose-400 flex items-center gap-1.5 m-0">
+            <p className="text-xs font-black text-rose-600 flex items-center gap-1.5 m-0">
                 <ShieldAlert className="w-3.5 h-3.5 shrink-0" />
                 <span>📞 {phone}</span>
               </p>}
 
             {details &&
-            <p className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap font-medium m-0 leading-relaxed">
+            <p className="text-xs text-text-secondary whitespace-pre-wrap font-medium m-0 leading-relaxed">
                 {details}
               </p>}
 
@@ -331,7 +331,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           {phone && (
             <a
               href={`tel:${phone}`}
-              className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100 dark:bg-rose-950/60 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-black transition-all border border-rose-200 dark:border-rose-800 active:scale-95"
+              className="mt-3 inline-flex items-center justify-center gap-1.5 w-full py-2 px-3 rounded-xl bg-rose-50 hover:bg-rose-100:bg-rose-900/60 text-rose-700 text-xs font-black transition-all border border-rose-200 active:scale-95"
             >
               <span>📞 Call Contact</span>
             </a>
@@ -342,7 +342,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
     const parsed = parseNoteDetails(note.content);
     return (
-      <p className="text-xs text-slate-600 dark:text-slate-300 whitespace-pre-wrap leading-relaxed mt-1 font-medium flex-1">
+      <p className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed mt-1 font-medium flex-1">
         {parsed.details || note.content}
       </p>
     );
@@ -361,21 +361,21 @@ const JourneyWorkspaceView = ({ journeyId }) => {
   return (
     <div className="space-y-5 animate-fade-in">
       {/* Category Tabs Header */}
-      <div className="bg-slate-100/90 dark:bg-slate-900/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-xs flex items-center justify-between gap-2 overflow-hidden">
+      <div className="bg-background/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-2 overflow-hidden">
         <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar py-0.5 px-0.5 flex-1 whitespace-nowrap flex-nowrap">
           <button
             onClick={() => setActiveTab("All")}
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap select-none shrink-0 ${
               activeTab === "All"
-                ? "bg-white dark:bg-slate-800 text-[#7C3AED] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
-                : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/40"
+                ? "bg-white text-brand shadow-xs font-extrabold ring-1 ring-slate-200/80"
+                : "text-text-secondary hover:text-text-primary hover:bg-white/50/40"
             }`}
           >
             <Layers
-              className={`w-3.5 h-3.5 ${activeTab === "All" ? "text-[#7C3AED]" : "text-slate-400"}`}
+              className={`w-3.5 h-3.5 ${activeTab === "All" ? "text-brand" : "text-text-muted"}`}
             />
             <span>All Items</span>
-            <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-brand-100 dark:bg-brand-900 text-[#7C3AED] rounded-md font-black">
+            <span className="ml-1 px-1.5 py-0.2 text-[10px] bg-brand-100 text-brand rounded-md font-black">
               {notes.length}
             </span>
           </button>
@@ -388,11 +388,11 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 onClick={() => setActiveTab(c.name)}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap select-none shrink-0 ${
                   isActive
-                    ? "bg-white dark:bg-slate-800 text-[#7C3AED] shadow-xs font-extrabold ring-1 ring-slate-200/80 dark:ring-slate-700"
-                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-white/50 dark:hover:bg-slate-800/40"
+                    ? "bg-white text-brand shadow-xs font-extrabold ring-1 ring-slate-200/80"
+                    : "text-text-secondary hover:text-text-primary hover:bg-white/50/40"
                 }`}
               >
-                <span className={isActive ? "text-[#7C3AED]" : "text-slate-400"}>
+                <span className={isActive ? "text-brand" : "text-text-muted"}>
                   {c.icon}
                 </span>
                 <span>{c.name}</span>
@@ -406,7 +406,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             resetForm();
             setIsModalOpen(true);
           }}
-          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs font-bold shadow-md shadow-[#7C3AED]/25 transition-all active:scale-95 shrink-0 whitespace-nowrap ml-1"
+          className="flex items-center justify-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold shadow-md shadow-brand/25 transition-all active:scale-95 shrink-0 whitespace-nowrap ml-1"
         >
           <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
           <span>Add Item</span>
@@ -416,19 +416,19 @@ const JourneyWorkspaceView = ({ journeyId }) => {
       {/* Grid of Workspace Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
         {filteredNotes.length === 0 ? (
-          <div className="col-span-full py-8 px-6 text-center bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/80 dark:border-slate-800 shadow-xs">
-            <div className="w-10 h-10 bg-[#7C3AED]/10 text-[#7C3AED] rounded-xl flex items-center justify-center mx-auto mb-2 border border-[#7C3AED]/20">
+          <div className="col-span-full py-8 px-6 text-center bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+            <div className="w-10 h-10 bg-brand/10 text-brand rounded-xl flex items-center justify-center mx-auto mb-2 border border-brand/20">
               <Sparkles className="w-5 h-5" />
             </div>
-            <h4 className="text-sm font-black text-slate-800 dark:text-white">
+            <h4 className="text-sm font-black text-text-primary">
               No items in this category yet
             </h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto mt-0.5 font-medium leading-relaxed">
+            <p className="text-xs text-text-muted max-w-sm mx-auto mt-0.5 font-medium leading-relaxed">
               Add notes, packing checklists, meeting points, or emergency information for your travel group.
             </p>
             <button
               onClick={() => setIsModalOpen(true)}
-              className="mt-3.5 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs font-bold transition-all shadow-sm active:scale-95"
+              className="mt-3.5 inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold transition-all shadow-sm active:scale-95"
             >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> Add First Item
             </button>
@@ -437,21 +437,21 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           filteredNotes.map((note) => (
             <div
               key={note._id}
-              className={`relative bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-3xl p-5 border transition-all duration-300 flex flex-col justify-between h-full group ${
+              className={`relative bg-white/95 backdrop-blur-md rounded-3xl p-5 border transition-all duration-300 flex flex-col justify-between h-full group ${
                 note.isPinned
-                  ? "border-amber-400/80 bg-gradient-to-br from-amber-500/10 via-white to-white dark:from-amber-950/30 dark:to-slate-900 shadow-md ring-1 ring-amber-400/30"
-                  : "border-slate-200/80 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md shadow-xs"
+                  ? "border-amber-400/80 bg-gradient-to-br from-amber-500/10 via-white to-white shadow-md ring-1 ring-amber-400/30"
+                  : "border-slate-200/80 hover hover:shadow-md shadow-xs"
               }`}
             >
               <div className="flex-1 flex flex-col min-h-0">
-                <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100 dark:border-slate-800/80 shrink-0">
-                  <span className="px-3 py-1 rounded-xl bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700/60">
+                <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-slate-100 shrink-0">
+                  <span className="px-3 py-1 rounded-xl bg-background text-[10px] font-bold uppercase tracking-wider text-text-primary border border-slate-200/60">
                     {note.category}
                   </span>
                   <div className="flex items-center gap-1 opacity-85 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={() => handleEditClick(note)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                      className="p-1.5 rounded-xl text-text-muted hover:text-text-primary hover:bg-background transition-colors"
                       title="Edit Item"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -460,8 +460,8 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       onClick={() => togglePin(note)}
                       className={`p-1.5 rounded-xl transition-colors ${
                         note.isPinned
-                          ? "text-amber-500 bg-amber-100 dark:bg-amber-950/60"
-                          : "text-slate-400 hover:text-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
+                          ? "text-amber-500 bg-amber-100"
+                          : "text-text-muted hover:text-text-primary hover:bg-background"
                       }`}
                       title="Pin Item"
                     >
@@ -471,7 +471,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                     </button>
                     <button
                       onClick={() => handleDelete(note._id)}
-                      className="p-1.5 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/50 transition-colors"
+                      className="p-1.5 rounded-xl text-text-muted hover:text-rose-600 hover:bg-rose-50:bg-rose-950/50 transition-colors"
                       title="Delete Item"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -479,17 +479,17 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                   </div>
                 </div>
 
-                <h4 className="text-sm font-black text-slate-900 dark:text-white mb-2 leading-snug shrink-0">
+                <h4 className="text-sm font-black text-text-primary mb-2 leading-snug shrink-0">
                   {note.title}
                 </h4>
 
                 {renderCardBody(note)}
               </div>
 
-              <div className="pt-3 mt-4 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 font-medium shrink-0">
-                <span className="flex items-center gap-1.5 text-slate-500 dark:text-slate-400 truncate pr-2">
+              <div className="pt-3 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-text-muted font-medium shrink-0">
+                <span className="flex items-center gap-1.5 text-text-muted truncate pr-2">
                   By{" "}
-                  <strong className="text-slate-800 dark:text-slate-200 font-extrabold truncate">
+                  <strong className="text-text-primary font-extrabold truncate">
                     {note.creatorName || "Traveler"}
                   </strong>
                 </span>
@@ -509,7 +509,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !loading) {
               resetForm();
@@ -520,12 +520,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[90vh] overflow-y-auto relative animate-scale-up"
+            className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto relative animate-scale-up"
           >
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
-              <h3 className="text-base font-black text-slate-900 dark:text-white flex items-center gap-2 m-0 tracking-tight">
-                <Sparkles className="w-4 h-4 text-[#7C3AED]" />{" "}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-black text-text-primary flex items-center gap-2 m-0 tracking-tight">
+                <Sparkles className="w-4 h-4 text-brand" />{" "}
                 {editingNoteId ? "Edit Workspace Item" : "Add Workspace Item"}
               </h3>
               <button
@@ -535,7 +535,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                   setIsModalOpen(false);
                 }}
                 disabled={loading}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-xl text-text-muted hover:text-text-secondary hover:bg-background transition-colors disabled:opacity-50"
                 aria-label="Close modal"
               >
                 <X className="w-5 h-5" />
@@ -545,7 +545,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             <form onSubmit={handleCreateNote} className="space-y-4 pt-1">
               {/* Category Select */}
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                   Category
                 </label>
                 <CustomSelect
@@ -558,7 +558,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
               {/* Title / Name */}
               <div>
-                <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                   {["Emergency Info", "Emergency"].includes(category)
                     ? "Contact Name / Organization *"
                     : category === "Meeting Point"
@@ -583,7 +583,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       ? "e.g. Ferry Timings & Local Food Recommendations"
                       : "e.g. Flight Boarding Gates & Hotel Reservation Code"
                   }
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all"
+                  className="input-field"
                 />
               </div>
 
@@ -591,7 +591,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
               {category === "Meeting Point" && (
                 <>
                   <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-rose-500" /> Address / Area Details
                     </label>
                     <input
@@ -599,25 +599,25 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={locationAddress}
                       onChange={(e) => setLocationAddress(e.target.value)}
                       placeholder="e.g. Agarkar Nagar, Platform 1 Side, Pune"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all"
+                      className="input-field"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5 text-[#7C3AED]" /> Meeting Date & Time
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5 flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5 text-brand" /> Meeting Date & Time
                     </label>
                     <input
                       type="text"
                       value={meetingTime}
                       onChange={(e) => setMeetingTime(e.target.value)}
                       placeholder="e.g. Aug 15, 2026 · 06:30 AM"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all"
+                      className="input-field"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                       💬 Meeting Instructions
                     </label>
                     <textarea
@@ -625,7 +625,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="e.g. Meet outside the main entrance near the prepaid taxi stand."
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all resize-none"
+                      className="input-field"
                     />
                   </div>
                 </>
@@ -635,7 +635,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
               {["Emergency Info", "Emergency"].includes(category) && (
                 <>
                   <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5 flex items-center gap-1">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5 flex items-center gap-1">
                       <ShieldAlert className="w-3.5 h-3.5 text-rose-500" /> Phone Number / Contact Info *
                     </label>
                     <input
@@ -643,12 +643,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={emergencyPhone}
                       onChange={(e) => setEmergencyPhone(e.target.value)}
                       placeholder="e.g. +91 98765 43210 or Local Tourist Police"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-bold text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all"
+                      className="input-field"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                    <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                       Emergency Notes & Location
                     </label>
                     <textarea
@@ -656,7 +656,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
                       placeholder="e.g. Nearest hospital address, ambulance contact, or group medical notes..."
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all resize-none"
+                      className="input-field"
                     />
                   </div>
                 </>
@@ -665,7 +665,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
               {/* Packing / Checklist Fields */}
               {["Packing", "Checklists / Packing", "Checklist", "Packing List"].includes(category) && (
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                     Add Checklist Items
                   </label>
                   <div className="flex gap-2 mb-2.5">
@@ -674,12 +674,12 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                       value={checklistInput}
                       onChange={(e) => setChecklistInput(e.target.value)}
                       placeholder="e.g. Pack chargers, power bank & adapter"
-                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 text-slate-800 dark:text-slate-100 transition-all"
+                      className="input-field"
                     />
                     <button
                       type="button"
                       onClick={handleAddItem}
-                      className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-extrabold transition-all shrink-0 active:scale-95"
+                      className="px-4 py-2 bg-brand hover:bg-brand-dark text-white rounded-xl text-xs font-extrabold transition-all shrink-0 active:scale-95"
                     >
                       Add
                     </button>
@@ -688,7 +688,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                     {items.map((it, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between p-2.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 border border-slate-200/60 dark:border-slate-700/60"
+                        className="flex items-center justify-between p-2.5 bg-background rounded-xl text-xs font-semibold text-text-primary border border-slate-200/60"
                       >
                         <span>• {it.text}</span>
                         <button
@@ -707,7 +707,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
               {/* Travel Tips */}
               {(category === "Travel Tips" || category === "Travel Tip") && (
                 <div>
-                  <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                  <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                     Tip Details & Useful Links
                   </label>
                   <textarea
@@ -715,7 +715,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                     value={content}
                     onChange={(e) => setContent(e.target.value)}
                     placeholder="e.g. Take the 7:30 AM ferry to avoid peak queue. Book tickets at..."
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-xs font-medium text-slate-800 dark:text-slate-100 outline-none focus:border-[#7C3AED] focus:ring-2 focus:ring-[#7C3AED]/20 transition-all resize-none"
+                    className="input-field"
                   />
                 </div>
               )}
@@ -727,18 +727,18 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                   id="pinNote"
                   checked={isPinned}
                   onChange={(e) => setIsPinned(e.target.checked)}
-                  className="rounded text-[#7C3AED] focus:ring-[#7C3AED] w-4 h-4 cursor-pointer"
+                  className="rounded text-brand focus:ring-brand w-4 h-4 cursor-pointer"
                 />
                 <label
                   htmlFor="pinNote"
-                  className="text-xs font-extrabold text-amber-600 dark:text-amber-400 cursor-pointer flex items-center gap-1"
+                  className="text-xs font-extrabold text-amber-600 cursor-pointer flex items-center gap-1"
                 >
                   📌 Pin to Top of Workspace
                 </label>
               </div>
 
               {/* Bottom Action Layout: [ Cancel ] [ Save Item ] */}
-              <div className="flex items-center gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => {
@@ -746,14 +746,14 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                     setIsModalOpen(false);
                   }}
                   disabled={loading}
-                  className="px-5 py-3 rounded-xl text-sm font-bold text-slate-600 dark:text-slate-300 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+                  className="px-5 py-3 rounded-xl text-sm font-bold text-text-secondary bg-background hover transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-[#7C3AED] hover:bg-[#6d28d9] text-white text-xs sm:text-sm font-bold shadow-lg shadow-[#7C3AED]/25 transition-all active:scale-[0.98] disabled:opacity-50"
+                  className="flex-1 flex items-center justify-center gap-2 py-3 px-5 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs sm:text-sm font-bold shadow-lg shadow-brand/25 transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   {loading
                     ? "Saving..."
