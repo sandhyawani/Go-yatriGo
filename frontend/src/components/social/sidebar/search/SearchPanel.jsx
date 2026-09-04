@@ -148,11 +148,10 @@ const SearchPanel = () => {
           {["all", "travelers", "groups", "posts"].map((tab) => (
             <button
               key={tab}
+              type="button"
               onClick={() => setSearchTab(tab)}
-              className={`px-3 py-1 rounded-xl text-xs font-bold transition-all capitalize whitespace-nowrap shrink-0 ${
-                searchTab === tab
-                  ? "bg-brand text-white shadow-xs"
-                  : "bg-white text-text-secondary hover:bg-brand-50 border border-slate-200"
+              className={`tab-pill shrink-0 capitalize ${
+                searchTab === tab ? "tab-pill-active" : "tab-pill-inactive"
               }`}
             >
               {tab === "posts" ? "Travel Memories" : tab}
