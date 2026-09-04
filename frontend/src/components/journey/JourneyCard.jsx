@@ -205,15 +205,16 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           <div className="flex items-center gap-1.5">
             <Link
               to={`/social/journeys/${journey._id}`}
-              className="flex-1 py-2 px-3 rounded-xl font-bold text-[11px] uppercase tracking-wider text-white bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 group/btn active:scale-[0.98]"
+              className="btn-primary flex-1 !min-h-[40px] !py-2 !px-3 !text-[11px] !tracking-wider flex items-center justify-center gap-1.5 group/btn"
             >
               <span>Open Journey</span>
-              <ArrowRight className="w-3 h-3 transition-transform group-hover/btn:translate-x-1" />
+              <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover/btn:translate-x-1" />
             </Link>
             {isOngoing && onCheckInClick && (
               <button
+                type="button"
                 onClick={() => onCheckInClick(journey)}
-                className="w-8 h-8 rounded-xl bg-sky-50 hover:bg-sky-100 text-brand border border-sky-200/80 flex items-center justify-center shrink-0 transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                className="w-10 h-10 rounded-xl bg-sky-50 hover:bg-sky-100 text-brand border border-sky-200/80 flex items-center justify-center shrink-0 transition-all shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
                 title="Safe Check-In"
               >
                 <ShieldCheck className="w-4 h-4" />
