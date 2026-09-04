@@ -84,10 +84,10 @@ export const ProfileTabs = ({
 
   return (
     <nav className="w-full select-none" aria-label="Profile sections">
-      <div className="w-full rounded-2xl border border-border/80 bg-surface p-1 shadow-xs">
+      <div className="tabs-container w-full p-1">
         <div
           ref={containerRef}
-          className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none scroll-smooth p-0.5"
+          className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto scrollbar-none scroll-smooth p-0.5 w-full"
         >
           {visibleTabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -100,17 +100,15 @@ export const ProfileTabs = ({
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 aria-selected={isActive}
-                className={`group flex min-h-[40px] sm:min-h-[42px] shrink-0 sm:flex-1 min-w-max items-center justify-center gap-1.5 sm:gap-2 rounded-xl px-3 sm:px-3.5 text-xs font-semibold font-sans whitespace-nowrap transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 ${
-                  isActive
-                    ? "bg-primary-600 text-white shadow-xs shadow-primary-600/20"
-                    : "text-secondary-600 hover:bg-secondary-50 hover:text-dark"
+                className={`tab-btn flex-1 min-h-[42px] px-3 sm:px-3.5 select-none ${
+                  isActive ? "tab-btn-active" : "tab-btn-inactive"
                 }`}
               >
                 <Icon
                   className={`h-4 w-4 shrink-0 transition-colors ${
                     isActive
                       ? "text-white"
-                      : "text-secondary-400 group-hover:text-primary-500"
+                      : "text-slate-400 group-hover:text-primary-500"
                   }`}
                   strokeWidth={isActive ? 2.4 : 2}
                 />
@@ -124,7 +122,7 @@ export const ProfileTabs = ({
                     className={`inline-flex shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-extrabold leading-none ${
                       isActive
                         ? "bg-white/20 text-white"
-                        : "bg-secondary-100 text-secondary-600"
+                        : "bg-primary-50 text-brand"
                     }`}
                   >
                     {tab.count}
