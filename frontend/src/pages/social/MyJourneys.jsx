@@ -218,8 +218,9 @@ const MyJourneys = () => {
             </div>
 
             <button
+              type="button"
               onClick={handleOpenCreateJourney}
-              className="inline-flex items-center gap-1 px-3 py-2 bg-brand hover:bg-brand-dark text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-xs active:scale-95 transition-transform shrink-0 cursor-pointer"
+              className="btn-primary !min-h-[40px] !py-2 !px-3.5 !text-xs !tracking-wider flex items-center gap-1.5 shrink-0"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3]" />
               <span>Plan</span>
@@ -276,13 +277,14 @@ const MyJourneys = () => {
             <div className="flex items-center gap-3 shrink-0 font-sans">
               <Link
                 to="/profile"
-                className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-background hover/80 text-text-primary text-xs font-bold transition-all border border-slate-200/60"
+                className="btn-secondary !min-h-[44px] !py-2.5 !px-4 !text-xs !font-bold inline-flex items-center gap-1.5"
               >
                 <Sparkles className="w-3.5 h-3.5 text-brand" /> My Profile
               </Link>
               <button
+                type="button"
                 onClick={handleOpenCreateJourney}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl shadow-md shadow-brand/25 transition-all active:scale-95 shrink-0 cursor-pointer"
+                className="btn-primary !min-h-[44px] !py-2.5 !px-5 !text-xs !tracking-wider inline-flex items-center gap-2"
               >
                 <Plus className="w-4 h-4 stroke-[3]" /> Launch Journey
               </button>
@@ -298,17 +300,16 @@ const MyJourneys = () => {
         <div className="sticky top-0 lg:top-auto z-20 pt-3 lg:pt-0 bg-background/90 lg:bg-transparent backdrop-blur-md -mx-4 sm:mx-0">
           <div className="w-full overflow-x-auto scrollbar-none pb-1">
             <div className="flex w-max min-w-full px-4 sm:px-0 sm:justify-start">
-              <div className="flex flex-nowrap gap-1.5 p-1.5 bg-white/90 rounded-2xl relative select-none border border-slate-200/80 shadow-sm shrink-0">
+              <div className="tabs-container shrink-0">
                 {tabs.map((tab) => {
                   const isActive = activeTab === tab.id;
                   return (
                     <button
                       key={tab.id}
+                      type="button"
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap select-none shrink-0 cursor-pointer ${
-                        isActive
-                          ? "bg-gradient-to-r from-brand to-brand-dark text-white shadow-sm shadow-brand/25"
-                          : "text-text-secondary hover:text-text-primary hover"
+                      className={`tab-btn select-none shrink-0 ${
+                        isActive ? "tab-btn-active" : "tab-btn-inactive"
                       }`}
                     >
                       <span className={isActive ? "text-white" : "text-text-muted"}>
@@ -440,9 +441,10 @@ const MyJourneys = () => {
             "Create your collaborative journey workspace and invite your travel group to plan together."}
             </p>
             <button
-          onClick={handleOpenCreateJourney}
-          className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-xl shadow-soft transition-all duration-200">
-
+              type="button"
+              onClick={handleOpenCreateJourney}
+              className="btn-primary !min-h-[42px] !py-2.5 !px-5 !text-xs !tracking-wider inline-flex items-center gap-1.5"
+            >
               <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> Launch Journey
             </button>
           </div> :
@@ -659,8 +661,9 @@ const MyJourneys = () => {
                      "Try adjusting your filters or create a new journey."}
                   </p>
                   <button
+                    type="button"
                     onClick={handleOpenCreateJourney}
-                    className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-brand hover:bg-brand-dark text-white font-semibold text-xs rounded-xl shadow-soft transition-all duration-200"
+                    className="btn-primary !min-h-[42px] !py-2.5 !px-5 !text-xs !tracking-wider inline-flex items-center gap-1.5"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> Launch Journey
                   </button>
@@ -684,11 +687,12 @@ const MyJourneys = () => {
                         ].map(opt => (
                           <button
                             key={opt.key}
+                            type="button"
                             onClick={() => setSourceFilter(opt.key)}
-                            className={`px-3 py-1.5 rounded-xl text-[11px] font-bold whitespace-nowrap transition-all cursor-pointer ${
+                            className={`tab-pill shrink-0 ${
                               sourceFilter === opt.key
-                                ? "bg-brand text-white shadow-xs"
-                                : "bg-white text-text-secondary border border-slate-200/80 hover"
+                                ? "tab-pill-active"
+                                : "tab-pill-inactive"
                             }`}
                           >
                             {opt.label}
