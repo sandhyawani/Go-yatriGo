@@ -449,11 +449,10 @@ const TravelBuddyHub = () => {
         {chips.map((chip) => (
           <button
             key={chip.id}
+            type="button"
             onClick={chip.onClick}
-            className={`snap-start inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-150 shrink-0 ${
-              chip.isActive
-                ? "bg-sky-600 text-white shadow-xs font-semibold"
-                : "bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            className={`snap-start tab-pill shrink-0 ${
+              chip.isActive ? "tab-pill-active" : "tab-pill-inactive"
             }`}
           >
             <span>{chip.emoji}</span>
@@ -499,7 +498,7 @@ const TravelBuddyHub = () => {
             <div className="shrink-0 w-full sm:w-auto pt-0.5 sm:pt-0">
               <Link
                 to="/social/buddy/new"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 sm:py-2.5 min-h-[38px] sm:min-h-[40px] bg-sky-600 hover:bg-sky-700 active:bg-sky-800 text-white font-semibold text-xs sm:text-sm rounded-xl shadow-xs transition-all duration-200 select-none active:scale-95"
+                className="btn-primary w-full sm:w-auto !min-h-[42px] !py-2 sm:!py-2.5 !px-4 !text-xs sm:!text-sm inline-flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4 text-white stroke-[2.5] shrink-0" />
                 <span>Create Trip Group</span>
@@ -538,7 +537,7 @@ const TravelBuddyHub = () => {
           {/* Sleek Search Box Row */}
           <div className="flex items-center gap-2 flex-1 max-w-none lg:max-w-lg">
             <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
               <input
                 type="text"
                 value={searchQuery}
@@ -547,10 +546,11 @@ const TravelBuddyHub = () => {
                   setPage(1);
                 }}
                 placeholder="Search destination, trek, fort (e.g. Manali, Rajgad)..."
-                className="w-full pl-10 pr-9 py-2 rounded-xl bg-slate-50 hover:bg-slate-100/70 focus:bg-white text-slate-800 placeholder-slate-400 text-xs sm:text-sm font-medium border border-slate-200/70 focus:border-brand focus:ring-2 focus:ring-brand/10 transition-all duration-200"
+                className="input-field !pl-10 !pr-9 !text-xs sm:!text-sm"
               />
               {searchQuery && (
                 <button
+                  type="button"
                   onClick={() => {
                     setSearchQuery("");
                     setPage(1);
