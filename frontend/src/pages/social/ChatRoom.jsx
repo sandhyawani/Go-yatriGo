@@ -5,7 +5,7 @@ import axios from "../../api/axios";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
 import { SOCKET_EVENTS } from "../../constants/socketEvents";
-import { MessageSquare, Video, Loader2 } from "lucide-react";
+import { MessageSquare, Loader2 } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -166,7 +166,7 @@ const ChatRoom = () => {
       window.removeEventListener("refresh_chats", handleRefresh);
       window.removeEventListener("message_sent", handleMessageSent);
     };
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roomId, legacyTargetUserId, legacyGroupId]);
 
   const showScrollBottomRef = useRef(showScrollBottom);
@@ -389,10 +389,12 @@ const ChatRoom = () => {
             const mSenderId = typeof m.sender === "object" ? m.sender?._id || m.sender?.id : m.sender;
             const msgSenderId = typeof message.sender === "object" ? message.sender?._id || message.sender?.id : message.sender;
             const mStoryId = getRoomIdString(m.storyId);
-            return m._id === message._id ||
-            mSenderId?.toString() === msgSenderId?.toString() &&
-            mStoryId === storyRef &&
-            (m.text || "").startsWith("Reacted to your Dispatch:");
+            return (
+              m._id === message._id ||
+              (mSenderId?.toString() === msgSenderId?.toString() &&
+                mStoryId === storyRef &&
+                (m.text || "").startsWith("Reacted to your Dispatch:"))
+            );
           });
           const updated = [...prev];
           if (idx !== -1) {
@@ -542,7 +544,7 @@ const ChatRoom = () => {
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, onFollowRequestResolved);
       socket.off("chat_unhidden", onChatUnhidden);
     };
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [socket, currentUserId]);
 
 
@@ -1528,9 +1530,9 @@ const ChatRoom = () => {
       }, 50);
       setUnreadNewMessagesCount(0);
     } else if (
-    currentLength > prevMessagesLength.current ||
-    currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
-    {
+      currentLength > prevMessagesLength.current ||
+      (currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
+    ) {
       const lastMsg = messages[currentLength - 1];
       const senderId = typeof lastMsg?.sender === "object" ? lastMsg.sender?._id || lastMsg.sender?.id : lastMsg?.sender;
       const isSelf = senderId?.toString() === currentUserId?.toString();
@@ -1571,10 +1573,10 @@ const ChatRoom = () => {
   }, [showHeaderOptions]);
 
   const activeChats = rooms.filter(
-  (r) =>
-  r.type === "direct" && (
-  r.requestStatus === "accepted" ||
-  r.requestStatus === "pending" && isMyRequest(r))
+    (r) =>
+      r.type === "direct" &&
+      (r.requestStatus === "accepted" ||
+        (r.requestStatus === "pending" && isMyRequest(r)))
   );
   const requestChats = rooms.filter(
   (r) =>

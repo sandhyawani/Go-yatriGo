@@ -45,8 +45,15 @@ process.env.NODE_ENV === "production" ?
 "http://127.0.0.1:5173"];
 
 
+const capacitorOrigins = [
+  "https://localhost",
+  "http://localhost",
+  "capacitor://localhost"
+];
+
 const allowedClientOrigins = [
-...new Set([...configuredClientOrigins, ...developmentClientOrigins])];
+  ...new Set([...configuredClientOrigins, ...developmentClientOrigins, ...capacitorOrigins])
+];
 
 
 const isDev = process.env.NODE_ENV !== "production";
@@ -322,9 +329,11 @@ io.on("connection", (socket) => {
 
         const journey = await Journey.findById(roomId);
         if (journey) {
-          const isMember = journey.members.some(
-            (m) => (m.user?._id || m.user).toString() === userId.toString()
-          );
+          const isMember =
+            (journey.creator?._id || journey.creator)?.toString() === userId.toString() ||
+            journey.members.some(
+              (m) => (m.user?._id || m.user).toString() === userId.toString()
+            );
           if (isMember) {
             socket.join(roomId);
           } else {
@@ -505,6 +514,10 @@ io.on("connection", (socket) => {
       }
     }
   });
+
+  // Journey Live Trip Tracking isolated socket handlers
+  const { registerJourneyTrackingHandlers } = require("./socket/journeyTrackingSocket");
+  registerJourneyTrackingHandlers(io, socket);
 
   socket.on("disconnect", (reason) => {
     if (socket.userId) {

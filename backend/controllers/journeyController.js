@@ -106,7 +106,6 @@ exports.createJourney = async (req, res) => {
 
     const finalSourceType = sourceType || "manual";
 
-    // Guard 1: If sourceId is itself an existing Journey._id, do not create a duplicate; return existing Journey
     if (sourceId && mongoose.isValidObjectId(sourceId)) {
       const existingJourneyById = await Journey.findById(sourceId).session(session);
       if (existingJourneyById) {

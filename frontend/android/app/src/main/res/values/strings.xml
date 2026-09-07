@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Go YatriGo</string>
+    <string name="title_activity_main">Go YatriGo</string>
+    <string name="package_name">com.goyatrigo.app</string>
+    <string name="custom_url_scheme">com.goyatrigo.app</string>
+</resources>

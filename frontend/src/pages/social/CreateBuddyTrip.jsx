@@ -1,7 +1,6 @@
-import React, { useState, useContext, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "../../api/axios";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/authContext";
 import { GROUP_CATEGORIES } from "../../constants/groupCategories";
 import CustomSelect from "../../components/ui/CustomSelect";
 import { MapPin, Calendar, Users, ArrowLeft, Globe, ShieldCheck, Camera, Check, Circle } from "lucide-react";
@@ -10,7 +9,6 @@ import { toast } from "sonner";
 import moment from "moment";
 
 const CreateBuddyTrip = () => {
-  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const todayStr = new Date().toISOString().split("T")[0];
@@ -34,7 +32,6 @@ const CreateBuddyTrip = () => {
   const [file, setFile] = useState(null);
   const [autoCoverOptions, setAutoCoverOptions] = useState([]);
   const [selectedAutoCoverIndex, setSelectedAutoCoverIndex] = useState(0);
-  const [isFetchingAutoCover, setIsFetchingAutoCover] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeSection, setActiveSection] = useState("basics");
 
@@ -70,7 +67,6 @@ const CreateBuddyTrip = () => {
       return;
     }
     const timeoutId = setTimeout(async () => {
-      setIsFetchingAutoCover(true);
       try {
         const res = await axios.get(`/journeys/auto-cover-preview?destination=${encodeURIComponent(formData.destination)}&category=${encodeURIComponent(formData.category)}`);
         if (res.data?.success) {
@@ -79,8 +75,6 @@ const CreateBuddyTrip = () => {
         }
       } catch (err) {
         console.error("Failed to fetch auto cover preview", err);
-      } finally {
-        setIsFetchingAutoCover(false);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
@@ -167,13 +161,6 @@ const CreateBuddyTrip = () => {
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result);
     reader.readAsDataURL(selectedFile);
-  };
-
-  const removeImage = () => {
-    setImagePreview("");
-    setFile(null);
-    setFormData((prev) => ({ ...prev, coverImage: "" }));
-    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleSubmit = async (e) => {

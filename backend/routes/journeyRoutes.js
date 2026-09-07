@@ -7,6 +7,7 @@ const journeyMembershipController = require("../controllers/journeyMembershipCon
 const journeyHostController = require("../controllers/journeyHostController");
 const journeyCancellationController = require("../controllers/journeyCancellationController");
 const journeyLifecycleController = require("../controllers/journeyLifecycleController");
+const journeyTrackingController = require("../controllers/journeyTrackingController");
 
 router.use(protect);
 
@@ -124,5 +125,13 @@ post(journeyMembershipController.acceptJourneyJoinRequest);
 
 router.route("/join-requests/:requestId/reject").
 post(journeyMembershipController.rejectJourneyJoinRequest);
+
+// Live Trip Tracking
+router.route("/:id/tracking/settings").
+get(journeyTrackingController.getTrackingSettings).
+put(journeyTrackingController.updateTrackingSettings);
+
+router.route("/:id/tracking/live").
+get(journeyTrackingController.getJourneyLiveTracking);
 
 module.exports = router;

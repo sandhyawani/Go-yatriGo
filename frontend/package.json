@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@capacitor/android": "^8.5.1",
+    "@capacitor/core": "^8.5.1",
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@headlessui/react": "^1.7.14",
@@ -19,6 +21,7 @@
     "js-cookie": "^3.0.5",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.28",
+    "leaflet": "^1.9.4",
     "lucide-react": "^1.14.0",
     "moment": "^2.29.4",
     "react": "^18.2.0",
@@ -38,6 +41,8 @@
   "scripts": {
     "start": "react-scripts --openssl-legacy-provider start",
     "build": "cross-env CI=false DISABLE_ESLINT_PLUGIN=true react-scripts build",
+    "cap:sync": "cap sync android",
+    "cap:build": "npm run build && cap sync android",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
@@ -60,6 +65,7 @@
     ]
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.1",
     "autoprefixer": "^10.4.14",
     "cross-env": "^10.1.0",
     "postcss": "^8.4.22",
