@@ -17,6 +17,7 @@ const MobileBottomNav = () => {
     path.startsWith("/social/buddy/new") ||
     path.startsWith("/social/buddy/edit") ||
     path.startsWith("/social/journey/") ||
+    path.startsWith("/social/journeys/") ||
     path.startsWith("/updateProfile");
 
   if (hideBottomNav) return null;

@@ -22,7 +22,8 @@ import {
   User,
   ChevronLeft,
   Clock,
-  AlertTriangle
+  AlertTriangle,
+  Navigation
 } from "lucide-react";
 import axiosInstance from "../../api/axios";
 import { AuthContext } from "../../context/authContext";
@@ -36,6 +37,7 @@ import JourneyTimelineView from "../../components/journey/JourneyTimelineView";
 import JourneyWorkspaceView from "../../components/journey/JourneyWorkspaceView";
 import JourneyGalleryView from "../../components/journey/JourneyGalleryView";
 import JourneyMemoryCard from "../../components/journey/JourneyMemoryCard";
+import LiveTrackingTab from "../../components/journey/tracking/LiveTrackingTab";
 import InviteBuddyModal from "../../components/journey/InviteBuddyModal";
 import SafeCheckInModal from "../../components/journey/SafeCheckInModal";
 import CancelJourneyModal from "../../components/journey/CancelJourneyModal";
@@ -49,7 +51,7 @@ const JourneyDetailsPage = () => {
   const { user } = useContext(AuthContext) || {};
   const currentUserId = user?._id || user?.id;
 
-  const validTabs = ["overview", "workspace", "timeline", "members", "gallery", "memories"];
+  const validTabs = ["overview", "tracking", "workspace", "timeline", "members", "gallery", "memories"];
   const urlTab = searchParams.get("tab");
   const normalizedUrlTab = urlTab === "safety" ? "timeline" : urlTab;
   const initialTab = normalizedUrlTab && validTabs.includes(normalizedUrlTab) ? normalizedUrlTab : "overview";
@@ -231,19 +233,24 @@ const JourneyDetailsPage = () => {
 
   const lifecycle = getJourneyLifecycle(journey);
 
+  const currentUserIdStr = (currentUserId?._id || currentUserId?.id || currentUserId || "").toString();
+
   const isHost =
-    (journey.creator?._id || journey.creator)?.toString() === currentUserId?.toString();
+    (journey.creator?._id || journey.creator?.id || journey.creator || "")?.toString() === currentUserIdStr;
 
   const isOrganizer = isHost;
 
   const isCoOrganizer = journey.members?.some(
-    (m) => (m.user?._id || m.user).toString() === currentUserId?.toString() && m.role === "Co-Organizer"
+    (m) => (m.user?._id || m.user?.id || m.user || m._id || m || "").toString() === currentUserIdStr &&
+      (m.role === "Co-Organizer" || m.role === "cohost" || m.role === "Co-Leader") &&
+      (!m.status || m.status === "active")
   );
 
   const isMember =
     isHost ||
     journey.members?.some(
-      (m) => (m.user?._id || m.user).toString() === currentUserId?.toString()
+      (m) => (m.user?._id || m.user?.id || m.user || m._id || m || "").toString() === currentUserIdStr &&
+        (!m.status || m.status === "active")
     );
 
   const isRegularMember = isMember && !isHost;
@@ -295,6 +302,7 @@ const JourneyDetailsPage = () => {
 
   const tabs = [
   { id: "overview", label: "Overview", shortLabel: "Info", icon: Compass },
+  { id: "tracking", label: "Live Tracking", shortLabel: "Live", icon: Navigation, isLive: lifecycle.isOngoing },
   { id: "workspace", label: "Workspace", shortLabel: "Plans", icon: Layout },
   { id: "timeline", label: "Timeline", shortLabel: "Safety", icon: ShieldCheck },
   {
@@ -312,7 +320,7 @@ const JourneyDetailsPage = () => {
   "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80";
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-background pb-28 lg:pb-10">
+    <div className="min-h-screen flex flex-col justify-between bg-background pb-20 lg:pb-10">
       <div className="flex-1 min-h-[calc(100vh-14rem)] flex flex-col">
 
         {/* Top Sticky Bar on Mobile */}
@@ -372,9 +380,9 @@ const JourneyDetailsPage = () => {
         {/* Back Link on Desktop */}
         <div className="hidden lg:flex max-w-6xl mx-auto px-4 sm:px-6 pt-5 items-center justify-between w-full">
           <Link
-          to="/social/journeys"
-          className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover text-xs font-bold text-text-primary transition-all shadow-xs">
-
+            to="/social/journeys"
+            className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-xs font-bold text-text-primary transition-all shadow-xs"
+          >
             <ArrowLeft className="w-4 h-4 text-text-muted" /> Back to Journey Hub
           </Link>
         </div>
@@ -432,7 +440,7 @@ const JourneyDetailsPage = () => {
               <div className="relative z-10 flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   <JourneyStatusBadge status={journey.status} size="sm" />
-                  <span className="btn-primary">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold text-white bg-white/15 backdrop-blur-md border border-white/25 shadow-xs select-none">
                     <User className="w-3 h-3 text-slate-300" /> {getJourneyBadge(journey)}
                   </span>
                 </div>
@@ -592,6 +600,9 @@ const JourneyDetailsPage = () => {
                 >
                   <tab.icon className={`w-3.5 h-3.5 ${isActive ? "text-white" : "text-text-muted"}`} />
                   <span>{tab.label}</span>
+                  {tab.isLive && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                  )}
                 </button>
               );
             })}
@@ -640,6 +651,14 @@ const JourneyDetailsPage = () => {
               />
             )}
 
+            {activeTab === "tracking" && (
+              <LiveTrackingTab
+                journey={journey}
+                currentUserId={currentUserId}
+                onRefreshJourney={() => fetchJourney(true)}
+              />
+            )}
+
             {activeTab === "workspace" && (
               <JourneyWorkspaceView journeyId={journey._id} />
             )}
@@ -680,7 +699,7 @@ const JourneyDetailsPage = () => {
         </div>
       </div>
 
-      <nav className="lg:hidden fixed bottom-16 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-100 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur-xl border-t border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.08)] pb-safe">
         <div className="flex items-center justify-between overflow-x-auto scrollbar-none px-1 h-14 w-full">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
@@ -692,7 +711,12 @@ const JourneyDetailsPage = () => {
               isActive ? "text-brand" : "text-text-muted"
               }`}>
 
-                <tab.icon className="w-5 h-5 shrink-0" />
+                <div className="relative">
+                  <tab.icon className="w-5 h-5 shrink-0" />
+                  {tab.isLive && (
+                    <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  )}
+                </div>
                 <span className="text-[9px] font-bold leading-none truncate max-w-full">{tab.shortLabel}</span>
               </button>);
 

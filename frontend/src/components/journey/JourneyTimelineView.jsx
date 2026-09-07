@@ -377,7 +377,7 @@ const JourneyTimelineView = ({
             className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all flex items-center gap-1.5 shrink-0 ${
               isEnjoyMode
                 ? "bg-amber-100 text-amber-800 border-amber-300"
-                : "bg-white text-text-primary border-slate-200 hover"
+                : "bg-white text-text-primary border-slate-200 hover:bg-slate-50"
             }`}
             title="Pause routine safety reminders while enjoying your trip"
           >
