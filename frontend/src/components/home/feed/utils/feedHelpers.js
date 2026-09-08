@@ -77,8 +77,14 @@ export const getPreviewComments = (post) => {
 };
 
 export const getTotalCommentCount = (post) => {
+  const visible = getVisibleComments(post);
+  if (visible.length > 0) {
+    const rawCount = Number(post?.commentsCount);
+    return !Number.isNaN(rawCount) && rawCount > visible.length ? rawCount : visible.length;
+  }
+
   if (post?.commentsCount !== undefined && post?.commentsCount !== null) {
-    return post.commentsCount;
+    return Number(post.commentsCount) || 0;
   }
 
   return getAllComments(post).filter(

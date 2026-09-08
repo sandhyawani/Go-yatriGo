@@ -209,17 +209,27 @@ exports.getAllMemories = async (req, res) => {
         .skip(skip)
         .limit(pageLimit)
         .populate("userId", "name username pic avatar isVerified")
+        .populate({
+          path: "comments",
+          populate: { path: "userId", select: "name username pic img avatar" },
+          options: { sort: { createdAt: -1 } }
+        })
         .lean()
     ]);
     const queryDuration = Date.now() - queryStartTime;
 
-    const formattedPosts = posts.map((post) => ({
-      ...post,
-      likes: Array.isArray(post.likes) ? post.likes : [],
-      likesCount: Array.isArray(post.likes) ? post.likes.length : (post.likesCount || 0),
-      comments: Array.isArray(post.comments) ? post.comments : [],
-      commentsCount: Array.isArray(post.comments) ? post.comments.length : (post.commentsCount || 0)
-    }));
+    const formattedPosts = posts.map((post) => {
+      const validComments = Array.isArray(post.comments)
+        ? post.comments.filter((c) => c && (typeof c === "object" ? Boolean(c._id || c.text) : Boolean(c)))
+        : [];
+      return {
+        ...post,
+        likes: Array.isArray(post.likes) ? post.likes : [],
+        likesCount: Array.isArray(post.likes) ? post.likes.length : (post.likesCount || 0),
+        comments: validComments,
+        commentsCount: validComments.length
+      };
+    });
 
     const hasMore = skip + formattedPosts.length < totalMemoryCount;
 
@@ -641,16 +651,51 @@ exports.getLikedPosts = async (req, res) => {
 
 exports.getMemoryComments = async (req, res) => {
   try {
-    const comments = await Comment.find({ postId: req.params.id })
+    const postId = req.params.id;
+    if (!postId || !mongoose.Types.ObjectId.isValid(postId)) {
+      return res.status(400).json({ success: false, message: "Invalid post ID", comments: [], thoughts: [] });
+    }
+
+    const post = await Post.findById(postId).select("comments").lean();
+    const commentIds = Array.isArray(post?.comments) ? post.comments : [];
+
+    const inOp = commentIds.length > 0 ? { _id: { $in: commentIds } } : null;
+    const query = inOp
+      ? { $or: [{ postId: new mongoose.Types.ObjectId(postId) }, inOp] }
+      : { postId: new mongoose.Types.ObjectId(postId) };
+
+    const comments = await Comment.find(query)
       .populate("userId", "name username pic img avatar")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const seen = new Set();
+    const uniqueComments = [];
+    for (const c of comments) {
+      const idStr = (c._id || c.id)?.toString();
+      if (idStr && !seen.has(idStr)) {
+        seen.add(idStr);
+        uniqueComments.push(c);
+      }
+    }
+
+    if (post) {
+      const activeIds = uniqueComments.map((c) => c._id);
+      if (commentIds.length !== activeIds.length) {
+        await Post.findByIdAndUpdate(postId, {
+          $set: { comments: activeIds, commentsCount: activeIds.length }
+        });
+      }
+    }
 
     res.status(200).json({
       success: true,
-      comments
+      comments: uniqueComments,
+      thoughts: uniqueComments,
+      commentsCount: uniqueComments.length
     });
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({ success: false, message: error.message, comments: [], thoughts: [] });
   }
 };
 

@@ -43,6 +43,8 @@ import SafeCheckInModal from "../../components/journey/SafeCheckInModal";
 import CancelJourneyModal from "../../components/journey/CancelJourneyModal";
 import TripOverlapConflictModal from "../../components/journey/TripOverlapConflictModal";
 import TripOverlapConflictBanner from "../../components/journey/TripOverlapConflictBanner";
+import VerificationRequiredModal from "../../components/modals/VerificationRequiredModal";
+import { isActuallyVerified } from "../../utils/verification";
 
 const JourneyDetailsPage = () => {
   const { id } = useParams();
@@ -58,6 +60,7 @@ const JourneyDetailsPage = () => {
 
   const [journey, setJourney] = useState(null);
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   useEffect(() => {
     const currentParam = searchParams.get("tab");
@@ -152,6 +155,14 @@ const JourneyDetailsPage = () => {
   }, [journey, user, id, currentUserId]);
 
   const handleRequestJoin = async () => {
+    if (!user) {
+      showToast.error("Please log in to join this journey");
+      return;
+    }
+    if (!isActuallyVerified(user)) {
+      setShowVerificationModal(true);
+      return;
+    }
     try {
       setRequestingJoin(true);
       const res = await axiosInstance.post(`/journeys/${id}/join-requests`);
@@ -161,6 +172,10 @@ const JourneyDetailsPage = () => {
       }
     } catch (err) {
       const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
+      if (errorCode === "VERIFICATION_REQUIRED") {
+        setShowVerificationModal(true);
+        return;
+      }
       if (errorCode === "ACTIVE_JOURNEY_CONFLICT" || errorCode === "OVERLAPPING_JOURNEY") {
         const errorMsg = getEligibilityErrorMessage(err);
         setOverlapConflict({
@@ -752,6 +767,14 @@ const JourneyDetailsPage = () => {
         conflictingTrip={overlapConflict.conflictingTrip}
         currentTrip={journey}
         customMessage={overlapConflict.message}
+      />
+
+      <VerificationRequiredModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        actionName="Join Journeys"
+        verificationStatus={user?.verificationStatus || "unverified"}
+        rejectionReason={user?.verificationNote || ""}
       />
 
     </div>);

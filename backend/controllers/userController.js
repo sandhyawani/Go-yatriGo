@@ -2170,6 +2170,62 @@ const updatePrivacySettings = asyncHandler(async (req, res) => {
   });
 });
 
+const updateUserLocation = asyncHandler(async (req, res) => {
+  const userId = req.user._id || req.user.id;
+  const { state, city } = req.body;
+
+  const trimmedState = typeof state === "string" ? state.trim() : "";
+  const trimmedCity = typeof city === "string" ? city.trim() : "";
+
+  if (!trimmedState) {
+    return res.status(400).json({
+      success: false,
+      message: "State is required",
+    });
+  }
+
+  if (!trimmedCity) {
+    return res.status(400).json({
+      success: false,
+      message: "City is required",
+    });
+  }
+
+  const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
+  if (!validCities) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid state: ${trimmedState}`,
+    });
+  }
+
+  if (!validCities.includes(trimmedCity)) {
+    return res.status(400).json({
+      success: false,
+      message: `City ${trimmedCity} does not belong to ${trimmedState}`,
+    });
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    { $set: { state: trimmedState, city: trimmedCity } },
+    { new: true, runValidators: true }
+  ).select("-password -resetPasswordToken -resetPasswordExpire");
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found",
+    });
+  }
+
+  return res.status(200).json({
+    success: true,
+    message: "Location updated successfully",
+    user: updatedUser,
+  });
+});
+
 module.exports = {
   updateUser,
   deleteUser,
@@ -2194,4 +2250,5 @@ module.exports = {
   removeFollower,
   getPrivacySettings,
   updatePrivacySettings,
+  updateUserLocation,
 };

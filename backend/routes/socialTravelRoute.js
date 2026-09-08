@@ -1,5 +1,6 @@
 const express = require("express");
 const { verifyToken, checkSuspended } = require("../middleware/verifyToken");
+const requireVerified = require("../middleware/requireVerified");
 const { uploadCloud } = require("../utils/cloudinary");
 const {
   createTravelBuddyTrip,
@@ -53,13 +54,13 @@ router.get("/search", verifyToken, globalSocialSearch);
 router.get("/felt-vibes", verifyToken, getFeltVibesCollection);
 
 router.get("/explore-metadata", verifyToken, getExploreMetadata);
-router.post("/buddy", verifyToken, checkSuspended, createTravelBuddyTrip);
+router.post("/buddy", verifyToken, checkSuspended, requireVerified, createTravelBuddyTrip);
 router.get("/buddy", verifyToken, getAllTravelBuddyTrips);
 router.get("/buddy/liked", verifyToken, getLikedBuddyTrips);
 router.get("/buddy/active-by-location", verifyToken, require("../controllers/socialTravelController").getActiveTravelsByLocation);
 router.get("/buddy/:id", verifyToken, getTravelBuddyTripById);
 router.post("/buddy/like/:id", verifyToken, toggleLikeBuddyTrip);
-router.post("/buddy/join-request/:id", verifyToken, requestToJoinTrip);
+router.post("/buddy/join-request/:id", verifyToken, checkSuspended, requireVerified, requestToJoinTrip);
 router.post("/buddy/manage-request/:id", verifyToken, manageJoinRequest);
 router.post("/buddy/cancel-request/:id", verifyToken, cancelJoinRequest);
 router.post("/buddy/leave/:id", verifyToken, leaveTravelBuddyTrip);
@@ -75,6 +76,8 @@ router.get("/memory/felt/:userId", verifyToken, getFeltPostsByUserId);
 router.get("/memory/:id", verifyToken, getMemoryById);
 router.post("/memory/like/:id", verifyToken, toggleLikeMemory);
 router.get("/memory/:id/comments", verifyToken, getMemoryComments);
+router.get("/memory/:id/thoughts", verifyToken, getMemoryComments);
+router.get("/memory/thoughts/:id", verifyToken, getMemoryComments);
 router.post("/memory/comment/:id", verifyToken, checkSuspended, commentOnMemory);
 router.delete("/memory/:postId/comment/:commentId", verifyToken, deleteComment);
 router.post("/memory/save/:id", verifyToken, savePost);

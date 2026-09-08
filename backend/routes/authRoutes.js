@@ -3,6 +3,7 @@ const router = express.Router();
 const {
   registerUser,
   loginUser,
+  googleAuthUser,
   logoutUser,
   resetpasswordrequest,
   resetpassword,
@@ -14,6 +15,7 @@ const { verifyToken, optionalVerifyToken } = require("../middleware/verifyToken"
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.post("/google", googleAuthUser);
 router.post("/logout", logoutUser);
 router.get("/me", optionalVerifyToken, getCurrentUser);
 router.post("/forgot-password", resetpasswordrequest);

@@ -405,6 +405,20 @@ const canJoinJourney = async (userId, journey, options = {}) => {
     };
   }
 
+  if (!options.skipVerificationCheck) {
+    const User = require("../models/User");
+    const { isActuallyVerified } = require("../utils/verificationHelper");
+    const userDoc = options.user || await User.findById(normUserId).select("isAdmin role isVerified verificationStatus");
+    if (userDoc && !isActuallyVerified(userDoc)) {
+      return {
+        allowed: false,
+        code: "VERIFICATION_REQUIRED",
+        reason: "Government ID verification is required to join journeys.",
+        verificationStatus: userDoc.verificationStatus || "unverified"
+      };
+    }
+  }
+
   const refDate = options.referenceDate || new Date();
   const lifecycle = getJourneyLifecycle(journey, refDate);
 

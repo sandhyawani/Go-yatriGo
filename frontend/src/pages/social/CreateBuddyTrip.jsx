@@ -1,14 +1,18 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useContext, useRef, useEffect } from "react";
 import axios from "../../api/axios";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/authContext";
 import { GROUP_CATEGORIES } from "../../constants/groupCategories";
 import CustomSelect from "../../components/ui/CustomSelect";
 import { MapPin, Calendar, Users, ArrowLeft, Globe, ShieldCheck, Camera, Check, Circle } from "lucide-react";
 import { showToast } from "../../utils/showToast";
 import { toast } from "sonner";
 import moment from "moment";
+import { isActuallyVerified } from "../../utils/verification";
+import VerificationRequiredModal from "../../components/modals/VerificationRequiredModal";
 
 const CreateBuddyTrip = () => {
+  const { user } = useContext(AuthContext);
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const todayStr = new Date().toISOString().split("T")[0];
@@ -32,8 +36,10 @@ const CreateBuddyTrip = () => {
   const [file, setFile] = useState(null);
   const [autoCoverOptions, setAutoCoverOptions] = useState([]);
   const [selectedAutoCoverIndex, setSelectedAutoCoverIndex] = useState(0);
+  const [isFetchingAutoCover, setIsFetchingAutoCover] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeSection, setActiveSection] = useState("basics");
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
 
   // Load draft from localStorage on mount
   useEffect(() => {
@@ -67,6 +73,7 @@ const CreateBuddyTrip = () => {
       return;
     }
     const timeoutId = setTimeout(async () => {
+      setIsFetchingAutoCover(true);
       try {
         const res = await axios.get(`/journeys/auto-cover-preview?destination=${encodeURIComponent(formData.destination)}&category=${encodeURIComponent(formData.category)}`);
         if (res.data?.success) {
@@ -75,6 +82,8 @@ const CreateBuddyTrip = () => {
         }
       } catch (err) {
         console.error("Failed to fetch auto cover preview", err);
+      } finally {
+        setIsFetchingAutoCover(false);
       }
     }, 1500);
     return () => clearTimeout(timeoutId);
@@ -163,6 +172,13 @@ const CreateBuddyTrip = () => {
     reader.readAsDataURL(selectedFile);
   };
 
+  const removeImage = () => {
+    setImagePreview("");
+    setFile(null);
+    setFormData((prev) => ({ ...prev, coverImage: "" }));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -220,9 +236,13 @@ const CreateBuddyTrip = () => {
         navigate("/social/buddy");
       }
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to create trip", {
-        id: toastId
-      });
+      if (err.response?.status === 403 && err.response?.data?.code === "VERIFICATION_REQUIRED") {
+        setShowVerificationModal(true);
+      } else {
+        toast.error(err.response?.data?.message || "Failed to create trip", {
+          id: toastId
+        });
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -243,6 +263,24 @@ const CreateBuddyTrip = () => {
   const scrollToSection = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  if (!isActuallyVerified(user)) {
+    return (
+      <VerificationRequiredModal
+        isOpen={true}
+        onClose={() => {
+          if (window.history.length > 1) {
+            navigate(-1);
+          } else {
+            navigate("/social/buddy");
+          }
+        }}
+        actionName="Host Trips"
+        verificationStatus={user?.verificationStatus || "unverified"}
+        rejectionReason={user?.verificationNote || ""}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background text-text-primary font-sans pb-12 selection:bg-primary-100 selection:text-primary-900 relative">
@@ -683,6 +721,16 @@ const CreateBuddyTrip = () => {
           </div>
         </form>
       </main>
+
+      {showVerificationModal && (
+        <VerificationRequiredModal
+          isOpen={showVerificationModal}
+          onClose={() => setShowVerificationModal(false)}
+          actionName="Host Trips"
+          verificationStatus={user?.verificationStatus || "unverified"}
+          rejectionReason={user?.verificationNote || ""}
+        />
+      )}
     </div>
   );
 };

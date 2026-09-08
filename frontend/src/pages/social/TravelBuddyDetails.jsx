@@ -51,6 +51,8 @@ import ReportModal from "../../components/modals/ReportModal";
 import SendWarningModal from "../../components/journey/SendWarningModal";
 import TripOverlapConflictModal from "../../components/journey/TripOverlapConflictModal";
 import TripOverlapConflictBanner from "../../components/journey/TripOverlapConflictBanner";
+import VerificationRequiredModal from "../../components/modals/VerificationRequiredModal";
+import { isActuallyVerified } from "../../utils/verification";
 
 const DEFAULT_MANALI_HERO =
   "https://images.unsplash.com/photo-1626621341517-bbf3d9990a23?auto=format&fit=crop&w=1800&q=85";
@@ -85,6 +87,7 @@ const TravelBuddyDetails = () => {
     message: ""
   });
   const [isConflictModalOpen, setIsConflictModalOpen] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const [expandedDesc, setExpandedDesc] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -162,6 +165,11 @@ const TravelBuddyDetails = () => {
       return;
     }
 
+    if (!isActuallyVerified(user)) {
+      setIsVerificationModalOpen(true);
+      return;
+    }
+
     if (submittingRequest || isPending || isMember) {
       return;
     }
@@ -185,6 +193,11 @@ const TravelBuddyDetails = () => {
     } catch (err) {
       const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
       const errorMsg = err.response?.data?.message || "";
+
+      if (errorCode === "VERIFICATION_REQUIRED") {
+        setIsVerificationModalOpen(true);
+        return;
+      }
 
       if (errorCode === "ACTIVE_JOURNEY_CONFLICT" || errorCode === "OVERLAPPING_JOURNEY") {
         const displayMsg = getEligibilityErrorMessage(err);
@@ -1869,6 +1882,15 @@ const TravelBuddyDetails = () => {
         conflictingTrip={overlapConflict.conflictingTrip}
         currentTrip={trip}
         customMessage={overlapConflict.message}
+      />
+
+      {/* Verification Required Modal */}
+      <VerificationRequiredModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        actionName="Join Trips"
+        verificationStatus={user?.verificationStatus || "unverified"}
+        rejectionReason={user?.verificationNote || ""}
       />
     </div>
   );

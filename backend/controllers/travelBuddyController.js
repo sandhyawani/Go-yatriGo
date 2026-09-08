@@ -19,6 +19,7 @@ const {
 } = require("../services/journeyEligibility");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
 const { isBlockedPair, getBlockedUserIds } = require("../utils/blockHelper");
+const { isActuallyVerified } = require("../utils/verificationHelper");
 
 const addJourneyMemberAtomic = async (journeyId, userId, role = "Member") => {
   const session = await mongoose.startSession();
@@ -96,6 +97,15 @@ const addJourneyMemberAtomic = async (journeyId, userId, role = "Member") => {
 
 exports.createTravelBuddyTrip = async (req, res) => {
   try {
+    if (!isActuallyVerified(req.user)) {
+      return res.status(403).json({
+        success: false,
+        code: "VERIFICATION_REQUIRED",
+        message: "Government ID verification is required to perform this action. Please verify your identity in profile settings.",
+        verificationStatus: req.user?.verificationStatus || "unverified"
+      });
+    }
+
     const userId = req.user._id || req.user.id;
     const {
       title,
@@ -757,10 +767,12 @@ exports.requestToJoinTrip = async (req, res) => {
       journey = await syncJourneyStatus(journey);
       const eligibility = await canJoinJourney(userId, journey);
       if (eligibility.allowed === false) {
-        return res.status(400).json({
+        const statusCode = eligibility.code === "VERIFICATION_REQUIRED" ? 403 : 400;
+        return res.status(statusCode).json({
           success: false,
           code: eligibility.code,
-          message: eligibility.reason
+          message: eligibility.reason,
+          verificationStatus: eligibility.verificationStatus || "unverified"
         });
       }
 

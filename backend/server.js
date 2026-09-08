@@ -205,6 +205,13 @@ app.use("/api/journeys", require("./routes/journeyRoutes"));
 app.use("/api/music", require("./routes/musicRoute"));
 app.use("/api/trip-mates", require("./routes/tripMateRoutes"));
 
+// Thoughts and memories route aliases
+const { verifyToken: serverVerifyToken } = require("./middleware/verifyToken");
+const { getMemoryComments: serverGetMemoryComments } = require("./controllers/memoryController");
+app.get("/api/thoughts/:id", serverVerifyToken, serverGetMemoryComments);
+app.get("/api/memories/:id/thoughts", serverVerifyToken, serverGetMemoryComments);
+app.get("/api/memories/:id/comments", serverVerifyToken, serverGetMemoryComments);
+
 app.use(notFound);
 app.use(errorHandler);
 

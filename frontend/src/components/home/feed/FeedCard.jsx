@@ -29,6 +29,7 @@ const FeedCard = React.forwardRef(
       feltLoadingMap,
       saveLoadingMap,
       commentsLoadingMap,
+      commentsErrorMap,
       isSubmittingComment,
       commentText,
       activeCommentPost,
@@ -52,13 +53,15 @@ const FeedCard = React.forwardRef(
     },
     ref
   ) => {
+    const postId = (post?._id || post?.id)?.toString();
     const totalCommentsCount = getTotalCommentCount(post);
     const visibleComments = getVisibleComments(post);
     const previewComments = getPreviewComments(post);
     const visibleCommentsCount = getVisibleCommentCount(post);
 
+    const isThoughtsOpen = activeCommentPost === postId;
     const displayedComments =
-      activeCommentPost === post._id ? visibleComments : previewComments;
+      isThoughtsOpen ? visibleComments : previewComments;
 
     return (
       <motion.article
@@ -141,6 +144,7 @@ const FeedCard = React.forwardRef(
             visibleCommentsCount={visibleCommentsCount}
             activeCommentPost={activeCommentPost}
             commentsLoadingMap={commentsLoadingMap}
+            commentsErrorMap={commentsErrorMap}
             commentText={commentText}
             setCommentText={setCommentText}
             isSubmittingComment={isSubmittingComment}

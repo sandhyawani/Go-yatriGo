@@ -54,9 +54,9 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
     : 0;
 
   return (
-    <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(2,132,199,0.1)] hover:border-brand/40:border-brand/40 transition-all duration-200 flex flex-col justify-between overflow-hidden h-full hover:-translate-y-0.5">
+    <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(2,132,199,0.1)] hover:border-brand/40 transition-all duration-200 flex flex-col justify-between overflow-hidden h-full hover:-translate-y-0.5">
       {/* Compact Media Header */}
-      <div className="relative h-[140px] w-full overflow-hidden bg-background shrink-0">
+      <div className="relative h-[148px] sm:h-[156px] w-full overflow-hidden bg-slate-100 shrink-0">
         <img
           src={journey.coverImage || defaultCover}
           alt={journey.title}
@@ -115,7 +115,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
       </div>
 
       {/* Compact Body Content */}
-      <div className="p-3 sm:p-3.5 flex-1 flex flex-col justify-between space-y-2.5">
+      <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
         
         {/* Info Row: Date/Duration + Squad Avatars */}
         <div className="flex items-center justify-between text-xs font-semibold text-text-secondary">
@@ -201,7 +201,7 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
         ) : null}
 
         {/* Action Button & Stamp */}
-        <div className="pt-1 space-y-1.5">
+        <div className="mt-auto pt-2 space-y-1.5 border-t border-slate-100">
           <div className="flex items-center gap-1.5">
             <Link
               to={`/social/journeys/${journey._id}`}

@@ -14,6 +14,7 @@ const Story = require("../models/Story");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const imageService = require("../utils/imageService");
+const { isActuallyVerified } = require("../utils/verificationHelper");
 
 exports.getAutoCoverPreview = async (req, res) => {
   try {
@@ -41,6 +42,17 @@ exports.createJourney = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    if (!isActuallyVerified(req.user)) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(403).json({
+        success: false,
+        code: "VERIFICATION_REQUIRED",
+        message: "Government ID verification is required to perform this action. Please verify your identity in profile settings.",
+        verificationStatus: req.user?.verificationStatus || "unverified"
+      });
+    }
+
     const {
       title,
       description,

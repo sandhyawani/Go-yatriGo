@@ -10,18 +10,14 @@ Phone,
 Lock,
 Camera,
 ArrowRight,
-ShieldCheck,
 ChevronLeft,
 Eye,
 EyeOff,
 CheckCircle2,
-AlertCircle,
-MapPin } from
+AlertCircle } from
 "lucide-react";
 import { AuthContext } from "../context/authContext";
-import { INDIAN_STATES_AND_CITIES } from "../constants/locationData";
 import { compressImage } from "../utils/compressImage";
-import CustomSelect from "../components/ui/CustomSelect";
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/sign.jpg";
 import travelBg from "../assets/images/bg.jpg";
@@ -40,8 +36,6 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
-  const [govIdFile, setGovIdFile] = useState(null);
-  const [govIdPreview, setGovIdPreview] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const [formData, setFormData] = useState(() => {
@@ -64,10 +58,7 @@ const Register = () => {
       mobile: "",
       password: "",
       repeatPassword: "",
-      acceptedPolicies: false,
-      govIdType: "",
-      state: "",
-      city: ""
+      acceptedPolicies: false
     };
   });
 
@@ -79,7 +70,6 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const isMounted = useRef(true);
   const previewUrlRef = useRef(null);
-  const govIdPreviewUrlRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -87,8 +77,6 @@ const Register = () => {
     return () => {
       isMounted.current = false;
       if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
-      if (govIdPreviewUrlRef.current)
-      URL.revokeObjectURL(govIdPreviewUrlRef.current);
     };
   }, []);
 
@@ -121,20 +109,11 @@ const Register = () => {
 
   const handleChange = (e) => {
     const { id, value, type, checked } = e.target;
-    setFormData((prev) => {
-      const nextData = {
-        ...prev,
-        [id]: type === "checkbox" ? checked : value
-      };
-      if (id === "state") {
-        nextData.city = "";
-      }
-      return nextData;
-    });
+    setFormData((prev) => ({
+      ...prev,
+      [id]: type === "checkbox" ? checked : value
+    }));
     if (errors[id]) setErrors((prev) => ({ ...prev, [id]: "" }));
-    if (id === "state") {
-      setErrors((prev) => ({ ...prev, city: "" }));
-    }
   };
 
   const handleFileChange = (e) => {
@@ -167,54 +146,21 @@ const Register = () => {
     setPreview(url);
   };
 
-  const handleGovIdChange = (e) => {
-    const selectedFile = e.target.files[0];
-    if (!selectedFile) return;
-
-    if (!ALLOWED_MIME_TYPES.includes(selectedFile.type)) {
-      showToast.error(
-      "Invalid File Type",
-      "Please upload a JPG, PNG, WebP, or GIF image for Gov ID."
-      );
-      return;
-    }
-
-    if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      showToast.error(
-      "File Too Large",
-      `Maximum file size is ${MAX_FILE_SIZE_MB}MB.`
-      );
-      return;
-    }
-
-    if (govIdPreviewUrlRef.current)
-    URL.revokeObjectURL(govIdPreviewUrlRef.current);
-    const url = URL.createObjectURL(selectedFile);
-    govIdPreviewUrlRef.current = url;
-    setGovIdFile(selectedFile);
-    setGovIdPreview(url);
-    if (errors.govId) setErrors((prev) => ({ ...prev, govId: "" }));
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (loading) return;
 
-    const { name, email, mobile, password, repeatPassword, govIdType, state, city } =
-    formData;
+    const { name, email, mobile, password, repeatPassword } = formData;
     const newErrors = {};
 
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedMobile = mobile.trim();
 
     if (!name.trim()) newErrors.name = "Name is required";
-    if (!normalizedEmail) newErrors.email = "Email is required";else
-    if (!validateEmail(normalizedEmail)) newErrors.email = "Invalid email format";
-    if (!normalizedMobile) newErrors.mobile = "Phone is required";else
-    if (!validatePhone(normalizedMobile)) newErrors.mobile = "Invalid phone format";
-    if (!govIdType) newErrors.govIdType = "Document type is required";
-    if (!state) newErrors.state = "State is required";
-    if (!city) newErrors.city = "City is required";
+    if (!normalizedEmail) newErrors.email = "Email is required";
+    else if (!validateEmail(normalizedEmail)) newErrors.email = "Invalid email format";
+    if (!normalizedMobile) newErrors.mobile = "Phone is required";
+    else if (!validatePhone(normalizedMobile)) newErrors.mobile = "Invalid phone format";
     if (!password) newErrors.password = "Password is required";
     else if (password.length < 6) newErrors.password = "Password must be at least 6 characters";
     if (password && repeatPassword && password !== repeatPassword) {
@@ -225,10 +171,6 @@ const Register = () => {
     if (!formData.acceptedPolicies) {
       newErrors.acceptedPolicies =
       "You must accept the Privacy Policy and Terms of Service.";
-    }
-
-    if (!govIdFile) {
-      newErrors.govId = "Government ID is required for verification.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -245,44 +187,22 @@ const Register = () => {
     setLoading(true);
     try {
       let imageUrl = "";
-      let govIdUrl = "";
 
-      if (file || govIdFile) {
-        if (file) {
-          const compressed = await compressImage(file);
-          const data = new FormData();
-          data.append("image", compressed);
+      if (file) {
+        const compressed = await compressImage(file);
+        const data = new FormData();
+        data.append("image", compressed);
 
-          const uploadRes = await axios.post("/upload", data, {
-            headers: { "Content-Type": "multipart/form-data" },
-            skipAuthRedirect: true
-          });
+        const uploadRes = await axios.post("/upload", data, {
+          headers: { "Content-Type": "multipart/form-data" },
+          skipAuthRedirect: true
+        });
 
-          if (!uploadRes.data.success || !uploadRes.data.url) {
-            throw new Error(uploadRes.data.message || "Image upload failed.");
-          }
-          imageUrl = uploadRes.data.url;
+        if (!uploadRes.data.success || !uploadRes.data.url) {
+          throw new Error(uploadRes.data.message || "Image upload failed.");
         }
-
-        if (govIdFile) {
-          const compressed = await compressImage(govIdFile);
-          const data = new FormData();
-          data.append("image", compressed);
-
-          const uploadRes = await axios.post("/upload", data, {
-            headers: { "Content-Type": "multipart/form-data" },
-            skipAuthRedirect: true
-          });
-
-          if (!uploadRes.data.success || !uploadRes.data.url) {
-            throw new Error(
-            uploadRes.data.message || "Gov ID upload failed."
-            );
-          }
-          govIdUrl = uploadRes.data.url;
-        }
+        imageUrl = uploadRes.data.url;
       }
-
 
       const { repeatPassword: _, ...payload } = formData;
       await axios.post("/auth/register", {
@@ -290,8 +210,7 @@ const Register = () => {
         name: payload.name.trim(),
         email: payload.email.trim().toLowerCase(),
         mobile: payload.mobile.trim(),
-        img: imageUrl,
-        govId: govIdUrl
+        img: imageUrl
       }, { skipAuthRedirect: true });
 
       if (!isMounted.current) return;
@@ -564,110 +483,6 @@ const Register = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label htmlFor="state" className={labelClass}>
-                    State 
-                  </label>
-                  <CustomSelect
-                  id="state"
-                  value={formData.state}
-                  onChange={handleChange}
-                  error={errors.state}
-                  placeholder="Select State"
-                  icon={<MapPin className="w-4 h-4" />}
-                  options={Object.keys(INDIAN_STATES_AND_CITIES).map((s) => ({ label: s, value: s }))}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label htmlFor="city" className={labelClass}>
-                    City
-                  </label>
-                  <CustomSelect
-                  id="city"
-                  value={formData.city}
-                  onChange={handleChange}
-                  disabled={!formData.state}
-                  error={errors.city}
-                  placeholder={formData.state ? "Select City" : "Select State first"}
-                  icon={<MapPin className="w-4 h-4" />}
-                  options={formData.state ? INDIAN_STATES_AND_CITIES[formData.state].map((c) => ({ label: c, value: c })) : []}
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <div className="space-y-1">
-                  <label htmlFor="govIdType" className={labelClass}>
-                    Document Type
-                  </label>
-                  <CustomSelect
-                  id="govIdType"
-                  value={formData.govIdType}
-                  onChange={handleChange}
-                  error={errors.govIdType}
-                  placeholder="Select Document Type"
-                  options={[
-                    { label: "Aadhaar Card", value: "Aadhaar Card" },
-                    { label: "PAN Card", value: "PAN Card" },
-                    { label: "Passport", value: "Passport" },
-                    { label: "Driving License", value: "Driving License" }
-                  ]}
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className={labelClass}>
-                    Government ID (Required)
-                  </label>
-                  <div className="relative group">
-                    <ShieldCheck
-                    className={`absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 transition-colors ${errors.govId ? "text-red-500" : "text-text-muted group-focus-within:text-brand-500"}`} />
-
-                    <label
-                    htmlFor="govIdFile"
-                    className={`w-full pl-11 pr-4 h-[44px] bg-slate-50 border ${errors.govId ? "border-red-300 focus:border-red-400 focus:ring-red-400/20" : "border-slate-200 focus:border-brand-500 hover:border-brand-300"} rounded-xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all text-sm shadow-sm flex items-center justify-between cursor-pointer`}>
-
-                      <span className="truncate text-text-muted font-medium">
-                        {govIdFile ? govIdFile.name : "Upload Image..."}
-                      </span>
-                      {govIdPreview &&
-                      <img
-                      src={govIdPreview}
-                      alt="Gov ID"
-                      className="h-6 w-10 object-cover rounded shadow-sm border border-slate-200" />}
-
-
-                    </label>
-                    <input
-                    type="file"
-                    id="govIdFile"
-                    className="hidden"
-                    accept="image/*,.heic,.heif"
-                    onChange={handleGovIdChange} />
-
-                  </div>
-                  <AnimatePresence>
-                    {errors.govId &&
-                    <motion.div
-                    key="govId-error"
-                    id="govId-error"
-                    role="alert"
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: "auto" }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="flex items-center gap-1.5 mt-1 ml-1 text-red-500">
-
-                        <AlertCircle className="w-3 h-3" />
-                        <span className="text-[10px] font-bold">
-                          {errors.govId}
-                        </span>
-                      </motion.div>}
-
-                  </AnimatePresence>
-                </div>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">

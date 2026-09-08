@@ -44,7 +44,7 @@ const EmergencyContacts = () => {
     if (user) {
       setSosActive(user.sosActive || false);
     }
-  }, [user]);
+  }, [user?.sosActive]);
 
   const fetchContacts = async () => {
     try {

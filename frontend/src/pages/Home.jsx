@@ -27,6 +27,7 @@ import DispatchBar from "../components/home/DispatchBar";
 import FeedCard from "../components/home/FeedCard";
 import JourneyStatusWidget from "../components/home/JourneyStatusWidget";
 import ExplorerDashboardWidget from "../components/home/ExplorerDashboardWidget";
+import LocationDiscoveryWidget from "../components/home/LocationDiscoveryWidget";
 import TravelWeatherWidget from "../components/home/TravelWeatherWidget";
 import UpcomingTripsWidget from "../components/home/UpcomingTripsWidget";
 import { resolveRelationship } from "../utils/relationshipResolver";
@@ -119,7 +120,7 @@ const Home = () => {
   const queryClient = useQueryClient();
 
   const updateMemoriesCache = useCallback((updater) => {
-    queryClient.setQueryData(['recentMemories'], (oldData) => {
+    queryClient.setQueriesData({ queryKey: ['recentMemories'] }, (oldData) => {
       if (!oldData) return oldData;
       return {
         ...oldData,
@@ -129,7 +130,7 @@ const Home = () => {
   }, [queryClient]);
 
   const addMemoryToCache = useCallback((newPost) => {
-    queryClient.setQueryData(['recentMemories'], (oldData) => {
+    queryClient.setQueriesData({ queryKey: ['recentMemories'] }, (oldData) => {
       if (!oldData) return oldData;
       const currentList = oldData.memories || [];
       return {
@@ -252,6 +253,7 @@ const Home = () => {
     }
   }, [sideData?.savedPostIds]);
   const [commentsLoadingMap, setCommentsLoadingMap] = useState({});
+  const [commentsErrorMap, setCommentsErrorMap] = useState({});
   const [showMobileGroups, setShowMobileGroups] = useState(false);
   const storyContainerRef = useRef(null);
 
@@ -461,29 +463,50 @@ const Home = () => {
   
 
   const handleOpenComments = async (postId) => {
-    if (activeCommentPost === postId) {
+    const cleanPostId = (postId?._id || postId?.id || postId || "").toString();
+    if (!cleanPostId) return;
+
+    if (activeCommentPost === cleanPostId) {
       setActiveCommentPost(null);
       return;
     }
-    setActiveCommentPost(postId);
-    const post = memories.find((m) => m._id === postId);
-    if (!post || post.comments && post.comments.length > 0) return;
+    setActiveCommentPost(cleanPostId);
+    const post = memories.find((m) => (m._id || m.id)?.toString() === cleanPostId);
 
-    setCommentsLoadingMap((prev) => ({ ...prev, [postId]: true }));
+    const hasPopulatedComments =
+      Array.isArray(post?.comments) &&
+      post.comments.length > 0 &&
+      post.comments.every(
+        (c) =>
+          typeof c === "object" &&
+          c !== null &&
+          typeof c.text === "string"
+      );
+
+    if (hasPopulatedComments && post.comments.length === (post.commentsCount || post.comments.length)) {
+      return;
+    }
+
+    setCommentsLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
+    setCommentsErrorMap((prev) => ({ ...prev, [cleanPostId]: null }));
     try {
-      const res = await axios.get(`/social/memory/${postId}/comments`, {
+      const res = await axios.get(`/social/memory/${cleanPostId}/comments`, {
         withCredentials: true
       });
-      if (res.data.success) {
+      if (res.data && res.data.success) {
+        const fetchedComments = res.data.comments || res.data.thoughts || [];
         updateMemoriesCache((prev) => prev.map((m) =>
-        m._id === postId ? { ...m, comments: res.data.comments } : m
-        )
-        );
+          (m._id || m.id)?.toString() === cleanPostId
+            ? { ...m, comments: fetchedComments, commentsCount: fetchedComments.length }
+            : m
+        ));
       }
-    } catch {
-      showToast.error("Failed to load comments");
+    } catch (err) {
+      const errMsg = err.response?.data?.message || "Failed to load thoughts";
+      setCommentsErrorMap((prev) => ({ ...prev, [cleanPostId]: errMsg }));
+      showToast.error(errMsg);
     } finally {
-      setCommentsLoadingMap((prev) => ({ ...prev, [postId]: false }));
+      setCommentsLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));
     }
   };
 
@@ -670,57 +693,60 @@ const Home = () => {
 
 
   const handleCommentSubmit = useCallback(
-  async (e, postId) => {
-    e.preventDefault();
-    if (isSubmittingComment[postId]) return;
-    const text = commentText[postId];
-    if (!text?.trim()) return;
-    setIsSubmittingComment((prev) => ({ ...prev, [postId]: true }));
-    try {
-      const res = await axios.post(
-      `/social/memory/comment/${postId}`,
-      { text },
-      { withCredentials: true }
-      );
-      if (res.data.success) {
-        setCommentText((prev) => ({ ...prev, [postId]: "" }));
-        updateMemoriesCache((prev) => prev.map((m) => {
-          if (m._id !== postId) return m;
-          if (res.data.memory?.comments) {
-            return {
-              ...m,
-              comments: res.data.memory.comments,
-              commentsCount: res.data.memory.comments.length
-            };
-          }
-          if (res.data.comment) {
-            const visibleComments = getVisibleComments(m);
-            const exists = visibleComments.some(
-            (c) => c._id === res.data.comment._id
-            );
-            if (exists) return m;
-            const newComments = [...visibleComments, res.data.comment];
-            return {
-              ...m,
-              comments: newComments,
-              commentsCount: newComments.length
-            };
-          }
-          return m;
-        })
+    async (e, postId) => {
+      e.preventDefault();
+      const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
+      if (!cleanPostId || isSubmittingComment[cleanPostId]) return;
+      const text = commentText[cleanPostId];
+      if (!text?.trim()) return;
+      setIsSubmittingComment((prev) => ({ ...prev, [cleanPostId]: true }));
+      try {
+        const res = await axios.post(
+          `/social/memory/comment/${cleanPostId}`,
+          { text },
+          { withCredentials: true }
         );
+        if (res.data.success) {
+          setCommentText((prev) => ({ ...prev, [cleanPostId]: "" }));
+          updateMemoriesCache((prev) => prev.map((m) => {
+            if ((m._id || m.id)?.toString() !== cleanPostId) return m;
+            if (res.data.memory?.comments) {
+              return {
+                ...m,
+                comments: res.data.memory.comments,
+                commentsCount: res.data.memory.comments.length
+              };
+            }
+            if (res.data.comment) {
+              const visibleComments = getVisibleComments(m);
+              const exists = visibleComments.some(
+                (c) => (c._id || c.id)?.toString() === (res.data.comment._id || res.data.comment.id)?.toString()
+              );
+              if (exists) return m;
+              const newComments = [res.data.comment, ...visibleComments];
+              return {
+                ...m,
+                comments: newComments,
+                commentsCount: newComments.length
+              };
+            }
+            return m;
+          }));
+        }
+      } catch {
+        showToast.error("Failed to add comment");
+      } finally {
+        setIsSubmittingComment((prev) => ({ ...prev, [cleanPostId]: false }));
       }
-    } catch {
-      showToast.error("Failed to add comment");
-    } finally {
-      setIsSubmittingComment((prev) => ({ ...prev, [postId]: false }));
-    }
-  },
-  [commentText, isSubmittingComment]
+    },
+    [commentText, isSubmittingComment, updateMemoriesCache]
   );
 
-
   const handleDeleteComment = useCallback(async (postId, commentId) => {
+    const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
+    const cleanCommentId = (commentId?._id || commentId?.id || commentId)?.toString();
+    if (!cleanPostId || !cleanCommentId) return;
+
     const { isConfirmed } = await Swal.fire({
       title: "Delete this comment?",
       icon: "warning",
@@ -731,13 +757,13 @@ const Home = () => {
     if (!isConfirmed) return;
     try {
       const res = await axios.delete(
-      `/social/memory/${postId}/comment/${commentId}`,
-      { withCredentials: true }
+        `/social/memory/${cleanPostId}/comment/${cleanCommentId}`,
+        { withCredentials: true }
       );
       if (res.data.success) {
         showToast.success("Comment deleted");
         updateMemoriesCache((prev) => prev.map((m) => {
-          if (m._id !== postId) return m;
+          if ((m._id || m.id)?.toString() !== cleanPostId) return m;
           if (res.data.memory?.comments) {
             return {
               ...m,
@@ -747,20 +773,19 @@ const Home = () => {
           }
           const visibleComments = getVisibleComments(m);
           const newComments = visibleComments.filter(
-          (c) => c._id !== commentId
+            (c) => (c._id || c.id)?.toString() !== cleanCommentId
           );
           return {
             ...m,
             comments: newComments,
             commentsCount: newComments.length
           };
-        })
-        );
+        }));
       }
     } catch {
       showToast.error("Failed to delete comment");
     }
-  }, []);
+  }, [updateMemoriesCache]);
 
 
   const handleSaveToggle = useCallback(
@@ -1233,6 +1258,7 @@ const Home = () => {
               onUpcomingClick={handleScrollToUpcoming}
             />
 
+            <LocationDiscoveryWidget user={user} />
 
             {/* Current Ongoing Journey OR Featured Next Upcoming Trip */}
             {dashboardJourney ? (
@@ -1394,6 +1420,7 @@ const Home = () => {
                         feltLoadingMap={feltLoadingMap}
                         saveLoadingMap={saveLoadingMap}
                         commentsLoadingMap={commentsLoadingMap}
+                        commentsErrorMap={commentsErrorMap}
                         isSubmittingComment={isSubmittingComment}
                         commentText={commentText}
                         activeCommentPost={activeCommentPost}

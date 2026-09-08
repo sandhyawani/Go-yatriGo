@@ -132,36 +132,24 @@ const registerUser = async (req, res, next) => {
       });
     }
 
-    if (!state || !state.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "State is required"
-      });
-    }
+    const trimmedState = typeof state === "string" ? state.trim() : "";
+    const trimmedCity = typeof city === "string" ? city.trim() : "";
 
-    if (!city || !city.trim()) {
-      return res.status(400).json({
-        success: false,
-        message: "City is required"
-      });
-    }
+    if (trimmedState) {
+      const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
+      if (!validCities) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid state selected: ${trimmedState}`
+        });
+      }
 
-    const trimmedState = state.trim();
-    const trimmedCity = city.trim();
-
-    const validCities = INDIAN_STATES_AND_CITIES[trimmedState];
-    if (!validCities) {
-      return res.status(400).json({
-        success: false,
-        message: `Invalid state selected: ${trimmedState}`
-      });
-    }
-
-    if (!validCities.includes(trimmedCity)) {
-      return res.status(400).json({
-        success: false,
-        message: `City ${trimmedCity} does not belong to ${trimmedState}`
-      });
+      if (trimmedCity && !validCities.includes(trimmedCity)) {
+        return res.status(400).json({
+          success: false,
+          message: `City ${trimmedCity} does not belong to ${trimmedState}`
+        });
+      }
     }
 
     const existingUser = await User.findOne({ email }).select("_id");
@@ -230,6 +218,53 @@ const registerUser = async (req, res, next) => {
   }
 };
 
+const completeAuthSession = async (user, req, res) => {
+  if (user.isDeleted || user.isSuspended) {
+    return res.status(403).json({
+      success: false,
+      message: "This account is not available. Please contact support."
+    });
+  }
+
+  if (user.isDeactivated) {
+    user.isDeactivated = false;
+    await user.save();
+  }
+
+  const token = signAuthToken(user);
+  const tokenExpiresAt = getTokenExpiresAt(token);
+
+  await Session.create({
+    user: user._id,
+    token,
+    browser: req.headers["user-agent"],
+    ipAddress: req.ip
+  });
+
+  const { getValidTripMates } = require("./tripMateController");
+  const validTripMates = await getValidTripMates(user._id);
+  const tripMatesCount = validTripMates.length;
+
+  const userData = serializeUser(user);
+  userData.tripMatesCount = tripMatesCount;
+
+  return res
+    .cookie("access_token", token, {
+      httpOnly: true,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+      sameSite: "lax",
+      secure: process.env.NODE_ENV === "production"
+    })
+    .status(200)
+    .json({
+      success: true,
+      details: userData,
+      isAdmin: user.isAdmin,
+      token,
+      tokenExpiresAt
+    });
+};
+
 const loginUser = async (req, res, next) => {
   try {
     const email = normalizeEmail(req.body.email);
@@ -265,50 +300,105 @@ const loginUser = async (req, res, next) => {
       });
     }
 
-    if (user.isDeleted || user.isSuspended) {
-      return res.status(403).json({
+    return await completeAuthSession(user, req, res);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const googleAuthUser = async (req, res, next) => {
+  try {
+    const { credential } = req.body;
+    if (!credential || typeof credential !== "string") {
+      return res.status(400).json({
         success: false,
-        message: "This account is not available. Please contact support."
+        message: "Google credential is required"
       });
     }
 
-    if (user.isDeactivated) {
-      user.isDeactivated = false;
-      await user.save();
+    const { verifyGoogleIdToken } = require("../services/googleAuth");
+    let googleProfile;
+    try {
+      googleProfile = await verifyGoogleIdToken(credential);
+    } catch (err) {
+      return res.status(err.statusCode || 401).json({
+        success: false,
+        message: err.message || "Google authentication failed"
+      });
     }
 
-    const token = signAuthToken(user);
-    const tokenExpiresAt = getTokenExpiresAt(token);
+    const { sub, email, name, picture } = googleProfile;
 
-    await Session.create({
-      user: user._id,
-      token,
-      browser: req.headers["user-agent"],
-      ipAddress: req.ip
+    // 1. Check if user already exists by Google provider and providerId (sub)
+    let existingSocialUser = await User.findOne({
+      provider: "google",
+      providerId: sub
     });
 
-    const { getValidTripMates } = require("./tripMateController");
-    const validTripMates = await getValidTripMates(user._id);
-    const tripMatesCount = validTripMates.length;
+    if (existingSocialUser) {
+      return await completeAuthSession(existingSocialUser, req, res);
+    }
 
-    const userData = serializeUser(user);
-    userData.tripMatesCount = tripMatesCount;
+    // 2. Check if an account already exists with this email (anti-collision)
+    const existingEmailUser = await User.findOne({ email });
+    if (existingEmailUser) {
+      const providerName =
+        existingEmailUser.provider === "facebook"
+          ? "Facebook"
+          : "email and password";
+      return res.status(409).json({
+        success: false,
+        code: "ACCOUNT_COLLISION",
+        message: `An account already exists with this email. Please sign in using your ${providerName}.`
+      });
+    }
 
-    res.
-    cookie("access_token", token, {
-      httpOnly: true,
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production"
-    }).
-    status(200).
-    json({
-      success: true,
-      details: userData,
-      isAdmin: user.isAdmin,
-      token,
-      tokenExpiresAt
-    });
+    // 3. Create new user safely, handling MongoDB E11000 duplicate race condition
+    try {
+      const newUser = new User({
+        name: name || "Traveler",
+        fullname: name || "Traveler",
+        email,
+        provider: "google",
+        providerId: sub,
+        img: picture || "",
+        avatar: picture || "",
+        policiesAcceptedAt: new Date(),
+        isAdmin: false,
+        isVerified: false,
+        verificationStatus: "unverified",
+        role: "Traveler",
+        type: "traveler",
+        country: "India",
+        city: "",
+        state: "",
+        govId: "",
+        govIdType: "",
+        mobile: "",
+        followers: [],
+        following: []
+      });
+
+      await newUser.save();
+      return await completeAuthSession(newUser, req, res);
+    } catch (createErr) {
+      if (createErr.code === 11000) {
+        // Recover from concurrent request race
+        const reFetchedUser = await User.findOne({
+          provider: "google",
+          providerId: sub
+        });
+        if (reFetchedUser) {
+          return await completeAuthSession(reFetchedUser, req, res);
+        }
+        return res.status(409).json({
+          success: false,
+          code: "ACCOUNT_COLLISION",
+          message: "An account already exists with this email. Please sign in with your existing account."
+        });
+      }
+      throw createErr;
+    }
   } catch (error) {
     next(error);
   }
@@ -579,6 +669,7 @@ const getCurrentUser = async (req, res) => {
 module.exports = {
   registerUser,
   loginUser,
+  googleAuthUser,
   logoutUser,
   resetpasswordrequest,
   resetpassword,

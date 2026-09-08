@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
 Compass,
@@ -17,6 +17,9 @@ import MemberSelector from "./MemberSelector";
 import CustomSelect from "../ui/CustomSelect";
 import { Camera } from "lucide-react";
 import { showToast } from "../../utils/showToast";
+import { useAuth } from "../../context/authContext";
+import { isActuallyVerified } from "../../utils/verification";
+import VerificationRequiredModal from "../modals/VerificationRequiredModal";
 
 const DEFAULT_COVER =
 "https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?auto=format&fit=crop&w=1000&q=80";
@@ -29,23 +32,12 @@ const CreateJourneyModal = ({
   sourceId = null
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const generateIdempotencyKey = () => {
     return [...Array(24)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
   };
 
   const [idempotencyKey, setIdempotencyKey] = useState("");
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.classList.add("modal-open-hide-nav");
-      setIdempotencyKey(generateIdempotencyKey());
-    } else {
-      document.body.classList.remove("modal-open-hide-nav");
-    }
-    return () => {
-      document.body.classList.remove("modal-open-hide-nav");
-    };
-  }, [isOpen]);
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     title: "",
@@ -58,7 +50,7 @@ const CreateJourneyModal = ({
     coverImage: "",
     description: ""
   });
-  const fileInputRef = React.useRef(null);
+  const fileInputRef = useRef(null);
   const [imagePreview, setImagePreview] = useState("");
   const [file, setFile] = useState(null);
   const [invitedUserIds, setInvitedUserIds] = useState([]);
@@ -66,7 +58,31 @@ const CreateJourneyModal = ({
   const [createdJourney, setCreatedJourney] = useState(null);
   const [linkCopied, setLinkCopied] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-open-hide-nav");
+      setIdempotencyKey(generateIdempotencyKey());
+    } else {
+      document.body.classList.remove("modal-open-hide-nav");
+    }
+    return () => {
+      document.body.classList.remove("modal-open-hide-nav");
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  if (!isActuallyVerified(user)) {
+    return (
+      <VerificationRequiredModal
+        isOpen={isOpen}
+        onClose={onClose}
+        actionName="Host Journeys"
+        verificationStatus={user?.verificationStatus || "unverified"}
+        rejectionReason={user?.verificationNote || ""}
+      />
+    );
+  }
 
   const todayStr = new Date().toISOString().split("T")[0];
 
@@ -215,7 +231,7 @@ const CreateJourneyModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-[1050] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full sm:max-w-xl bg-surface rounded-t-[var(--radius-card)] sm:rounded-[var(--radius-card)] shadow-md border border-border-default overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
         {/* Mobile touch indicator bar */}
         <div className="pt-2.5 pb-1 flex justify-center sm:hidden">
@@ -223,7 +239,7 @@ const CreateJourneyModal = ({
         </div>
 
         {/* Modal Header */}
-        <div className="bg-white px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 text-text-primary flex items-center justify-between">
+        <div className="bg-white px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 text-text-primary flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="p-2 bg-brand rounded-xl shadow-md shadow-brand/20 shrink-0">
               <Compass className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -241,7 +257,8 @@ const CreateJourneyModal = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-2 rounded-xl hover:bg-background text-text-muted hover:text-text-primary transition-colors cursor-pointer"
+            aria-label="Close modal"
+            className="w-10 h-10 min-w-[40px] min-h-[40px] rounded-xl hover:bg-background text-text-muted hover:text-text-primary flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -313,14 +330,14 @@ const CreateJourneyModal = ({
                 </p>
               </div>
 
-              <div className="space-y-2.5 pt-2 max-w-sm mx-auto">
+              <div className="space-y-3 pt-2 max-w-sm mx-auto">
                 <button
                   type="button"
                   onClick={handleCopyPrivateLink}
-                  className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all border flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full btn-secondary min-h-[44px] flex items-center justify-center gap-2 cursor-pointer ${
                     linkCopied
-                      ? "bg-emerald-500 text-white border-emerald-500 shadow-xs"
-                      : "bg-white text-brand hover:bg-brand-50 border-brand-200 shadow-xs active:scale-95"
+                      ? "!bg-emerald-500 !text-white !border-emerald-500 shadow-xs"
+                      : ""
                   }`}
                 >
                   {linkCopied ? (
@@ -344,7 +361,7 @@ const CreateJourneyModal = ({
                     handleCloseModal();
                     navigate(`/social/journeys/${j._id}`);
                   }}
-                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full btn-primary min-h-[44px] flex items-center justify-center gap-2 cursor-pointer"
                 >
                   <span>Open Journey</span>
                   <ArrowRight className="w-4 h-4" />
@@ -357,7 +374,7 @@ const CreateJourneyModal = ({
               {step === 1 && (
                 <form id="step1Form" onSubmit={handleNextStep1} className="space-y-4">
                   <div>
-                    <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                    <label className="input-label">
                       Journey Title *
                     </label>
                     <input
@@ -372,7 +389,7 @@ const CreateJourneyModal = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         Starting From (Optional)
                       </label>
                       <input
@@ -384,7 +401,7 @@ const CreateJourneyModal = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         Destination *
                       </label>
                       <input
@@ -400,7 +417,7 @@ const CreateJourneyModal = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         Start Date *
                       </label>
                       <input
@@ -413,7 +430,7 @@ const CreateJourneyModal = ({
                       />
                     </div>
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         End Date *
                       </label>
                       <input
@@ -429,7 +446,7 @@ const CreateJourneyModal = ({
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         Journey Type
                       </label>
                       <CustomSelect
@@ -444,7 +461,7 @@ const CreateJourneyModal = ({
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                      <label className="input-label">
                         Journey Visibility
                       </label>
                       <div className="w-full px-3.5 py-2.5 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 bg-background flex items-center gap-2 text-xs sm:text-sm font-bold text-text-secondary">
@@ -522,7 +539,7 @@ const CreateJourneyModal = ({
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-bold text-text-primary uppercase tracking-wider mb-1">
+                    <label className="input-label">
                       Notes & Goals (Optional)
                     </label>
                     <textarea
@@ -666,7 +683,7 @@ const CreateJourneyModal = ({
 
         {/* Modal Action Footer */}
         {!createdJourney && (
-          <div className="px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),0.75rem)] border-t border-slate-100 flex items-center justify-between gap-2.5 bg-white">
+          <div className="sticky bottom-0 z-20 px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),0.875rem)] border-t border-slate-100 flex items-center justify-between gap-3 bg-white shrink-0">
             {step > 1 ? (
               <button
                 type="button"
@@ -679,7 +696,7 @@ const CreateJourneyModal = ({
                       : step - 1
                   )
                 }
-                className="flex items-center gap-1 px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-text-secondary hover:bg-background transition-colors cursor-pointer"
+                className="btn-secondary !min-h-[42px] px-4 py-2 !text-xs font-bold shrink-0"
               >
                 <ArrowLeft className="w-4 h-4" /> Back
               </button>
@@ -687,7 +704,7 @@ const CreateJourneyModal = ({
               <button
                 type="button"
                 onClick={onClose}
-                className="px-3 sm:px-4 py-2.5 rounded-xl text-xs font-bold text-text-muted hover:bg-background transition-colors cursor-pointer"
+                className="btn-secondary !min-h-[42px] px-4 py-2 !text-xs font-bold text-text-muted hover:text-text-primary shrink-0"
               >
                 Cancel
               </button>
@@ -697,7 +714,7 @@ const CreateJourneyModal = ({
               <button
                 form="step1Form"
                 type="submit"
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 cursor-pointer"
+                className="btn-primary !min-h-[42px] flex-1 sm:flex-none px-5 py-2 !text-xs font-extrabold shrink-0"
               >
                 <span>
                   {formData.journeyType === "Solo Expedition" || formData.journeyType === "Solo" || formData.journeyType === "Solo Journey"
@@ -712,7 +729,7 @@ const CreateJourneyModal = ({
               <button
                 type="button"
                 onClick={handleNextStep2}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-extrabold shadow-md shadow-brand/25 transition-all active:scale-95 cursor-pointer"
+                className="btn-primary !min-h-[42px] flex-1 sm:flex-none px-5 py-2 !text-xs font-extrabold shrink-0"
               >
                 <span>{invitedUserIds.length === 0 ? "Skip for now" : "Next: Review"}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -724,7 +741,7 @@ const CreateJourneyModal = ({
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand to-brand-dark hover:from-brand-dark hover:to-brand-800 text-white text-xs font-black shadow-lg shadow-brand/30 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap cursor-pointer"
+                className="btn-primary !min-h-[42px] flex-1 sm:flex-none px-6 py-2 !text-xs font-black shadow-lg shadow-brand/30 shrink-0"
               >
                 {loading ? "Launching..." : "🚀 Launch Journey"}
               </button>

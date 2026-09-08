@@ -5,7 +5,7 @@ import axios from "../../api/axios";
 import { useNavigate, useLocation, useParams } from "react-router-dom";
 import { SocketContext } from "../../context/SocketContext";
 import { SOCKET_EVENTS } from "../../constants/socketEvents";
-import { MessageSquare, Loader2 } from "lucide-react";
+import { MessageSquare, Video, Loader2, ShieldCheck } from "lucide-react";
 import { AuthContext } from "../../context/authContext";
 import { useNotificationContext } from "../../context/NotificationContext";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -14,6 +14,8 @@ import ChatSidebar from "../../components/chat/ChatSidebar";
 import ChatHeader from "../../components/chat/ChatHeader";
 import ChatMessages from "../../components/chat/ChatMessages";
 import ChatInput from "../../components/chat/ChatInput";
+import VerificationRequiredModal from "../../components/modals/VerificationRequiredModal";
+import { isActuallyVerified } from "../../utils/verification";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatService } from "../../services/chatService";
@@ -97,6 +99,7 @@ const ChatRoom = () => {
   const [showHeaderOptions, setShowHeaderOptions] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false);
 
   const [isDeleteSelectionMode, setIsDeleteSelectionMode] = useState(false);
   const [selectedRoomIds, setSelectedRoomIds] = useState(new Set());
@@ -166,7 +169,7 @@ const ChatRoom = () => {
       window.removeEventListener("refresh_chats", handleRefresh);
       window.removeEventListener("message_sent", handleMessageSent);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [roomId, legacyTargetUserId, legacyGroupId]);
 
   const showScrollBottomRef = useRef(showScrollBottom);
@@ -389,12 +392,10 @@ const ChatRoom = () => {
             const mSenderId = typeof m.sender === "object" ? m.sender?._id || m.sender?.id : m.sender;
             const msgSenderId = typeof message.sender === "object" ? message.sender?._id || message.sender?.id : message.sender;
             const mStoryId = getRoomIdString(m.storyId);
-            return (
-              m._id === message._id ||
-              (mSenderId?.toString() === msgSenderId?.toString() &&
-                mStoryId === storyRef &&
-                (m.text || "").startsWith("Reacted to your Dispatch:"))
-            );
+            return m._id === message._id ||
+            mSenderId?.toString() === msgSenderId?.toString() &&
+            mStoryId === storyRef &&
+            (m.text || "").startsWith("Reacted to your Dispatch:");
           });
           const updated = [...prev];
           if (idx !== -1) {
@@ -499,6 +500,11 @@ const ChatRoom = () => {
       fetchChannels();
     };
 
+    const onVerificationRequired = (data) => {
+      showToast.error(data?.message || "Identity verification is required to chat.");
+      setIsVerificationModalOpen(true);
+    };
+
     socket.on(SOCKET_EVENTS.CONNECT, onConnect);
     socket.on(SOCKET_EVENTS.DISCONNECT, onDisconnect);
     socket.on(SOCKET_EVENTS.USER_PRESENCE, onUserPresence);
@@ -520,6 +526,7 @@ const ChatRoom = () => {
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, onFollowRequestResolved);
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, onFollowRequestResolved);
     socket.on("chat_unhidden", onChatUnhidden);
+    socket.on("verification_required", onVerificationRequired);
 
     return () => {
       socket.off(SOCKET_EVENTS.CONNECT, onConnect);
@@ -543,8 +550,9 @@ const ChatRoom = () => {
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, onFollowRequestResolved);
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, onFollowRequestResolved);
       socket.off("chat_unhidden", onChatUnhidden);
+      socket.off("verification_required", onVerificationRequired);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, [socket, currentUserId]);
 
 
@@ -686,6 +694,10 @@ const ChatRoom = () => {
   };
 
   const handleSelectGlobalUser = async (targetUser) => {
+    if (!isActuallyVerified(user)) {
+      setIsVerificationModalOpen(true);
+      return;
+    }
     try {
       setLoading(true);
       const roomRes = await chatService.getDirectRoom(targetUser._id);
@@ -703,6 +715,11 @@ const ChatRoom = () => {
         selectRoom(existingRoom || newRoom);
       }
     } catch (err) {
+      const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
+      if (errorCode === "VERIFICATION_REQUIRED") {
+        setIsVerificationModalOpen(true);
+        return;
+      }
       showToast.error(err.response?.data?.message || "Failed to start conversation");
     } finally {
       setLoading(false);
@@ -756,6 +773,10 @@ const ChatRoom = () => {
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
+    if (!isActuallyVerified(user)) {
+      setIsVerificationModalOpen(true);
+      return;
+    }
     if (!inputText.trim() && !selectedFile && !audioBlob) return;
     if (!activeRoom) return;
 
@@ -845,6 +866,11 @@ const ChatRoom = () => {
       }
     } catch (err) {
       setMessages((prev) => prev.filter((m) => m._id !== clientMsgId));
+      const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
+      if (errorCode === "VERIFICATION_REQUIRED") {
+        setIsVerificationModalOpen(true);
+        return;
+      }
       showToast.error(err.response?.data?.message || "Error sending message");
     } finally {
       setIsSending(false);
@@ -1530,9 +1556,9 @@ const ChatRoom = () => {
       }, 50);
       setUnreadNewMessagesCount(0);
     } else if (
-      currentLength > prevMessagesLength.current ||
-      (currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
-    ) {
+    currentLength > prevMessagesLength.current ||
+    currentLength > 0 && messages[currentLength - 1]?._id !== prevLastMessageId.current)
+    {
       const lastMsg = messages[currentLength - 1];
       const senderId = typeof lastMsg?.sender === "object" ? lastMsg.sender?._id || lastMsg.sender?.id : lastMsg?.sender;
       const isSelf = senderId?.toString() === currentUserId?.toString();
@@ -1573,10 +1599,10 @@ const ChatRoom = () => {
   }, [showHeaderOptions]);
 
   const activeChats = rooms.filter(
-    (r) =>
-      r.type === "direct" &&
-      (r.requestStatus === "accepted" ||
-        (r.requestStatus === "pending" && isMyRequest(r)))
+  (r) =>
+  r.type === "direct" && (
+  r.requestStatus === "accepted" ||
+  r.requestStatus === "pending" && isMyRequest(r))
   );
   const requestChats = rooms.filter(
   (r) =>
@@ -1843,6 +1869,27 @@ const ChatRoom = () => {
             return null;
           })() :
 
+          !isActuallyVerified(user) ? (
+            <div className="px-5 py-4 border-t border-slate-100 bg-amber-50/80 backdrop-blur-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-amber-950">Identity Verification Required</p>
+                  <p className="text-xs text-amber-700">Verify your Government ID to participate and send messages in travel chats.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsVerificationModalOpen(true)}
+                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all whitespace-nowrap cursor-pointer"
+              >
+                Verify Profile
+              </button>
+            </div>
+          ) : (
+
           <ChatInput
           activeRoom={activeRoom}
           user={user}
@@ -1870,7 +1917,8 @@ const ChatRoom = () => {
           handleKeyDown={handleKeyDown}
           startVoiceRecording={startVoiceRecording}
           handleSendMessage={handleSendMessage}
-          textareaRef={textareaRef} />}
+          textareaRef={textareaRef} />
+        )}
 
 
           </> :
@@ -2006,6 +2054,14 @@ const ChatRoom = () => {
       setIsStoryPaused={() => {}}
       isStoryMuted={true}
       setIsStoryMuted={() => {}} />
+
+      <VerificationRequiredModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        actionName="Participate in Chats"
+        verificationStatus={user?.verificationStatus || "unverified"}
+        rejectionReason={user?.verificationNote || ""}
+      />
 
     </div>);
 

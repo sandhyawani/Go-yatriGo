@@ -13,6 +13,7 @@ const FeedComments = ({
   visibleCommentsCount,
   activeCommentPost,
   commentsLoadingMap,
+  commentsErrorMap,
   commentText,
   setCommentText,
   isSubmittingComment,
@@ -20,34 +21,77 @@ const FeedComments = ({
   handleDeleteComment,
   handleCommentSubmit,
 }) => {
+  const postId = (post?._id || post?.id)?.toString();
+  const isThoughtsOpen = activeCommentPost === postId;
+  const isLoading = Boolean(commentsLoadingMap?.[postId]);
+  const errorMessage = commentsErrorMap?.[postId];
+  const hasComments = Array.isArray(displayedComments) && displayedComments.length > 0;
+
   return (
-    <>
+    <div className="mt-1">
+      {/* Thoughts List */}
       <CommentList
         comments={displayedComments}
         myUserId={myUserId}
         isCreator={isCreator}
-        postId={post._id}
+        postId={postId}
         handleDeleteComment={handleDeleteComment}
       />
 
-      {commentsLoadingMap[post._id] && (
-        <div className="my-2 flex justify-center">
-          <Loader2 className="h-4 w-4 animate-spin text-brand-600" />
+      {/* Loading state */}
+      {isLoading && (
+        <div className="my-2 flex items-center justify-center gap-2 py-1.5 text-xs text-brand-600">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="font-medium">Loading thoughts...</span>
         </div>
       )}
 
-      {visibleCommentsCount > previewComments.length &&
-        activeCommentPost !== post._id &&
-        !commentsLoadingMap[post._id] && (
+      {/* Error state with retry */}
+      {isThoughtsOpen && !isLoading && errorMessage && (
+        <div className="my-2 flex items-center justify-between rounded-xl border border-amber-200/80 bg-amber-50/70 px-3 py-2 text-xs text-amber-800">
+          <span>{errorMessage}</span>
           <button
             type="button"
-            onClick={() => handleOpenComments(post._id)}
+            onClick={() => handleOpenComments(postId)}
+            className="font-bold underline transition-colors hover:text-amber-950"
+          >
+            Retry
+          </button>
+        </div>
+      )}
+
+      {/* Empty thoughts state */}
+      {isThoughtsOpen && !isLoading && !errorMessage && !hasComments && (
+        <div className="my-2 rounded-xl border border-dashed border-slate-200 bg-slate-50/60 px-3 py-2.5 text-center text-xs text-slate-500">
+          No thoughts yet. Share your thoughts on this travel memory!
+        </div>
+      )}
+
+      {/* Collapse button when open */}
+      {isThoughtsOpen && !isLoading && (
+        <button
+          type="button"
+          onClick={() => handleOpenComments(postId)}
+          className="mt-1.5 block px-1 text-xs font-semibold text-slate-400 transition-colors hover:text-amber-700"
+        >
+          Hide Thoughts
+        </button>
+      )}
+
+      {/* Expand button when closed and there are hidden comments */}
+      {!isThoughtsOpen &&
+        visibleCommentsCount > previewComments.length &&
+        !isLoading && (
+          <button
+            type="button"
+            onClick={() => handleOpenComments(postId)}
             className="mt-2 block px-1 text-xs font-semibold text-slate-400 transition-colors hover:text-amber-700"
           >
             View all {visibleCommentsCount} Thoughts
           </button>
         )}
 
+      {/* Comment / Thought input box */}
       <CommentInput
         post={post}
         user={user}
@@ -56,7 +100,7 @@ const FeedComments = ({
         isSubmittingComment={isSubmittingComment}
         handleCommentSubmit={handleCommentSubmit}
       />
-    </>
+    </div>
   );
 };
 

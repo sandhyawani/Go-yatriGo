@@ -24,12 +24,14 @@ const {
   getProfileStats,
   removeFollower,
   getPrivacySettings,
-  updatePrivacySettings
+  updatePrivacySettings,
+  updateUserLocation
 } = require("../controllers/userController");
 
 const { registerUser, loginUser: authUser } = require("../controllers/authController");
 const { verifyToken, verifyUser, verifyAdmin, protect, optionalVerifyToken } = require("../middleware/verifyToken");
 
+router.patch("/profile/location", verifyToken, updateUserLocation);
 router.get("/profile-stats", verifyToken, getProfileStats);
 router.get("/privacy-settings", verifyToken, getPrivacySettings);
 router.patch("/privacy-settings", verifyToken, updatePrivacySettings);

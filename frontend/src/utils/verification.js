@@ -1,6 +1,7 @@
-// Verified only if admin approved: isVerified === true && verificationStatus === 'verified'
+// Verified only if admin approved: isVerified === true && verificationStatus === 'verified' (or admin)
 export const isActuallyVerified = (user) => {
   if (!user) return false;
+  if (user.isAdmin === true || user.role === "admin") return true;
   return Boolean(user.isVerified === true && user.verificationStatus === "verified");
 };
 

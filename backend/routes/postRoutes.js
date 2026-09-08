@@ -140,4 +140,8 @@ router.post("/comment/:id", verifyToken, checkSuspended, async (req, res) => {
   }
 });
 
+const { getMemoryComments } = require("../controllers/memoryController");
+router.get("/:id/comments", verifyToken, getMemoryComments);
+router.get("/:id/thoughts", verifyToken, getMemoryComments);
+
 module.exports = router;

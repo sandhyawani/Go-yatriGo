@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { CloudRain, Sun, Wind, MapPin, Droplets, Cloud } from "lucide-react";
 import Card from "../common/Card";
+import { resolveWeatherQuery } from "../../utils/locationUtils";
 
 const getWeatherIcon = (desc) => {
   const d = (desc || "").toLowerCase();
@@ -13,7 +14,7 @@ const TravelWeatherWidget = ({ destination }) => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const destName = destination ? destination.split(",")[0].trim() : "";
+  const destName = resolveWeatherQuery(destination);
 
   useEffect(() => {
     if (!destName) return;

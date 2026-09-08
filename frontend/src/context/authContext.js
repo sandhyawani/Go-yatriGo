@@ -229,6 +229,26 @@ export const AuthContextProvider = ({ children }) => {
     }
   }, []);
 
+  const loginWithGoogle = useCallback(async (credential) => {
+    dispatch({ type: "LOGIN_START" });
+    try {
+      const { data } = await axios.post(
+        "/auth/google",
+        { credential },
+        { withCredentials: true }
+      );
+
+      const authenticatedUser = normalizeAuthPayload(data);
+      dispatch({ type: "LOGIN_SUCCESS", payload: authenticatedUser });
+      return { success: true, user: authenticatedUser };
+    } catch (err) {
+      const message = extractErrorMessage(err);
+      const code = err.response?.data?.code;
+      dispatch({ type: "LOGIN_FAILURE", payload: message });
+      return { success: false, error: message, code };
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     const storedUser = getStoredUser();
 
@@ -265,6 +285,7 @@ export const AuthContextProvider = ({ children }) => {
       error: state.error,
       dispatch,
       login,
+      loginWithGoogle,
       logout,
       updateUser
     }}>

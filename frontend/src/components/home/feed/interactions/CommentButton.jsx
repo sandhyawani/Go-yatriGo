@@ -2,10 +2,12 @@ import React from "react";
 import { MessageCircle } from "lucide-react";
 
 const CommentButton = ({ post, totalCommentsCount, handleOpenComments }) => {
+  const postId = (post?._id || post?.id)?.toString();
+
   return (
     <button
       type="button"
-      onClick={() => handleOpenComments(post._id)}
+      onClick={() => handleOpenComments(postId)}
       aria-label="Add Thoughts"
       className="flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-600 transition-all duration-200 hover:bg-white hover:text-slate-900 active:scale-95 sm:px-3"
     >

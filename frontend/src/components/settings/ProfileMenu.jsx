@@ -20,23 +20,30 @@ const ProfileMenu = () => {
 
   const isVerified = isActuallyVerified(user) || Boolean(user?.isAdmin);
   const profilePath = user?._id || user?.id ? `/profile/${user._id || user.id}` : "/profile";
+  const statusText = user.isAdmin
+    ? "Verified Admin"
+    : isActuallyVerified(user)
+    ? "Verified Traveler"
+    : user.verificationStatus === "pending"
+    ? "Verification Pending"
+    : "Not Verified";
 
   return (
     <Menu as="div" className="relative w-full">
       {({ open }) => (
         <>
-          <Menu.Button className={`flex items-center gap-2.5 p-2 rounded-2xl transition-all w-full text-left outline-none group select-none cursor-pointer border ${
+          <Menu.Button className={`flex items-center gap-2 p-1.5 sm:p-2 rounded-2xl transition-all w-full text-left outline-none group select-none cursor-pointer border ${
             open
               ? "bg-slate-100/90 border-slate-300/80 shadow-xs"
               : "bg-slate-50/70 hover:bg-slate-100/90 border-slate-200/70 hover:border-slate-300/80 shadow-2xs"
           }`}>
             <div className="relative shrink-0">
               <img
-                className="h-10 w-10 rounded-full border-2 border-white shadow-xs object-cover ring-2 ring-brand-200/80"
+                className="h-9 w-9 rounded-full border-2 border-white shadow-xs object-cover ring-2 ring-brand-200/80"
                 src={getAvatarUrl(user.pic, user.img, user.name)}
                 alt={user.name}
               />
-              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white" />
+              <span className={`absolute bottom-0 right-0 w-2 h-2 rounded-full ring-1.5 ring-white ${isVerified ? "bg-emerald-500" : "bg-slate-400"}`} />
             </div>
 
             <div className="flex-1 min-w-0">
@@ -48,21 +55,15 @@ const ProfileMenu = () => {
                   <CheckCircle2 className="w-3.5 h-3.5 text-brand fill-brand/10 shrink-0" />
                 )}
               </div>
-              <div className="flex items-center gap-1.5 mt-0.5">
+              <div className="flex items-center gap-1 mt-0.5" title={statusText}>
                 <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isVerified ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
-                <p className="text-[10px] font-semibold text-slate-500 capitalize truncate">
-                  {user.isAdmin
-                    ? "Verified Admin"
-                    : isActuallyVerified(user)
-                    ? "Verified Traveler"
-                    : user.verificationStatus === "pending"
-                    ? "Verification Pending"
-                    : "Not Verified"}
+                <p className="text-[10px] font-semibold text-slate-500 capitalize truncate leading-tight tracking-tight">
+                  {statusText}
                 </p>
               </div>
             </div>
 
-            <div className="w-7 h-7 rounded-lg bg-white/80 border border-slate-200/60 flex items-center justify-center shrink-0 group-hover:bg-brand-50 group-hover:border-brand-200 transition-colors">
+            <div className="w-6.5 h-6.5 rounded-lg bg-white/80 border border-slate-200/60 flex items-center justify-center shrink-0 group-hover:bg-brand-50 group-hover:border-brand-200 transition-colors">
               <Settings className="w-3.5 h-3.5 text-slate-400 group-hover:text-brand group-hover:rotate-45 transition-all duration-300" />
             </div>
           </Menu.Button>

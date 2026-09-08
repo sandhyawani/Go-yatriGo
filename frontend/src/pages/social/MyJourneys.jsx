@@ -196,22 +196,22 @@ const MyJourneys = () => {
     <div className="min-h-screen bg-background pb-24 lg:pb-8">
       {/* Mobile Header Card */}
       <div className="lg:hidden px-4 pt-3 pb-1">
-        <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
+        <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand to-brand-400 text-white flex items-center justify-center shadow-xs shrink-0">
                 <BookOpen className="w-5 h-5 stroke-[2]" />
               </div>
-              <div>
+              <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-base font-black text-text-primary tracking-tight leading-tight">
+                  <h1 className="text-base font-black text-text-primary tracking-tight leading-tight truncate">
                     Journey Hub
                   </h1>
-                  <span className="bg-primary-50 text-brand text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full border border-primary-200/60">
+                  <span className="bg-primary-50 text-brand text-[9.5px] font-black uppercase px-2 py-0.5 rounded-full border border-primary-200/60 shrink-0">
                     {journeys.length} {journeys.length === 1 ? "Trip" : "Trips"}
                   </span>
                 </div>
-                <p className="text-[10px] text-text-muted font-semibold mt-0.5">
+                <p className="text-[10.5px] text-text-muted font-semibold mt-0.5 truncate">
                   {upcomingCount} Upcoming • {activeCount} Active • {completedCount} Done
                 </p>
               </div>
@@ -220,7 +220,7 @@ const MyJourneys = () => {
             <button
               type="button"
               onClick={handleOpenCreateJourney}
-              className="btn-primary !min-h-[40px] !py-2 !px-3.5 !text-xs !tracking-wider flex items-center gap-1.5 shrink-0"
+              className="btn-primary !min-h-[38px] !py-1.5 !px-3.5 !text-xs !tracking-wider flex items-center gap-1.5 shrink-0 shadow-xs active:scale-95"
             >
               <Plus className="w-3.5 h-3.5 stroke-[3]" />
               <span>Plan</span>
@@ -230,7 +230,7 @@ const MyJourneys = () => {
       </div>
 
       {/* Desktop Header Hero */}
-      <div className="hidden lg:block max-w-7xl mx-auto px-6 pt-7">
+      <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-7">
         <div className="relative overflow-hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
           {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-primary-200/20 via-primary-100/10 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -294,10 +294,10 @@ const MyJourneys = () => {
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 lg:pt-6 space-y-5">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-6 space-y-6">
 
         {/* Tab Navigation Pill Bar */}
-        <div className="sticky top-0 lg:top-auto z-20 pt-3 lg:pt-0 bg-background/90 lg:bg-transparent backdrop-blur-md -mx-4 sm:mx-0">
+        <div className="sticky top-0 lg:top-auto z-20 pt-2 lg:pt-0 bg-background/90 lg:bg-transparent backdrop-blur-md -mx-4 sm:mx-0">
           <div className="w-full overflow-x-auto scrollbar-none pb-1">
             <div className="flex w-max min-w-full px-4 sm:px-0 sm:justify-start">
               <div className="tabs-container shrink-0">
@@ -361,7 +361,7 @@ const MyJourneys = () => {
                 </p>
               </div> :
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                 {activeInvitations.map((inv) =>
             <JourneyInvitationCard
             key={inv._id}
@@ -396,7 +396,7 @@ const MyJourneys = () => {
                   <span>Past Invitations ({pastInvitations.length})</span>
                 </button>
                 {showPastInvites && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-3">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 mt-3">
                     {pastInvitations.map((inv) => (
                       <JourneyInvitationCard
                         key={inv._id}
@@ -478,7 +478,7 @@ const MyJourneys = () => {
                   <p className="text-xs text-text-muted font-semibold">No completed explore trips yet.</p>
                 </div> :
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 font-sans">
                   {journeys.filter((j) => j.sourceType === "explore").map((j) =>
               <JourneyCard
               key={j._id}
@@ -505,7 +505,7 @@ const MyJourneys = () => {
                   <p className="text-xs text-text-muted font-semibold">No completed journeys with trip mates yet.</p>
                 </div> :
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 font-sans">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 font-sans">
                   {journeys.filter((j) => j.sourceType !== "explore").map((j) =>
               <JourneyCard
               key={j._id}
@@ -702,7 +702,7 @@ const MyJourneys = () => {
                     </div>}
 
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                     {displayList.map((j) =>
                   <JourneyCard
                   key={j._id}

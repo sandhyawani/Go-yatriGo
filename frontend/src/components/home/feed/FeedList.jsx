@@ -9,6 +9,7 @@ export const FeedList = ({
   likeLoadingMap,
   saveLoadingMap,
   commentsLoadingMap,
+  commentsErrorMap,
   activeCommentPost,
   handleLike,
   handlePostTap,
@@ -78,6 +79,7 @@ export const FeedList = ({
             likeLoadingMap={likeLoadingMap}
             saveLoadingMap={saveLoadingMap}
             commentsLoadingMap={commentsLoadingMap}
+            commentsErrorMap={commentsErrorMap}
           />
         );
       })}

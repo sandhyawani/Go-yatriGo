@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/verifyToken");
+const requireVerified = require("../middleware/requireVerified");
 
 const journeyController = require("../controllers/journeyController");
 const journeyMembershipController = require("../controllers/journeyMembershipController");
@@ -15,7 +16,7 @@ router.route("/auto-cover-preview").
 get(journeyController.getAutoCoverPreview);
 
 router.route("/").
-post(journeyController.createJourney);
+post(requireVerified, journeyController.createJourney);
 
 router.route("/my").
 get(journeyController.getMyJourneys);
@@ -99,7 +100,7 @@ router.route("/:id/invitations").
 get(journeyMembershipController.getJourneyInvitations);
 
 router.route("/invitations/:id/accept").
-post(journeyMembershipController.acceptInvitation);
+post(requireVerified, journeyMembershipController.acceptInvitation);
 
 router.route("/invitations/:id/reject").
 post(journeyMembershipController.rejectInvitation);
@@ -112,7 +113,7 @@ delete(journeyMembershipController.cancelInvitation);
 
 router.route("/:id/join-requests").
 get(journeyMembershipController.getJourneyJoinRequests).
-post(journeyMembershipController.requestToJoinJourney);
+post(requireVerified, journeyMembershipController.requestToJoinJourney);
 
 router.route("/:id/my-join-request").
 get(journeyMembershipController.getMyJoinRequest);

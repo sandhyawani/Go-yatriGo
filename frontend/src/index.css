@@ -524,6 +524,36 @@ button:disabled {
     );
     animation: shimmer 1.6s infinite;
   }
+
+  /* Tab Navigation System */
+  .tabs-container {
+    @apply flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm;
+  }
+
+  .tab-btn {
+    @apply flex items-center justify-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 whitespace-nowrap cursor-pointer;
+  }
+
+  .tab-btn-active {
+    @apply bg-gradient-to-r from-sky-600 to-brand text-white shadow-sm font-extrabold;
+  }
+
+  .tab-btn-inactive {
+    @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100/70;
+  }
+
+  /* Pill Filter Buttons */
+  .tab-pill {
+    @apply px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer inline-flex items-center gap-1.5;
+  }
+
+  .tab-pill-active {
+    @apply bg-brand text-white shadow-sm font-extrabold;
+  }
+
+  .tab-pill-inactive {
+    @apply bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900 shadow-sm;
+  }
 }
 
 /* Scrollbar */

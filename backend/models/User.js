@@ -58,7 +58,19 @@ const UserSchema = new mongoose.Schema(
   },
   password: {
     type: String,
-    required: true,
+    required: function () {
+      return !this.provider || this.provider === "local";
+    },
+    select: false
+  },
+  provider: {
+    type: String,
+    enum: ["local", "google", "facebook"],
+    default: "local"
+  },
+  providerId: {
+    type: String,
+    default: null,
     select: false
   },
   isAdmin: {
@@ -220,11 +232,22 @@ UserSchema.index({ city: 1 });
 UserSchema.index({ state: 1 });
 UserSchema.index({ city: 1, state: 1 });
 UserSchema.index({ blockedUsers: 1 });
+UserSchema.index(
+  { provider: 1, providerId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      provider: { $in: ["google", "facebook"] },
+      providerId: { $type: "string", $gt: "" }
+    }
+  }
+);
 
 const stripSensitiveFields = (_doc, ret) => {
   delete ret.password;
   delete ret.resetPasswordToken;
   delete ret.resetPasswordExpire;
+  delete ret.providerId;
   return ret;
 };
 

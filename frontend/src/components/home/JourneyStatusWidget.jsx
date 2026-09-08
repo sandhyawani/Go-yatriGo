@@ -23,6 +23,7 @@ import Card from "../common/Card";
 import { normalizeJourneyStatus, getNormalizedMembers } from "../../utils/journeyLifecycle";
 import { getAvatarUrl } from "../../utils/avatar";
 import { showToast } from "../../utils/showToast";
+import { resolveWeatherQuery } from "../../utils/locationUtils";
 import axios from "../../api/axios";
 
 const DEFAULT_TRIP_COVER =
@@ -104,7 +105,7 @@ const JourneyStatusWidget = ({ journey, user }) => {
     return journey?.likesCount || (Array.isArray(journey?.likes) ? journey.likes.length : 0);
   });
 
-  const destName = journey?.destination ? journey.destination.split(",")[0].trim() : "";
+  const destName = resolveWeatherQuery(journey?.destination);
 
   useEffect(() => {
     if (!destName) return;
