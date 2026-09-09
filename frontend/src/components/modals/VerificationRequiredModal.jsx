@@ -258,7 +258,8 @@ const VerificationRequiredModal = ({
             verificationStatus: "pending",
             isVerified: false,
             govIdType,
-            hasSubmittedDocument: true
+            hasSubmittedDocument: true,
+            ...(response.data?.user || {})
           });
         }
 
