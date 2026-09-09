@@ -33,6 +33,8 @@ const Login = () => {
   const navigate = useNavigate();
   const googleButtonRef = useRef(null);
   const [isGisRendered, setIsGisRendered] = useState(false);
+  const gisInitializedRef = useRef(false);
+  const googleSuccessRef = useRef(null);
 
   const isMounted = useRef(true);
   useEffect(() => {
@@ -86,75 +88,177 @@ const Login = () => {
     });
   }, [loginWithGoogle, navigate]);
 
+  // Always use the latest callback without forcing GIS to initialize again.
   useEffect(() => {
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
-    if (!clientId || clientId.includes("test-google-client-id")) return;
+    googleSuccessRef.current = handleGoogleSuccess;
+  }, [handleGoogleSuccess]);
 
-    let cleanup = () => {};
+  const getCleanClientId = () => {
+    const raw = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    return typeof raw === "string" ? raw.trim().replace(/^["']|["']$/g, "") : "";
+  };
+
+  useEffect(() => {
+    const clientId = getCleanClientId();
+
+    if (!clientId || clientId.includes("test-google-client-id")) {
+      console.error("Google Sign-In: REACT_APP_GOOGLE_CLIENT_ID is missing or invalid.");
+      return;
+    }
+
     let isCancelled = false;
+    let resizeObserver = null;
+    let script = null;
 
-    const initGis = () => {
-      if (isCancelled || !window.google?.accounts?.id || !googleButtonRef.current) return;
+    const getTargetWidth = () => {
+      if (!googleButtonRef.current) return 320;
+
+      const container =
+        googleButtonRef.current.parentElement || googleButtonRef.current;
+
+      const rectWidth = container.getBoundingClientRect?.()?.width;
+      const measured =
+        rectWidth || container.clientWidth || container.offsetWidth || 320;
+
+      return Math.max(200, Math.min(400, Math.floor(measured)));
+    };
+
+    const renderGsiButton = () => {
+      if (
+        isCancelled ||
+        !window.google?.accounts?.id ||
+        !googleButtonRef.current
+      ) {
+        return;
+      }
 
       try {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleGoogleSuccess,
-          auto_select: false,
-          cancel_on_tap_outside: true
-        });
+        /*
+         * Initialize GIS only once.
+         *
+         * The previous implementation initialized GIS every time this
+         * effect ran. That can cause:
+         * "google.accounts.id.initialize() is called multiple times"
+         *
+         * The callback itself is kept in googleSuccessRef so it can stay
+         * current without re-initializing GIS.
+         */
+        if (!gisInitializedRef.current) {
+          window.google.accounts.id.initialize({
+            client_id: clientId,
+            callback: (response) => {
+              if (googleSuccessRef.current) {
+                googleSuccessRef.current(response);
+              }
+            },
+            auto_select: false,
+            cancel_on_tap_outside: true,
+          });
+
+          gisInitializedRef.current = true;
+        }
+
+        const targetWidth = getTargetWidth();
 
         googleButtonRef.current.innerHTML = "";
-        window.google.accounts.id.renderButton(googleButtonRef.current, {
-          type: "standard",
-          theme: "outline",
-          size: "large",
-          text: "continue_with",
-          shape: "rectangular",
-          logo_alignment: "left",
-          width: 320
-        });
+
+        window.google.accounts.id.renderButton(
+          googleButtonRef.current,
+          {
+            type: "standard",
+            theme: "outline",
+            size: "large",
+            text: "continue_with",
+            shape: "rectangular",
+            logo_alignment: "left",
+            width: targetWidth,
+          }
+        );
 
         if (!isCancelled) {
           setIsGisRendered(true);
         }
       } catch (err) {
-        console.error("GIS initialization error:", err);
+        console.error("GIS initialization/render error:", err);
+        if (!isCancelled) {
+          setIsGisRendered(false);
+        }
+      }
+    };
+
+    const setupObserver = () => {
+      if (isCancelled) return;
+
+      renderGsiButton();
+
+      if (
+        typeof ResizeObserver !== "undefined" &&
+        googleButtonRef.current
+      ) {
+        const container =
+          googleButtonRef.current.parentElement || googleButtonRef.current;
+
+        resizeObserver = new ResizeObserver(() => {
+          if (!isCancelled) {
+            renderGsiButton();
+          }
+        });
+
+        resizeObserver.observe(container);
+      } else {
+        window.addEventListener("resize", renderGsiButton);
       }
     };
 
     if (window.google?.accounts?.id) {
-      initGis();
+      setupObserver();
     } else {
       const existingScript = document.getElementById("google-gsi-client");
+
       if (existingScript) {
-        existingScript.addEventListener("load", initGis);
-        cleanup = () => existingScript.removeEventListener("load", initGis);
+        existingScript.addEventListener("load", setupObserver);
+        script = existingScript;
       } else {
-        const script = document.createElement("script");
+        script = document.createElement("script");
         script.id = "google-gsi-client";
         script.src = "https://accounts.google.com/gsi/client";
         script.async = true;
         script.defer = true;
-        script.onload = initGis;
+        script.onload = setupObserver;
         script.onerror = () => {
-          console.warn("Failed to load Google Identity Services SDK");
+          console.error("Failed to load Google Identity Services SDK");
+          if (!isCancelled) {
+            setIsGisRendered(false);
+          }
         };
+
         document.body.appendChild(script);
-        cleanup = () => {
-          script.onload = null;
-        };
       }
     }
 
     return () => {
       isCancelled = true;
-      cleanup();
+
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+
+      window.removeEventListener("resize", renderGsiButton);
+
+      if (script) {
+        script.removeEventListener?.("load", setupObserver);
+      }
+
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = "";
+      }
+
+      setIsGisRendered(false);
     };
-  }, [handleGoogleSuccess]);
+  }, []);
 
   const handleGoogleLogin = useCallback(() => {
-    const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID;
+    const clientId = getCleanClientId();
     if (!clientId || clientId.includes("test-google-client-id")) {
       Swal.fire({
         icon: "info",
@@ -178,6 +282,10 @@ const Login = () => {
     }
 
     try {
+      /*
+       * The normal rendered GIS button handles the sign-in flow itself.
+       * This fallback is only used while that button is not rendered.
+       */
       window.google.accounts.id.prompt();
     } catch (err) {
       console.error("GIS prompt error:", err);
@@ -336,12 +444,12 @@ const Login = () => {
           </motion.div>
         </div>
 
-        <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-6 sm:p-12 relative overflow-y-auto custom-scrollbar">
+        <div className="w-full lg:w-2/5 flex flex-col items-center justify-center p-4 sm:p-8 lg:p-12 relative overflow-y-auto custom-scrollbar">
           <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="w-full max-w-[420px] bg-white border border-slate-100 p-6 sm:p-8 rounded-[2rem] shadow-xl my-4 lg:my-0">
+          className="w-full max-w-[420px] bg-white border border-slate-100 p-5 sm:p-8 rounded-[1.75rem] sm:rounded-[2rem] shadow-xl my-4 lg:my-0">
 
             <div className="mb-5 flex flex-col items-center lg:items-start">
               <Link
@@ -517,10 +625,10 @@ const Login = () => {
             </div>
 
             <div className="space-y-3">
-              <div className="w-full flex justify-center min-h-[44px] relative">
+              <div className="w-full flex items-center justify-center min-h-[44px] relative overflow-hidden rounded-xl sm:rounded-2xl">
                 <div
                   ref={googleButtonRef}
-                  className={`w-full flex justify-center transition-opacity duration-200 ${
+                  className={`w-full flex justify-center items-center transition-opacity duration-200 max-w-full overflow-hidden [&>div]:!w-full [&>div]:!max-w-full [&_iframe]:!max-w-full [&_iframe]:!mx-auto ${
                     isGisRendered ? "opacity-100 relative" : "opacity-0 absolute pointer-events-none"
                   }`}
                 />
@@ -529,9 +637,9 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={handleGoogleLogin}
-                    className="w-full py-2.5 px-4 bg-white border border-slate-200 hover:border-slate-300 rounded-xl font-bold text-xs text-text-primary flex items-center justify-center gap-3 transition-all shadow-sm hover:shadow"
+                    className="w-full h-[40px] sm:h-[44px] py-2 px-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-slate-300 rounded-xl sm:rounded-2xl font-bold text-xs text-text-primary flex items-center justify-center gap-3 transition-all shadow-xs hover:shadow active:scale-[0.99]"
                   >
-                    <svg className="w-4 h-4" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                       <path
                         fill="#4285F4"
                         d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -549,7 +657,7 @@ const Login = () => {
                         d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                       />
                     </svg>
-                    <span>Continue with Google</span>
+                    <span className="truncate">Continue with Google</span>
                   </button>
                 )}
               </div>
