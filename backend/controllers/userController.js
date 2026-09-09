@@ -2226,6 +2226,122 @@ const updateUserLocation = asyncHandler(async (req, res) => {
   });
 });
 
+const submitVerification = asyncHandler(async (req, res) => {
+  const userId = req.user?._id || req.user?.id;
+  if (!userId) {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication required to submit verification.",
+    });
+  }
+
+  // Determine document URL from uploaded file or request body
+  let documentUrl = "";
+  if (req.file) {
+    documentUrl = req.file.path || req.file.secure_url || req.file.url;
+  } else if (Array.isArray(req.files) && req.files.length > 0) {
+    const matched =
+      req.files.find(
+        (f) =>
+          f.fieldname === "document" ||
+          f.fieldname === "govId" ||
+          f.fieldname === "image" ||
+          f.fieldname === "file"
+      ) || req.files[0];
+    documentUrl = matched.path || matched.secure_url || matched.url;
+  } else if (req.body.govId && typeof req.body.govId === "string") {
+    documentUrl = req.body.govId.trim();
+  } else if (req.body.document && typeof req.body.document === "string") {
+    documentUrl = req.body.document.trim();
+  } else if (req.body.documentUrl && typeof req.body.documentUrl === "string") {
+    documentUrl = req.body.documentUrl.trim();
+  }
+
+  // If document was sent as a base64 string, upload to Cloudinary
+  if (documentUrl && documentUrl.startsWith("data:")) {
+    try {
+      const { cloudinary } = require("../utils/cloudinary");
+      const isPdf = documentUrl.startsWith("data:application/pdf");
+      const uploadOptions = {
+        folder: "GoGoYatriGo_uploads",
+        resource_type: isPdf ? "raw" : "auto",
+      };
+      if (!isPdf) {
+        uploadOptions.quality = "auto:good";
+        uploadOptions.fetch_format = "auto";
+      }
+      const result = await cloudinary.uploader.upload(documentUrl, uploadOptions);
+      documentUrl = result.secure_url || result.url;
+    } catch (uploadErr) {
+      console.error("[SUBMIT VERIFICATION UPLOAD ERROR]:", uploadErr);
+      return res.status(500).json({
+        success: false,
+        message: `Failed to upload document: ${uploadErr.message}`,
+      });
+    }
+  }
+
+  const govIdType = (req.body.govIdType || "").trim();
+  const validGovIdTypes = [
+    "Aadhaar Card",
+    "PAN Card",
+    "Passport",
+    "Driving License",
+  ];
+
+  if (!govIdType || !validGovIdTypes.includes(govIdType)) {
+    return res.status(400).json({
+      success: false,
+      message:
+        "Please select a valid Government ID document type (Aadhaar Card, PAN Card, Passport, or Driving License).",
+    });
+  }
+
+  if (!documentUrl) {
+    return res.status(400).json({
+      success: false,
+      message: "Please select a valid government ID document to upload.",
+    });
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: {
+        govId: documentUrl,
+        govIdType: govIdType,
+        verificationStatus: "pending",
+        isVerified: false,
+        verificationNote: "",
+      },
+    },
+    { new: true, runValidators: true }
+  ).select("-password -resetPasswordToken -resetPasswordExpire");
+
+  if (!updatedUser) {
+    return res.status(404).json({
+      success: false,
+      message: "User not found.",
+    });
+  }
+
+  const userObj = updatedUser.toObject
+    ? updatedUser.toObject()
+    : { ...updatedUser };
+  userObj.isVerified = false;
+  userObj.verificationStatus = "pending";
+
+  return res.status(200).json({
+    success: true,
+    message: "Government ID submitted successfully and is pending review.",
+    user: userObj,
+    verificationStatus: "pending",
+    isVerified: false,
+    govId: documentUrl,
+    govIdType: govIdType,
+  });
+});
+
 module.exports = {
   updateUser,
   deleteUser,
@@ -2251,4 +2367,6 @@ module.exports = {
   getPrivacySettings,
   updatePrivacySettings,
   updateUserLocation,
+  submitVerification,
 };
+
