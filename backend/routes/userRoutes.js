@@ -25,13 +25,33 @@ const {
   removeFollower,
   getPrivacySettings,
   updatePrivacySettings,
-  updateUserLocation
+  updateUserLocation,
+  submitVerification
 } = require("../controllers/userController");
 
 const { registerUser, loginUser: authUser } = require("../controllers/authController");
 const { verifyToken, verifyUser, verifyAdmin, protect, optionalVerifyToken } = require("../middleware/verifyToken");
+const { uploadCloud } = require("../utils/cloudinary");
+
+const uploadVerificationMiddleware = (req, res, next) => {
+  uploadCloud.any()(req, res, (err) => {
+    if (err) {
+      console.error("[VERIFICATION UPLOAD ERROR]:", err);
+      return res.status(400).json({
+        success: false,
+        message: err.message || "Failed to upload document file."
+      });
+    }
+    next();
+  });
+};
 
 router.patch("/profile/location", verifyToken, updateUserLocation);
+router.route("/profile/verification")
+  .post(verifyToken, uploadVerificationMiddleware, submitVerification)
+  .put(verifyToken, uploadVerificationMiddleware, submitVerification);
+router.post("/verification", verifyToken, uploadVerificationMiddleware, submitVerification);
+
 router.get("/profile-stats", verifyToken, getProfileStats);
 router.get("/privacy-settings", verifyToken, getPrivacySettings);
 router.patch("/privacy-settings", verifyToken, updatePrivacySettings);
