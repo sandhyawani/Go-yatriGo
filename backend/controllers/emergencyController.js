@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const EmergencyContact = require("../models/EmergencyContact");
 const User = require("../models/User");
 const Journey = require("../models/Journey");
+const notificationService = require("../services/notificationService");
 const { createAndSendNotification } = require("../utils/notificationHelper");
 
 const getContacts = asyncHandler(async (req, res) => {
@@ -167,13 +168,17 @@ const toggleSOS = asyncHandler(async (req, res) => {
       });
 
       for (const memberId of notifiedMemberIds) {
-        await createAndSendNotification(io, {
+        await notificationService.createNotification({
           sender: req.user._id,
           receiver: memberId,
           type: "sos_alert",
           category: "Safety",
-          message: `🚨 EMERGENCY ALERT: ${user.name || "A traveler"} has triggered Emergency SOS!`
-        });
+          entityId: req.user._id,
+          entityType: "User",
+          title: "🚨 SOS EMERGENCY ALERT",
+          message: `🚨 EMERGENCY ALERT: ${user.name || "A traveler"} has triggered Emergency SOS!`,
+          link: `/emergency-contacts`
+        }, io).catch(() => {});
       }
     } catch (notifErr) {
       console.error("[EmergencyController] SOS notification dispatch error:", notifErr.message);

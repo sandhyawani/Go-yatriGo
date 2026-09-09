@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Comment = require("../models/Comment");
 const SavedPost = require("../models/SavedPost");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const TravelGroup = require("../models/TravelGroup");
 const Journey = require("../models/Journey");
 const Story = require("../models/Story");
@@ -353,13 +354,19 @@ exports.toggleLikeMemory = async (req, res) => {
     if (!hasLiked && post.userId.toString() !== userId) {
       const senderUser = await User.findById(userId);
       if (senderUser) {
-        await Notification.create({
+        const io = req.app.get("io");
+        await notificationService.createNotification({
           sender: userId,
-          receiver: post.userId,
+          receiver: post.userId.toString(),
           type: "post_like",
+          category: "Social",
           post: post._id,
-          message: `${senderUser.name || senderUser.username || "Someone"} liked your Travel Memory`
-        }).catch((err) => console.error("Notification creation error:", err));
+          entityId: post._id,
+          entityType: "Post",
+          title: "New Like",
+          message: `${senderUser.name || senderUser.username || "Someone"} liked your Travel Memory`,
+          link: `/profile/${post.userId}`
+        }, io).catch((err) => console.error("Notification creation error:", err));
       }
     }
 
@@ -411,13 +418,19 @@ exports.commentOnMemory = async (req, res) => {
     await post.save();
 
     if (post.userId.toString() !== userId.toString()) {
-      await Notification.create({
+      const io = req.app.get("io");
+      await notificationService.createNotification({
         sender: userId,
-        receiver: post.userId,
+        receiver: post.userId.toString(),
         type: "post_comment",
+        category: "Social",
         post: post._id,
-        message: `${currentUser.name || currentUser.username} commented on your Travel Memory`
-      });
+        entityId: post._id,
+        entityType: "Post",
+        title: "New Comment",
+        message: `${currentUser.name || currentUser.username || "Someone"} commented on your Travel Memory`,
+        link: `/profile/${post.userId}`
+      }, io).catch(() => {});
     }
 
     res.status(201).json({

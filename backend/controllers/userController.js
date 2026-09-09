@@ -2,6 +2,7 @@ const asyncHandler = require("express-async-handler");
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const TravelGroup = require("../models/TravelGroup");
 const Journey = require("../models/Journey");
 const Follow = require("../models/Follow");
@@ -550,24 +551,17 @@ const followUser = asyncHandler(async (req, res) => {
       { new: true },
     );
 
-    const notification = await Notification.create({
+    await notificationService.createNotification({
       sender: currentUserId,
       receiver: targetUserId,
       type: "follow_request",
       category: "Social",
+      title: "New Follow Request",
       message: `${currentUser.username || currentUser.name} requested to follow you`,
-    });
+      link: `/profile/${currentUserId}`
+    }, io);
 
     if (io) {
-      const populatedNotification = await Notification.findById(
-        notification._id,
-      )
-        .populate("sender", "name username avatar profilePicture pic img")
-        .lean();
-      io.to(targetUserId.toString()).emit(
-        SOCKET_EVENTS.NEW_NOTIFICATION,
-        populatedNotification,
-      );
       io.to(targetUserId.toString()).emit(
         SOCKET_EVENTS.FOLLOW_REQUEST_RECEIVED,
         {
@@ -605,22 +599,17 @@ const followUser = asyncHandler(async (req, res) => {
     );
   }
 
-  const notification = await Notification.create({
+  await notificationService.createNotification({
     sender: currentUserId,
     receiver: targetUserId,
     type: "follow",
     category: "Social",
+    title: "New Follower",
     message: `${currentUser.username || currentUser.name} started following you`,
-  });
+    link: `/profile/${currentUserId}`
+  }, io);
 
   if (io) {
-    const populatedNotification = await Notification.findById(notification._id)
-      .populate("sender", "name username avatar profilePicture pic img")
-      .lean();
-    io.to(targetUserId.toString()).emit(
-      SOCKET_EVENTS.NEW_NOTIFICATION,
-      populatedNotification,
-    );
     io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: targetUserId.toString(),
       followersCount: updatedTarget.followers.length,
@@ -642,7 +631,11 @@ const unfollowUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
 
-  const targetUser = await User.findById(targetUserId);
+  const [currentUser, targetUser] = await Promise.all([
+    User.findById(currentUserId),
+    User.findById(targetUserId),
+  ]);
+
   if (!targetUser) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
@@ -662,6 +655,16 @@ const unfollowUser = asyncHandler(async (req, res) => {
       receiver: targetUserId,
       type: "follow_request",
     });
+
+    await notificationService.createNotification({
+      sender: currentUserId,
+      receiver: targetUserId,
+      type: "request_cancelled",
+      category: "Social",
+      title: "Follow Request Cancelled",
+      message: `${currentUser?.username || currentUser?.name || "A traveler"} cancelled their follow request`,
+      link: `/profile/${currentUserId}`
+    }, io);
 
     if (io) {
       io.to(targetUserId.toString()).emit(
@@ -703,6 +706,16 @@ const unfollowUser = asyncHandler(async (req, res) => {
     type: "follow",
   });
 
+  await notificationService.createNotification({
+    sender: currentUserId,
+    receiver: targetUserId,
+    type: "unfollow",
+    category: "Social",
+    title: "Unfollowed",
+    message: `${currentUser?.username || currentUser?.name || "A traveler"} unfollowed you`,
+    link: `/profile/${currentUserId}`
+  }, io);
+
   if (io) {
     io.to(targetUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: targetUserId.toString(),
@@ -725,7 +738,11 @@ const removeFollower = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
 
-  const targetUser = await User.findById(targetUserId);
+  const [currentUser, targetUser] = await Promise.all([
+    User.findById(currentUserId),
+    User.findById(targetUserId),
+  ]);
+
   if (!targetUser) {
     return res.status(404).json({ success: false, message: "User not found" });
   }
@@ -751,6 +768,17 @@ const removeFollower = asyncHandler(async (req, res) => {
   }
 
   const io = req.app.get("io");
+
+  await notificationService.createNotification({
+    sender: currentUserId,
+    receiver: targetUserId,
+    type: "unfollow",
+    category: "Social",
+    title: "Removed from Followers",
+    message: `${currentUser?.username || currentUser?.name || "A traveler"} removed you from their followers`,
+    link: `/profile/${currentUserId}`
+  }, io);
+
   if (io) {
     io.to(currentUserId.toString()).emit(SOCKET_EVENTS.FOLLOWERS_UPDATED, {
       targetId: currentUserId.toString(),
@@ -907,6 +935,18 @@ const rateUser = asyncHandler(async (req, res) => {
   targetUser.rating = averageRating;
   targetUser.reviewsCount = totalReviews;
   await targetUser.save();
+
+  const io = req.app.get("io");
+  const reviewerUser = await User.findById(currentUserId).select("name username");
+  await notificationService.createNotification({
+    sender: currentUserId,
+    receiver: targetUserId,
+    type: "user_review",
+    category: "Social",
+    title: "New Traveler Review",
+    message: `${reviewerUser?.name || "A companion"} rated you ${numRating} stars on your completed journey`,
+    link: `/profile/${targetUserId}`
+  }, io);
 
   res.status(200).json({
     success: true,
@@ -1879,12 +1919,17 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     );
   }
 
-  const notification = await Notification.create({
+  const io = req.app.get("io");
+
+  await notificationService.createNotification({
     sender: currentUserId,
     receiver: requesterId,
     type: "follow_accept",
+    category: "Social",
+    title: "Follow Request Accepted",
     message: `${updatedCurrent.username || updatedCurrent.name} accepted your follow request`,
-  });
+    link: `/profile/${currentUserId}`
+  }, io);
 
   await Notification.findOneAndDelete({
     sender: requesterId,
@@ -1892,16 +1937,7 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     type: "follow_request",
   });
 
-  const io = req.app.get("io");
   if (io) {
-    const populatedNotification = await Notification.findById(notification._id)
-      .populate("sender", "name username avatar profilePicture pic img")
-      .lean();
-
-    io.to(requesterId.toString()).emit(
-      SOCKET_EVENTS.NEW_NOTIFICATION,
-      populatedNotification,
-    );
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, {
       userId: currentUserId.toString(),
     });
@@ -1928,9 +1964,13 @@ const rejectFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
 
-  await User.findByIdAndUpdate(currentUserId, {
-    $pull: { followRequests: requesterId },
-  });
+  const [currentUser] = await Promise.all([
+    User.findById(currentUserId),
+    User.findByIdAndUpdate(currentUserId, {
+      $pull: { followRequests: requesterId },
+    })
+  ]);
+
   await Notification.findOneAndDelete({
     sender: requesterId,
     receiver: currentUserId,
@@ -1938,6 +1978,17 @@ const rejectFollowRequest = asyncHandler(async (req, res) => {
   });
 
   const io = req.app.get("io");
+
+  await notificationService.createNotification({
+    sender: currentUserId,
+    receiver: requesterId,
+    type: "follow_reject",
+    category: "Social",
+    title: "Follow Request Declined",
+    message: `${currentUser?.username || currentUser?.name || "A traveler"} declined your follow request`,
+    link: `/profile/${currentUserId}`
+  }, io);
+
   if (io) {
     io.to(requesterId.toString()).emit(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, {
       userId: currentUserId.toString(),

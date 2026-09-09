@@ -255,6 +255,9 @@ const onlineUsers = new Map();
 app.set("io", io);
 app.set("onlineUsers", onlineUsers);
 
+const notificationService = require("./services/notificationService");
+notificationService.setIo(io);
+
 io.on("connection", (socket) => {
   socket.on("go_online", async (userId) => {
     const authUserId = socket.userId;

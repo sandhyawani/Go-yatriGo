@@ -113,25 +113,45 @@ exports.transferHost = async (req, res) => {
         description: `${oldHostUser?.name || "Previous Host"} transferred hosting to ${newHostUser?.name || "New Host"}.`
       }]);
 
-      await Notification.create([
-        {
-          sender: currentUserId,
-          receiver: newHostId,
-          type: "host_transferred",
-          journey: journey._id,
-          message: `You are now the host of "${journey.title}".`
-        },
-        {
-          sender: currentUserId,
-          receiver: currentUserId,
-          type: "host_transferred",
-          journey: journey._id,
-          message: `You transferred hosting of "${journey.title}" to ${newHostUser?.name || "a member"}.`
+      const notificationService = require("../services/notificationService");
+      const io = req.app.get("io");
+
+      // Notify new host
+      await notificationService.createNotification({
+        sender: currentUserId,
+        receiver: newHostId,
+        type: "journey_host_transferred",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "You are now Host",
+        message: `You are now the host of "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+
+      // Notify all other members
+      (journey.members || []).forEach((m) => {
+        const memId = (m.user?._id || m.user).toString();
+        if (memId !== currentUserId.toString() && memId !== newHostId.toString()) {
+          notificationService.createNotification({
+            sender: currentUserId,
+            receiver: memId,
+            type: "journey_host_transferred",
+            category: "Journey",
+            journey: journey._id,
+            journeyModel: "Journey",
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "Host Transferred",
+            message: `${newHostUser?.name || "A member"} is now the host of "${journey.title}".`,
+            link: `/social/journeys/${journey._id}`
+          }, io).catch(() => {});
         }
-      ]);
+      });
 
       try {
-        const io = req.app.get("io");
         if (io) {
           io.emit("host_transferred", {
             journeyId: journey._id.toString(),

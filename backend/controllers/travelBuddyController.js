@@ -4,6 +4,7 @@ const User = require("../models/User");
 const Post = require("../models/Post");
 const JoinRequest = require("../models/JoinRequest");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const ChatRoom = require("../models/ChatRoom");
 const Journey = require("../models/Journey");
 const JourneyMember = require("../models/JourneyMember");
@@ -891,13 +892,19 @@ exports.requestToJoinTrip = async (req, res) => {
     }
 
     const senderUser = await User.findById(userId);
-    await Notification.create({
+    const io = req.app.get("io");
+    await notificationService.createNotification({
       sender: userId,
       receiver: trip.host,
       type: "join_request",
+      category: "Journey",
       group: trip._id,
-      message: `${senderUser?.name || senderUser?.username || "A traveler"} requested to join "${trip.title}"`
-    });
+      entityId: trip._id,
+      entityType: "TravelGroup",
+      title: "Group Join Request",
+      message: `${senderUser?.name || senderUser?.username || "A traveler"} requested to join "${trip.title}"`,
+      link: `/social/buddy/${trip._id}`
+    }, io);
 
     res.status(200).json({
       success: true,
@@ -913,6 +920,7 @@ exports.manageJoinRequest = async (req, res) => {
   try {
     const hostId = req.user._id || req.user.id;
     const { requestId, action } = req.body;
+    const io = req.app.get("io");
 
     if (!["accept", "reject"].includes(action)) {
       return res.status(400).json({ success: false, message: "Action must be 'accept' or 'reject'" });
@@ -944,12 +952,37 @@ exports.manageJoinRequest = async (req, res) => {
           journeyReq.status = "accepted";
           await journeyReq.save();
 
-          await Notification.create({
+          await notificationService.createNotification({
             sender: hostId,
             receiver: journeyReq.userId,
             type: "journey_join_request_accepted",
+            category: "Journey",
             journey: journey._id,
-            message: `Your request to join "${journey.title}" was accepted!`
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "Journey Request Accepted",
+            message: `Your request to join "${journey.title}" was accepted!`,
+            link: `/social/journeys/${journey._id}`
+          }, io);
+
+          // Notify other journey members that someone joined
+          const joinedUser = await User.findById(journeyReq.userId).select("name username");
+          (journey.members || []).forEach((m) => {
+            const memId = (m.user?._id || m.user).toString();
+            if (memId !== hostId.toString() && memId !== journeyReq.userId.toString()) {
+              notificationService.createNotification({
+                sender: journeyReq.userId,
+                receiver: memId,
+                type: "journey_member_joined",
+                category: "Journey",
+                journey: journey._id,
+                entityId: journey._id,
+                entityType: "Journey",
+                title: "New Companion Joined",
+                message: `${joinedUser?.name || "A traveler"} joined the journey "${journey.title}"`,
+                link: `/social/journeys/${journey._id}`
+              }, io).catch(() => {});
+            }
           });
 
           return res.status(200).json({ success: true, message: "Join request accepted" });
@@ -957,13 +990,18 @@ exports.manageJoinRequest = async (req, res) => {
           if (err.message === "capacity_full") {
             journeyReq.status = "capacity_full";
             await journeyReq.save();
-            await Notification.create({
+            await notificationService.createNotification({
               sender: hostId,
               receiver: journeyReq.userId,
               type: "journey_join_request_rejected",
+              category: "Journey",
               journey: journey._id,
-              message: `Your request to join "${journey.title}" was not accepted because the journey has reached its capacity.`
-            });
+              entityId: journey._id,
+              entityType: "Journey",
+              title: "Journey Capacity Full",
+              message: `Your request to join "${journey.title}" was not accepted because the journey has reached its capacity.`,
+              link: `/social/journeys/${journey._id}`
+            }, io);
             return res.status(400).json({ success: false, code: "CAPACITY_FULL", message: "Journey is at full capacity" });
           }
           return res.status(400).json({ success: false, message: "Could not add member" });
@@ -972,13 +1010,18 @@ exports.manageJoinRequest = async (req, res) => {
         journeyReq.status = "rejected";
         await journeyReq.save();
 
-        await Notification.create({
+        await notificationService.createNotification({
           sender: hostId,
           receiver: journeyReq.userId,
           type: "journey_join_request_rejected",
+          category: "Journey",
           journey: journey._id,
-          message: `Your request to join "${journey.title}" was rejected.`
-        });
+          entityId: journey._id,
+          entityType: "Journey",
+          title: "Journey Request Declined",
+          message: `Your request to join "${journey.title}" was rejected.`,
+          link: `/social/journeys/${journey._id}`
+        }, io);
         return res.status(200).json({ success: true, message: "Join request rejected" });
       }
     }
@@ -1043,12 +1086,37 @@ exports.manageJoinRequest = async (req, res) => {
       request.status = "Approved";
       await request.save();
 
-      await Notification.create({
+      await notificationService.createNotification({
         sender: hostId,
         receiver: request.userId,
-        type: "request_accept",
+        type: "request_approved",
+        category: "Journey",
         group: trip._id,
-        message: `Your request to join "${trip.title}" was accepted!`
+        entityId: trip._id,
+        entityType: "TravelGroup",
+        title: "Group Join Accepted",
+        message: `Your request to join "${trip.title}" was accepted!`,
+        link: `/social/buddy/${trip._id}`
+      }, io);
+
+      // Notify other group members
+      const joinedUser = await User.findById(request.userId).select("name username");
+      (trip.members || []).forEach((m) => {
+        const memId = (m.user?._id || m.user).toString();
+        if (memId !== hostId.toString() && memId !== request.userId.toString()) {
+          notificationService.createNotification({
+            sender: request.userId,
+            receiver: memId,
+            type: "group_joined",
+            category: "Journey",
+            group: trip._id,
+            entityId: trip._id,
+            entityType: "TravelGroup",
+            title: "Member Joined Group",
+            message: `${joinedUser?.name || "A traveler"} joined the group "${trip.title}"`,
+            link: `/social/buddy/${trip._id}`
+          }, io).catch(() => {});
+        }
       });
 
       res.status(200).json({
@@ -1060,13 +1128,18 @@ exports.manageJoinRequest = async (req, res) => {
       request.status = "Rejected";
       await request.save();
 
-      await Notification.create({
+      await notificationService.createNotification({
         sender: hostId,
         receiver: request.userId,
-        type: "request_reject",
+        type: "request_rejected",
+        category: "Journey",
         group: trip._id,
-        message: `Your request to join "${trip.title}" was declined.`
-      });
+        entityId: trip._id,
+        entityType: "TravelGroup",
+        title: "Group Join Declined",
+        message: `Your request to join "${trip.title}" was declined.`,
+        link: `/social/buddy/${trip._id}`
+      }, io);
 
       res.status(200).json({
         success: true,
@@ -1137,6 +1210,22 @@ exports.leaveTravelBuddyTrip = async (req, res) => {
         });
       }
 
+      const io = req.app.get("io");
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "journey_member_left",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Member Left Journey",
+        message: `${user?.name || "A traveler"} left the journey "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+
       return res.status(200).json({ success: true, message: "Successfully left the journey" });
     }
 
@@ -1170,6 +1259,24 @@ exports.leaveTravelBuddyTrip = async (req, res) => {
       await ChatRoom.findByIdAndUpdate(trip.chatRoomId, {
         $pull: { members: userId }
       });
+    }
+
+    const io = req.app.get("io");
+    const user = await User.findById(userId);
+    const hostId = (trip.host?._id || trip.host).toString();
+    if (hostId !== userId.toString()) {
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "group_left",
+        category: "Journey",
+        group: trip._id,
+        entityId: trip._id,
+        entityType: "TravelGroup",
+        title: "Member Left Group",
+        message: `${user?.name || "A traveler"} left your trip "${trip.title}".`,
+        link: `/social/buddy/${trip._id}`
+      }, io).catch(() => {});
     }
 
     res.status(200).json({
@@ -1258,6 +1365,27 @@ exports.cancelTravelBuddyTrip = async (req, res) => {
         });
       }
 
+      const io = req.app.get("io");
+      // Notify all active members
+      (journey.members || []).forEach((m) => {
+        const memId = (m.user?._id || m.user).toString();
+        if (memId !== userId) {
+          notificationService.createNotification({
+            sender: userId,
+            receiver: memId,
+            type: "journey_cancelled",
+            category: "Journey",
+            journey: journey._id,
+            journeyModel: "Journey",
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "Journey Cancelled",
+            message: `The journey "${journey.title}" has been cancelled by the host.`,
+            link: `/social/journeys/${journey._id}`
+          }, io).catch(() => {});
+        }
+      });
+
       return res.status(200).json({
         success: true,
         message: "Trip cancelled successfully",
@@ -1285,6 +1413,25 @@ exports.cancelTravelBuddyTrip = async (req, res) => {
         $set: { status: "closed" }
       });
     }
+
+    const io = req.app.get("io");
+    (trip.members || []).forEach((m) => {
+      const memId = (m.user?._id || m.user).toString();
+      if (memId !== userId) {
+        notificationService.createNotification({
+          sender: userId,
+          receiver: memId,
+          type: "trip_cancelled",
+          category: "Journey",
+          group: trip._id,
+          entityId: trip._id,
+          entityType: "TravelGroup",
+          title: "Trip Cancelled",
+          message: `The trip "${trip.title}" was cancelled by the host.`,
+          link: `/social/buddy/${trip._id}`
+        }, io).catch(() => {});
+      }
+    });
 
     res.status(200).json({
       success: true,
@@ -1334,6 +1481,22 @@ exports.removeMember = async (req, res) => {
           $pull: { members: memberId }
         });
       }
+
+      const io = req.app.get("io");
+      await notificationService.createNotification({
+        sender: hostId,
+        receiver: memberId,
+        type: "journey_member_removed",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Removed from Journey",
+        message: `You were removed from the journey "${journey.title}".`,
+        link: `/social/journeys`
+      }, io).catch(() => {});
+
       return res.status(200).json({ success: true, message: "Member removed" });
     }
 
@@ -1354,6 +1517,20 @@ exports.removeMember = async (req, res) => {
         $pull: { members: memberId }
       });
     }
+
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: hostId,
+      receiver: memberId,
+      type: "group_member_removed",
+      category: "Journey",
+      group: trip._id,
+      entityId: trip._id,
+      entityType: "TravelGroup",
+      title: "Removed from Group",
+      message: `You were removed from the trip "${trip.title}".`,
+      link: `/social/buddy`
+    }, io).catch(() => {});
 
     res.status(200).json({ success: true, message: "Member removed" });
   } catch (error) {
@@ -1394,6 +1571,22 @@ exports.banMember = async (req, res) => {
           $pull: { members: memberId }
         });
       }
+
+      const io = req.app.get("io");
+      await notificationService.createNotification({
+        sender: hostId,
+        receiver: memberId,
+        type: "journey_member_removed",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Banned from Journey",
+        message: `You were banned from the journey "${journey.title}".`,
+        link: `/social/journeys`
+      }, io).catch(() => {});
+
       return res.status(200).json({ success: true, message: "Member banned" });
     }
 
@@ -1418,6 +1611,20 @@ exports.banMember = async (req, res) => {
         $pull: { members: memberId }
       });
     }
+
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: hostId,
+      receiver: memberId,
+      type: "group_member_removed",
+      category: "Journey",
+      group: trip._id,
+      entityId: trip._id,
+      entityType: "TravelGroup",
+      title: "Banned from Group",
+      message: `You were banned from the trip "${trip.title}".`,
+      link: `/social/buddy`
+    }, io).catch(() => {});
 
     res.status(200).json({ success: true, message: "Member banned" });
   } catch (error) {
@@ -1452,6 +1659,22 @@ exports.promoteMember = async (req, res) => {
           { journeyId: journey._id, userId: memberId },
           { role: member.role }
         );
+
+        const io = req.app.get("io");
+        await notificationService.createNotification({
+          sender: hostId,
+          receiver: memberId,
+          type: "journey_role_updated",
+          category: "Journey",
+          journey: journey._id,
+          journeyModel: "Journey",
+          entityId: journey._id,
+          entityType: "Journey",
+          title: "Journey Role Updated",
+          message: `Your role in "${journey.title}" has been updated to ${member.role}.`,
+          link: `/social/journeys/${journey._id}`
+        }, io).catch(() => {});
+
         return res.status(200).json({ success: true, message: `Member ${isCoHost ? 'demoted' : 'promoted'}` });
       }
       return res.status(404).json({ success: false, message: "Member not found" });
@@ -1471,6 +1694,23 @@ exports.promoteMember = async (req, res) => {
       const isCoHost = member.role === "cohost";
       member.role = isCoHost ? "member" : "cohost";
       await trip.save();
+
+      const io = req.app.get("io");
+      await notificationService.createNotification({
+        sender: hostId,
+        receiver: memberId,
+        type: isCoHost ? "group_updated" : "group_admin_promoted",
+        category: "Journey",
+        group: trip._id,
+        entityId: trip._id,
+        entityType: "TravelGroup",
+        title: isCoHost ? "Role Updated" : "Promoted to Co-Host",
+        message: isCoHost
+          ? `Your role in "${trip.title}" is now member.`
+          : `You have been promoted to co-host in "${trip.title}"!`,
+        link: `/social/buddy/${trip._id}`
+      }, io).catch(() => {});
+
       return res.status(200).json({ success: true, message: `Member ${isCoHost ? 'demoted' : 'promoted'}` });
     }
 
@@ -1542,25 +1782,20 @@ exports.sendWarning = async (req, res) => {
         const targetUser = await User.findById(memberId).select("name");
         const targetName = targetUser?.name || "Traveler";
 
-        const notification = await Notification.create({
+        const io = req.app.get("io");
+        await notificationService.createNotification({
           sender: hostId,
           receiver: memberId,
           type: "warning",
           category: "Safety",
           journey: journey._id,
           journeyModel: "Journey",
+          entityId: journey._id,
+          entityType: "Journey",
+          title: "Safety Warning",
           message: `Warning from ${isHost ? "journey host" : "journey co-leader"} of "${journey.title}": ${warningReason}`,
-          metadata: {
-            journeyId: journey._id,
-            journeyTitle: journey.title,
-            reason: warningReason
-          }
-        });
-
-        const io = req.app.get("io");
-        if (io) {
-          io.to(memberId.toString()).emit("new_notification", notification);
-        }
+          link: `/social/journeys/${journey._id}`
+        }, io);
 
         return res.status(200).json({
           success: true,
@@ -1625,23 +1860,21 @@ exports.sendWarning = async (req, res) => {
     });
     await trip.save();
 
-    const notification = await Notification.create({
+    const io = req.app.get("io");
+    await notificationService.createNotification({
       sender: hostId,
       receiver: memberId,
-      type: "warning",
+      type: "group_warning",
       category: "Safety",
       group: trip._id,
+      entityId: trip._id,
+      entityType: "TravelGroup",
+      title: "Trip Warning",
       message: `Warning from trip host of "${trip.title}": ${warningReason}`,
-      metadata: {
-        groupId: trip._id,
-        groupTitle: trip.title,
-        reason: warningReason
-      }
-    });
+      link: `/social/buddy/${trip._id}`
+    }, io);
 
-    const io = req.app.get("io");
     if (io) {
-      io.to(memberId.toString()).emit("new_notification", notification);
       io.to(memberId.toString()).emit("trip_warning", {
         groupId: trip._id,
         groupTitle: trip.title,
@@ -1701,6 +1934,9 @@ exports.cancelJoinRequest = async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid trip ID format" });
     }
 
+    const io = req.app.get("io");
+    const user = await User.findById(userId).select("name username");
+
     const journey = await Journey.findById(groupId);
     if (journey) {
       const existingReq = await JourneyJoinRequest.findOne({
@@ -1715,6 +1951,21 @@ exports.cancelJoinRequest = async (req, res) => {
       
       existingReq.status = "cancelled";
       await existingReq.save();
+
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "request_cancelled",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Join Request Cancelled",
+        message: `${user?.name || "A user"} cancelled their request to join "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
       
       return res.status(200).json({ success: true, message: "Join request cancelled successfully" });
     }
@@ -1734,6 +1985,20 @@ exports.cancelJoinRequest = async (req, res) => {
     if (result.deletedCount === 0) {
       return res.status(404).json({ success: false, message: "No pending join request found" });
     }
+
+    const hostId = (trip.host?._id || trip.host).toString();
+    await notificationService.createNotification({
+      sender: userId,
+      receiver: hostId,
+      type: "request_cancelled",
+      category: "Journey",
+      group: trip._id,
+      entityId: trip._id,
+      entityType: "TravelGroup",
+      title: "Join Request Cancelled",
+      message: `${user?.name || "A user"} cancelled their request to join "${trip.title}".`,
+      link: `/social/buddy/${trip._id}`
+    }, io).catch(() => {});
     
     return res.status(200).json({ success: true, message: "Join request cancelled successfully" });
   } catch (error) {

@@ -1,6 +1,7 @@
 const Story = require("../models/Story");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const ChatRoom = require("../models/ChatRoom");
 const Message = require("../models/Message");
 const { canInteractWithContent } = require("../utils/privacyHelper");
@@ -379,16 +380,23 @@ exports.reactToStory = async (req, res) => {
 
     await story.save();
 
-    const storyAuthorId = story.userId?._id || story.userId;
-    if (storyAuthorId.toString() !== userId.toString()) {
+    const storyAuthorId = (story.userId?._id || story.userId).toString();
+    if (storyAuthorId !== userId.toString()) {
       const currentUser = await User.findById(userId);
       const senderName = currentUser?.name || currentUser?.username || "A traveler";
-      await Notification.create({
+      const io = req.app.get("io");
+      await notificationService.createNotification({
         sender: userId,
         receiver: storyAuthorId,
-        type: "story_reply",
-        message: `${senderName} reacted ${emoji} to your Dispatch`
-      }).catch(() => {});
+        type: "story_like",
+        category: "Social",
+        story: story._id,
+        entityId: story._id,
+        entityType: "Story",
+        title: "Reaction on Dispatch",
+        message: `${senderName} reacted ${emoji} to your Dispatch`,
+        link: `/profile/${storyAuthorId}`
+      }, io).catch(() => {});
     }
 
     res.status(200).json({
@@ -450,6 +458,30 @@ exports.replyToStory = async (req, res) => {
     });
 
     await message.save();
+
+    const io = req.app.get("io");
+    if (io) {
+      io.to(storyUserId.toString()).emit("receive_chat_message", {
+        ...message.toObject(),
+        roomId: room._id.toString()
+      });
+    }
+
+    if (storyUserId.toString() !== senderId.toString()) {
+      await notificationService.createNotification({
+        sender: senderId,
+        receiver: storyUserId.toString(),
+        type: "story_reply",
+        category: "Social",
+        story: storyId,
+        room: room._id,
+        entityId: storyId || room._id,
+        entityType: storyId ? "Story" : "ChatRoom",
+        title: "Reply to Dispatch",
+        message: `${senderUser?.name || "Traveler"} replied to your Dispatch: ${text.slice(0, 80)}`,
+        link: `/social/chat/${room._id}`
+      }, io).catch(() => {});
+    }
 
     res.status(201).json({
       success: true,

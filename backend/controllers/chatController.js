@@ -3,6 +3,8 @@ const Message = require("../models/Message");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const Journey = require("../models/Journey");
+const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const { isBlockedPair, getBlockedUserIds, blockUserAction } = require("../utils/blockHelper");
 const { createAndSendNotification } = require("../utils/notificationHelper");
 
@@ -107,14 +109,18 @@ exports.getOrCreateDirectRoom = async (req, res) => {
       if (initialStatus === "pending") {
         const io = req.app.get("io");
         const senderUser = await User.findById(userId).select("name");
-        createAndSendNotification(io, {
+        await notificationService.createNotification({
           sender: userId,
           receiver: targetUserId,
           type: "message_request",
           category: "Messages",
           room: room._id,
-          message: `${senderUser?.name || "A traveler"} sent you a message request.`
-        });
+          entityId: room._id,
+          entityType: "ChatRoom",
+          title: "Message Request",
+          message: `${senderUser?.name || "A traveler"} sent you a message request.`,
+          link: `/social/chat/${room._id}`
+        }, io).catch(() => {});
       }
     }
 
@@ -443,20 +449,123 @@ exports.sendMessage = async (req, res) => {
         message: socketPayload
       });
 
-      // Send persistent notification for direct chat recipients
+      // Dispatch notifications for chat recipients
+      const previewText = (text || (media ? "Sent a media file" : "Sent a message")).slice(0, 80);
+
+      // Check for mentions in text: @username
+      const mentionMatches = text ? text.match(/@(\w+)/g) : null;
+      const mentionedUserIds = new Set();
+      if (mentionMatches && mentionMatches.length > 0) {
+        const usernames = mentionMatches.map(m => m.slice(1).toLowerCase());
+        const mentionedUsers = await User.find({ username: { $in: usernames.map(u => new RegExp(`^${u}$`, "i")) } }).select("_id");
+        mentionedUsers.forEach(u => {
+          if (u._id.toString() !== userId.toString()) {
+            mentionedUserIds.add(u._id.toString());
+          }
+        });
+      }
+
+      // Check for replyTo user
+      let replyToUserId = null;
+      if (replyTo) {
+        const parentMsg = await Message.findById(replyTo).select("sender");
+        if (parentMsg && parentMsg.sender && parentMsg.sender.toString() !== userId.toString()) {
+          replyToUserId = parentMsg.sender.toString();
+        }
+      }
+
       if (room.type === "direct") {
         const otherMemberId = (room.members || []).find((m) => m.toString() !== userId.toString());
         if (otherMemberId) {
-          const previewText = (text || (media ? "Sent a media file" : "Sent a message")).slice(0, 80);
-          createAndSendNotification(io, {
-            sender: userId,
-            receiver: otherMemberId,
-            type: "new_message",
-            category: "Messages",
-            room: roomId,
-            message: `${senderUser?.name || "Traveler"}: ${previewText}`
-          });
+          const otherIdStr = otherMemberId.toString();
+          if (replyToUserId === otherIdStr) {
+            notificationService.createNotification({
+              sender: userId,
+              receiver: otherIdStr,
+              type: "message_reply",
+              category: "Messages",
+              room: roomId,
+              entityId: roomId,
+              entityType: "ChatRoom",
+              title: "Message Reply",
+              message: `${senderUser?.name || "Traveler"} replied to your message: ${previewText}`,
+              link: `/social/chat/${roomId}`
+            }, io).catch(() => {});
+          } else if (mentionedUserIds.has(otherIdStr)) {
+            notificationService.createNotification({
+              sender: userId,
+              receiver: otherIdStr,
+              type: "message_mention",
+              category: "Messages",
+              room: roomId,
+              entityId: roomId,
+              entityType: "ChatRoom",
+              title: "Mentioned in Chat",
+              message: `${senderUser?.name || "Traveler"} mentioned you: ${previewText}`,
+              link: `/social/chat/${roomId}`
+            }, io).catch(() => {});
+          } else {
+            notificationService.createNotification({
+              sender: userId,
+              receiver: otherIdStr,
+              type: "new_message",
+              category: "Messages",
+              room: roomId,
+              entityId: roomId,
+              entityType: "ChatRoom",
+              title: `New message from ${senderUser?.name || "Traveler"}`,
+              message: `${senderUser?.name || "Traveler"}: ${previewText}`,
+              link: `/social/chat/${roomId}`
+            }, io).catch(() => {});
+          }
         }
+      } else {
+        // Group chat
+        (room.members || []).forEach((memberId) => {
+          const memStr = memberId.toString();
+          if (memStr !== userId.toString()) {
+            if (replyToUserId === memStr) {
+              notificationService.createNotification({
+                sender: userId,
+                receiver: memStr,
+                type: "message_reply",
+                category: "Messages",
+                room: roomId,
+                entityId: roomId,
+                entityType: "ChatRoom",
+                title: "Reply in Group Chat",
+                message: `${senderUser?.name || "Traveler"} replied to you in "${room.name || "Group"}": ${previewText}`,
+                link: `/social/chat/${roomId}`
+              }, io).catch(() => {});
+            } else if (mentionedUserIds.has(memStr)) {
+              notificationService.createNotification({
+                sender: userId,
+                receiver: memStr,
+                type: "message_mention",
+                category: "Messages",
+                room: roomId,
+                entityId: roomId,
+                entityType: "ChatRoom",
+                title: "Mentioned in Group Chat",
+                message: `${senderUser?.name || "Traveler"} mentioned you in "${room.name || "Group"}": ${previewText}`,
+                link: `/social/chat/${roomId}`
+              }, io).catch(() => {});
+            } else {
+              notificationService.createNotification({
+                sender: userId,
+                receiver: memStr,
+                type: "group_message",
+                category: "Messages",
+                room: roomId,
+                entityId: roomId,
+                entityType: "ChatRoom",
+                title: `${room.name || "Group Chat"}`,
+                message: `${senderUser?.name || "Traveler"}: ${previewText}`,
+                link: `/social/chat/${roomId}`
+              }, io).catch(() => {});
+            }
+          }
+        });
       }
     }
 
@@ -508,6 +617,23 @@ exports.acceptMessageRequest = async (req, res) => {
     }
 
     emitRequestStatusUpdate(req, room, userId);
+
+    if (room.requestedBy) {
+      const io = req.app.get("io");
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: room.requestedBy.toString(),
+        type: "message_request_accepted",
+        category: "Messages",
+        room: room._id,
+        entityId: room._id,
+        entityType: "ChatRoom",
+        title: "Message Request Accepted",
+        message: `${currentUser?.name || "A traveler"} accepted your message request.`,
+        link: `/social/chat/${room._id}`
+      }, io).catch(() => {});
+    }
+
     res.status(200).json({ success: true, message: "Request accepted", room });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -779,6 +905,7 @@ exports.reactToMessage = async (req, res) => {
       (r) => r.user.toString() === userId.toString() && r.emoji === emoji
     );
 
+    let isAdded = false;
     if (existingIndex > -1) {
       message.reactions.splice(existingIndex, 1);
     } else {
@@ -786,6 +913,7 @@ exports.reactToMessage = async (req, res) => {
         (r) => r.user.toString() !== userId.toString()
       );
       message.reactions.push({ user: userId, emoji });
+      isAdded = true;
     }
 
     await message.save();
@@ -797,6 +925,22 @@ exports.reactToMessage = async (req, res) => {
         messageId,
         reactions: message.reactions
       });
+    }
+
+    if (isAdded && message.sender && message.sender.toString() !== userId.toString()) {
+      const user = await User.findById(userId).select("name");
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: message.sender.toString(),
+        type: "message_reaction",
+        category: "Messages",
+        room: roomId,
+        entityId: roomId,
+        entityType: "ChatRoom",
+        title: "Reaction on Message",
+        message: `${user?.name || "Traveler"} reacted ${emoji} to your message.`,
+        link: `/social/chat/${roomId}`
+      }, io).catch(() => {});
     }
 
     res.status(200).json({

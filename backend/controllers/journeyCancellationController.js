@@ -143,37 +143,35 @@ exports.cancelJourney = async (req, res) => {
       }
     });
 
-    if (targetMembersSet.size > 0) {
-      const targetMembers = Array.from(targetMembersSet);
-      for (const memId of targetMembers) {
-        const notifExists = await Notification.findOne(
-          { journey: updatedJourney._id, receiver: memId, type: "journey_cancelled" },
-          null,
-          useTransaction ? { session } : {}
-        );
-        if (!notifExists) {
-          await Notification.create(
-            [{
-              sender: userId,
-              receiver: memId,
-              type: "journey_cancelled",
-              journey: updatedJourney._id,
-              journeyModel: "Journey",
-              message: `The journey "${updatedJourney.title}" has been cancelled by the host.`
-            }],
-            useTransaction ? { session } : {}
-          );
-        }
-      }
-    }
-
     if (useTransaction && session) {
       await session.commitTransaction();
       session.endSession();
     }
 
+    const notificationService = require("../services/notificationService");
+    const io = req.app.get("io");
+
+    // Send notifications to members using notificationService
+    if (targetMembersSet.size > 0) {
+      const targetMembers = Array.from(targetMembersSet);
+      for (const memId of targetMembers) {
+        notificationService.createNotification({
+          sender: userId,
+          receiver: memId,
+          type: "journey_cancelled",
+          category: "Journey",
+          journey: updatedJourney._id,
+          journeyModel: "Journey",
+          entityId: updatedJourney._id,
+          entityType: "Journey",
+          title: "Journey Cancelled",
+          message: `The journey "${updatedJourney.title}" has been cancelled by the host.`,
+          link: `/social/journeys/${updatedJourney._id}`
+        }, io).catch(() => {});
+      }
+    }
+
     try {
-      const io = req.app.get("io");
       if (io) {
         io.emit("journey_cancelled", { journeyId: updatedJourney._id.toString() });
       }

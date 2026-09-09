@@ -282,6 +282,11 @@ export const NotificationPanel = () => {
 
     setShowNotifPanel(false);
 
+    if (n.link) {
+      navigate(n.link);
+      return;
+    }
+
     const type = (n.type || "").toLowerCase();
 
     if (n.journey || type.includes("journey") || type.includes("invite")) {
@@ -747,6 +752,20 @@ export const NotificationPanel = () => {
                 );
               })
             )}
+          </div>
+
+          {/* Footer - Full History Page Link */}
+          <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <button
+              onClick={() => {
+                setShowNotifPanel(false);
+                navigate("/notifications");
+              }}
+              className="w-full py-2 px-3 text-xs font-bold text-brand hover:text-brand-hover bg-brand-50/60 hover:bg-brand-50 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>View full notification history</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
           </div>
         </motion.div>
       </AnimatePresence>

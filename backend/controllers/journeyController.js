@@ -8,6 +8,7 @@ const JourneyJoinRequest = require("../models/JourneyJoinRequest");
 const JourneyMemory = require("../models/JourneyMemory");
 const JourneyGallery = require("../models/JourneyGallery");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const ChatRoom = require("../models/ChatRoom");
 const Post = require("../models/Post");
 const Story = require("../models/Story");
@@ -289,32 +290,32 @@ exports.createJourney = async (req, res) => {
 
         newJourney[0].pendingInvitationCount = validIds.length;
         await newJourney[0].save({ session });
-
-        const notifications = await Notification.create(
-          invites.map((inv) => ({
-            sender: userId,
-            receiver: inv.inviteeId,
-            type: "journey_invitation",
-            journey: newJourney[0]._id,
-            invitation: inv._id,
-            message: `${user?.name || "A traveler"} invited you to join "${title}"`
-          })),
-          { session }
-        );
-
-        // Optionally, one could emit the socket event here, but we need to do it after session commit 
-        // to be completely safe, or do it now. The transaction is usually fast.
-        const io = req.app.get("io");
-        if (io) {
-          notifications.forEach(notif => {
-            io.to(notif.receiver.toString()).emit("new_notification", notif);
-          });
-        }
       }
     }
 
     await session.commitTransaction();
     session.endSession();
+
+    // Send notifications after transaction commits
+    if (validIds.length > 0 && newJourney[0]) {
+      const io = req.app.get("io");
+      const createdInvites = await JourneyInvitation.find({ journeyId: newJourney[0]._id, status: "pending" });
+      createdInvites.forEach((inv) => {
+        notificationService.createNotification({
+          sender: userId,
+          receiver: inv.inviteeId,
+          type: "journey_invitation",
+          category: "Journey",
+          journey: newJourney[0]._id,
+          journeyModel: "Journey",
+          entityId: inv._id,
+          entityType: "JourneyInvitation",
+          title: "Journey Invitation",
+          message: `${user?.name || "A traveler"} invited you to join "${title}"`,
+          link: `/social/journeys/${newJourney[0]._id}`
+        }, io).catch(() => {});
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -501,6 +502,27 @@ exports.updateJourney = async (req, res) => {
     }
 
     await journey.save();
+
+    const io = req.app.get("io");
+    (journey.members || []).forEach((m) => {
+      const memId = (m.user?._id || m.user).toString();
+      if (memId !== userId.toString()) {
+        notificationService.createNotification({
+          sender: userId,
+          receiver: memId,
+          type: "journey_updated",
+          category: "Journey",
+          journey: journey._id,
+          journeyModel: "Journey",
+          entityId: journey._id,
+          entityType: "Journey",
+          title: "Journey Updated",
+          message: `The journey "${journey.title}" details were updated.`,
+          link: `/social/journeys/${journey._id}`
+        }, io).catch(() => {});
+      }
+    });
+
     res.json({ success: true, message: "Journey updated successfully", journey });
   } catch (error) {
     console.error("Error updating journey:", error);
@@ -845,25 +867,27 @@ exports.safeCheckIn = async (req, res) => {
         .map(m => (m.user?._id || m.user).toString())
         .filter(uId => uId !== userId.toString());
 
-      if (recipientIds.length > 0) {
-        const notifPayload = recipientIds.map(rId => ({
-          sender: userId,
-          receiver: rId,
-          type: "safe_checkin",
-          journey: journey._id,
-          message: `🛡️ ${user.name || "A buddy"} confirmed they are safe at ${finalLocation}.`
-        }));
-        if (useTransaction) {
-          await Notification.create(notifPayload, { session });
-        } else {
-          await Notification.create(notifPayload);
-        }
-      }
-
       if (useTransaction) {
         await session.commitTransaction();
         session.endSession();
       }
+
+      const io = req.app.get("io");
+      recipientIds.forEach(rId => {
+        notificationService.createNotification({
+          sender: userId,
+          receiver: rId,
+          type: "safe_checkin",
+          category: "Safety",
+          journey: journey._id,
+          journeyModel: "Journey",
+          entityId: journey._id,
+          entityType: "Journey",
+          title: "Safe Check-in",
+          message: `🛡️ ${user.name || "A buddy"} confirmed they are safe at ${finalLocation}.`,
+          link: `/social/journeys/${journey._id}`
+        }, io).catch(() => {});
+      });
 
       const allTimeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
       const safetyState = computeSafetyState(journey, allTimeline);
@@ -992,25 +1016,27 @@ exports.safeCheckIn = async (req, res) => {
       .map(m => (m.user?._id || m.user).toString())
       .filter(uId => uId !== userId.toString());
 
-    if (recipientIds.length > 0) {
-      const notifPayload = recipientIds.map(rId => ({
-        sender: userId,
-        receiver: rId,
-        type: "safe_checkin",
-        journey: journey._id,
-        message: `📍 ${user.name || "A buddy"} checked in: ${checkInType} at ${finalLocation}.`
-      }));
-      if (useTransaction) {
-        await Notification.create(notifPayload, { session });
-      } else {
-        await Notification.create(notifPayload);
-      }
-    }
-
     if (useTransaction) {
       await session.commitTransaction();
       session.endSession();
     }
+
+    const io = req.app.get("io");
+    recipientIds.forEach(rId => {
+      notificationService.createNotification({
+        sender: userId,
+        receiver: rId,
+        type: "safe_checkin",
+        category: "Safety",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Milestone Reached",
+        message: `📍 ${user.name || "A buddy"} checked in: ${checkInType} at ${finalLocation}.`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+    });
 
     const allTimeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
     const safetyState = computeSafetyState(journey, allTimeline);
@@ -1148,6 +1174,25 @@ exports.addMemoryComment = async (req, res) => {
       { new: true }
     ).populate("comments.userId", "name profilePic");
 
+    if (journey) {
+      const io = req.app.get("io");
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      const user = await User.findById(userId).select("name");
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "memory_comment",
+        category: "Social",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "JourneyMemory",
+        title: "New Memory Comment",
+        message: `${user?.name || "A traveler"} commented on memories of "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+    }
+
     res.json({ success: true, memory });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -1168,6 +1213,7 @@ exports.reactToMemory = async (req, res) => {
     const memory = await JourneyMemory.findOne({ journeyId: id });
     if (!memory) return res.status(404).json({ success: false, message: "Memory not found" });
 
+    let isNewReaction = false;
     const existingIndex = memory.reactions.findIndex((r) => r.userId.toString() === userId.toString());
     if (existingIndex > -1) {
       if (memory.reactions[existingIndex].type === reactionType) {
@@ -1177,9 +1223,30 @@ exports.reactToMemory = async (req, res) => {
       }
     } else {
       memory.reactions.push({ userId, type: reactionType || "love" });
+      isNewReaction = true;
     }
 
     await memory.save();
+
+    if (isNewReaction && journey) {
+      const io = req.app.get("io");
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      const user = await User.findById(userId).select("name");
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "memory_like",
+        category: "Social",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "JourneyMemory",
+        title: "Reaction on Memory",
+        message: `${user?.name || "A traveler"} reacted to memories of "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+    }
+
     res.json({ success: true, memory });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });

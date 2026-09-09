@@ -132,11 +132,29 @@ export const NotificationProvider = ({ children }) => {
       }));
     };
 
+    const handleNotificationCount = (data) => {
+      if (data && typeof data.unreadCount === "number") {
+        setUnreadCount(data.unreadCount);
+        setCounts((prev) => ({
+          ...prev,
+          unread: data.unreadCount
+        }));
+      }
+    };
+
     const handleSentRequestUpdated = () => {
       fetchSentRequests();
     };
 
+    const handleReconnect = () => {
+      fetchNotifications();
+      fetchSentRequests();
+    };
+
     socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+    socket.on("notification_count", handleNotificationCount);
+    socket.on("reconnect", handleReconnect);
+    socket.on("connect", handleReconnect);
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
     socket.on("follow_request_sent", handleSentRequestUpdated);
@@ -144,12 +162,15 @@ export const NotificationProvider = ({ children }) => {
 
     return () => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
+      socket.off("notification_count", handleNotificationCount);
+      socket.off("reconnect", handleReconnect);
+      socket.off("connect", handleReconnect);
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
       socket.off("follow_request_sent", handleSentRequestUpdated);
       socket.off("join_request_sent", handleSentRequestUpdated);
     };
-  }, [socket, user, fetchSentRequests]);
+  }, [socket, user, fetchSentRequests, fetchNotifications]);
 
   const handleCancelSentRequest = async (reqItem) => {
     if (!reqItem) return false;

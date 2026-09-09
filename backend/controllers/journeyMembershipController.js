@@ -5,6 +5,7 @@ const JourneyInvitation = require("../models/JourneyInvitation");
 const JourneyJoinRequest = require("../models/JourneyJoinRequest");
 const JourneyTimeline = require("../models/JourneyTimeline");
 const Notification = require("../models/Notification");
+const notificationService = require("../services/notificationService");
 const { createAndSendNotification } = require("../utils/notificationHelper");
 const ChatRoom = require("../models/ChatRoom");
 const User = require("../models/User");
@@ -117,14 +118,20 @@ exports.inviteMembers = async (req, res) => {
       );
       createdInvites.push(invite);
 
-      await createAndSendNotification(req.app.get("io"), {
+      const io = req.app.get("io");
+      await notificationService.createNotification({
         sender: userId,
         receiver: targetId,
         type: "journey_invitation",
+        category: "Journey",
         journey: id,
-        invitation: invite._id,
-        message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`
-      });
+        journeyModel: "Journey",
+        entityId: invite._id,
+        entityType: "JourneyInvitation",
+        title: "Journey Invitation",
+        message: `${inviter?.name || "An organizer"} invited you to join the journey "${journey.title}".`,
+        link: `/social/journeys/${id}`
+      }, io).catch(() => {});
     }
 
     journey.pendingInvitationCount = await JourneyInvitation.countDocuments({ journeyId: id, status: "pending" });
@@ -252,18 +259,46 @@ exports.acceptInvitation = async (req, res) => {
         description: `${user?.name || "A traveler"} joined the squad!`
       }], sessionOpt);
 
-      await Notification.create([{
-        sender: userId,
-        receiver: invitation.type === "request" ? targetUserId : journey.creator,
-        type: "journey_invite_accepted",
-        journey: journey._id,
-        message: `${user?.name || "A traveler"} accepted the invitation to join "${journey.title}".`
-      }], sessionOpt);
-
       if (session) {
         await session.commitTransaction();
         session.endSession();
       }
+
+      const io = req.app.get("io");
+      const receiverTarget = invitation.type === "request" ? targetUserId : (journey.creator?._id || journey.creator).toString();
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: receiverTarget,
+        type: "journey_invitation_accepted",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Invitation Accepted",
+        message: `${user?.name || "A traveler"} accepted the invitation to join "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+
+      // Also notify squad members about the new member
+      (journey.members || []).forEach((m) => {
+        const memId = (m.user?._id || m.user).toString();
+        if (memId !== userId.toString() && memId !== receiverTarget) {
+          notificationService.createNotification({
+            sender: userId,
+            receiver: memId,
+            type: "journey_member_joined",
+            category: "Journey",
+            journey: journey._id,
+            journeyModel: "Journey",
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "New Squad Member",
+            message: `${user?.name || "A traveler"} joined "${journey.title}".`,
+            link: `/social/journeys/${journey._id}`
+          }, io).catch(() => {});
+        }
+      });
 
       return res.json({ success: true, message: "Invitation accepted successfully", journey });
     } catch (error) {
@@ -306,6 +341,25 @@ exports.rejectInvitation = async (req, res) => {
       const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
       await Journey.findByIdAndUpdate(inv.journeyId, { pendingInvitationCount: pendingCount });
     }
+
+    const io = req.app.get("io");
+    const user = await User.findById(req.user._id || req.user.id).select("name");
+    const journey = await Journey.findById(inv.journeyId).select("title creator");
+    const hostId = (journey?.creator?._id || journey?.creator || inv.inviterId).toString();
+    await notificationService.createNotification({
+      sender: req.user._id || req.user.id,
+      receiver: hostId,
+      type: "journey_invitation_rejected",
+      category: "Journey",
+      journey: inv.journeyId,
+      journeyModel: "Journey",
+      entityId: inv._id,
+      entityType: "JourneyInvitation",
+      title: "Invitation Declined",
+      message: `${user?.name || "A user"} declined the invitation to join "${journey?.title || "your journey"}".`,
+      link: `/social/journeys/${inv.journeyId}`
+    }, io).catch(() => {});
+
     res.json({ success: true, message: "Invitation declined" });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -370,16 +424,22 @@ exports.resendInvitation = async (req, res) => {
     await inv.save();
 
     try {
-      const recipientId = inv.inviteeId?._id || inv.inviteeId;
+      const recipientId = (inv.inviteeId?._id || inv.inviteeId).toString();
       if (recipientId) {
-        await createAndSendNotification(req.app.get("io"), {
+        const io = req.app.get("io");
+        await notificationService.createNotification({
           sender: req.user._id || req.user.id,
           receiver: recipientId,
           type: "journey_invitation",
+          category: "Journey",
           journey: inv.journeyId?._id || inv.journeyId,
-          invitation: inv._id,
-          message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`
-        });
+          journeyModel: "Journey",
+          entityId: inv._id,
+          entityType: "JourneyInvitation",
+          title: "Journey Invitation",
+          message: `Reminder: You have a pending invitation to join "${inv.journeyId?.title || "a journey"}"`,
+          link: `/social/journeys/${inv.journeyId?._id || inv.journeyId}`
+        }, io);
       }
     } catch (notifErr) {
       console.error("Error creating resend notification:", notifErr);
@@ -403,6 +463,22 @@ exports.cancelInvitation = async (req, res) => {
 
     const pendingCount = await JourneyInvitation.countDocuments({ journeyId: inv.journeyId, status: "pending" });
     await Journey.findByIdAndUpdate(inv.journeyId, { pendingInvitationCount: pendingCount });
+
+    const recipientId = (inv.inviteeId?._id || inv.inviteeId).toString();
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: req.user._id || req.user.id,
+      receiver: recipientId,
+      type: "request_cancelled",
+      category: "Journey",
+      journey: inv.journeyId,
+      journeyModel: "Journey",
+      entityId: inv._id,
+      entityType: "JourneyInvitation",
+      title: "Invitation Cancelled",
+      message: `An invitation to join a journey was cancelled.`,
+      link: `/social/journeys`
+    }, io).catch(() => {});
 
     res.json({ success: true, message: "Invitation revoked successfully" });
   } catch (error) {
@@ -488,6 +564,22 @@ exports.leaveJourney = async (req, res) => {
         revokeSocketRoomAccess(req, userId, journey.chatRoomId);
       }
 
+      const io = req.app.get("io");
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "journey_member_left",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Member Left Journey",
+        message: `${user?.name || "A traveler"} left the journey "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+
       return res.json({ success: true, message: "Left journey successfully" });
     } catch (error) {
       if (session && session.inTransaction && session.inTransaction()) {
@@ -551,6 +643,21 @@ exports.removeMember = async (req, res) => {
       revokeSocketRoomAccess(req, targetUserId, journey.chatRoomId);
     }
 
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: currentUserId,
+      receiver: targetUserId,
+      type: "journey_member_removed",
+      category: "Journey",
+      journey: journey._id,
+      journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: "Removed from Journey",
+      message: `You were removed from the journey "${journey.title}".`,
+      link: `/social/journeys`
+    }, io).catch(() => {});
+
     res.json({ success: true, message: "Member removed successfully", journey });
   } catch (error) {
     await session.abortTransaction();
@@ -589,6 +696,21 @@ exports.updateMemberRole = async (req, res) => {
 
     await journey.save();
     await JourneyMember.findOneAndUpdate({ journeyId: id, userId }, { role });
+
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: requesterId,
+      receiver: userId,
+      type: role === "Organizer" ? "journey_host_transferred" : "journey_role_updated",
+      category: "Journey",
+      journey: journey._id,
+      journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: role === "Organizer" ? "Host Transferred" : "Role Updated",
+      message: `Your role in "${journey.title}" has been updated to ${role}.`,
+      link: `/social/journeys/${journey._id}`
+    }, io).catch(() => {});
 
     res.json({ success: true, message: `Member role updated to ${role}`, journey });
   } catch (error) {
@@ -661,24 +783,23 @@ exports.assignCoLeader = async (req, res) => {
       { upsert: true, session }
     );
 
-    try {
-      await Notification.create(
-        [{
-          sender: requesterId,
-          receiver: targetUserId,
-          type: "journey_updated",
-          journey: journey._id,
-          journeyModel: "Journey",
-          message: `You're now a co-leader of ${journey.title}.`
-        }],
-        { session }
-      );
-    } catch (notifErr) {
-      console.error("[assignCoLeader] Notification creation error:", notifErr);
-    }
-
     await session.commitTransaction();
     session.endSession();
+
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: requesterId,
+      receiver: targetUserId,
+      type: "journey_role_updated",
+      category: "Journey",
+      journey: journey._id,
+      journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: "Promoted to Co-Leader",
+      message: `You're now a co-leader of "${journey.title}".`,
+      link: `/social/journeys/${journey._id}`
+    }, io).catch(() => {});
 
     return res.json({
       success: true,
@@ -762,24 +883,23 @@ exports.removeCoLeader = async (req, res) => {
       { session }
     );
 
-    try {
-      await Notification.create(
-        [{
-          sender: requesterId,
-          receiver: targetUserId,
-          type: "journey_updated",
-          journey: journey._id,
-          journeyModel: "Journey",
-          message: `Your co-leader role for ${journey.title} has been removed.`
-        }],
-        { session }
-      );
-    } catch (notifErr) {
-      console.error("[removeCoLeader] Notification creation error:", notifErr);
-    }
-
     await session.commitTransaction();
     session.endSession();
+
+    const io = req.app.get("io");
+    await notificationService.createNotification({
+      sender: requesterId,
+      receiver: targetUserId,
+      type: "journey_role_updated",
+      category: "Journey",
+      journey: journey._id,
+      journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: "Co-Leader Role Removed",
+      message: `Your co-leader role for "${journey.title}" has been updated to Member.`,
+      link: `/social/journeys/${journey._id}`
+    }, io).catch(() => {});
 
     return res.json({
       success: true,
@@ -830,14 +950,21 @@ exports.requestToJoinJourney = async (req, res) => {
       message: req.body.message || ""
     });
 
-    await createAndSendNotification(req.app.get("io"), {
+    const io = req.app.get("io");
+    const hostId = (journey.creator?._id || journey.creator).toString();
+    await notificationService.createNotification({
       sender: userId,
-      receiver: journey.creator,
+      receiver: hostId,
       type: "journey_join_request",
+      category: "Journey",
       journey: journeyId,
-      journeyJoinRequest: newRequest._id,
-      message: `${req.user.name || "A user"} requested to join your journey "${journey.title}"`
-    });
+      journeyModel: "Journey",
+      entityId: newRequest._id,
+      entityType: "JourneyJoinRequest",
+      title: "New Join Request",
+      message: `${req.user.name || "A user"} requested to join your journey "${journey.title}".`,
+      link: `/social/journeys/${journeyId}`
+    }, io).catch(() => {});
 
     res.status(201).json({ success: true, message: "Request sent successfully", joinRequest: newRequest });
   } catch (error) {
@@ -883,6 +1010,25 @@ exports.cancelJourneyJoinRequest = async (req, res) => {
 
     joinRequest.status = "cancelled";
     await joinRequest.save();
+
+    const journey = await Journey.findById(joinRequest.journeyId).select("title creator");
+    if (journey) {
+      const io = req.app.get("io");
+      const hostId = (journey.creator?._id || journey.creator).toString();
+      await notificationService.createNotification({
+        sender: userId,
+        receiver: hostId,
+        type: "request_cancelled",
+        category: "Journey",
+        journey: journey._id,
+        journeyModel: "Journey",
+        entityId: joinRequest._id,
+        entityType: "JourneyJoinRequest",
+        title: "Join Request Cancelled",
+        message: `${req.user.name || "A user"} cancelled their request to join "${journey.title}".`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+    }
 
     res.json({ success: true, message: "Request cancelled successfully" });
   } catch (error) {
@@ -967,13 +1113,20 @@ exports.acceptJourneyJoinRequest = async (req, res) => {
           await joinRequest.save(sessionOpt);
           if (session) { await session.commitTransaction(); session.endSession(); }
           
-          await Notification.create({
+          const io = req.app.get("io");
+          await notificationService.createNotification({
             sender: hostId,
             receiver: joinRequest.userId,
             type: "journey_join_request_rejected",
+            category: "Journey",
             journey: journey._id,
-            message: `Your request to join "${journey.title}" was not accepted because the journey has reached its capacity.`
-          });
+            journeyModel: "Journey",
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "Join Request Declined",
+            message: `Your request to join "${journey.title}" was not accepted because the journey has reached capacity.`,
+            link: `/social/journeys/${journey._id}`
+          }, io).catch(() => {});
           
           return res.status(400).json({ success: false, message: "Journey is at full capacity" });
         } else {
@@ -995,12 +1148,39 @@ exports.acceptJourneyJoinRequest = async (req, res) => {
         session.endSession();
       }
 
-      await Notification.create({
+      const io = req.app.get("io");
+      await notificationService.createNotification({
         sender: hostId,
         receiver: joinRequest.userId,
         type: "journey_join_request_accepted",
+        category: "Journey",
         journey: journey._id,
-        message: `Your request to join "${journey.title}" was accepted!`
+        journeyModel: "Journey",
+        entityId: journey._id,
+        entityType: "Journey",
+        title: "Join Request Accepted",
+        message: `Your request to join "${journey.title}" was accepted!`,
+        link: `/social/journeys/${journey._id}`
+      }, io).catch(() => {});
+
+      const joinedUser = await User.findById(joinRequest.userId).select("name username");
+      (journey.members || []).forEach((m) => {
+        const memId = (m.user?._id || m.user).toString();
+        if (memId !== hostId.toString() && memId !== joinRequest.userId.toString()) {
+          notificationService.createNotification({
+            sender: joinRequest.userId,
+            receiver: memId,
+            type: "journey_member_joined",
+            category: "Journey",
+            journey: journey._id,
+            journeyModel: "Journey",
+            entityId: journey._id,
+            entityType: "Journey",
+            title: "Member Joined Journey",
+            message: `${joinedUser?.name || "A traveler"} joined the journey "${journey.title}".`,
+            link: `/social/journeys/${journey._id}`
+          }, io).catch(() => {});
+        }
       });
 
       return res.json({ success: true, message: "Request accepted successfully", journey: updatedJourney });
@@ -1042,13 +1222,20 @@ exports.rejectJourneyJoinRequest = async (req, res) => {
     joinRequest.status = "rejected";
     await joinRequest.save();
 
-    await Notification.create({
+    const io = req.app.get("io");
+    await notificationService.createNotification({
       sender: hostId,
       receiver: joinRequest.userId,
       type: "journey_join_request_rejected",
+      category: "Journey",
       journey: journey._id,
-      message: `Your request to join "${journey.title}" was rejected.`
-    });
+      journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: "Join Request Declined",
+      message: `Your request to join "${journey.title}" was declined.`,
+      link: `/social/journeys/${journey._id}`
+    }, io).catch(() => {});
 
     res.json({ success: true, message: "Request rejected successfully" });
   } catch (error) {
@@ -1107,25 +1294,22 @@ exports.warnMember = async (req, res) => {
     const hostIdStr = (journey.creator?._id || journey.creator).toString();
     const isHost = hostIdStr === requesterId.toString();
 
-    const notification = await Notification.create({
+    const io = req.app.get("io");
+    await notificationService.createNotification({
       sender: requesterId,
       receiver: targetUserId,
       type: "warning",
       category: "Safety",
       journey: journey._id,
       journeyModel: "Journey",
+      entityId: journey._id,
+      entityType: "Journey",
+      title: "Safety Warning",
       message: `Warning from ${isHost ? "journey host" : "journey co-leader"} of "${journey.title}": ${warningReason}`,
-      metadata: {
-        journeyId: journey._id,
-        journeyTitle: journey.title,
-        reason: warningReason,
-        senderRole: isHost ? "Organizer" : "Co-Organizer"
-      }
-    });
+      link: `/social/journeys/${journey._id}`
+    }, io);
 
-    const io = req.app.get("io");
     if (io) {
-      io.to(targetUserId.toString()).emit("new_notification", notification);
       io.to(targetUserId.toString()).emit("journey_warning", {
         journeyId: journey._id,
         journeyTitle: journey.title,

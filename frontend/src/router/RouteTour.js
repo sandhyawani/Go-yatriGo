@@ -48,6 +48,7 @@ const SafetySettings = lazy(() => import("../pages/social/settings/SafetySetting
 const TravelSafetyGuidelines = lazy(() => import("../pages/social/settings/TravelSafetyGuidelines"));
 const CommunityGuidelines = lazy(() => import("../pages/social/settings/CommunityGuidelines"));
 const NotificationsSettings = lazy(() => import("../pages/social/settings/NotificationsSettings"));
+const NotificationsPage = lazy(() => import("../pages/social/NotificationsPage"));
 const LegalSettings = lazy(() => import("../pages/social/settings/LegalSettings"));
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -452,6 +453,22 @@ const RouteTour = () => {
           element={
             <ProtectedRoute>
               <NotificationsSettings />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/social/notifications"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
             </ProtectedRoute>
           }
         />
