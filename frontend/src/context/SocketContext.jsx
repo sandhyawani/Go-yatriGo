@@ -32,7 +32,11 @@ export const SocketProvider = ({ children }) => {
 
       const newSocket = io(SOCKET_URL, {
         withCredentials: true,
-        transports: ["websocket", "polling"],
+        transports: ["websocket"],
+        autoConnect: true,
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000,
         auth: {
           token: user.token
         }
@@ -42,8 +46,10 @@ export const SocketProvider = ({ children }) => {
         newSocket.emit(SOCKET_EVENTS.EMIT_GO_ONLINE, userId);
       };
 
-
       newSocket.on(SOCKET_EVENTS.CONNECT, onConnect);
+      if (newSocket.connected) {
+        onConnect();
+      }
 
       setSocket(newSocket);
 
@@ -53,7 +59,7 @@ export const SocketProvider = ({ children }) => {
         setSocket(null);
       };
     }
-  }, [user?._id, user?.id]);
+  }, [user?._id, user?.id, user?.token]);
 
   return (
     <SocketContext.Provider value={socket}>

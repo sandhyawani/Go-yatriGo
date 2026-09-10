@@ -220,6 +220,7 @@ travelGroupSchema.virtual("lifecycleStatus").get(function () {
 });
 
 travelGroupSchema.index({ host: 1 });
+travelGroupSchema.index({ "members.user": 1 });
 
 travelGroupSchema.index({ destination: 1 });
 

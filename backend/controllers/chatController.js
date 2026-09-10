@@ -135,34 +135,40 @@ exports.getUserRooms = async (req, res) => {
     const userId = req.user._id || req.user.id;
     const userObjectId = new (require("mongoose").Types.ObjectId)(userId);
 
-    const activeGroups = await TravelGroup.find({
-      $or: [{ host: userId }, { "members.user": userId }]
-    });
+    const [activeGroups, activeJourneys] = await Promise.all([
+      TravelGroup.find({
+        $or: [{ host: userId }, { "members.user": userId }]
+      }).select("_id").lean(),
+      Journey.find({
+        "members.user": userId
+      }).select("chatRoomId").lean()
+    ]);
 
+    const updatePromises = [];
     if (activeGroups && activeGroups.length > 0) {
       const activeGroupIds = activeGroups.map((g) => g._id);
-      await ChatRoom.updateMany(
-      { travelGroupId: { $in: activeGroupIds } },
-      {
-        $addToSet: { members: userId }
-      }
+      updatePromises.push(
+        ChatRoom.updateMany(
+          { travelGroupId: { $in: activeGroupIds } },
+          { $addToSet: { members: userId } }
+        )
       );
     }
-
-    const activeJourneys = await Journey.find({
-      "members.user": userId
-    });
 
     if (activeJourneys && activeJourneys.length > 0) {
       const activeChatRoomIds = activeJourneys.map((j) => j.chatRoomId).filter(Boolean);
       if (activeChatRoomIds.length > 0) {
-        await ChatRoom.updateMany(
-        { _id: { $in: activeChatRoomIds } },
-        {
-          $addToSet: { members: userId }
-        }
+        updatePromises.push(
+          ChatRoom.updateMany(
+            { _id: { $in: activeChatRoomIds } },
+            { $addToSet: { members: userId } }
+          )
         );
       }
+    }
+
+    if (updatePromises.length > 0) {
+      await Promise.all(updatePromises);
     }
 
     const roomsWithDetails = await ChatRoom.aggregate([

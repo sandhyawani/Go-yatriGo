@@ -573,10 +573,10 @@ const ChatRoom = () => {
         roomRes = await chatService.getDirectRoom(targetUserId);
       }
 
-      const res = await axios.get("/chat/rooms", { withCredentials: true });
-      const notifRes = await axios.get("/notifications", {
-        withCredentials: true
-      });
+      const [res, notifRes] = await Promise.all([
+        axios.get("/chat/rooms", { withCredentials: true }),
+        axios.get("/notifications", { withCredentials: true })
+      ]);
       if (res.data.success) {
         setRooms(res.data.rooms);
 
@@ -1748,21 +1748,21 @@ const ChatRoom = () => {
                   <p className="text-sm font-semibold text-text-secondary mb-3 text-center">
                     {activeRoom.name} wants to connect with you.
                   </p>
-                  <div className="flex justify-center gap-3">
+                  <div className="flex items-center justify-center gap-3 w-full max-w-xs mx-auto">
                     <button
-              onClick={() => handleRequestAction("accept")}
-              disabled={isProcessingAction}
-              className="px-5 py-2 bg-brand hover:bg-brand-dark active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs">
-
-                      {isProcessingAction && <Loader2 className="w-4 h-4 animate-spin" />}
-                      Accept
+                      onClick={() => handleRequestAction("accept")}
+                      disabled={isProcessingAction}
+                      className="flex-1 min-w-0 h-10 px-4 bg-brand hover:bg-brand-dark active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-xs"
+                    >
+                      {isProcessingAction && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
+                      <span className="truncate">Accept</span>
                     </button>
                     <button
-              onClick={() => handleRequestAction("decline")}
-              disabled={isProcessingAction}
-              className="px-5 py-2 bg-background hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-text-secondary rounded-full text-sm font-bold transition-all">
-
-                      Decline
+                      onClick={() => handleRequestAction("decline")}
+                      disabled={isProcessingAction}
+                      className="flex-1 min-w-0 h-10 px-4 bg-background hover active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-text-secondary rounded-full text-sm font-bold transition-all flex items-center justify-center shadow-xs"
+                    >
+                      <span className="truncate">Decline</span>
                     </button>
                   </div>
                 </div> :
