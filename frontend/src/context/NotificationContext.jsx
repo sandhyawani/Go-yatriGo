@@ -154,7 +154,6 @@ export const NotificationProvider = ({ children }) => {
     socket.on(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
     socket.on("notification_count", handleNotificationCount);
     socket.on("reconnect", handleReconnect);
-    socket.on("connect", handleReconnect);
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
     socket.on(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
     socket.on("follow_request_sent", handleSentRequestUpdated);
@@ -164,7 +163,6 @@ export const NotificationProvider = ({ children }) => {
       socket.off(SOCKET_EVENTS.NEW_NOTIFICATION, handleNewNotification);
       socket.off("notification_count", handleNotificationCount);
       socket.off("reconnect", handleReconnect);
-      socket.off("connect", handleReconnect);
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_ACCEPTED, handleSentRequestUpdated);
       socket.off(SOCKET_EVENTS.FOLLOW_REQUEST_REJECTED, handleSentRequestUpdated);
       socket.off("follow_request_sent", handleSentRequestUpdated);

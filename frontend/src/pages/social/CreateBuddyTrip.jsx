@@ -47,7 +47,11 @@ const CreateBuddyTrip = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setFormData(parsed);
+        setFormData((prev) => ({
+          ...prev,
+          ...parsed,
+          description: parsed.description !== undefined && parsed.description !== null ? parsed.description : ""
+        }));
         if (parsed.coverImage && !parsed.coverImage.startsWith("blob:")) {
             // Restore preview if it was a URL
             setImagePreview(parsed.coverImage);
@@ -116,7 +120,7 @@ const CreateBuddyTrip = () => {
     Boolean(formData.startDate) &&
     Boolean(formData.endDate) &&
     formData.startDate <= formData.endDate &&
-    (formData.description?.trim().length || 0) >= 20;
+    (!formData.description || formData.description.length <= 500);
 
   const predefinedTags = [
     "luxury", "budget", "students", "family", "photography",
@@ -214,7 +218,7 @@ const CreateBuddyTrip = () => {
         from: formData.from,
         startDate: formData.startDate,
         endDate: formData.endDate,
-        description: formData.description,
+        description: typeof formData.description === "string" ? formData.description.trim() : (formData.description || ""),
         coverImage: imageUrl,
         journeyType: "Group",
         privacy: formData.isPrivate ? "Private" : "Public",
@@ -524,20 +528,23 @@ const CreateBuddyTrip = () => {
 
                 {/* Description */}
                 <div>
-                  <label className="block text-[15px] font-extrabold text-text-primary mb-1">Tell travelers about the trip</label>
+                  <label className="block text-[15px] font-extrabold text-text-primary mb-1">
+                    Tell travelers about the trip <span className="text-xs font-normal text-text-muted">(Optional)</span>
+                  </label>
                   <p className="text-[13px] text-text-muted font-medium mb-4">What will you do, where will you go, and what kind of travel buddies are you looking for?</p>
                   <textarea
                     name="description"
                     value={formData.description}
                     onChange={handleInputChange}
+                    maxLength={500}
                     rows="4"
                     placeholder="“Exploring waterfalls, local food and forts around…”"
                     className="input-field"
                   />
                   <div className="flex justify-between items-center mt-2.5">
                     <p className="text-[11px] text-text-muted font-bold">Tip: A clear itinerary helps you attract the right travel buddies.</p>
-                    <span className={`text-[11px] font-bold ${(formData.description?.trim().length || 0) < 20 ? "text-rose-400" : "text-emerald-500"}`}>
-                      {formData.description?.trim().length || 0}/500
+                    <span className={`text-[11px] font-bold ${(formData.description?.length || 0) > 500 ? "text-rose-400" : (formData.description?.length || 0) > 0 ? "text-emerald-500" : "text-text-muted"}`}>
+                      {formData.description?.length || 0}/500
                     </span>
                   </div>
                 </div>
@@ -712,8 +719,8 @@ const CreateBuddyTrip = () => {
                   <li className={`flex items-center gap-2.5 ${formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? "text-emerald-600" : "text-text-muted"}`}>
                     {formData.startDate && formData.endDate && formData.startDate <= formData.endDate ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Dates
                   </li>
-                  <li className={`flex items-center gap-2.5 ${(formData.description?.trim().length || 0) >= 20 ? "text-emerald-600" : "text-text-muted"}`}>
-                    {(formData.description?.trim().length || 0) >= 20 ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Itinerary
+                  <li className={`flex items-center gap-2.5 ${formData.description?.trim() ? "text-emerald-600" : "text-text-muted"}`}>
+                    {formData.description?.trim() ? <Check className="w-4 h-4" /> : <Circle className="w-4 h-4 text-slate-300" />} Itinerary <span className="text-[10px] font-normal text-text-muted">(Optional)</span>
                   </li>
                 </ul>
               </div>

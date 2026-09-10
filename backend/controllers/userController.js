@@ -557,7 +557,7 @@ const followUser = asyncHandler(async (req, res) => {
       type: "follow_request",
       category: "Social",
       title: "New Follow Request",
-      message: `${currentUser.username || currentUser.name} requested to follow you`,
+      message: `${currentUser.username || currentUser.name} sent you a follow request`,
       link: `/profile/${currentUserId}`
     }, io);
 
@@ -1964,12 +1964,22 @@ const rejectFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
 
-  const [currentUser] = await Promise.all([
-    User.findById(currentUserId),
-    User.findByIdAndUpdate(currentUserId, {
-      $pull: { followRequests: requesterId },
-    })
-  ]);
+  const currentUser = await User.findById(currentUserId);
+  if (!currentUser) {
+    return res.status(404).json({ success: false, message: "User not found" });
+  }
+
+  const hasPendingRequest = currentUser.followRequests?.some(
+    (id) => String(id) === String(requesterId)
+  );
+
+  if (!hasPendingRequest) {
+    return res.status(200).json({ success: true, message: "Follow request already processed" });
+  }
+
+  await User.findByIdAndUpdate(currentUserId, {
+    $pull: { followRequests: requesterId },
+  });
 
   await Notification.findOneAndDelete({
     sender: requesterId,

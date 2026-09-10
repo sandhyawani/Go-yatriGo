@@ -203,7 +203,7 @@ exports.createJourney = async (req, res) => {
 
     const journeyPayload = {
       title: title.trim(),
-      description,
+      description: typeof description === "string" ? description.trim() : (description || ""),
       coverImage: finalCoverImage,
       destination: destination.trim(),
       from: from ? from.trim() : "",
@@ -485,12 +485,19 @@ exports.updateJourney = async (req, res) => {
       "endDate",
       "privacy",
       "journeyType",
-      "maxMembers"
+      "maxMembers",
+      "category",
+      "budget",
+      "tags"
     ];
 
     allowedUpdates.forEach((field) => {
       if (req.body[field] !== undefined) {
-        journey[field] = req.body[field];
+        if (field === "description") {
+          journey[field] = typeof req.body[field] === "string" ? req.body[field].trim() : (req.body[field] || "");
+        } else {
+          journey[field] = req.body[field];
+        }
       }
     });
 

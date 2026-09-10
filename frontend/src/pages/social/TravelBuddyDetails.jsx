@@ -913,25 +913,26 @@ const TravelBuddyDetails = () => {
               </div>
 
               {/* Editorial Body Text */}
-              <div className="text-slate-600 text-sm sm:text-[15px] leading-relaxed space-y-4">
-                <p className={!expandedDesc && trip.description && trip.description.length > 200 ? "line-clamp-3" : ""}>
-                  {trip.description ||
-                    "Escape the busy city life for a restorative mountain journey through Manali. We will trek along pine-lined Himalayan trails, explore quiet viewpoints around Old Manali, and unwind in scenic riverfront cafes. Whether you are an experienced hiker or looking to soak in the crisp mountain air with fellow travel enthusiasts, this group adventure is designed for meaningful connections and unforgettable memories."}
-                </p>
-                {trip.description && trip.description.length > 200 && (
-                  <button
-                    type="button"
-                    onClick={() => setExpandedDesc(!expandedDesc)}
-                    className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors inline-flex items-center gap-1 cursor-pointer pt-1"
-                  >
-                    {expandedDesc ? (
-                      <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
-                    ) : (
-                      <>Read full description <ChevronDown className="w-3.5 h-3.5" /></>
-                    )}
-                  </button>
-                )}
-              </div>
+              {trip.description ? (
+                <div className="text-slate-600 text-sm sm:text-[15px] leading-relaxed space-y-4">
+                  <p className={!expandedDesc && trip.description.length > 200 ? "line-clamp-3" : ""}>
+                    {trip.description}
+                  </p>
+                  {trip.description.length > 200 && (
+                    <button
+                      type="button"
+                      onClick={() => setExpandedDesc(!expandedDesc)}
+                      className="text-xs font-semibold text-brand hover:text-brand-dark transition-colors inline-flex items-center gap-1 cursor-pointer pt-1"
+                    >
+                      {expandedDesc ? (
+                        <>Show less <ChevronUp className="w-3.5 h-3.5" /></>
+                      ) : (
+                        <>Read full description <ChevronDown className="w-3.5 h-3.5" /></>
+                      )}
+                    </button>
+                  )}
+                </div>
+              ) : null}
 
               {/* Editorial Highlights: 2x2 Clean Minimalist Grid with Simple Line Icons */}
               <div className="pt-4 border-t border-slate-100">

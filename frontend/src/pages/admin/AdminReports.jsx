@@ -83,10 +83,10 @@ const AdminReports = () => {
         await axios.put(`/admin/users/${payload.id}/unsuspend`);
         showToast.success("User unsuspended");
       } else if (action === "delete_post") {
-        await axios.delete(`/admin/post/${payload.id}`);
+        await axios.delete(`/admin/posts/${payload.id}`);
         showToast.success("Travel Memory deleted successfully!");
       } else if (action === "delete_group") {
-        await axios.delete(`/admin/group/${payload.id}`);
+        await axios.delete(`/admin/groups/${payload.id}`);
         showToast.success("Group deleted");
       }
       await fetchReports();

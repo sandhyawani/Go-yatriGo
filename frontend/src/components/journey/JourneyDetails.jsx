@@ -87,15 +87,16 @@ const JourneyDetails = ({ journey, currentUserId, onTabChange, onOpenCheckIn }) 
               </p>
             )}
 
-            <div className="pt-2 border-t border-slate-100">
-              <h4 className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-brand" /> About Trip
-              </h4>
-              <p className="text-xs text-text-secondary leading-relaxed line-clamp-3 font-medium m-0">
-                {journey.description ||
-                  `Exploring ${journey.destination || "the destination"} with fellow travel companions on Go YatriGo.`}
-              </p>
-            </div>
+            {journey.description ? (
+              <div className="pt-2 border-t border-slate-100">
+                <h4 className="text-[10px] font-black text-text-muted uppercase tracking-wider mb-1 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-brand" /> About Trip
+                </h4>
+                <p className="text-xs text-text-secondary leading-relaxed line-clamp-3 font-medium m-0">
+                  {journey.description}
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
 

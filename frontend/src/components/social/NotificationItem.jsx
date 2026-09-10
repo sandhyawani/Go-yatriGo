@@ -108,34 +108,35 @@ export const NotificationItem = ({
         {!n.isRead &&
         <div className="mt-2.5 flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
             {n.type === "follow_request" &&
-          <>
+              <>
                 <button
-            onClick={(e) => handleAcceptRequest(e, n.sender?._id)}
-            className="btn-primary">
-
-                  Accept
+                  onClick={(e) => handleAcceptRequest(e, n.sender?._id)}
+                  className="btn-primary">
+                  Accept Follow
                 </button>
                 <button
-            onClick={(e) => handleRejectRequest(e, n.sender?._id)}
-            className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
-
-                  Decline
+                  onClick={(e) => handleRejectRequest(e, n.sender?._id)}
+                  className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
+                  Decline Follow
                 </button>
               </>}
 
-
             {n.type === "message_request" &&
-          <>
+              <>
                 <button
-            onClick={(e) => handleAcceptMessage(e, n.relatedId, n._id)}
-            className="btn-primary">
-
+                  onClick={(e) => {
+                    const roomId = typeof n.room === "object" ? n.room?._id : (n.room || n.entityId || n.relatedId);
+                    handleAcceptMessage(e, roomId, n._id);
+                  }}
+                  className="btn-primary">
                   Accept Chat
                 </button>
                 <button
-            onClick={(e) => handleRejectMessage(e, n.relatedId, n._id)}
-            className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
-
+                  onClick={(e) => {
+                    const roomId = typeof n.room === "object" ? n.room?._id : (n.room || n.entityId || n.relatedId);
+                    handleRejectMessage(e, roomId, n._id);
+                  }}
+                  className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
                   Decline Chat
                 </button>
               </>}

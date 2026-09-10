@@ -10,6 +10,7 @@ router.patch('/', settingsController.updateSettings);
 router.patch('/2fa', settingsController.update2FA);
 router.get('/login-activity', settingsController.getLoginActivity);
 router.post('/logout-other-devices', settingsController.logoutOtherDevices);
+router.delete('/sessions/:id', settingsController.revokeSession);
 router.post('/delete-account', settingsController.deleteAccount);
 router.post('/deactivate-account', settingsController.deactivateAccount);
 

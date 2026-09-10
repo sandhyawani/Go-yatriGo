@@ -171,7 +171,7 @@ exports.createTravelBuddyTrip = async (req, res) => {
       category: category || "General",
       maxMembers: maxMembers || 10,
       estimatedBudget: estimatedBudget || "Budget Flexible",
-      description: description || "",
+      description: typeof description === "string" ? description.trim() : (description || ""),
       itinerary: Array.isArray(itinerary) ? itinerary : [],
       coverImage: coverImage || await imageService.fetchAutoCoverImage({ destination, title, category }),
       host: userId,

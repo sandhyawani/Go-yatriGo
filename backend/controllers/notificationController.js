@@ -46,7 +46,9 @@ exports.getNotifications = async (req, res) => {
         .populate("post", "caption images media")
         .populate("story", "media caption")
         .populate("room", "name type members")
-        .sort({ createdAt: -1 });
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .lean();
     } catch (dbError) {
       console.warn("Notification lookup failed, returning empty result:", dbError.message);
     }

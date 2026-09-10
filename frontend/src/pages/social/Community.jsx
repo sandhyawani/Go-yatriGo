@@ -135,7 +135,7 @@ const Community = () => {
     }));
     showToast.success("Travel memory bookmarked!");
     try {
-      await axios.post(`/api/posts/like/${postId}`, {}, { withCredentials: true });
+      await axios.post(`/posts/like/${postId}`, {}, { withCredentials: true });
     } catch (e) {
 
     }

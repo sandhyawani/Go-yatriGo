@@ -149,11 +149,11 @@ const generateNotificationTitle = (type, senderName = "Go YatriGo") => {
     case "message_reaction":
       return `${senderName} reacted to your message`;
     case "message_request":
-      return "New Message Request";
+      return "Chat Request";
     case "message_request_accepted":
-      return "Message Request Accepted";
+      return "Chat Request Accepted";
     case "message_request_rejected":
-      return "Message Request Declined";
+      return "Chat Request Declined";
     case "post_like":
     case "memory_like":
       return "Memory Liked";

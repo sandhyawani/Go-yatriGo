@@ -133,7 +133,7 @@ const getNotificationVisuals = (type, category) => {
     return {
       icon: <MessageSquare className="w-4 h-4 text-sky-600" />,
       bg: "bg-sky-50 text-sky-600 border-sky-200",
-      badge: t === "message_request" ? "Message Request" : "Message",
+      badge: t === "message_request" ? "Chat Request" : "Message",
       colorType: "primary"
     };
   }
@@ -647,7 +647,7 @@ export const NotificationPanel = () => {
                                 }}
                                 className="btn-primary"
                               >
-                                Accept
+                                Accept Follow
                               </button>
                               <button
                                 disabled={isProcessingAction}
@@ -659,7 +659,7 @@ export const NotificationPanel = () => {
                                 }}
                                 className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
-                                Decline
+                                Decline Follow
                               </button>
                             </>
                           )}
@@ -670,7 +670,7 @@ export const NotificationPanel = () => {
                                 disabled={isProcessingAction}
                                 onClick={async () => {
                                   setIsProcessingAction(true);
-                                  const roomId = typeof notif.room === "object" ? notif.room._id : notif.room;
+                                  const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
                                   await handleAcceptMessage(roomId, notifId);
                                   setIsProcessingAction(false);
                                 }}
@@ -682,13 +682,13 @@ export const NotificationPanel = () => {
                                 disabled={isProcessingAction}
                                 onClick={async () => {
                                   setIsProcessingAction(true);
-                                  const roomId = typeof notif.room === "object" ? notif.room._id : notif.room;
+                                  const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
                                   await handleRejectMessage(roomId, notifId);
                                   setIsProcessingAction(false);
                                 }}
                                 className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
-                                Decline
+                                Decline Chat
                               </button>
                             </>
                           )}

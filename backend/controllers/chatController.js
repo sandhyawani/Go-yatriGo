@@ -117,8 +117,8 @@ exports.getOrCreateDirectRoom = async (req, res) => {
           room: room._id,
           entityId: room._id,
           entityType: "ChatRoom",
-          title: "Message Request",
-          message: `${senderUser?.name || "A traveler"} sent you a message request.`,
+          title: "Chat Request",
+          message: `${senderUser?.name || "A traveler"} sent you a chat request.`,
           link: `/social/chat/${room._id}`
         }, io).catch(() => {});
       }
@@ -628,8 +628,8 @@ exports.acceptMessageRequest = async (req, res) => {
         room: room._id,
         entityId: room._id,
         entityType: "ChatRoom",
-        title: "Message Request Accepted",
-        message: `${currentUser?.name || "A traveler"} accepted your message request.`,
+        title: "Chat Request Accepted",
+        message: `${currentUser?.name || "A traveler"} accepted your chat request.`,
         link: `/social/chat/${room._id}`
       }, io).catch(() => {});
     }

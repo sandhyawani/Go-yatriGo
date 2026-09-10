@@ -544,23 +544,23 @@ const NotificationsPage = () => {
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleAcceptFollow(notif.sender?._id || notif.sender);
+                                await handleAcceptFollow(notif.sender?._id || notif.sender, notifId);
                                 setIsProcessing(false);
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              Confirm Request
+                              Accept Follow
                             </button>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleRejectFollow(notif.sender?._id || notif.sender);
+                                await handleRejectFollow(notif.sender?._id || notif.sender, notifId);
                                 setIsProcessing(false);
                               }}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                             >
-                              Delete
+                              Decline Follow
                             </button>
                           </>
                         )}
@@ -608,23 +608,25 @@ const NotificationsPage = () => {
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleAcceptMessage(notif.room);
+                                const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
+                                await handleAcceptMessage(roomId, notifId);
                                 setIsProcessing(false);
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              Accept Message
+                              Accept Chat
                             </button>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleRejectMessage(notif.room);
+                                const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
+                                await handleRejectMessage(roomId, notifId);
                                 setIsProcessing(false);
                               }}
-                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                             >
-                              Decline
+                              Decline Chat
                             </button>
                           </>
                         )}

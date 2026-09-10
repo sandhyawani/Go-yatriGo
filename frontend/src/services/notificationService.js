@@ -80,7 +80,7 @@ export const notificationService = {
 
   acceptMessageRequest: async (roomId) => {
     const res = await axios.put(
-      `/chat/direct/${roomId}/accept`,
+      `/chat/room/${roomId}/accept`,
       {},
       { withCredentials: true }
     );
@@ -89,7 +89,7 @@ export const notificationService = {
 
   rejectMessageRequest: async (roomId) => {
     const res = await axios.put(
-      `/chat/direct/${roomId}/decline`,
+      `/chat/room/${roomId}/decline`,
       {},
       { withCredentials: true }
     );
