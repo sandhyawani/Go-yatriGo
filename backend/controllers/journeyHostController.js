@@ -5,7 +5,6 @@ const JourneyTimeline = require("../models/JourneyTimeline");
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
-// Transfer journey host ownership to an active member with transaction retry handling
 exports.transferHost = async (req, res) => {
   const maxRetries = 3;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -63,7 +62,6 @@ exports.transferHost = async (req, res) => {
         return res.status(400).json({ success: false, message: "Target user is not an active member" });
       }
 
-      // Perform atomic ownership transfer across all representations in transaction
       journey.creator = newHostId;
 
       journey.members.forEach((m) => {
@@ -116,7 +114,6 @@ exports.transferHost = async (req, res) => {
       const notificationService = require("../services/notificationService");
       const io = req.app.get("io");
 
-      // Notify new host
       await notificationService.createNotification({
         sender: currentUserId,
         receiver: newHostId,
@@ -131,7 +128,6 @@ exports.transferHost = async (req, res) => {
         link: `/social/journeys/${journey._id}`
       }, io).catch(() => {});
 
-      // Notify all other members
       (journey.members || []).forEach((m) => {
         const memId = (m.user?._id || m.user).toString();
         if (memId !== currentUserId.toString() && memId !== newHostId.toString()) {

@@ -258,7 +258,6 @@ export const PostsTab = ({
         })}
       </div>
 
-      {/* ─── 5. PAGINATION: LOAD MORE BUTTON ────────────────────────────────── */}
       {hasMorePosts && userMemories.length > 0 && (
         <div className="pt-2 pb-4 flex justify-center w-full">
           <button

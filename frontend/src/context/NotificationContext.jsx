@@ -96,7 +96,6 @@ export const NotificationProvider = ({ children }) => {
     fetchSentRequests();
   }, [fetchNotifications, fetchSentRequests]);
 
-  // Single authoritative Socket listener for notifications and sent request updates
   useEffect(() => {
     if (!socket || !user) return;
 
@@ -174,7 +173,6 @@ export const NotificationProvider = ({ children }) => {
     if (!reqItem) return false;
     try {
       const targetId = reqItem.cancelId || reqItem.targetId || reqItem._id || reqItem.id;
-      // Optimistic removal
       setSentRequests((prev) => prev.filter((r) => (r._id || r.id) !== (reqItem._id || reqItem.id)));
 
       await notificationService.cancelSentRequest(reqItem);

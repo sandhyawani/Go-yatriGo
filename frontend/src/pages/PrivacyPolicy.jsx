@@ -21,7 +21,6 @@ const PrivacyPolicy = () => {
           transition={{ duration: 0.35, ease: "easeOut" }}
           className="bg-white border border-slate-100 rounded-[2rem] p-6 sm:p-10 md:p-12 shadow-xl backdrop-blur-sm"
         >
-          {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8 pb-6 border-b border-slate-100">
             <div className="flex items-center gap-4">
               <div className="p-3.5 bg-brand-50 border border-brand-100 rounded-2xl text-brand">
@@ -43,7 +42,6 @@ const PrivacyPolicy = () => {
             </div>
           </div>
 
-          {/* Content */}
           <div className="space-y-8 text-sm sm:text-base text-text-secondary leading-relaxed">
             <section className="bg-slate-50/60 border border-slate-100 rounded-2xl p-5">
               <h2 className="text-base font-bold text-text-primary mb-2 flex items-center gap-2">

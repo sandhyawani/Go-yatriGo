@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { toHttps } from "../../../utils/toHttps";
 import {
   Navigation,
   Compass,
@@ -15,9 +16,8 @@ import {
   ShieldCheck
 } from "lucide-react";
 
-// Custom pulsating marker for live traveler
 const createTravelerIcon = (user, isCurrentUser = false, heading = null) => {
-  const avatarUrl = user?.profilePic || user?.pic || user?.img || user?.avatar || "";
+  const avatarUrl = toHttps(user?.profilePic || user?.pic || user?.img || user?.avatar || "");
   const name = user?.name || (isCurrentUser ? "You" : "Traveler");
   const initial = name.charAt(0).toUpperCase();
 
@@ -27,11 +27,9 @@ const createTravelerIcon = (user, isCurrentUser = false, heading = null) => {
 
   const html = `
     <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-1/2 group">
-      <!-- Radar pulse ring -->
       <div class="absolute -inset-2 rounded-full ${pulseColor} opacity-30 animate-ping"></div>
       <div class="absolute -inset-1 rounded-full ${pulseColor} opacity-40 animate-pulse"></div>
 
-      <!-- Center Avatar pin -->
       <div class="relative w-10 h-10 rounded-full border-2 ${ringColor} bg-slate-900 shadow-xl overflow-hidden flex items-center justify-center z-10 transition-transform duration-300 hover:scale-110">
         ${
           avatarUrl
@@ -41,14 +39,12 @@ const createTravelerIcon = (user, isCurrentUser = false, heading = null) => {
         }
       </div>
 
-      <!-- Heading Indicator Arrow if available -->
       ${
         heading !== null && heading !== undefined
           ? `<div class="absolute -top-1.5 w-3 h-3 bg-white border border-slate-700 shadow-xs rotate-45 z-20" style="transform: rotate(${heading}deg) translateY(-8px);"></div>`
           : ""
       }
 
-      <!-- Name label pill -->
       <div class="absolute top-11 px-2 py-0.5 rounded-md bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-bold whitespace-nowrap shadow-md pointer-events-none border border-white/10 z-20">
         ${isCurrentUser ? "You" : name}
       </div>
@@ -63,7 +59,6 @@ const createTravelerIcon = (user, isCurrentUser = false, heading = null) => {
   });
 };
 
-// Destination Pin Icon
 const createDestinationIcon = (destinationTitle = "Destination") => {
   const html = `
     <div class="relative flex items-center justify-center -translate-x-1/2 -translate-y-full group">
@@ -106,7 +101,6 @@ const JourneyLiveMap = ({
   const [selectedTrackerId, setSelectedTrackerId] = useState("me");
   const [lastUpdatedSec, setLastUpdatedSec] = useState(0);
 
-  // Time elapsed since last coordinate update
   useEffect(() => {
     setLastUpdatedSec(0);
     const interval = setInterval(() => {
@@ -115,7 +109,6 @@ const JourneyLiveMap = ({
     return () => clearInterval(interval);
   }, [currentLocation?.latitude, currentLocation?.longitude]);
 
-  // Destination coordinates from journey
   const destCoords = useMemo(() => {
     if (journey?.destinationCoordinates?.lat && journey?.destinationCoordinates?.lng) {
       return [journey.destinationCoordinates.lat, journey.destinationCoordinates.lng];
@@ -123,12 +116,10 @@ const JourneyLiveMap = ({
     return null;
   }, [journey?.destinationCoordinates]);
 
-  // Initialize Map
   useEffect(() => {
     if (!mapContainerRef.current) return;
     if (mapInstanceRef.current) return;
 
-    // Default center: current location, or destination, or India centroid [20.5937, 78.9629]
     const initialLat = currentLocation?.latitude || destCoords?.[0] || 20.5937;
     const initialLng = currentLocation?.longitude || destCoords?.[1] || 78.9629;
     const initialZoom = currentLocation?.latitude ? 15 : 6;
@@ -140,12 +131,10 @@ const JourneyLiveMap = ({
       attributionControl: false
     });
 
-    // Clean modern OpenStreetMap tiles
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19
     }).addTo(map);
 
-    // Zoom control in bottom-right
     L.control.zoom({ position: "bottomright" }).addTo(map);
 
     const markersGroup = L.layerGroup().addTo(map);
@@ -161,7 +150,6 @@ const JourneyLiveMap = ({
     };
   }, []);
 
-  // Update Markers and Route Polyline
   useEffect(() => {
     const map = mapInstanceRef.current;
     const markersGroup = markersGroupRef.current;
@@ -173,7 +161,6 @@ const JourneyLiveMap = ({
 
     const boundsPoints = [];
 
-    // 1. Current User Marker
     if (currentLocation?.latitude && currentLocation?.longitude) {
       const userPos = [currentLocation.latitude, currentLocation.longitude];
       boundsPoints.push(userPos);
@@ -187,12 +174,10 @@ const JourneyLiveMap = ({
       markersGroup.addLayer(userMarker);
     }
 
-    // 2. Travelled Route Polyline
     const validTrailPoints = recentTrail
       .filter((p) => p && typeof p.latitude === "number" && typeof p.longitude === "number")
       .map((p) => [p.latitude, p.longitude]);
 
-    // Include current position in trail if available
     if (currentLocation?.latitude && currentLocation?.longitude) {
       validTrailPoints.push([currentLocation.latitude, currentLocation.longitude]);
     }
@@ -209,7 +194,6 @@ const JourneyLiveMap = ({
       polylineGroup.addLayer(polyline);
     }
 
-    // 3. Other Group Trackers
     otherTrackers.forEach((tracker) => {
       const loc = tracker.currentLocation;
       if (loc && typeof loc.latitude === "number" && typeof loc.longitude === "number") {
@@ -220,7 +204,6 @@ const JourneyLiveMap = ({
         const marker = L.marker(trackerPos, { icon: trackerIcon });
         markersGroup.addLayer(marker);
 
-        // Recent trail of this member
         if (Array.isArray(tracker.recentTrail) && tracker.recentTrail.length > 1) {
           const mTrail = tracker.recentTrail
             .filter((p) => typeof p.latitude === "number" && typeof p.longitude === "number")
@@ -239,7 +222,6 @@ const JourneyLiveMap = ({
       }
     });
 
-    // 4. Destination Marker
     if (destCoords) {
       boundsPoints.push(destCoords);
       const destIcon = createDestinationIcon(journey?.destination || "Destination");
@@ -247,7 +229,6 @@ const JourneyLiveMap = ({
       markersGroup.addLayer(destMarker);
     }
 
-    // If focused on a specific traveler
     if (selectedTrackerId === "me" && currentLocation?.latitude) {
       map.panTo([currentLocation.latitude, currentLocation.longitude], { animate: true });
     } else if (selectedTrackerId !== "me" && selectedTrackerId !== "all") {
@@ -258,7 +239,6 @@ const JourneyLiveMap = ({
     }
   }, [currentLocation, recentTrail, otherTrackers, destCoords, selectedTrackerId]);
 
-  // Recenter Handler
   const handleRecenter = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -274,7 +254,6 @@ const JourneyLiveMap = ({
     }
   };
 
-  // Fit All Bounds Handler
   const handleFitAll = () => {
     const map = mapInstanceRef.current;
     if (!map) return;
@@ -292,7 +271,6 @@ const JourneyLiveMap = ({
     }
   };
 
-  // Format last updated text
   const formatLastUpdated = () => {
     if (lastUpdatedSec === 0) return "Just now";
     if (lastUpdatedSec < 60) return `${lastUpdatedSec}s ago`;
@@ -300,18 +278,14 @@ const JourneyLiveMap = ({
     return `${mins}m ago`;
   };
 
-  // Speed and Accuracy
   const currentSpeed = currentLocation?.speed ? Math.round(currentLocation.speed) : 0;
   const currentAccuracy = currentLocation?.accuracy ? Math.round(currentLocation.accuracy) : null;
 
   return (
     <div className="relative w-full rounded-3xl overflow-hidden border border-slate-200/90 shadow-md bg-slate-900 flex flex-col min-h-[460px] sm:min-h-[520px] lg:min-h-[580px]">
-      {/* 1. Map Canvas */}
       <div ref={mapContainerRef} className="absolute inset-0 w-full h-full z-0" />
 
-      {/* 2. Top HUD Bar - Ola/Uber style glass overlay */}
       <div className="relative z-10 p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pointer-events-none">
-        {/* Live Status Pill */}
         <div className="pointer-events-auto flex items-center gap-2 bg-slate-950/85 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-white/15 text-white shadow-xl max-w-fit">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2.5 w-2.5">
@@ -337,7 +311,6 @@ const JourneyLiveMap = ({
           </div>
         </div>
 
-        {/* Multi-member roster pills */}
         {otherTrackers.length > 0 && (
           <div className="pointer-events-auto flex items-center gap-1.5 bg-slate-950/85 backdrop-blur-md p-1 rounded-2xl border border-white/15 shadow-xl overflow-x-auto scrollbar-none max-w-full">
             <button
@@ -385,7 +358,6 @@ const JourneyLiveMap = ({
         )}
       </div>
 
-      {/* 3. Floating Map Controls */}
       <div className="absolute right-3.5 bottom-24 sm:bottom-28 z-10 flex flex-col gap-2 pointer-events-auto">
         <button
           onClick={handleRecenter}
@@ -404,12 +376,9 @@ const JourneyLiveMap = ({
         </button>
       </div>
 
-      {/* 4. Bottom Trip Stats HUD Dashboard (Ola/Uber Experience) */}
       <div className="relative z-10 mt-auto p-3 sm:p-4 pointer-events-none">
         <div className="pointer-events-auto bg-slate-950/90 backdrop-blur-xl border border-white/15 rounded-3xl p-3.5 sm:p-4 text-white shadow-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          {/* Metrics Grid */}
           <div className="grid grid-cols-3 gap-3 flex-1">
-            {/* Distance Travelled */}
             <div className="flex flex-col">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                 <Navigation className="w-3 h-3 text-emerald-400" /> Distance
@@ -422,7 +391,6 @@ const JourneyLiveMap = ({
               </div>
             </div>
 
-            {/* Current Speed */}
             <div className="flex flex-col border-l border-white/10 pl-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                 <Gauge className="w-3 h-3 text-sky-400" /> Speed
@@ -435,7 +403,6 @@ const JourneyLiveMap = ({
               </div>
             </div>
 
-            {/* GPS Accuracy */}
             <div className="flex flex-col border-l border-white/10 pl-3">
               <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">
                 <Radio className="w-3 h-3 text-amber-400" /> GPS Signal
@@ -457,7 +424,6 @@ const JourneyLiveMap = ({
             </div>
           </div>
 
-          {/* Manual Stop / Pause Button */}
           {isOngoing && onToggleTracking && (
             <div className="flex items-center gap-2 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-white/10">
               <button

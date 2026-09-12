@@ -24,7 +24,6 @@ import { showToast } from "../../../utils/showToast";
 import { getJourneyLifecycle } from "../../../utils/journeyLifecycle";
 import JourneyLiveMap from "./JourneyLiveMap";
 
-// Haversine calculation for local client updates
 function calculateHaversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -67,7 +66,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       (m) => (m.user?._id || m.user)?.toString() === currentUserId?.toString()
     );
 
-  // Monitor socket connection state
   useEffect(() => {
     if (!socket) return;
     setSocketConnected(Boolean(socket.connected));
@@ -84,7 +82,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     };
   }, [socket]);
 
-  // 1. Check Browser Geolocation Permission State
   const checkPermission = useCallback(async () => {
     if (!navigator.geolocation) {
       setPermissionState("unsupported");
@@ -109,7 +106,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     }
   }, []);
 
-  // 2. Fetch Initial Tracking Settings and Live State
   useEffect(() => {
     if (!journey?._id || !isMember) {
       setLoading(false);
@@ -141,7 +137,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         if (isMounted) setLoading(false);
       });
 
-    // Fetch initial live trackers (other active members)
     axiosInstance
       .get(`/journeys/${journey._id}/tracking/live`)
       .then((res) => {
@@ -173,20 +168,16 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     };
   }, [journey?._id, isMember, currentUserId, checkPermission]);
 
-  // 3. Socket.IO Room Connection and Event Listeners
   useEffect(() => {
     if (!socket || !journey?._id || !isMember) return;
 
-    // Join journey room for tracking
     socket.emit("join_room", journey._id);
 
-    // Listen for member location broadcasts
     const handleMemberLocation = (data) => {
       if (data.journeyId?.toString() !== journey._id.toString()) return;
       const currentUidStr = currentUserId?.toString();
       const senderUidStr = data.userId?.toString();
 
-      // If update is from another member
       if (senderUidStr && senderUidStr !== currentUidStr) {
         setOtherTrackers((prev) => {
           const index = prev.findIndex(
@@ -227,7 +218,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       }
     };
 
-    // Listen for tracking status changes (paused/resumed)
     const handleStatusChanged = (data) => {
       if (data.journeyId?.toString() !== journey._id.toString()) return;
       const currentUidStr = currentUserId?.toString();
@@ -253,7 +243,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     };
   }, [socket, journey?._id, isMember, currentUserId]);
 
-  // 4. Start Active Geolocation Tracking
   const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
       showToast.error("Geolocation is not supported by your browser");
@@ -261,7 +250,7 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     }
 
     if (watchIdRef.current !== null) {
-      return; // Already watching
+      return;
     }
 
     setIsStartingGPS(true);
@@ -280,7 +269,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       setIsLiveTracking(true);
 
       setCurrentLocation((prevLoc) => {
-        // Calculate distance increment
         if (prevLoc?.latitude && prevLoc?.longitude) {
           const dist = calculateHaversineKm(prevLoc.latitude, prevLoc.longitude, latitude, longitude);
           if (dist >= 0.005 && dist <= 2.0) {
@@ -288,7 +276,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
           }
         }
 
-        // Append to recent visual trail preview
         setRecentTrail((prevTrail) => {
           const newTrail = [...prevTrail, { latitude, longitude, timestamp: new Date() }];
           return newTrail.slice(-50);
@@ -304,7 +291,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         };
       });
 
-      // Keep latest coordinates for trailing-edge emit
       latestCoordsRef.current = { latitude, longitude, accuracy, heading, speed };
 
       const emitToSocket = (coords) => {
@@ -322,7 +308,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         }
       };
 
-      // Leading and trailing 3-second throttle to prevent rapid GPS updates from flooding socket/DB
       const now = Date.now();
       const timeSinceLastEmit = now - lastEmitTimeRef.current;
 
@@ -333,7 +318,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         }
         emitToSocket({ latitude, longitude, accuracy, heading, speed });
       } else if (!trailingEmitTimeoutRef.current) {
-        // Schedule trailing emit for when the 3-second cooldown expires
         trailingEmitTimeoutRef.current = setTimeout(() => {
           trailingEmitTimeoutRef.current = null;
           if (latestCoordsRef.current) {
@@ -347,7 +331,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       console.warn("[Geolocation Error]", err.code, err.message);
       setIsStartingGPS(false);
       if (err.code === 1) {
-        // PERMISSION_DENIED
         setPermissionState("denied");
         stopWatching();
         showToast.warning("Location permission was denied. Live tracking is paused.");
@@ -358,7 +341,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     watchIdRef.current = id;
   }, [socket, journey?._id]);
 
-  // 5. Stop Active Geolocation Tracking
   const stopWatching = useCallback(() => {
     if (trailingEmitTimeoutRef.current) {
       clearTimeout(trailingEmitTimeoutRef.current);
@@ -376,8 +358,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     }
   }, [socket, journey?._id]);
 
-  // 6. Automatic Start/Stop Semantics
-  // Strictly: user opted in + permission ALREADY granted + journey is Ongoing
   useEffect(() => {
     if (lifecycle.isOngoing && autoTrackingEnabled && permissionState === "granted") {
       startWatching();
@@ -390,7 +370,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     };
   }, [lifecycle.isOngoing, autoTrackingEnabled, permissionState, startWatching, stopWatching]);
 
-  // 7. Toggle Auto-Tracking Opt-In Setting
   const handleToggleAutoTracking = async () => {
     const nextState = !autoTrackingEnabled;
     try {
@@ -401,7 +380,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       if (res.data?.success) {
         if (nextState) {
           showToast.success("Live location sharing enabled for this journey.");
-          // If journey is active and permission is already granted, start tracking
           if (lifecycle.isOngoing && permissionState === "granted") {
             startWatching();
           }
@@ -412,12 +390,11 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
       }
     } catch (err) {
       console.error("Error updating tracking setting:", err);
-      setAutoTrackingEnabled(!nextState); // revert
+      setAutoTrackingEnabled(!nextState);
       showToast.error("Failed to update tracking setting");
     }
   };
 
-  // 8. Explicit User Trigger: "Allow Location" / "Enable GPS"
   const handleRequestPermission = () => {
     if (!navigator.geolocation) {
       showToast.error("Geolocation is not supported by your browser");
@@ -442,7 +419,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
     );
   };
 
-  // 9. Manual Start / Stop Tracking Button
   const handleManualToggleTracking = () => {
     if (isLiveTracking) {
       stopWatching();
@@ -477,7 +453,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
 
   return (
     <div className="space-y-4 animate-fade-in">
-      {/* 1. Explicit Status Banner / Opt-In Consent Card */}
       <div className="bg-white rounded-3xl p-5 border border-slate-200/90 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-2xl bg-brand/10 text-brand flex items-center justify-center shrink-0 mt-0.5">
@@ -487,7 +462,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-sm font-extrabold text-text-primary m-0">Live Location Sharing</h3>
 
-              {/* Explicit State Pill */}
               {isLiveTracking ? (
                 <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300 flex items-center gap-1">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
@@ -514,7 +488,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
           </div>
         </div>
 
-        {/* Action button based on state */}
         <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
           {isLiveTracking ? (
             <button
@@ -549,7 +522,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       </div>
 
-      {/* 2. Socket Disconnected Warning if connection lost */}
       {!socketConnected && (
         <div className="bg-slate-100 border border-slate-300 p-3 rounded-2xl flex items-center gap-2.5 text-slate-700 text-xs font-semibold shadow-xs">
           <WifiOff className="w-4 h-4 text-slate-500 animate-pulse" />
@@ -557,7 +529,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       )}
 
-      {/* 3. Location Permission Blocked Notice */}
       {permissionState === "denied" && (
         <div className="bg-amber-50/90 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-900 shadow-xs">
           <div className="flex items-start gap-3">
@@ -578,7 +549,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       )}
 
-      {/* 4. Permission Needed Prompt (if opted in, active, but permission not yet asked) */}
       {permissionState === "prompt" && autoTrackingEnabled && lifecycle.isOngoing && !isLiveTracking && (
         <div className="bg-sky-50/90 border border-sky-200 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-sky-950 shadow-xs">
           <div className="flex items-start gap-3">
@@ -607,7 +577,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       )}
 
-      {/* 5. Pre-Trip Standby Banner */}
       {!lifecycle.isOngoing && !lifecycle.isCompleted && (
         <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl flex items-center gap-3 text-slate-700 shadow-xs">
           <Compass className="w-5 h-5 text-brand shrink-0" />
@@ -628,7 +597,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       )}
 
-      {/* 6. Journey Ended Notice */}
       {lifecycle.isCompleted && (
         <div className="bg-purple-50 border border-purple-200 p-4 rounded-2xl flex items-center gap-3 text-purple-900 shadow-xs">
           <CheckCircle2 className="w-5 h-5 text-purple-600 shrink-0" />
@@ -642,7 +610,6 @@ const LiveTrackingTab = ({ journey, currentUserId, onRefreshJourney }) => {
         </div>
       )}
 
-      {/* 7. Ola/Uber Interactive Live Map */}
       <JourneyLiveMap
         journey={{ ...journey, currentUser: user }}
         currentLocation={currentLocation}

@@ -45,7 +45,6 @@ const postSchema = new mongoose.Schema(
     trim: true
   }],
 
-
   image: {
     type: String,
     default: ""
@@ -60,7 +59,6 @@ const postSchema = new mongoose.Schema(
   {
     type: String
   }],
-
 
   mediaType: {
     type: String,
@@ -106,7 +104,6 @@ const postSchema = new mongoose.Schema(
     ref: "User"
   }],
 
-
   journeyId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Journey",
@@ -129,7 +126,6 @@ const postSchema = new mongoose.Schema(
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   comments: [
   {

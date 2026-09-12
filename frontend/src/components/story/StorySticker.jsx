@@ -26,12 +26,10 @@ const StorySticker = ({
           <X className="w-3.5 h-3.5" />
         </button>}
 
-
       {isEdit &&
     <div className="absolute -bottom-4 bg-black/50 text-white text-[10px] px-2 py-0.5 rounded-full opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap">
           Drag to move • Scroll to resize
         </div>}
-
 
       {sticker.type === 'text' &&
     <div
@@ -42,7 +40,6 @@ const StorySticker = ({
           <p className="whitespace-pre-wrap text-4xl font-bold drop-shadow-md leading-tight">{sticker.text}</p>
         </div>}
 
-
       {sticker.type === 'location' &&
     <div
     onClick={() => isEdit && onLocationClick && onLocationClick()}
@@ -52,10 +49,8 @@ const StorySticker = ({
           <span className="font-bold text-text-primary text-sm whitespace-nowrap">{sticker.text || sticker.emoji || "Location"}</span>
         </div>}
 
-
       {sticker.type === 'emoji' &&
     <div className="text-7xl drop-shadow-xl select-none leading-none">{sticker.emoji || sticker.text || "😊"}</div>}
-
 
       {sticker.type === 'music' &&
     <div
@@ -83,7 +78,6 @@ const StorySticker = ({
         </div>}
 
     </div>;
-
 
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -131,7 +125,6 @@ const StorySticker = ({
       </motion.div>);
 
   }
-
 
   return (
     <motion.div

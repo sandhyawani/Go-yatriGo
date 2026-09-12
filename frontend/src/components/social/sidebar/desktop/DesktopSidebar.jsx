@@ -30,13 +30,10 @@ const DesktopSidebar = () => {
     <aside className="hidden lg:flex flex-col w-[240px] xl:w-[252px] shrink-0 h-screen py-3 pl-3 pr-1.5 sticky top-0 z-50 select-none">
       <nav className="flex flex-col h-full bg-white/80 backdrop-blur-2xl border border-white/80 shadow-[0_10px_35px_-5px_rgba(15,23,42,0.06),0_1px_3px_rgba(15,23,42,0.03)] rounded-[26px] p-3 justify-between transition-all relative">
         
-        {/* Top Navigation */}
         <div className="flex flex-col">
           <DesktopNav />
         </div>
 
-
-        {/* Bottom Section: Profile & User Menu */}
         <div className="flex flex-col gap-1.5 mt-auto pt-3 border-t border-slate-200/60">
           <Link
             to={myId ? `/profile/${myId}` : "/profile"}
@@ -77,5 +74,4 @@ const DesktopSidebar = () => {
 };
 
 export default React.memo(DesktopSidebar);
-
-
+

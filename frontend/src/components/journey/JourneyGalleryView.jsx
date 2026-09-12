@@ -11,12 +11,12 @@ Play } from
 "lucide-react";
 import axiosInstance from "../../api/axios";
 import { showToast } from "../../utils/showToast";
+import { toHttps } from "../../utils/toHttps";
 
 const JourneyGalleryView = ({ journeyId }) => {
   const [gallery, setGallery] = useState([]);
   const [filter, setFilter] = useState("all");
   const [isModalOpen, setIsModalOpen] = useState(false);
-
 
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState("");
@@ -241,7 +241,7 @@ const JourneyGalleryView = ({ journeyId }) => {
                 {isVideo ?
               <div className="w-full h-full relative flex items-center justify-center bg-brand">
                     <video
-                src={item.mediaUrl}
+                src={toHttps(item.mediaUrl)}
                 className="w-full h-full object-cover opacity-85"
                 muted
                 playsInline
@@ -257,7 +257,7 @@ const JourneyGalleryView = ({ journeyId }) => {
 
               <div className="w-full h-full relative">
                     <img
-                src={item.mediaUrl}
+                src={toHttps(item.mediaUrl)}
                 alt={item.caption || "Gallery item"}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
 
@@ -265,7 +265,6 @@ const JourneyGalleryView = ({ journeyId }) => {
                       <Camera className="w-3 h-3 text-slate-300" /> Photo
                     </span>
                   </div>}
-
 
                 <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 flex flex-col justify-end">
                   <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded bg-brand text-white w-max mb-1.5">
@@ -402,13 +401,11 @@ const JourneyGalleryView = ({ journeyId }) => {
                   className="w-full max-h-[280px] object-contain bg-black"
                   style={{ minHeight: "200px" }} /> :
 
-
                   <img
                   src={previewUrl}
                   alt="Preview"
                   className="w-full object-contain max-h-[280px] bg-background"
                   style={{ minHeight: "200px", display: "block" }} />}
-
 
                       {!loading && !uploadSuccess &&
                   <button
@@ -435,7 +432,6 @@ const JourneyGalleryView = ({ journeyId }) => {
                       </div>
                     </div>
                   </div>}
-
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
@@ -480,7 +476,6 @@ const JourneyGalleryView = ({ journeyId }) => {
 
                     </div>
                   </div>}
-
 
                 {uploadSuccess &&
               <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 flex items-center justify-center gap-2.5 text-emerald-600 text-xs font-black animate-scale-in">

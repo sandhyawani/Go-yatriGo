@@ -20,6 +20,7 @@ import {
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../../utils/avatar";
+import { toHttps } from "../../../utils/toHttps";
 import ChangeCoverModal from "../../modals/ChangeCoverModal";
 
 export const ProfileMemoryCard = ({
@@ -62,13 +63,13 @@ export const ProfileMemoryCard = ({
   const postId = (currentPost._id || currentPost.id)?.toString();
   const isAudioPlaying = Boolean(postId && playingAudioId === postId);
 
-  // Extract cover/media
-  const coverUrl =
+  const coverUrl = toHttps(
     currentPost.image ||
     currentPost.mediaUrl ||
     currentPost.img ||
     (Array.isArray(currentPost.mediaUrls) && currentPost.mediaUrls[0]) ||
-    "";
+    ""
+  );
 
   const likesCount = Array.isArray(currentPost.likes)
     ? currentPost.likes.length
@@ -83,7 +84,6 @@ export const ProfileMemoryCard = ({
       ? currentPost.comments.length
       : totalCommentsCount || 0;
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -104,17 +104,19 @@ export const ProfileMemoryCard = ({
     currentPost.userId?.username ||
     "Traveler";
 
-  const authorAvatar =
+  const authorAvatar = toHttps(
     currentPost.userPic ||
     currentPost.userId?.pic ||
     currentPost.userId?.avatar ||
-    getAvatarUrl(currentPost.userId || currentPost);
+    getAvatarUrl(currentPost.userId || currentPost)
+  );
 
-  const audioSrc =
+  const audioSrc = toHttps(
     currentPost.music?.preview ||
     currentPost.audio ||
     currentPost.audioUrl ||
-    currentPost.songUrl;
+    currentPost.songUrl
+  );
 
   const songTitle =
     currentPost.music?.title ||
@@ -144,7 +146,6 @@ export const ProfileMemoryCard = ({
     ? moment(currentPost.createdAt).format("MMM D, YYYY")
     : null;
 
-  // ─── SINGLE VS DOUBLE CLICK / TAP COORDINATOR ─────────────────────
   const cardRef = useRef(null);
   const clickTimerRef = useRef(null);
   const lastTapRef = useRef({ time: 0, x: 0, y: 0 });
@@ -164,12 +165,10 @@ export const ProfileMemoryCard = ({
 
   const triggerFeltAction = (tapPoint) => {
     const now = Date.now();
-    // Guard against rapid duplicate triggers (350ms cooldown) and ongoing loading
     if (now - lastFeltTriggerTimeRef.current < 350) return;
     if (postId && feltLoadingMap?.[postId]) return;
     lastFeltTriggerTimeRef.current = now;
 
-    // Position floating heart animation safely within card bounds
     const safePoint = {
       x: Math.max(15, Math.min(85, tapPoint?.x ?? 50)),
       y: Math.max(15, Math.min(85, tapPoint?.y ?? 50)),
@@ -185,27 +184,23 @@ export const ProfileMemoryCard = ({
       setHeartAnim((prev) => (prev?.key === now ? null : prev));
     }, 750);
 
-    // Invoke existing handleFelt exactly once — single source of truth for optimistic updates and API requests
     if (handleFelt && postId) {
       handleFelt(postId);
     }
   };
 
   const handleMouseDown = (e) => {
-    // Prevent browser text selection when double clicking
     if (e.detail > 1) {
       e.preventDefault();
     }
   };
 
   const handleClick = (e) => {
-    // If recently handled by touch event on mobile, ignore synthetic click
     if (Date.now() - lastTouchHandledTimeRef.current < 500) {
       return;
     }
 
     if (e.detail === 2) {
-      // Desktop double-click
       if (clickTimerRef.current) {
         clearTimeout(clickTimerRef.current);
         clickTimerRef.current = null;
@@ -222,7 +217,6 @@ export const ProfileMemoryCard = ({
       return;
     }
 
-    // First click: wait briefly for possible second click
     if (clickTimerRef.current) {
       clearTimeout(clickTimerRef.current);
     }
@@ -266,7 +260,6 @@ export const ProfileMemoryCard = ({
     const dx = Math.abs(touch.clientX - touchStartRef.current.x);
     const dy = Math.abs(touch.clientY - touchStartRef.current.y);
 
-    // Cancel tap detection if user moves finger > 8px (scrolling)
     if (dx > 8 || dy > 8) {
       touchStartRef.current.isScrolling = true;
       if (clickTimerRef.current) {
@@ -279,7 +272,6 @@ export const ProfileMemoryCard = ({
   const handleTouchEnd = (e) => {
     lastTouchHandledTimeRef.current = Date.now();
 
-    // If scrolling, do not trigger single tap or double tap
     if (touchStartRef.current.isScrolling) {
       return;
     }
@@ -288,7 +280,6 @@ export const ProfileMemoryCard = ({
     const now = Date.now();
     const touchDuration = now - touchStartRef.current.time;
 
-    // Ignore long presses (> 500ms)
     if (touchDuration > 500) return;
 
     const lastTap = lastTapRef.current;
@@ -296,7 +287,6 @@ export const ProfileMemoryCard = ({
     const dx = Math.abs(touch.clientX - lastTap.x);
     const dy = Math.abs(touch.clientY - lastTap.y);
 
-    // Double-tap detected (< 300ms, within 32px distance)
     if (timeSinceLastTap < 300 && dx < 32 && dy < 32) {
       if (clickTimerRef.current) {
         clearTimeout(clickTimerRef.current);
@@ -314,7 +304,6 @@ export const ProfileMemoryCard = ({
 
       triggerFeltAction(tapPoint);
     } else {
-      // First tap of potential double tap
       lastTapRef.current = {
         time: now,
         x: touch.clientX,
@@ -346,7 +335,6 @@ export const ProfileMemoryCard = ({
         style={{ touchAction: "manipulation" }}
         className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-text-primary select-none"
       >
-        {/* Double-tap / Double-click Heart / Felt Animation Overlay */}
         <AnimatePresence>
           {(heartAnim || (journeyLikeAnim?.postId === postId && journeyLikeAnim)) && (
             <motion.div
@@ -389,7 +377,6 @@ export const ProfileMemoryCard = ({
             </motion.div>
           )}
         </AnimatePresence>
-        {/* ─── 1. MEMORY HEADER ────────────────────────────────────────── */}
         <div className="flex items-center justify-between gap-2 p-3 sm:p-3.5 pb-2 select-none border-b border-slate-100/70">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <img
@@ -428,7 +415,6 @@ export const ProfileMemoryCard = ({
             </div>
           </div>
 
-          {/* Three dot owner menu */}
           <div className="relative shrink-0" ref={menuRef}>
             <button
               type="button"
@@ -518,7 +504,6 @@ export const ProfileMemoryCard = ({
           </div>
         </div>
 
-        {/* ─── 2. MUSIC BAR (IF ATTACHED) ──────────────────────────────── */}
         {(audioSrc || songTitle) && (
           <div className="px-3 pt-2 pb-0.5 select-none">
             <div className="flex items-center justify-between rounded-xl bg-primary-50/70 border border-primary-100/70 px-2.5 py-1.5">
@@ -564,7 +549,6 @@ export const ProfileMemoryCard = ({
           </div>
         )}
 
-        {/* ─── 3. COVER IMAGE (16:9 Aspect Ratio) ───────────────────────── */}
         <div className="p-3 pt-2 select-none">
           <div className="group/cover relative w-full aspect-[16/9] bg-background rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80">
             {coverUrl ? (
@@ -594,7 +578,6 @@ export const ProfileMemoryCard = ({
               </div>
             )}
 
-            {/* Owner Hover "Change Cover" overlay button */}
             {isCreator && (
               <button
                 type="button"
@@ -611,7 +594,6 @@ export const ProfileMemoryCard = ({
           </div>
         </div>
 
-        {/* ─── 4. MEMORY CONTENT (Title, Caption, Location, Date) ──────── */}
         <div className="px-3.5 pb-2 text-left space-y-1.5 font-sans">
           {currentPost.title && (
             <h3 className="text-xs sm:text-sm font-bold text-text-primary line-clamp-1 font-heading leading-tight">
@@ -625,7 +607,6 @@ export const ProfileMemoryCard = ({
             </p>
           )}
 
-          {/* Location & Date Pills */}
           <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-text-muted">
             {currentPost.location && (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-primary truncate max-w-[140px]">
@@ -648,10 +629,8 @@ export const ProfileMemoryCard = ({
           </div>
         </div>
 
-        {/* ─── 5. SOCIAL ACTIONS FOOTER ─────────────────────────────────── */}
         <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-slate-100 bg-slate-50/60 select-none mt-auto font-sans">
           <div className="flex items-center gap-4">
-            {/* Like / Felt */}
             <button
               type="button"
               disabled={Boolean(postId && feltLoadingMap?.[postId])}
@@ -675,7 +654,6 @@ export const ProfileMemoryCard = ({
               <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
             </button>
 
-            {/* Comment */}
             <button
               type="button"
               onClick={(e) => {
@@ -693,7 +671,6 @@ export const ProfileMemoryCard = ({
               <span>{commentsCount}</span>
             </button>
 
-            {/* Share */}
             <button
               type="button"
               onClick={(e) => {
@@ -707,7 +684,6 @@ export const ProfileMemoryCard = ({
             </button>
           </div>
 
-          {/* Save */}
           <button
             type="button"
             disabled={saveLoadingMap[postId]}
@@ -731,7 +707,6 @@ export const ProfileMemoryCard = ({
         </div>
       </article>
 
-      {/* Change Cover Modal */}
       {showChangeCoverModal && (
         <ChangeCoverModal
           isOpen={showChangeCoverModal}

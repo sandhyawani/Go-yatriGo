@@ -119,7 +119,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
 
   return (
     <div className="space-y-3 font-sans">
-      {/* Section Header */}
       <div className="flex items-center justify-between pl-1">
         <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5 font-heading">
           <Calendar className="w-3.5 h-3.5 text-brand" />
@@ -137,7 +136,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
         </Link>
       </div>
 
-      {/* Trips Grid / List */}
       <div className={`grid gap-4 ${upcomingTrips.length > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1"}`}>
         {upcomingTrips.map((trip) => {
           const tripId = trip._id || trip.id;
@@ -181,9 +179,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                 onClick={handleCardClick}
                 className="overflow-hidden group border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between rounded-3xl bg-white cursor-pointer"
               >
-                {/* =====================================================================
-                    TOP HERO IMAGE BANNER: HIGH-END EDITORIAL VISUAL
-                    ===================================================================== */}
                 <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-950">
                   <img
                     src={tripCover}
@@ -196,12 +191,9 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                     }}
                   />
 
-                  {/* Cinematic Vignette Overlay */}
                   <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-black/25 pointer-events-none" />
 
-                  {/* Top Floating Glass Badges */}
                   <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-10 gap-2">
-                    {/* Category & Transport Pill */}
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-white bg-black/45 backdrop-blur-md border border-white/20 shadow-xs">
                       {getTransportIcon(trip.transportation)}
                       <span className="capitalize">
@@ -209,7 +201,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                       </span>
                     </div>
 
-                    {/* Countdown Pill */}
                     {countdown && (
                       <div
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur-md border shadow-xs ${countdown.style}`}
@@ -223,7 +214,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                     )}
                   </div>
 
-                  {/* Bottom Overlay: Route, Title & Schedule Badges on Image */}
                   <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5 z-10 text-white space-y-1.5">
                     <div className="space-y-0.5">
                       <div className="inline-flex items-center gap-1 text-sky-200 text-xs font-semibold tracking-wide">
@@ -241,7 +231,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                       </h4>
                     </div>
 
-                    {/* Departure Date & Trip Days directly on image */}
                     <div className="flex items-center gap-2 text-xs flex-wrap">
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-white bg-black/50 backdrop-blur-md border border-white/20 shadow-xs">
                         <Calendar className="w-3 h-3 text-sky-300 shrink-0" />
@@ -256,11 +245,7 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                   </div>
                 </div>
 
-                {/* =====================================================================
-                    CARD BODY: TRAVELERS & QUICK ACTIONS (No separate date row)
-                    ===================================================================== */}
                 <div className="px-4 py-3 sm:px-4.5 sm:py-3.5 flex items-center justify-between gap-2 bg-white">
-                  {/* Travelers Avatar Stack */}
                   <div
                     className="flex items-center gap-2 group/travelers"
                     title={`${memberCount} companions traveling`}
@@ -300,9 +285,7 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                     </span>
                   </div>
 
-                  {/* Action Controls */}
                   <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Share Button */}
                       <button
                         type="button"
                         onClick={(e) => handleShare(e, trip, isBuddy, tripId)}
@@ -316,7 +299,6 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                         )}
                       </button>
 
-                      {/* Primary Action Button */}
                       <button
                         type="button"
                         onClick={(e) => {

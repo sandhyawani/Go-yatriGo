@@ -82,13 +82,11 @@ const travelGroupSchema = new mongoose.Schema(
     }
   }],
 
-
   bannedUsers: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   warnings: [
   {
@@ -107,7 +105,6 @@ const travelGroupSchema = new mongoose.Schema(
       default: Date.now
     }
   }],
-
 
   activityLogs: [
   {
@@ -132,7 +129,6 @@ const travelGroupSchema = new mongoose.Schema(
     }
   }],
 
-
   category: {
     type: String,
     default: "Adventure",
@@ -151,13 +147,11 @@ const travelGroupSchema = new mongoose.Schema(
     trim: true
   }],
 
-
   likes: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   allowJoinAfterStart: {
     type: Boolean,

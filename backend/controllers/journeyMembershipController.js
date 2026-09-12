@@ -12,16 +12,15 @@ const User = require("../models/User");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
 const { isBlockedPair } = require("../utils/blockHelper");
 const { isValidObjectId } = require("../utils/validateObjectId");
-const {
-  canJoinJourney,
+const { canJoinJourney,
   canInviteMembers,
   canLeaveJourney,
   canAssignCoLeader,
   canRemoveCoLeader,
   canWarnMember
 } = require("../services/journeyEligibility");
+const { toHttps, normalizeUserUrls, normalizeJourneyUrls } = require("../utils/toHttps");
 
-// Revoke Socket.IO room access when a user leaves or is removed.
 const revokeSocketRoomAccess = (req, userId, roomId) => {
   try {
     const io = req.app.get("io");
@@ -179,7 +178,6 @@ exports.acceptInvitation = async (req, res) => {
 
       const targetUserId = invitation.type === "request" ? invitation.inviterId : invitation.inviteeId;
 
-      // Atomically serialize join operations for this user across concurrent requests
       if (session) {
         await User.findByIdAndUpdate(targetUserId, { $inc: { __v: 1 } }, sessionOpt);
       }
@@ -281,7 +279,6 @@ exports.acceptInvitation = async (req, res) => {
         link: `/social/journeys/${journey._id}`
       }, io).catch(() => {});
 
-      // Also notify squad members about the new member
       (journey.members || []).forEach((m) => {
         const memId = (m.user?._id || m.user).toString();
         if (memId !== userId.toString() && memId !== receiverTarget) {
@@ -659,7 +656,7 @@ exports.removeMember = async (req, res) => {
       link: `/social/journeys`
     }, io).catch(() => {});
 
-    res.json({ success: true, message: "Member removed successfully", journey });
+    res.json({ success: true, message: "Member removed successfully", journey: normalizeJourneyUrls(journey) });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -713,7 +710,7 @@ exports.updateMemberRole = async (req, res) => {
       link: `/social/journeys/${journey._id}`
     }, io).catch(() => {});
 
-    res.json({ success: true, message: `Member role updated to ${role}`, journey });
+    res.json({ success: true, message: `Member role updated to ${role}`, journey: normalizeJourneyUrls(journey) });
   } catch (error) {
     console.error("Error updating role:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -990,7 +987,14 @@ exports.getJourneyJoinRequests = async (req, res) => {
     }
 
     const requests = await JourneyJoinRequest.find({ journeyId }).populate("userId", "name profilePic username");
-    res.json({ success: true, requests });
+    const normalizedRequests = requests.map((r) => {
+      const rObj = r.toObject ? r.toObject() : { ...r };
+      if (rObj.userId && typeof rObj.userId === "object") {
+        rObj.userId = normalizeUserUrls(rObj.userId);
+      }
+      return rObj;
+    });
+    res.json({ success: true, requests: normalizedRequests });
   } catch (error) {
     console.error("Error fetching join requests:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -1065,7 +1069,6 @@ exports.acceptJourneyJoinRequest = async (req, res) => {
         return res.status(400).json({ success: false, code: "REQUEST_NOT_PENDING", message: "Request is not pending" });
       }
 
-      // Atomically serialize join operations for this user across concurrent requests
       if (session) {
         await User.findByIdAndUpdate(joinRequest.userId, { $inc: { __v: 1 } }, sessionOpt);
       }
@@ -1184,7 +1187,7 @@ exports.acceptJourneyJoinRequest = async (req, res) => {
         }
       });
 
-      return res.json({ success: true, message: "Request accepted successfully", journey: updatedJourney });
+      return res.json({ success: true, message: "Request accepted successfully", journey: normalizeJourneyUrls(updatedJourney) });
     } catch (error) {
       if (session) {
         try { await session.abortTransaction(); session.endSession(); } catch (e) {}

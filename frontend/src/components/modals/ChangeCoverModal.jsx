@@ -87,10 +87,12 @@ export const ChangeCoverModal = ({
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const uploadedUrl =
-        uploadRes.data?.url ||
+      const rawUrl =
         uploadRes.data?.secure_url ||
+        uploadRes.data?.url ||
         uploadRes.data?.mediaUrl;
+
+      const uploadedUrl = rawUrl ? rawUrl.replace(/^http:\/\//i, "https://") : "";
 
       if (!uploadedUrl) {
         throw new Error("Failed to upload image.");
@@ -146,7 +148,6 @@ export const ChangeCoverModal = ({
           className="relative w-full max-w-md rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl z-10 text-text-primary overflow-hidden"
           onClick={(e) => e.stopPropagation()}
         >
-          {/* Header */}
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h3 className="text-base font-bold text-text-primary font-heading">
@@ -167,9 +168,7 @@ export const ChangeCoverModal = ({
           </div>
 
           <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            {/* Comparison / Previews */}
             <div className="grid grid-cols-2 gap-3">
-              {/* Current cover preview */}
               <div className="space-y-1.5">
                 <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
                   Current Cover
@@ -189,7 +188,6 @@ export const ChangeCoverModal = ({
                 </div>
               </div>
 
-              {/* New Selected cover preview */}
               <div className="space-y-1.5">
                 <span className="text-[11px] font-bold text-primary-600 uppercase tracking-wider block">
                   New Preview
@@ -211,7 +209,6 @@ export const ChangeCoverModal = ({
               </div>
             </div>
 
-            {/* Drop Zone */}
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -248,7 +245,6 @@ export const ChangeCoverModal = ({
               </div>
             </div>
 
-            {/* Modal Actions */}
             <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-slate-100">
               <button
                 type="button"

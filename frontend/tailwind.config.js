@@ -383,8 +383,6 @@ module.exports = {
   plugins: [
     function ({ addUtilities }) {
       addUtilities({
-        /* Safe area */
-
         ".pb-safe": {
           paddingBottom: "env(safe-area-inset-bottom, 0px)",
         },
@@ -397,8 +395,6 @@ module.exports = {
           paddingBottom:
             "calc(64px + env(safe-area-inset-bottom, 0px))",
         },
-
-        /* Hidden scrollbar */
 
         ".scrollbar-none": {
           "-ms-overflow-style": "none",

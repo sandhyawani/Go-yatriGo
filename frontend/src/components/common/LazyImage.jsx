@@ -23,7 +23,6 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
         exit={{ opacity: 0 }}
         className="absolute inset-0 skeleton-pulse bg-slate-200 z-10" />}
 
-
       </AnimatePresence>
       
       {hasError ?
@@ -46,7 +45,6 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
       onError={() => setHasError(true)}
       loading="lazy"
       className="w-full h-full object-cover" />}
-
 
     </div>);
 

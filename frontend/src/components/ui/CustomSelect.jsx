@@ -81,7 +81,6 @@ const CustomSelect = ({
     });
   }, [placement]);
 
-
   useLayoutEffect(() => {
     if (isOpen) {
       updateDropdownPosition();

@@ -90,7 +90,6 @@ export const LocationSelectModal = ({
   const modalContent = (
     <AnimatePresence>
       <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4">
-        {/* Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -99,7 +98,6 @@ export const LocationSelectModal = ({
           className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
         />
 
-        {/* Modal / Bottom-sheet Card */}
         <motion.div
           initial={{ y: "100%", opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
@@ -107,7 +105,6 @@ export const LocationSelectModal = ({
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
           className="relative z-10 w-full sm:max-w-md bg-white rounded-t-[1.75rem] sm:rounded-2xl border border-slate-100 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         >
-          {/* Header */}
           <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand flex items-center justify-center">
@@ -131,7 +128,6 @@ export const LocationSelectModal = ({
             </button>
           </div>
 
-          {/* Form Content */}
           <form onSubmit={handleSave} className="p-5 space-y-4 overflow-y-auto">
             {error && (
               <div className="p-2.5 rounded-xl bg-red-50 border border-red-200/60 text-red-600 text-xs font-semibold">
@@ -139,7 +135,6 @@ export const LocationSelectModal = ({
               </div>
             )}
 
-            {/* State Select */}
             <div className="space-y-1.5">
               <label htmlFor="modal-state-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
                 State
@@ -162,7 +157,6 @@ export const LocationSelectModal = ({
               </div>
             </div>
 
-            {/* City Select */}
             <div className="space-y-1.5">
               <label htmlFor="modal-city-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
                 City
@@ -191,7 +185,6 @@ export const LocationSelectModal = ({
               Your location is optional and can be updated anytime from your profile.
             </p>
 
-            {/* Actions */}
             <div className="pt-2 flex items-center justify-end gap-2.5">
               <button
                 type="button"

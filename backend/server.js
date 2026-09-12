@@ -104,7 +104,6 @@ const corsOptions = {
   exposedHeaders: ["set-cookie"]
 };
 
-// 1. Enable CORS before all other middlewares and rate limiters
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
@@ -154,6 +153,18 @@ app.use(cookieParser());
 
 app.use(xss());
 app.use(hpp());
+
+const { sanitizeCloudinaryUrls } = require("./utils/toHttps");
+app.use((req, res, next) => {
+  const originalJson = res.json;
+  res.json = function (body) {
+    if (body) {
+      body = sanitizeCloudinaryUrls(body);
+    }
+    return originalJson.call(this, body);
+  };
+  next();
+});
 
 app.use(
 morgan(
@@ -214,7 +225,6 @@ app.use("/api/journeys", require("./routes/journeyRoutes"));
 app.use("/api/music", require("./routes/musicRoute"));
 app.use("/api/trip-mates", require("./routes/tripMateRoutes"));
 
-// Thoughts and memories route aliases
 const { verifyToken: serverVerifyToken } = require("./middleware/verifyToken");
 const { getMemoryComments: serverGetMemoryComments } = require("./controllers/memoryController");
 app.get("/api/thoughts/:id", serverVerifyToken, serverGetMemoryComments);
@@ -540,7 +550,6 @@ io.on("connection", (socket) => {
     }
   });
 
-  // Journey Live Trip Tracking isolated socket handlers
   const { registerJourneyTrackingHandlers } = require("./socket/journeyTrackingSocket");
   registerJourneyTrackingHandlers(io, socket);
 

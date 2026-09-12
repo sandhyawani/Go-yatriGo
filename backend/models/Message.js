@@ -56,20 +56,17 @@ const messageSchema = new mongoose.Schema(
     ref: "User"
   }],
 
-
   seenBy: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
 
-
   deliveredTo: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   deliveredAt: {
     type: Date,
@@ -95,13 +92,11 @@ const messageSchema = new mongoose.Schema(
     }
   }],
 
-
   deletedFor: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   isUnsent: {
     type: Boolean,

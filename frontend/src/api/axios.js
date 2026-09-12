@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { sanitizeCloudinaryUrls } from '../utils/toHttps';
 
 const STORAGE_KEY = 'user';
 export const AUTH_UNAUTHORIZED_EVENT = 'auth:unauthorized';
@@ -81,14 +82,17 @@ axiosInstance.interceptors.request.use(
 );
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    if (response && response.data) {
+      response.data = sanitizeCloudinaryUrls(response.data);
+    }
+    return response;
+  },
   (error) => {
     if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
       const errorMsg = error.response?.data?.message || error.message;
       console.warn(`[Axios 401 Unauthorized] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, errorMsg);
 
-      // Only treat as unauthorized if the user was actually logged in (had a token).
-      // This prevents register/upload 401 errors from incorrectly clearing session state.
       let hadToken = false;
       try {
         const userStr = localStorage.getItem(STORAGE_KEY);

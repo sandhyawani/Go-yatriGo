@@ -14,6 +14,7 @@ const {
   getBlockedUserIds,
   getBlockFilter
 } = require("../utils/blockHelper");
+const { toHttps, normalizePostUrls, normalizeUserUrls } = require("../utils/toHttps");
 
 exports.createMemory = async (req, res) => {
   try {
@@ -34,18 +35,19 @@ exports.createMemory = async (req, res) => {
       hideLikes
     } = req.body;
 
-    const primaryMediaUrl = mediaUrl || image || img || "";
+    const primaryMediaUrl = toHttps(mediaUrl || image || img || "");
     const normalizedMediaUrls = Array.isArray(mediaUrls) && mediaUrls.length > 0 ?
-      mediaUrls :
+      mediaUrls.map((u) => toHttps(u)) :
       primaryMediaUrl ? [primaryMediaUrl] :
       [];
     const userName = req.user.name || req.user.username || "Traveler";
-    const userPic =
+    const userPic = toHttps(
       req.user.profilePic ||
       req.user.pic ||
       req.user.img ||
       req.user.avatar ||
-      "";
+      ""
+    );
 
     if (!primaryMediaUrl && !caption) {
       return res.status(400).json({
@@ -79,10 +81,12 @@ exports.createMemory = async (req, res) => {
       "name username pic img avatar"
     );
 
+    const safePost = normalizePostUrls(populatedPost);
+
     res.status(201).json({
       success: true,
-      memory: populatedPost,
-      post: populatedPost
+      memory: safePost,
+      post: safePost
     });
   } catch (error) {
     res.status(500).json({
@@ -121,7 +125,6 @@ exports.getAllMemories = async (req, res) => {
       const isSelf = authUserId && authUserId.toString() === filterUserId.toString();
 
       if (isSelf) {
-        // Direct query for own profile without redundant block/privacy DB roundtrips
         query.userId = new mongoose.Types.ObjectId(filterUserId);
       } else {
         const authCheckStart = Date.now();
@@ -232,11 +235,12 @@ exports.getAllMemories = async (req, res) => {
       };
     });
 
-    const hasMore = skip + formattedPosts.length < totalMemoryCount;
+    const normalizedFormattedPosts = formattedPosts.map(normalizePostUrls);
+    const hasMore = skip + normalizedFormattedPosts.length < totalMemoryCount;
 
     return res.status(200).json({
       success: true,
-      memories: formattedPosts,
+      memories: normalizedFormattedPosts,
       totalMemories: totalMemoryCount,
       hasMore,
       pagination: {
@@ -273,10 +277,12 @@ exports.getMemoryById = async (req, res) => {
       return res.status(403).json({ success: false, message: "Forbidden: Access denied to private content." });
     }
 
+    const safePost = normalizePostUrls(post);
+
     res.status(200).json({
       success: true,
-      memory: post,
-      post
+      memory: safePost,
+      post: safePost
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -292,7 +298,6 @@ exports.toggleLikeMemory = async (req, res) => {
 
     let post = await Post.findById(req.params.id);
 
-    // Fallback: in case a TravelGroup or Journey ID was passed to memory like
     if (!post) {
       let trip = await TravelGroup.findById(req.params.id);
       if (!trip) {
@@ -404,11 +409,12 @@ exports.commentOnMemory = async (req, res) => {
 
     const currentUser = await User.findById(userId);
 
+    const commentUserPic = toHttps(currentUser.pic || currentUser.avatar || "");
     const comment = new Comment({
       postId: post._id,
       userId,
       userName: currentUser.name,
-      userPic: currentUser.pic || currentUser.avatar || "",
+      userPic: commentUserPic,
       text: text.trim()
     });
 
@@ -437,7 +443,8 @@ exports.commentOnMemory = async (req, res) => {
       success: true,
       comment: {
         ...comment.toObject(),
-        userId: { name: currentUser.name, pic: currentUser.pic || currentUser.avatar }
+        userPic: commentUserPic,
+        userId: { name: currentUser.name, pic: commentUserPic }
       }
     });
   } catch (error) {
@@ -529,7 +536,10 @@ exports.getSavedPosts = async (req, res) => {
       populate: { path: "userId", select: "name username pic img avatar" }
     });
 
-    const posts = savedDocs.map((doc) => doc.postId).filter(Boolean);
+    const posts = savedDocs
+      .map((doc) => doc.postId)
+      .filter(Boolean)
+      .map(normalizePostUrls);
 
     res.status(200).json({
       success: true,
@@ -585,7 +595,6 @@ exports.updateMemory = async (req, res) => {
     if (req.body.title !== undefined) post.title = req.body.title;
     if (req.body.tags !== undefined && Array.isArray(req.body.tags)) post.tags = req.body.tags;
 
-    // Normalize cover/image fields
     const newCoverUrl = req.body.coverImage || req.body.image || req.body.mediaUrl || req.body.img;
     if (newCoverUrl) {
       post.image = newCoverUrl;
@@ -629,10 +638,12 @@ exports.updateMemory = async (req, res) => {
       commentsCount: Array.isArray(populatedPost.comments) ? populatedPost.comments.length : (populatedPost.commentsCount || 0)
     };
 
+    const safePost = normalizePostUrls(normalizedPost);
+
     res.status(200).json({
       success: true,
-      memory: normalizedPost,
-      post: normalizedPost
+      memory: safePost,
+      post: safePost
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -652,10 +663,12 @@ exports.getLikedPosts = async (req, res) => {
       "name username pic img avatar"
     );
 
+    const safePosts = (posts || []).map(normalizePostUrls);
+
     res.status(200).json({
       success: true,
-      posts,
-      memories: posts
+      posts: safePosts,
+      memories: safePosts
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -701,11 +714,20 @@ exports.getMemoryComments = async (req, res) => {
       }
     }
 
+    const normalizedComments = uniqueComments.map((c) => {
+      const cObj = { ...c };
+      if (cObj.userPic) cObj.userPic = toHttps(cObj.userPic);
+      if (cObj.userId && typeof cObj.userId === "object") {
+        cObj.userId = normalizeUserUrls(cObj.userId);
+      }
+      return cObj;
+    });
+
     res.status(200).json({
       success: true,
-      comments: uniqueComments,
-      thoughts: uniqueComments,
-      commentsCount: uniqueComments.length
+      comments: normalizedComments,
+      thoughts: normalizedComments,
+      commentsCount: normalizedComments.length
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message, comments: [], thoughts: [] });
@@ -757,14 +779,14 @@ exports.getFeltVibesCollection = async (req, res) => {
       title: p.title || p.caption?.substring(0, 50) || "Travel Memory",
       caption: p.caption || "",
       location: p.location || "",
-      mediaUrl: p.mediaUrl || p.image || (Array.isArray(p.mediaUrls) ? p.mediaUrls[0] : "") || "",
-      mediaUrls: p.mediaUrls && p.mediaUrls.length > 0 ? p.mediaUrls : (p.mediaUrl || p.image ? [p.mediaUrl || p.image] : []),
+      mediaUrl: toHttps(p.mediaUrl || p.image || (Array.isArray(p.mediaUrls) ? p.mediaUrls[0] : "") || ""),
+      mediaUrls: (p.mediaUrls && p.mediaUrls.length > 0 ? p.mediaUrls : (p.mediaUrl || p.image ? [p.mediaUrl || p.image] : [])).map(toHttps),
       mediaType: p.mediaType || "image",
       postType: p.postType || "travel_memory",
       type: "memory",
       likesCount: Array.isArray(p.likes) ? p.likes.length : 0,
       commentsCount: Array.isArray(p.comments) ? p.comments.length : 0,
-      author: p.userId || { name: p.userName || "Traveler", pic: p.userPic || "" },
+      author: p.userId && typeof p.userId === "object" ? normalizeUserUrls(p.userId) : { name: p.userName || "Traveler", pic: toHttps(p.userPic || "") },
       createdAt: p.createdAt
     }));
 
@@ -773,14 +795,14 @@ exports.getFeltVibesCollection = async (req, res) => {
       title: g.title || "Travel Group",
       caption: g.description || "",
       location: g.destination || g.from || "",
-      mediaUrl: g.coverImage || "",
-      mediaUrls: g.coverImage ? [g.coverImage] : [],
+      mediaUrl: toHttps(g.coverImage || ""),
+      mediaUrls: g.coverImage ? [toHttps(g.coverImage)] : [],
       mediaType: "image",
       postType: "group",
       type: "group",
       likesCount: Array.isArray(g.likes) ? g.likes.length : 0,
       commentsCount: 0,
-      author: g.host || { name: "Host", pic: "" },
+      author: g.host && typeof g.host === "object" ? normalizeUserUrls(g.host) : { name: "Host", pic: "" },
       createdAt: g.createdAt
     }));
 
@@ -789,14 +811,14 @@ exports.getFeltVibesCollection = async (req, res) => {
       title: j.title || "Journey",
       caption: j.description || "",
       location: j.destination || j.from || "",
-      mediaUrl: j.coverImage || "",
-      mediaUrls: j.coverImage ? [j.coverImage] : [],
+      mediaUrl: toHttps(j.coverImage || ""),
+      mediaUrls: j.coverImage ? [toHttps(j.coverImage)] : [],
       mediaType: "image",
       postType: "group",
       type: "group",
       likesCount: Array.isArray(j.likes) ? j.likes.length : 0,
       commentsCount: 0,
-      author: j.creator || { name: "Creator", pic: "" },
+      author: j.creator && typeof j.creator === "object" ? normalizeUserUrls(j.creator) : { name: "Creator", pic: "" },
       createdAt: j.createdAt
     }));
 
@@ -805,14 +827,14 @@ exports.getFeltVibesCollection = async (req, res) => {
       title: s.title || s.caption || "Dispatch Story",
       caption: s.caption || "",
       location: s.location || "",
-      mediaUrl: s.media || s.mediaUrl || s.image || "",
-      mediaUrls: s.media ? [s.media] : (s.mediaUrl || s.image ? [s.mediaUrl || s.image] : []),
+      mediaUrl: toHttps(s.media || s.mediaUrl || s.image || ""),
+      mediaUrls: (s.media ? [s.media] : (s.mediaUrl || s.image ? [s.mediaUrl || s.image] : [])).map(toHttps),
       mediaType: s.mediaType || "image",
       postType: "story",
       type: "story",
       likesCount: Array.isArray(s.reactions) ? s.reactions.length : 0,
       commentsCount: 0,
-      author: s.userId || { name: s.userName || "Traveler", pic: s.userPic || "" },
+      author: s.userId && typeof s.userId === "object" ? normalizeUserUrls(s.userId) : { name: s.userName || "Traveler", pic: toHttps(s.userPic || "") },
       createdAt: s.createdAt
     }));
 
@@ -875,10 +897,12 @@ exports.getFeltPostsByUserId = async (req, res) => {
       commentsCount: Array.isArray(post.comments) ? post.comments.length : (post.commentsCount || 0)
     }));
 
+    const safePosts = formattedPosts.map(normalizePostUrls);
+
     res.status(200).json({
       success: true,
-      posts: formattedPosts,
-      memories: formattedPosts
+      posts: safePosts,
+      memories: safePosts
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message, posts: [], memories: [] });

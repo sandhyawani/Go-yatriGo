@@ -24,7 +24,6 @@ const AdminUserList = ({ columns }) => {
   const initialFilter = searchParams.get("filter") || "all";
   const path = location.pathname.split("/")[1] || "users";
 
-  // Fetch users directory and moderation statistics
   const {
     data: usersData,
     loading: usersLoading,

@@ -46,7 +46,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
 
   return (
     <div className="mb-4 space-y-3">
-      {/* Warm Personal Greeting */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg sm:text-xl font-black text-text-primary tracking-tight font-heading flex items-center gap-2">
@@ -59,7 +58,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
         </div>
       </div>
 
-      {/* Sleek, Compact Stat Chips - Grid layout so no boxes get cut off */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
         {isLoading ? (
           Array.from({ length: 4 }).map((_, idx) => (
@@ -67,7 +65,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
           ))
         ) : (
           <>
-            {/* Current Trip Chip - Distinct Emerald / Live styling */}
             <button
               onClick={() => navigate("/social/journeys")}
               className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-surface hover:bg-emerald-50/70 border border-border-default hover:border-emerald-300 shadow-2xs hover:shadow-sm transition-all duration-200 ease-spring hover:-translate-y-0.5 active:scale-95 cursor-pointer w-full min-w-0"
@@ -81,7 +78,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
               </div>
             </button>
 
-            {/* Upcoming Trips Chip - Amber theme */}
             <button
               onClick={() => {
                 if (onUpcomingClick) {
@@ -101,7 +97,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
               </div>
             </button>
 
-            {/* Trip Mates Chip - Sky Blue theme */}
             <button
               onClick={() => navigate("/social/explore")}
               className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-surface hover:bg-sky-50/70 border border-border-default hover:border-sky-300 shadow-2xs hover:shadow-sm transition-all duration-200 ease-spring hover:-translate-y-0.5 active:scale-95 cursor-pointer w-full min-w-0"
@@ -115,7 +110,6 @@ const ExplorerDashboardWidget = ({ user, activeJourneysCount, onUpcomingClick })
               </div>
             </button>
 
-            {/* Badges Chip - Purple theme */}
             <button
               onClick={() => navigate("/profile")}
               className="group flex items-center gap-2 px-3 py-2 rounded-xl bg-surface hover:bg-purple-50/70 border border-border-default hover:border-purple-300 shadow-2xs hover:shadow-sm transition-all duration-200 ease-spring hover:-translate-y-0.5 active:scale-95 cursor-pointer w-full min-w-0"

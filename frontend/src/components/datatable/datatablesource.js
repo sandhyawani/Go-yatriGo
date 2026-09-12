@@ -1,6 +1,5 @@
 import React from "react";
 
-// Column definitions for Admin User Management Datatable
 export const userColumns = [
   {
     field: "Image",

@@ -99,7 +99,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Admin Routes */}
         <Route
           path="/admin"
           element={
@@ -189,7 +188,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* User Profiles & Contacts */}
         <Route
           path="/profile"
           element={
@@ -247,7 +245,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Travel Buddy Hub */}
         <Route
           path="/social/buddy"
           element={
@@ -281,7 +278,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Journeys & Travels */}
         <Route
           path="/social/journeys"
           element={
@@ -323,7 +319,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Chat */}
         <Route
           path="/social/chat"
           element={
@@ -341,7 +336,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Community & Vibes */}
         <Route
           path="/community"
           element={
@@ -375,7 +369,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Settings & Guidelines */}
         <Route
           path="/settings"
           element={
@@ -489,7 +482,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Safety & Support */}
         <Route
           path="/blocked-users"
           element={
@@ -523,7 +515,6 @@ const RouteTour = () => {
           }
         />
 
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       </motion.div>

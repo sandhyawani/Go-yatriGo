@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const Journey = require("../models/Journey");
 const JourneyMember = require("../models/JourneyMember");
 
-// Normalize ObjectId, populated user object, or ID string to string.
 const normalizeId = (val) => {
   if (!val) return "";
   if (typeof val === "object") {
@@ -49,7 +48,6 @@ const getOtherActiveMembers = (userId, journey) => {
 
 const TravelGroup = require("../models/TravelGroup");
 
-// Normalize a date to a calendar day string (YYYY-MM-DD)
 const toCalendarDayString = (val) => {
   if (!val) return "";
   const d = new Date(val);
@@ -57,7 +55,6 @@ const toCalendarDayString = (val) => {
   return d.toISOString().slice(0, 10);
 };
 
-// Dynamic timestamp date/time overlap check: existingStart < newEnd AND existingEnd > newStart
 const datesOverlap = (start1, end1, start2, end2) => {
   if (!start1 || !end1 || !start2 || !end2) return false;
 
@@ -93,7 +90,6 @@ const isActiveParticipant = (userId, journey, activeMemberJourneyIds = []) => {
   return false;
 };
 
-// Determine journey lifecycle status from dates and cancellation state without mutating the document.
 const getJourneyLifecycle = (journey, referenceDate = new Date()) => {
   if (!journey) {
     return {
@@ -176,7 +172,6 @@ const getJourneyLifecycle = (journey, referenceDate = new Date()) => {
 
 const getLifecycleStatus = (journey) => getJourneyLifecycle(journey).status;
 
-// Check if a user belongs to an active (ongoing) journey.
 const getUserActiveJourney = async (userId, excludeJourneyId = null, referenceDate = new Date(), session = null) => {
   const normUserId = normalizeId(userId);
   if (!normUserId) return null;
@@ -261,7 +256,6 @@ const getUserActiveJourney = async (userId, excludeJourneyId = null, referenceDa
   }
 };
 
-// Retrieve conflicting active/upcoming commitment for user, if any
 const getOverlappingCommitment = async (userId, startDate, endDate, excludeJourneyId = null, referenceDate = new Date(), session = null) => {
   const normUserId = normalizeId(userId);
   if (!normUserId || !startDate || !endDate) return null;
@@ -286,7 +280,6 @@ const getOverlappingCommitment = async (userId, startDate, endDate, excludeJourn
 
     const normExcludeId = excludeJourneyId ? normalizeId(excludeJourneyId) : null;
 
-    // 1. Check candidate Journeys
     const query = {
       status: { $nin: ["Completed", "completed", "Cancelled", "cancelled", "Archived", "archived"] },
       isCancelled: { $ne: true },
@@ -327,7 +320,6 @@ const getOverlappingCommitment = async (userId, startDate, endDate, excludeJourn
       }
     }
 
-    // 2. Check candidate TravelGroups (if not already represented as Journey)
     try {
       const tgQuery = {
         status: { $nin: ["Completed", "completed", "Cancelled", "cancelled", "Archived", "archived"] },
@@ -370,7 +362,6 @@ const getOverlappingCommitment = async (userId, startDate, endDate, excludeJourn
         }
       }
     } catch (tgErr) {
-      // Safe fallback if TravelGroup collection has schema divergence
     }
 
     return null;
@@ -380,13 +371,11 @@ const getOverlappingCommitment = async (userId, startDate, endDate, excludeJourn
   }
 };
 
-// Check user's active/upcoming journeys for conflicting overlapping dates.
 const hasOverlappingJourney = async (userId, startDate, endDate, excludeJourneyId = null, referenceDate = new Date()) => {
   const conflict = await getOverlappingCommitment(userId, startDate, endDate, excludeJourneyId, referenceDate);
   return Boolean(conflict);
 };
 
-// Check whether a user can join a journey.
 const canJoinJourney = async (userId, journey, options = {}) => {
   if (!journey) {
     return {
@@ -475,9 +464,6 @@ const canJoinJourney = async (userId, journey, options = {}) => {
     };
   }
 
-  // Dynamic Date-Time Overlap Check
-  // Note: A user with 0 commitments (e.g. new user) or whose commitments do not overlap (s1 < e2 && e1 > s2)
-  // automatically passes the overlap check and proceeds to standard eligibility.
   if (!options.skipOverlapCheck && journey.startDate && journey.endDate) {
     const conflictingCommitment = await getOverlappingCommitment(
       normUserId,
@@ -514,7 +500,6 @@ const canJoinJourney = async (userId, journey, options = {}) => {
   };
 };
 
-// Check whether invitations can be sent for a journey (Host-only, Planning/Upcoming only).
 const canInviteMembers = (userId, journey) => {
   if (!journey) {
     return {
@@ -564,7 +549,6 @@ const canInviteMembers = (userId, journey) => {
     };
   }
 
-  // Host-only: Planning/Upcoming allows Host to invite. Co-Leaders & regular members cannot invite.
   if (!isCreator(normUserId, journey)) {
     return {
       allowed: false,
@@ -582,7 +566,6 @@ const canInviteMembers = (userId, journey) => {
   };
 };
 
-// Check whether a user can leave a journey.
 const canLeaveJourney = (userId, journey) => {
   if (!journey) {
     return {
@@ -638,7 +621,6 @@ const canLeaveJourney = (userId, journey) => {
     };
   }
 
-  // Planning / Upcoming phase
   if (isHost) {
     const otherMembers = getOtherActiveMembers(normUserId, journey);
     if (otherMembers.length > 0) {
@@ -667,7 +649,6 @@ const canLeaveJourney = (userId, journey) => {
   };
 };
 
-// Check whether the host can cancel this journey.
 const canCancelJourney = (userId, journey) => {
   if (!journey) {
     return {
@@ -735,7 +716,6 @@ const canCancelJourney = (userId, journey) => {
   };
 };
 
-// Check whether a host can assign a co-leader (Co-Organizer) during an ongoing journey.
 const canAssignCoLeader = (userId, journey, targetUserId) => {
   if (!journey) {
     return {
@@ -833,7 +813,6 @@ const canAssignCoLeader = (userId, journey, targetUserId) => {
   };
 };
 
-// Check whether a host can remove a co-leader (sets role back to "Member").
 const canRemoveCoLeader = (userId, journey, targetUserId) => {
   if (!journey) {
     return {
@@ -911,7 +890,6 @@ const canRemoveCoLeader = (userId, journey, targetUserId) => {
   };
 };
 
-// Check whether a host or co-leader can send a warning to a member.
 const canWarnMember = (userId, journey, targetUserId, reason) => {
   if (!journey) {
     return {

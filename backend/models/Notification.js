@@ -45,7 +45,6 @@ const NotificationSchema = new mongoose.Schema(
     type: {
       type: String,
       enum: [
-        // Social / Connections
         "follow_request",
         "follow",
         "follow_accept",
@@ -54,7 +53,6 @@ const NotificationSchema = new mongoose.Schema(
         "request_cancelled",
         "user_review",
         "new_follower",
-        // Groups (TravelBuddy)
         "group_created",
         "group_joined",
         "join_request",
@@ -69,7 +67,6 @@ const NotificationSchema = new mongoose.Schema(
         "group_updated",
         "group_warning",
         "trip_cancelled",
-        // Journeys
         "journey_created",
         "journey_invitation",
         "journey_invitation_accepted",
@@ -88,7 +85,6 @@ const NotificationSchema = new mongoose.Schema(
         "journey_completed",
         "journey_cancelled",
         "journey_updated",
-        // Messages / Chat
         "new_message",
         "group_message",
         "message_mention",
@@ -99,7 +95,6 @@ const NotificationSchema = new mongoose.Schema(
         "message_request_rejected",
         "direct",
         "group",
-        // Content / Social
         "post_like",
         "post_comment",
         "story_like",
@@ -108,7 +103,6 @@ const NotificationSchema = new mongoose.Schema(
         "memory_comment",
         "memory_like",
         "memory_added",
-        // Safety
         "sos_alert",
         "emergency_alert",
         "safe_checkin",
@@ -127,12 +121,9 @@ const NotificationSchema = new mongoose.Schema(
         return getNotificationCategory(this.type);
       }
     },
-    // Direct link for deep navigation
     link: { type: String, default: "", trim: true },
-    // Generic entity pointers
     entityId: { type: mongoose.Schema.Types.ObjectId, default: null },
     entityType: { type: String, default: "", trim: true },
-    // Specific legacy entity references (retained for full backward compatibility)
     post: { type: mongoose.Schema.Types.ObjectId, ref: "Post" },
     story: { type: mongoose.Schema.Types.ObjectId, ref: "Story" },
     group: { type: mongoose.Schema.Types.ObjectId, ref: "TravelGroup" },

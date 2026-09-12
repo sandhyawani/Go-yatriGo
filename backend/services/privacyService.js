@@ -4,7 +4,6 @@ const UserSettings = require("../models/UserSettings");
 const SecurityPreference = require("../models/SecurityPreference");
 const { isBlockedPair } = require("../utils/blockHelper");
 
-// Helper to normalize ObjectIds / strings
 const normalizeId = (val) => {
   if (!val) return "";
   if (typeof val === "object") {
@@ -15,7 +14,6 @@ const normalizeId = (val) => {
   return String(val);
 };
 
-// Default privacy settings
 const PRIVACY_DEFAULTS = {
   privateAccount: false,
   whoCanMessage: "everyone", // "everyone" | "mates_only" | "none"
@@ -30,7 +28,6 @@ const PRIVACY_DEFAULTS = {
   safetyCheckinReminders: true,
 };
 
-// Reads user privacy policy with database fallback to defaults
 const getUserPrivacyPolicy = async (userId) => {
   const uId = normalizeId(userId);
   if (!uId) return { ...PRIVACY_DEFAULTS };
@@ -56,7 +53,6 @@ const getUserPrivacyPolicy = async (userId) => {
   };
 };
 
-// Updates privacy policy and synchronizes compatibility stores (UserSettings, SecurityPreference)
 const updateUserPrivacyPolicy = async (userId, updates = {}) => {
   const uId = normalizeId(userId);
   if (!uId) throw new Error("User ID is required to update privacy policy");
@@ -68,7 +64,6 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
     user.privacySettings = { ...PRIVACY_DEFAULTS };
   }
 
-  // Private Account
   if (updates.privateAccount !== undefined || updates.accountPrivacy !== undefined) {
     const isPrivate =
       updates.privateAccount === true ||
@@ -80,7 +75,6 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
     user.privacySettings.privateAccount = isPrivate;
   }
 
-  // Direct Messaging
   if (updates.whoCanMessage !== undefined && ["everyone", "mates_only", "none"].includes(updates.whoCanMessage)) {
     user.privacySettings.whoCanMessage = updates.whoCanMessage;
   } else if (updates.messageRequests !== undefined) {
@@ -93,22 +87,18 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
     }
   }
 
-  // Follow / Connection Requests
   if (updates.connectionRequests !== undefined && ["everyone", "mates_only"].includes(updates.connectionRequests)) {
     user.privacySettings.connectionRequests = updates.connectionRequests;
   }
 
-  // Journey Invites
   if (updates.journeyInvites !== undefined && ["everyone", "mates_only", "none"].includes(updates.journeyInvites)) {
     user.privacySettings.journeyInvites = updates.journeyInvites;
   }
 
-  // Profile Location Visibility
   if (updates.profileLocationVisibility !== undefined && ["everyone", "mates_only", "none"].includes(updates.profileLocationVisibility)) {
     user.privacySettings.profileLocationVisibility = updates.profileLocationVisibility;
   }
 
-  // Online Status & Story Replies & Group Invites
   if (updates.showOnlineStatus !== undefined) {
     user.privacySettings.showOnlineStatus = Boolean(updates.showOnlineStatus);
   }
@@ -121,7 +111,6 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
 
   await user.save();
 
-  // Synchronize UserSettings store
   const userSettingsUpdate = {
     accountPrivacy: user.privateAccount ? "private" : "public",
     messageRequests: user.privacySettings.whoCanMessage === "none" ? "none" : user.privacySettings.whoCanMessage === "mates_only" ? "followers" : "everyone",
@@ -137,7 +126,6 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
     { upsert: true, new: true, runValidators: true }
   );
 
-  // Synchronize SecurityPreference compatibility doc
   const securityPrefUpdate = {
     profileVisibility: user.privateAccount ? "private" : "public",
     onlineVisibility: user.privacySettings.showOnlineStatus !== false,
@@ -161,7 +149,6 @@ const updateUserPrivacyPolicy = async (userId, updates = {}) => {
   return await getUserPrivacyPolicy(uId);
 };
 
-// Checks if two users are verified Trip Mates / mutual connections
 const areTripMates = async (userAId, userBId) => {
   const aStr = normalizeId(userAId);
   const bStr = normalizeId(userBId);
@@ -174,7 +161,6 @@ const areTripMates = async (userAId, userBId) => {
     const isMate = validMates.some((m) => normalizeId(m._id || m.id || m) === bStr);
     if (isMate) return true;
 
-    // Also check mutual followers as connection
     const userA = await User.findById(aStr).select("following followers").lean();
     if (userA) {
       const isFollowingB = userA.following?.some((id) => normalizeId(id) === bStr);
@@ -188,7 +174,6 @@ const areTripMates = async (userAId, userBId) => {
   return false;
 };
 
-// Checks if followerId follows targetUserId
 const isFollowingUser = async (followerId, targetUserId) => {
   const fStr = normalizeId(followerId);
   const tStr = normalizeId(targetUserId);
@@ -201,7 +186,6 @@ const isFollowingUser = async (followerId, targetUserId) => {
   return target.followers.some((id) => normalizeId(id) === fStr);
 };
 
-// Checks if viewer is authorized to view target's location (city & state)
 const canViewLocation = async (targetUser, viewerUser) => {
   const targetId = normalizeId(targetUser);
   const viewerId = normalizeId(viewerUser);
@@ -240,7 +224,6 @@ const canViewLocation = async (targetUser, viewerUser) => {
   return false;
 };
 
-// Checks if viewer is authorized to message target user
 const canMessageUser = async (targetUser, viewerUser) => {
   const targetId = normalizeId(targetUser);
   const viewerId = normalizeId(viewerUser);
@@ -285,7 +268,6 @@ const canMessageUser = async (targetUser, viewerUser) => {
   return { allowed: true };
 };
 
-// Checks if viewer is authorized to reply to target user's story / dispatch
 const canReplyToStory = async (storyAuthor, viewerUser) => {
   const targetId = normalizeId(storyAuthor);
   const viewerId = normalizeId(viewerUser);
@@ -308,7 +290,6 @@ const canReplyToStory = async (storyAuthor, viewerUser) => {
   return await canMessageUser(storyAuthor, viewerUser);
 };
 
-// Checks journey visibility: Public, Followers Only, Friends Only (Trip Mates), and Private
 const canViewJourney = async (journey, viewerUser) => {
   if (!journey) return { allowed: false, reason: "Journey not found", statusCode: 404 };
 
@@ -316,12 +297,10 @@ const canViewJourney = async (journey, viewerUser) => {
   const isAdmin = typeof viewerUser === "object" && viewerUser?.isAdmin === true;
   const creatorId = normalizeId(journey.creator || journey.host);
 
-  // Creator or Admin is always allowed
   if (isAdmin || (viewerId && creatorId && viewerId === creatorId)) {
     return { allowed: true };
   }
 
-  // Active Journey member is always allowed
   if (viewerId && Array.isArray(journey.members)) {
     const isMember = journey.members.some((m) => {
       const mId = normalizeId(m.user || m._id || m);
@@ -331,7 +310,6 @@ const canViewJourney = async (journey, viewerUser) => {
     if (isMember) return { allowed: true };
   }
 
-  // Check bidirectional block with creator
   if (viewerId && creatorId) {
     const isBlocked = await isBlockedPair(creatorId, viewerId);
     if (isBlocked) {
@@ -368,7 +346,6 @@ const canViewJourney = async (journey, viewerUser) => {
   return { allowed: true };
 };
 
-// Redacts sensitive internal fields, personal credentials, and location if restricted
 const sanitizeUserForViewer = async (rawUser, viewerUser) => {
   if (!rawUser) return null;
 
@@ -378,14 +355,12 @@ const sanitizeUserForViewer = async (rawUser, viewerUser) => {
   const isOwner = viewerId && targetId && viewerId === targetId;
   const isAdmin = typeof viewerUser === "object" && viewerUser?.isAdmin === true;
 
-  // Always delete sensitive internal security fields
   delete user.password;
   delete user.resetPasswordToken;
   delete user.resetPasswordExpire;
   delete user.__v;
 
   if (!isOwner && !isAdmin) {
-    // Redact personal contact and identity credentials
     delete user.email;
     delete user.mobile;
     delete user.govId;
@@ -394,14 +369,12 @@ const sanitizeUserForViewer = async (rawUser, viewerUser) => {
     delete user.blockedUsers;
     delete user.reportedBy;
 
-    // Check location visibility (city & state)
     const allowedLocation = await canViewLocation(user, viewerUser);
     if (!allowedLocation) {
       user.city = "";
       user.state = "";
     }
 
-    // Follow requests privacy (do not expose other users' follow request IDs)
     if (user.followRequests && Array.isArray(user.followRequests) && viewerId) {
       const hasPendingReq = user.followRequests.some((id) => normalizeId(id) === viewerId);
       user.followRequests = hasPendingReq ? [viewerId] : [];
@@ -409,7 +382,6 @@ const sanitizeUserForViewer = async (rawUser, viewerUser) => {
       user.followRequests = [];
     }
 
-    // Limit exposed privacySettings
     if (user.privacySettings) {
       user.privacySettings = {
         whoCanMessage: user.privacySettings.whoCanMessage || "everyone",

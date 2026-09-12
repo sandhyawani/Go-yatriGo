@@ -15,9 +15,7 @@ Sparkles } from
 import travelBg from "../assets/images/bg.jpg";
 import stickerPack from "../assets/images/login.jpg";
 
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -35,7 +33,6 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
 
     if (!email.trim()) {
       setError("Email address is required.");

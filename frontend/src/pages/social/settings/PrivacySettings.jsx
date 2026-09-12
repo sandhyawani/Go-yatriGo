@@ -40,7 +40,6 @@ const PrivacySettings = () => {
 
   }
 
-
   const currentSettings = settings || {
     privateAccount: false,
     allowStoryReplies: true,

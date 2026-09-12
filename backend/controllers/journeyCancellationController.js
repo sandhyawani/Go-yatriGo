@@ -7,7 +7,6 @@ const TravelGroup = require("../models/TravelGroup");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
 const { canCancelJourney } = require("../services/journeyEligibility");
 
-// Evaluate cancellation rules via journeyEligibility service.
 const evaluateCancellationRules = (journey, userId) => {
   const result = canCancelJourney(userId, journey);
   return {
@@ -92,7 +91,6 @@ exports.cancelJourney = async (req, res) => {
       return res.json({ success: true, message: "Journey is already cancelled", journey: refreshed });
     }
 
-    // Update TravelGroup if linked
     const travelGroupFilter = updatedJourney.sourceId
       ? { $or: [{ _id: updatedJourney.sourceId }, { journeyId: updatedJourney._id }] }
       : { journeyId: updatedJourney._id };
@@ -110,7 +108,6 @@ exports.cancelJourney = async (req, res) => {
       useTransaction ? { session } : {}
     );
 
-    // Create Timeline event if not exists
     const existingTimeline = await JourneyTimeline.findOne(
       { journeyId: updatedJourney._id, eventType: "journey_cancelled" },
       null,
@@ -133,7 +130,6 @@ exports.cancelJourney = async (req, res) => {
       );
     }
 
-    // Target Members Notifications
     const rawMembers = updatedJourney.members || [];
     const targetMembersSet = new Set();
     rawMembers.forEach((m) => {
@@ -151,7 +147,6 @@ exports.cancelJourney = async (req, res) => {
     const notificationService = require("../services/notificationService");
     const io = req.app.get("io");
 
-    // Send notifications to members using notificationService
     if (targetMembersSet.size > 0) {
       const targetMembers = Array.from(targetMembersSet);
       for (const memId of targetMembers) {

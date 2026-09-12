@@ -69,7 +69,6 @@ const AdminUserDetails = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* User Profile Card */}
           <div className="lg:col-span-4">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm text-center">
               <div className="relative inline-block mb-4">
@@ -111,7 +110,6 @@ const AdminUserDetails = () => {
             </div>
           </div>
 
-          {/* User Profile Details */}
           <div className="lg:col-span-8">
             <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm h-full">
               <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider mb-6 border-b border-slate-50 pb-4">

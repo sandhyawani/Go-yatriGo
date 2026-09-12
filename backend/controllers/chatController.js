@@ -455,10 +455,8 @@ exports.sendMessage = async (req, res) => {
         message: socketPayload
       });
 
-      // Dispatch notifications for chat recipients
       const previewText = (text || (media ? "Sent a media file" : "Sent a message")).slice(0, 80);
 
-      // Check for mentions in text: @username
       const mentionMatches = text ? text.match(/@(\w+)/g) : null;
       const mentionedUserIds = new Set();
       if (mentionMatches && mentionMatches.length > 0) {
@@ -471,7 +469,6 @@ exports.sendMessage = async (req, res) => {
         });
       }
 
-      // Check for replyTo user
       let replyToUserId = null;
       if (replyTo) {
         const parentMsg = await Message.findById(replyTo).select("sender");
@@ -526,7 +523,6 @@ exports.sendMessage = async (req, res) => {
           }
         }
       } else {
-        // Group chat
         (room.members || []).forEach((memberId) => {
           const memStr = memberId.toString();
           if (memStr !== userId.toString()) {
@@ -588,7 +584,6 @@ exports.acceptMessageRequest = async (req, res) => {
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
     
-    // Normalized String-safe member check
     const isMember = room.members.some((m) => String(m._id || m) === String(userId));
     if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
     
@@ -605,7 +600,6 @@ exports.acceptMessageRequest = async (req, res) => {
       }
     }
 
-    // Idempotency: if already accepted, return success safely
     if (room.requestStatus === "accepted") {
       return res.status(200).json({ success: true, message: "Request already accepted", room });
     }
@@ -653,7 +647,6 @@ exports.declineMessageRequest = async (req, res) => {
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
     
-    // Normalized String-safe member check
     const isMember = room.members.some((m) => String(m._id || m) === String(userId));
     if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
     
@@ -661,7 +654,6 @@ exports.declineMessageRequest = async (req, res) => {
       return res.status(400).json({ success: false, message: "You cannot decline your own request" });
     }
 
-    // Idempotency: if already declined, return success safely
     if (room.requestStatus === "declined") {
       return res.status(200).json({ success: true, message: "Request already declined", room });
     }
@@ -691,7 +683,6 @@ exports.blockMessageRequest = async (req, res) => {
     const room = await ChatRoom.findById(roomId);
     if (!room || room.type !== "direct") return res.status(404).json({ success: false, message: "Room not found" });
     
-    // Normalized String-safe member check
     const isMember = room.members.some((m) => String(m._id || m) === String(userId));
     if (!isMember) return res.status(403).json({ success: false, message: "Unauthorized: not a member of this room" });
 
@@ -801,7 +792,6 @@ exports.unsendMessage = async (req, res) => {
       return res.status(403).json({ success: false, message: "Only the sender can unsend this message" });
     }
 
-    // Idempotency: if already unsent, return current message
     if (message.isUnsent) {
       return res.status(200).json({ success: true, message: "Message already unsent", data: message });
     }

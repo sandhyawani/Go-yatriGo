@@ -49,7 +49,6 @@ const verifyGoogleIdToken = async (idToken) => {
     throw error;
   }
 
-  // Validate issuer
   const validIssuers = ["accounts.google.com", "https://accounts.google.com"];
   if (!validIssuers.includes(payload.iss)) {
     const error = new Error(`Untrusted token issuer: ${payload.iss}`);
@@ -57,14 +56,12 @@ const verifyGoogleIdToken = async (idToken) => {
     throw error;
   }
 
-  // Validate subject
   if (!payload.sub || typeof payload.sub !== "string") {
     const error = new Error("Google token is missing valid subject identifier (sub)");
     error.statusCode = 401;
     throw error;
   }
 
-  // Validate email presence and verification
   if (!payload.email || typeof payload.email !== "string") {
     const error = new Error("Google profile is missing an email address");
     error.statusCode = 400;

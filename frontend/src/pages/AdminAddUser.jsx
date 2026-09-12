@@ -280,7 +280,6 @@ const AdminAddUser = () => {
 
         <div className="rounded-3xl border border-slate-100 bg-white p-6 shadow-sm md:p-8">
           <form onSubmit={handleSubmit} noValidate>
-            {/* Avatar upload */}
             <div className="flex flex-col items-center gap-2.5 mb-8">
               <div className="relative group h-24 w-24 rounded-full overflow-hidden border-4 border-slate-100 bg-slate-50 shadow-inner">
                 {previewUrl ? (
@@ -333,7 +332,6 @@ const AdminAddUser = () => {
               </div>
             </div>
 
-            {/* Form Fields */}
             <div className="grid gap-x-5 gap-y-1.5 md:grid-cols-2">
               <FormField
                 id="name"
@@ -471,7 +469,6 @@ const AdminAddUser = () => {
               </FormField>
             </div>
 
-            {/* Actions */}
             <div className="mt-6 flex flex-col-reverse gap-3 border-t border-slate-100 pt-6 sm:flex-row sm:justify-end">
               <button
                 type="button"

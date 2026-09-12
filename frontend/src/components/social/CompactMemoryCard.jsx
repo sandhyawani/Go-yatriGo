@@ -80,11 +80,9 @@ const CompactMemoryCard = ({ item }) => {
     if (item.type === "group") {
       navigate(`/social/buddy/${item._id}`);
     } else if (item.type === "story") {
-      // stories: navigate to the author's profile
       if (authorId) navigate(`/profile/${authorId}`);
       else navigate("/");
     } else {
-      // memories: navigate to the post detail page
       navigate(`/post/${item._id}`);
     }
   };
@@ -102,7 +100,6 @@ const CompactMemoryCard = ({ item }) => {
       onClick={handleCardClick}
       className={`relative overflow-hidden cursor-pointer group shrink-0 transition-all duration-300 w-full sm:w-[220px] rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs hover:shadow-lg hover:border-primary-200 hover:-translate-y-1`}
     >
-      {/* Media 16:9 */}
       <div className="relative w-full aspect-[16/9] bg-background overflow-hidden">
         {mediaList.length > 0 ? (
           <>
@@ -153,7 +150,6 @@ const CompactMemoryCard = ({ item }) => {
           </div>
         )}
 
-        {/* Badge */}
         <div className="absolute top-2 left-2 z-10">
           <div
             className={`flex items-center gap-1 px-2 py-0.5 rounded-full backdrop-blur-md text-[9px] font-bold tracking-wide shadow-2xs ${badge.bg}`}
@@ -164,7 +160,6 @@ const CompactMemoryCard = ({ item }) => {
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-3 text-left space-y-1 font-sans">
         <h4 className="text-xs font-bold text-text-primary line-clamp-1 font-heading leading-tight">
           {item.title || item.caption || "Travel Memory"}
@@ -177,7 +172,6 @@ const CompactMemoryCard = ({ item }) => {
           </div>
         )}
 
-        {/* Action Row */}
         <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-[10px] font-bold text-text-muted select-none">
           <div className="flex items-center gap-2.5">
             <span className="flex items-center gap-1 text-brand">

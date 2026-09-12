@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
+const { toHttps } = require("./toHttps");
 
-// Serializes user profile data according to viewer authorization and privacy rules
 const serializePublicUser = (userDoc, options = {}) => {
   if (!userDoc) return null;
 
@@ -20,11 +20,6 @@ const serializePublicUser = (userDoc, options = {}) => {
   const isTrulyVerified = Boolean(
     user.isVerified === true && user.verificationStatus === "verified"
   );
-
-  const toHttps = (url) => {
-    if (typeof url !== "string") return "";
-    return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
-  };
 
   const primaryPic = toHttps(user.pic || user.avatar || user.profilePic || user.profilePicture || user.img || "");
   const primaryCover = toHttps(user.coverImage || user.coverPic || "");
@@ -59,7 +54,6 @@ const serializePublicUser = (userDoc, options = {}) => {
   serialized.isVerified = isTrulyVerified;
 
   if (isOwner || isAdmin) {
-    // Owner & Admin can view verification audit details for their own account
     serialized.verificationStatus = user.verificationStatus || "unverified";
     serialized.verificationNote = user.verificationNote || "";
     serialized.govIdType = user.govIdType || "";
@@ -71,9 +65,7 @@ const serializePublicUser = (userDoc, options = {}) => {
     serialized.blockedUsers = user.blockedUsers || [];
     serialized.privacySettings = user.privacySettings || {};
   } else {
-    // External viewer: do not leak audit notes or pending/rejected status
     serialized.verificationStatus = isTrulyVerified ? "verified" : "unverified";
-    // Never expose private fields to external viewers
     delete serialized.verificationNote;
     delete serialized.govIdType;
     delete serialized.govId;
@@ -83,7 +75,6 @@ const serializePublicUser = (userDoc, options = {}) => {
     delete serialized.blockedUsers;
     delete serialized.reportedBy;
 
-    // Provide sanitized public privacy flags for UI behavior
     const privacy = user.privacySettings || {};
     serialized.privacySettings = {
       whoCanMessage: privacy.whoCanMessage || "everyone",
@@ -92,7 +83,6 @@ const serializePublicUser = (userDoc, options = {}) => {
     };
   }
 
-  // Location Privacy enforcement:
   const locationVisibility = user.privacySettings?.profileLocationVisibility || "mates_only";
 
   if (isOwner || isAdmin) {
@@ -109,14 +99,12 @@ const serializePublicUser = (userDoc, options = {}) => {
       serialized.state = user.state || "";
       serialized.country = user.country || "India";
     } else {
-      // Omit / Redact location
       delete serialized.city;
       delete serialized.state;
       delete serialized.country;
     }
   }
 
-  // Preserve relationship / content visibility fields passed in options or user
   if (typeof options.canViewContent === "boolean") {
     serialized.canViewContent = options.canViewContent;
   }
@@ -160,18 +148,17 @@ const serializePublicUser = (userDoc, options = {}) => {
   return serialized;
 };
 
-// Minimal serializer for reviewers in companion reviews
 const serializeReviewer = (reviewerDoc) => {
   if (!reviewerDoc) return null;
   const rev = reviewerDoc.toObject ? reviewerDoc.toObject() : { ...reviewerDoc };
 
-  const revPic = (rev.pic || rev.avatar || rev.profilePic || rev.img || "").replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
+  const revPic = toHttps(rev.pic || rev.avatar || rev.profilePic || rev.img || "");
   return {
     _id: rev._id,
     name: rev.name || "Traveler",
     username: rev.username || "",
     pic: revPic,
-    avatar: (rev.avatar ? rev.avatar.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com") : revPic),
+    avatar: (rev.avatar ? toHttps(rev.avatar) : revPic),
     isVerified: Boolean(rev.isVerified === true && rev.verificationStatus === "verified"),
   };
 };

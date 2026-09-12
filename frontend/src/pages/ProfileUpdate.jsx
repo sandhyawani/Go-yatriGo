@@ -174,8 +174,9 @@ const uploadImageToCloudinary = async (imageFile, onProgress) => {
     xhr.onload = () => {
       try {
         const response = JSON.parse(xhr.responseText);
-        if (xhr.status === 200 && response.url) {
-          resolve(response.url);
+        const resolvedUrl = (response.secure_url || response.url || "").replace(/^http:\/\//i, "https://");
+        if (xhr.status === 200 && resolvedUrl) {
+          resolve(resolvedUrl);
           return;
         }
         reject(new Error(response.message || "Upload failed"));
@@ -822,7 +823,6 @@ const ProfileUpdate = () => {
           className="grid grid-cols-1 gap-6 lg:grid-cols-12 items-start"
           noValidate
         >
-          {/* Avatar and Bio Card */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -935,7 +935,6 @@ const ProfileUpdate = () => {
               )}
             </div>
 
-            {/* Bio & Interests */}
             <div className="rounded-3xl border border-border-default/60 bg-white p-6 shadow-sm relative overflow-hidden">
               <div>
                 <label htmlFor="bio" className={labelClass}>
@@ -1137,7 +1136,6 @@ const ProfileUpdate = () => {
             </div>
           </motion.div>
 
-          {/* Profile Details Form */}
           <motion.div
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}

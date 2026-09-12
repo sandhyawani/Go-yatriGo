@@ -41,7 +41,6 @@ const CreateBuddyTrip = () => {
   const [activeSection, setActiveSection] = useState("basics");
   const [showVerificationModal, setShowVerificationModal] = useState(false);
 
-  // Load draft from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem("createTripDraft");
     if (saved) {
@@ -53,24 +52,20 @@ const CreateBuddyTrip = () => {
           description: parsed.description !== undefined && parsed.description !== null ? parsed.description : ""
         }));
         if (parsed.coverImage && !parsed.coverImage.startsWith("blob:")) {
-            // Restore preview if it was a URL
             setImagePreview(parsed.coverImage);
         }
       } catch (e) {}
     }
   }, []);
 
-  // Autosave to localStorage
   useEffect(() => {
     const timeout = setTimeout(() => {
-      // Don't save the file blob URL to localstorage as it will break
       const toSave = { ...formData, coverImage: file ? "" : formData.coverImage };
       localStorage.setItem("createTripDraft", JSON.stringify(toSave));
     }, 1000);
     return () => clearTimeout(timeout);
   }, [formData, file]);
 
-  // Fetch Auto Cover Preview
   useEffect(() => {
     if (!formData.destination || file) {
       setAutoCoverOptions([]);
@@ -93,7 +88,6 @@ const CreateBuddyTrip = () => {
     return () => clearTimeout(timeoutId);
   }, [formData.destination, formData.category, file]);
 
-  // ScrollSpy for Progress Indicator
   useEffect(() => {
     const handleScroll = () => {
       const sections = ["basics", "plan", "rules"];
@@ -290,10 +284,8 @@ const CreateBuddyTrip = () => {
 
   return (
     <div className="min-h-screen bg-background text-text-primary font-sans pb-12 selection:bg-primary-100 selection:text-primary-900 relative">
-      {/* Decorative gradient top background */}
       <div className="absolute top-0 left-0 right-0 h-64 bg-gradient-to-b from-primary-50/80 to-transparent pointer-events-none z-0" />
 
-      {/* Sticky Header */}
       <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 shadow-sm supports-[backdrop-filter]:bg-white/60">
         <div className="max-w-[1100px] mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
           <div className="flex items-center gap-2 sm:gap-5 min-w-0">
@@ -330,7 +322,6 @@ const CreateBuddyTrip = () => {
           </div>
         </div>
 
-        {/* Lightweight Progress Indicator */}
         <div className="max-w-[1100px] mx-auto px-4 h-11 flex items-center gap-1 sm:gap-4 overflow-x-auto no-scrollbar border-t border-slate-100">
           {[
             { id: "basics", num: "01", label: "Basics" },
@@ -356,10 +347,8 @@ const CreateBuddyTrip = () => {
       <main className="max-w-[1100px] mx-auto px-4 py-6 relative z-10">
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           
-          {/* Left Column: Form Fields */}
           <div className="lg:col-span-8 space-y-8 pb-8">
             
-            {/* Step 1: Basics */}
             <section id="basics" className="scroll-mt-28 space-y-3">
               <div>
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Let’s start with the basics</h2>
@@ -386,7 +375,6 @@ const CreateBuddyTrip = () => {
                               Change
                             </button>
                           </div>
-                          {/* Always visible badge when not hovered */}
                           <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-2 group-hover:opacity-0 transition-opacity">
                             <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
                             <span className="text-[10px] font-bold text-white tracking-wide uppercase">Your Cover</span>
@@ -400,7 +388,6 @@ const CreateBuddyTrip = () => {
                               Upload your own
                             </button>
                           </div>
-                          {/* Always visible badge when not hovered */}
                           <div className="absolute top-4 left-4 bg-white/10 backdrop-blur-md border border-white/20 px-3 py-1 rounded-full flex items-center gap-1.5 group-hover:opacity-0 transition-opacity">
                             <span className="text-sm leading-none">✨</span>
                             <span className="text-[10px] font-bold text-white tracking-wide uppercase">Auto Cover</span>
@@ -483,7 +470,6 @@ const CreateBuddyTrip = () => {
               </div>
             </section>
 
-            {/* Step 2: Trip Plan */}
             <section id="plan" className="scroll-mt-28 space-y-3">
               <div>
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Plan the details</h2>
@@ -491,7 +477,6 @@ const CreateBuddyTrip = () => {
               </div>
 
               <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_2px_12px_rgb(0,0,0,0.03)] border border-slate-200/60 space-y-5">
-                {/* Dates */}
                 <div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -528,7 +513,6 @@ const CreateBuddyTrip = () => {
                   </p>
                 </div>
 
-                {/* Description */}
                 <div>
                   <label className="block text-[15px] font-extrabold text-text-primary mb-1">
                     Tell travelers about the trip <span className="text-xs font-normal text-text-muted">(Optional)</span>
@@ -551,7 +535,6 @@ const CreateBuddyTrip = () => {
                   </div>
                 </div>
 
-                {/* Vibe Tags */}
                 <div>
                   <label className="block text-[15px] font-extrabold text-text-primary mb-1">What’s the vibe?</label>
                   <p className="text-[13px] text-text-muted font-medium mb-4">Pick up to 8 · Tip: Choose tags that describe the actual experience.</p>
@@ -578,7 +561,6 @@ const CreateBuddyTrip = () => {
               </div>
             </section>
 
-            {/* Step 3: Group & Rules */}
             <section id="rules" className="scroll-mt-28 space-y-3">
               <div>
                 <h2 className="text-2xl font-extrabold text-text-primary tracking-tight">Choose your crew</h2>
@@ -667,7 +649,6 @@ const CreateBuddyTrip = () => {
             </section>
           </div>
 
-          {/* Right Column: Sticky Summary */}
           <div className="lg:col-span-4 lg:sticky lg:top-[100px] order-last">
             <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 shadow-[0_4px_24px_rgb(0,0,0,0.03)] border border-slate-200/60 flex flex-col h-full">
               <h3 className="text-[11px] font-bold text-text-muted uppercase tracking-widest mb-6">Your Trip</h3>

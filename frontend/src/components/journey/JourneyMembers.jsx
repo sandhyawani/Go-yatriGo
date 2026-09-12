@@ -243,7 +243,6 @@ const JourneyMembers = ({
             : "bg-white/90 backdrop-blur-md border-slate-200/80 hover:border-brand/40 shadow-xs"
         }`}
       >
-        {/* Main Member Summary Row */}
         <div className="flex items-center justify-between gap-2 w-full">
           <div
             onClick={() => {
@@ -319,12 +318,10 @@ const JourneyMembers = ({
           </div>
         </div>
 
-        {/* In-Flow Expanded Actions Panel */}
         {isMenuOpen && hasActions && (
           <div className="mt-3 pt-2.5 border-t border-slate-100 space-y-1.5 animate-fade-in text-[11px] font-semibold">
             {canManage && (
               <>
-                {/* Co-Leader Actions (Host only) */}
                 {isHost && standardRole === "Member" && !coLeadersList.length && (
                   <button
                     type="button"
@@ -345,7 +342,6 @@ const JourneyMembers = ({
                   </button>
                 )}
 
-                {/* Send Warning (Host & Co-Leader - always available!) */}
                 <button
                   type="button"
                   onClick={() => {
@@ -361,7 +357,6 @@ const JourneyMembers = ({
                   <span>Send Warning</span>
                 </button>
 
-                {/* Transfer Host Role (Host only) */}
                 {isHost && (
                   <button
                     type="button"
@@ -376,7 +371,6 @@ const JourneyMembers = ({
                   </button>
                 )}
 
-                {/* Remove Member (Host only, Upcoming only — Roster is locked on Ongoing) */}
                 {isHost && isUpcoming && (
                   <button
                     type="button"
@@ -411,7 +405,6 @@ const JourneyMembers = ({
 
   return (
     <div className="space-y-5 animate-fade-in pb-8">
-      {/* Header Banner */}
       <div className="bg-gradient-to-r from-brand-600/10 via-brand-600/10 to-brand-600/10 border border-brand-200/60 backdrop-blur-md p-4 sm:p-5 rounded-2xl shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative overflow-hidden">
         <div className="absolute -right-10 -bottom-10 w-40 h-40 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -455,7 +448,6 @@ const JourneyMembers = ({
         </div>
       </div>
 
-      {/* Journey Host Section */}
       <div className="space-y-2">
         <div className="flex items-center justify-between px-1">
           <h4 className="text-[11px] font-black text-amber-600 uppercase tracking-wider flex items-center gap-1.5">
@@ -467,7 +459,6 @@ const JourneyMembers = ({
         </div>
       </div>
 
-      {/* Co-Leaders Section */}
       {coLeadersList.length > 0 && (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
@@ -481,7 +472,6 @@ const JourneyMembers = ({
         </div>
       )}
 
-      {/* Members Section */}
       {regularMembersList.length > 0 ? (
         <div className="space-y-2 pt-1">
           <div className="flex items-center justify-between px-1">
@@ -518,7 +508,6 @@ const JourneyMembers = ({
         </div>
       )}
 
-      {/* Pending Invitations (Upcoming only) */}
       {!isOngoing && isHost && invitations.length > 0 && (
         <div className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between px-1">
@@ -585,7 +574,6 @@ const JourneyMembers = ({
         </div>
       )}
 
-      {/* Pending Join Requests (Upcoming only) */}
       {!isOngoing && isHost && joinRequests.length > 0 && (
         <div className="space-y-3 pt-4 border-t border-slate-200">
           <div className="flex items-center justify-between px-1">
@@ -651,7 +639,6 @@ const JourneyMembers = ({
         </div>
       )}
 
-      {/* Warning Modal */}
       <SendWarningModal
         isOpen={Boolean(warningTarget)}
         targetMember={warningTarget}

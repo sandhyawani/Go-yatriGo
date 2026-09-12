@@ -1,5 +1,6 @@
 import React from "react";
 import { Bookmark, Sparkles, MessageCircle } from "lucide-react";
+import { toHttps } from "../../../utils/toHttps";
 
 export const SavedTab = ({
   savedPosts,
@@ -8,11 +9,11 @@ export const SavedTab = ({
 }) => {
   if (savedLoading && savedPosts.length === 0) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="aspect-square bg-secondary-100 animate-pulse rounded-3xl border border-border"
+            className="aspect-square bg-secondary-100 animate-pulse rounded-2xl border border-border"
           />
         ))}
       </div>
@@ -37,18 +38,18 @@ export const SavedTab = ({
   }
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {savedPosts.map((post) => (
         <div
           key={post._id}
-          className="aspect-square bg-secondary-100 rounded-3xl overflow-hidden relative shadow-sm cursor-pointer group"
+          className="aspect-square bg-secondary-100 rounded-2xl overflow-hidden relative shadow-sm cursor-pointer group hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
           onClick={() => setSelectedMemory(post)}
         >
           <img
             loading="lazy"
-            src={post.image || post.mediaUrl || post.mediaUrls?.[0]}
+            src={toHttps(post.image || post.mediaUrl || post.mediaUrls?.[0])}
             alt={post.title || "Saved Memory"}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src =

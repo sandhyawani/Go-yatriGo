@@ -255,7 +255,6 @@ export const ActiveTravelGroups = ({
 
   return (
     <div className={`bg-surface rounded-2xl border border-border shadow-xs overflow-hidden flex flex-col ${className}`}>
-      {/* Header */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b border-border/40">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-brand-50 flex items-center justify-center">
@@ -273,7 +272,6 @@ export const ActiveTravelGroups = ({
         </Link>
       </div>
 
-      {/* Trip rows with internal scrolling for ~3 visible items */}
       <div className="px-3 py-2 h-[250px] overflow-y-auto overscroll-contain scrollbar-thin space-y-1.5">
         {displayTrips.map((trip) => {
           const myUserId = user?._id?.toString();
@@ -368,7 +366,6 @@ const RightSidebar = ({
 
   return (
     <div className={className}>
-      {/* 1. Travelers For You */}
       <JourneyMatesSuggestions
         currentUser={user}
         currentUserId={user?._id || user?.id}
@@ -378,19 +375,14 @@ const RightSidebar = ({
         tripMateStates={tripMateStates}
       />
 
-      {/* 2. Active Travel Groups */}
       <ActiveTravelGroups user={user} nearbyTrips={nearbyTrips} />
 
-      {/* 3. Trending Travel Destinations */}
       <TrendingDestinationsWidget />
 
-      {/* 4. Travel Tip of the Day */}
       <TravelTipWidget />
 
-      {/* 5. Quick Create Group CTA */}
       <QuickCreateCard />
 
-      {/* 6. Platform Links & Footer */}
       <SidebarFooter />
     </div>
   );

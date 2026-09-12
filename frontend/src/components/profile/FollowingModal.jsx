@@ -128,7 +128,6 @@ const OverflowMenu = ({
   );
 };
 
-
 const SkeletonRow = ({ index }) => (
   <div
     className={`flex items-center gap-3 py-3.5 px-3 ${
@@ -267,13 +266,11 @@ const FollowingModal = ({
         String(currentUser._id || currentUser.id) === String(profileUser._id || profileUser.id)
       );
 
-
   const debouncedSearch = useDebounce(searchInput, 300);
 
   const rawList = useMemo(() => {
     let list = relationsList || [];
 
-    // Prioritize the logged-in user at the top, then sort alphabetically
     return [...list].sort((a, b) => {
       const isSelfA = currentUser && a._id === currentUser._id;
       const isSelfB = currentUser && b._id === currentUser._id;
@@ -312,7 +309,6 @@ const FollowingModal = ({
     if (setRelationsSearch && debouncedSearch !== relationsSearch) {
       setRelationsSearch(debouncedSearch);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
   const closeModal = useCallback(() => {
@@ -384,7 +380,6 @@ const FollowingModal = ({
       <AnimatePresence>
         {showRelationsModal && relationsModalType === "following" && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 select-none">
-            {/* Backdrop */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -394,7 +389,6 @@ const FollowingModal = ({
               onClick={closeModal}
             />
 
-            {/* Modal Card */}
             <motion.div
               initial={{ scale: 0.95, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
@@ -402,7 +396,6 @@ const FollowingModal = ({
               transition={{ type: "spring", damping: 28, stiffness: 380 }}
               className="bg-white rounded-t-[20px] sm:rounded-2xl w-full sm:max-w-[520px] shadow-2xl relative z-10 flex flex-col h-[460px] max-h-[88vh] overflow-hidden"
             >
-              {/* ── Header ── */}
               <div className="flex justify-between items-start px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-white shrink-0">
                 <div>
                   <h3
@@ -426,7 +419,6 @@ const FollowingModal = ({
                 </button>
               </div>
 
-              {/* ── Search Bar ── */}
               <div className="px-5 sm:px-6 py-3 border-b border-border bg-secondary-50 shrink-0">
                 <div className="relative flex items-center">
                   <Search className="absolute left-3.5 w-4 h-4 text-muted pointer-events-none" />
@@ -441,12 +433,10 @@ const FollowingModal = ({
                 </div>
               </div>
 
-              {/* ── List Content ── */}
               <div
                 ref={listRef}
                 className="flex-1 overflow-y-auto px-3 sm:px-4 py-2 bg-white custom-scrollbar pb-16"
               >
-                {/* Loading Skeleton */}
                 {isLoading && (
                   <div className="py-1">
                     {Array.from({ length: 5 }).map((_, i) => (
@@ -455,7 +445,6 @@ const FollowingModal = ({
                   </div>
                 )}
 
-                {/* Error State */}
                 {isError && (
                   <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-14 h-14 rounded-full bg-red-50 flex items-center justify-center mb-4">
@@ -477,7 +466,6 @@ const FollowingModal = ({
                   </div>
                 )}
 
-                {/* Empty State */}
                 {isEmpty && (
                   <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-14 h-14 rounded-full bg-background flex items-center justify-center mb-4">
@@ -494,7 +482,6 @@ const FollowingModal = ({
                   </div>
                 )}
 
-                {/* Search No Results */}
                 {isSearchNoResults && (
                   <div className="flex flex-col items-center justify-center py-16 px-4">
                     <div className="w-14 h-14 rounded-full bg-background flex items-center justify-center mb-4">
@@ -509,7 +496,6 @@ const FollowingModal = ({
                   </div>
                 )}
 
-                {/* Default — Data Rows */}
                 {isDefault && (
                   <div className="py-1">
                     {sortedList.map((user, idx) => {
@@ -536,7 +522,6 @@ const FollowingModal = ({
           </div>
         )}
       </AnimatePresence>
-
 
       <ConfirmModal
         isOpen={confirmState.isOpen}

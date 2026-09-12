@@ -53,7 +53,6 @@ exports.getNotifications = async (req, res) => {
       console.warn("Notification lookup failed, returning empty result:", dbError.message);
     }
 
-    // All notifications for authoritative counts
     const allUserNotifs = await Notification.find({ receiver: userId }).select("category type isRead").lean();
     let unreadCount = 0;
     let journeyCount = 0;
@@ -580,7 +579,6 @@ exports.cancelSentRequest = async (req, res) => {
         type: "journey_invitation"
       });
     } else {
-      // General notification deletion if matching sender
       await Notification.findOneAndDelete({
         _id: targetId,
         sender: userId

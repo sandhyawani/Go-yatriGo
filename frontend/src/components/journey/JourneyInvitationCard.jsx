@@ -4,15 +4,26 @@ import { Calendar, MapPin, Check, ArrowRight, Clock } from "lucide-react";
 import axiosInstance from "../../api/axios";
 import { showToast } from "../../utils/showToast";
 import { getEligibilityErrorMessage } from "../../utils/journeyLifecycle";
+import { useAuth } from "../../context/authContext";
+import { isActuallyVerified } from "../../utils/verification";
+
+const VERIFICATION_REQUIRED_MESSAGE =
+  "Your account must be verified before you can accept journey invitations. Please complete identity verification first.";
 
 const JourneyInvitationCard = ({ invitation, onAction }) => {
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const isUnverified = Boolean(currentUser && !isActuallyVerified(currentUser));
   const [loadingAction, setLoadingAction] = useState(null);
 
   const journey = invitation.journeyId || {};
   const organizer = invitation.inviterId || {};
 
   const handleAccept = async () => {
+    if (isUnverified) {
+      showToast.error(VERIFICATION_REQUIRED_MESSAGE);
+      return;
+    }
     setLoadingAction("accept");
     try {
       const res = await axiosInstance.post(
@@ -26,8 +37,12 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         navigate(redirectUrl);
       }
     } catch (err) {
-      console.error("Error accepting invite:", err);
-      showToast.error(getEligibilityErrorMessage(err, "Failed to accept invitation"));
+      if (err?.response?.status === 403) {
+        showToast.error(VERIFICATION_REQUIRED_MESSAGE);
+      } else {
+        console.error("Error accepting invite:", err);
+        showToast.error(getEligibilityErrorMessage(err, "Failed to accept invitation"));
+      }
     } finally {
       setLoadingAction(null);
     }
@@ -72,7 +87,6 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
 
   return (
     <div className="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs hover:border-brand/40 transition-all space-y-3 relative overflow-hidden group animate-fade-in">
-      {/* Header Row */}
       <div className="flex items-center justify-between gap-2">
         {(() => {
           const organizerId =
@@ -135,7 +149,6 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         )}
       </div>
 
-      {/* Trip Info Preview */}
       <div className="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200/70 transition-colors group-hover:bg-background/70">
         <img
           src={
@@ -176,7 +189,6 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="flex items-center gap-2 pt-1">
         {isAccepted ? (
           <Link
@@ -204,7 +216,10 @@ const JourneyInvitationCard = ({ invitation, onAction }) => {
               type="button"
               onClick={handleAccept}
               disabled={loadingAction !== null}
-              className="flex-1 py-2 px-3 rounded-xl bg-brand hover:bg-brand text-white text-xs font-semibold shadow-sm shadow-brand/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap"
+              title={isUnverified ? VERIFICATION_REQUIRED_MESSAGE : undefined}
+              className={`flex-1 py-2 px-3 rounded-xl bg-brand hover:bg-brand text-white text-xs font-semibold shadow-sm shadow-brand/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 disabled:opacity-50 whitespace-nowrap ${
+                isUnverified ? "opacity-75 cursor-not-allowed" : ""
+              }`}
             >
               {loadingAction === "accept" ? (
                 <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

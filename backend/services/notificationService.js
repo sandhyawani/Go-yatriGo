@@ -17,7 +17,6 @@ const getIo = () => {
       return socketIoInstance;
     }
   } catch (err) {
-    // Server might still be initializing
   }
   return null;
 };
@@ -262,11 +261,7 @@ const normalizeNotification = (n) => {
   };
 };
 
-/**
- * Check if the receiver's UserSettings allow this notification
- */
 const isNotificationAllowedByPreferences = async (receiverId, type, category) => {
-  // Safety and emergency notifications are NEVER muted
   if (
     category === "Safety" ||
     type.includes("sos") ||
@@ -320,11 +315,7 @@ const isNotificationAllowedByPreferences = async (receiverId, type, category) =>
   }
 };
 
-/**
- * Check if a duplicate notification exists based on type and entity
- */
 const findDuplicateNotification = async ({ senderId, receiverId, type, entityId, group, journey, post, story, room }) => {
-  // 1. Stateful pending requests: prevent duplicate if one already exists unhandled
   const statefulRequestTypes = [
     "follow_request",
     "join_request",
@@ -348,7 +339,6 @@ const findDuplicateNotification = async ({ senderId, receiverId, type, entityId,
     if (existingPending) return existingPending;
   }
 
-  // 2. Debounce window for rapid repeated clicks (likes, reactions, comments within 15 seconds)
   const debounceTypes = [
     "post_like",
     "memory_like",
@@ -378,10 +368,6 @@ const findDuplicateNotification = async ({ senderId, receiverId, type, entityId,
   return null;
 };
 
-/**
- * Main Centralized Notification Service Method
- * All application features MUST route notifications through this function.
- */
 const createNotification = async (payload, customIo = null) => {
   try {
     const {
@@ -412,7 +398,6 @@ const createNotification = async (payload, customIo = null) => {
     const senderId = sender || actor;
     const receiverId = receiver || recipient;
 
-    // 1. Validate required fields
     if (!receiverId || !type) {
       console.warn("[NotificationService] Missing required recipient or type:", { senderId, receiverId, type });
       return null;
@@ -421,21 +406,17 @@ const createNotification = async (payload, customIo = null) => {
     const senderStr = senderId ? senderId.toString() : null;
     const receiverStr = receiverId.toString();
 
-    // 2. Prevent self-notifications
     if (senderStr && senderStr === receiverStr && !allowSelf) {
-      // Intentionally drop self-notifications
       return null;
     }
 
     const category = explicitCategory || getNotificationCategory(type);
 
-    // 3. Check UserSettings preferences
     const isAllowed = await isNotificationAllowedByPreferences(receiverStr, type, category);
     if (!isAllowed) {
       return null;
     }
 
-    // 4. Check for duplicates / debouncing
     const resolvedEntityId = entityId || journey || group || post || story || room || null;
     const duplicate = await findDuplicateNotification({
       senderId: senderStr,
@@ -453,7 +434,6 @@ const createNotification = async (payload, customIo = null) => {
       return normalizeNotification(duplicate);
     }
 
-    // Resolve direct navigation link
     const deepLink = resolveDeepLink({
       link,
       type,
@@ -467,7 +447,6 @@ const createNotification = async (payload, customIo = null) => {
       sender: senderStr
     });
 
-    // Auto-generate title if missing
     let finalTitle = title;
     if (!finalTitle) {
       let senderName = "A traveler";
@@ -480,7 +459,6 @@ const createNotification = async (payload, customIo = null) => {
       finalTitle = generateNotificationTitle(type, senderName);
     }
 
-    // 5. Save notification to MongoDB
     const notificationDoc = await Notification.create({
       sender: senderStr,
       receiver: receiverStr,
@@ -504,7 +482,6 @@ const createNotification = async (payload, customIo = null) => {
       isRead: false
     });
 
-    // 6. Populate sender & entity data for rich display
     const populated = await Notification.findById(notificationDoc._id)
       .populate("sender", "name username pic avatar img profilePic isVerified")
       .populate("group", "title destination from host")
@@ -516,13 +493,11 @@ const createNotification = async (payload, customIo = null) => {
 
     const normalized = normalizeNotification(populated || notificationDoc);
 
-    // 7. Emit real-time notification through Socket.IO
     const io = customIo || getIo();
     if (io && receiverStr) {
       try {
         io.to(receiverStr).emit("new_notification", normalized);
 
-        // Emit updated unread count
         const unreadCount = await Notification.countDocuments({
           receiver: receiverStr,
           isRead: false
@@ -536,7 +511,6 @@ const createNotification = async (payload, customIo = null) => {
     return normalized;
   } catch (error) {
     console.error("[NotificationService] Error creating notification:", error);
-    // Return null so calling controller's main action does not fail
     return null;
   }
 };

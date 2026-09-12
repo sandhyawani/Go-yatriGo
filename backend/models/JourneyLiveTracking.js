@@ -30,7 +30,6 @@ const journeyLiveTrackingSchema = new mongoose.Schema(
       speed: { type: Number, default: null },
       timestamp: { type: Date, default: null }
     },
-    // Bounded recent trail (sampled coordinates, capped to prevent unbounded document size)
     recentTrail: [
       {
         latitude: { type: Number, required: true },

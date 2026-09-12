@@ -21,7 +21,6 @@ const chatRoomSchema = new mongoose.Schema(
     required: true
   }],
 
-
   travelGroupId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "TravelGroup",
@@ -57,20 +56,17 @@ const chatRoomSchema = new mongoose.Schema(
     seenAt: { type: Date, default: Date.now }
   }],
 
-
   mutedBy: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
 
-
   pinnedBy: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   hiddenFor: [
   {

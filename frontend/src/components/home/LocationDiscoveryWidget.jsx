@@ -21,7 +21,6 @@ const matchIndianStateAndCity = (rawState, rawCity) => {
 
   let matchedState = "";
 
-  // Exact or contains match for state
   for (const st of states) {
     const normSt = normalizeString(st);
     if (normSt === normRawState || normRawState.includes(normSt) || normSt.includes(normRawState)) {
@@ -30,7 +29,6 @@ const matchIndianStateAndCity = (rawState, rawCity) => {
     }
   }
 
-  // Fallback: search all states to find if rawCity matches any city in a state
   if (!matchedState && normRawCity) {
     for (const st of states) {
       const cities = INDIAN_STATES_AND_CITIES[st] || [];
@@ -47,7 +45,6 @@ const matchIndianStateAndCity = (rawState, rawCity) => {
 
   if (!matchedState) return null;
 
-  // Match city within the matched state
   const stateCities = INDIAN_STATES_AND_CITIES[matchedState] || [];
   let matchedCity = "";
 
@@ -85,7 +82,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
         setIsDismissed(true);
       }
     } catch {
-      // sessionStorage unavailable
     }
   }, [userId]);
 
@@ -95,7 +91,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
       try {
         sessionStorage.setItem(`goyatrigo_location_dismissed_${userId}`, "true");
       } catch {
-        // ignore
       }
     }
   };
@@ -117,7 +112,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
           let rawState = "";
 
           try {
-            // Reusing OpenStreetMap reverse geocoding pattern
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 8000);
 
@@ -148,7 +142,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
             console.warn("Nominatim lookup failed or timed out:", geoErr);
           }
 
-          // If Nominatim fails or returns empty, try fallback Photon API
           if (!rawPlace && !rawState) {
             try {
               const controller = new AbortController();
@@ -174,7 +167,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
           const matched = matchIndianStateAndCity(rawState, rawPlace);
 
           if (matched && matched.state && matched.city) {
-            // Exact state and city matched! Save directly
             try {
               const saveRes = await axios.patch(
                 "/users/profile/location",
@@ -196,7 +188,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
             }
           }
 
-          // If state was detected but city was ambiguous, pre-populate state in modal
           if (matched?.state) {
             setDetectedState(matched.state);
             showToast.info(
@@ -238,7 +229,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
     );
   };
 
-  // Case 1: Location is already set - render a compact location indicator with "Change" button
   if (hasLocation) {
     return (
       <>
@@ -267,7 +257,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
     );
   }
 
-  // Case 2: Dismissed for this session - do not render anything
   if (isDismissed) {
     return (
       <LocationSelectModal
@@ -279,7 +268,6 @@ export const LocationDiscoveryWidget = ({ user }) => {
     );
   }
 
-  // Case 3: No location and not dismissed - render compact, non-intrusive discovery prompt
   return (
     <>
       <div className="rounded-2xl border border-brand-200/80 bg-gradient-to-r from-brand-50/70 via-white to-white p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">

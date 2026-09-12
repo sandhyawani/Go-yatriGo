@@ -17,24 +17,19 @@ const Community = () => {
   const { user } = useContext(AuthContext);
   const myUserId = user?._id || user?.id;
 
-
   const [activeTab, setActiveTab] = useState("posts");
-
 
   const [isPostModalOpen, setIsPostModalOpen] = useState(false);
   const [isStoryModalOpen, setIsStoryModalOpen] = useState(false);
   const [showCreateDropdown, setShowCreateDropdown] = useState(false);
 
-
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
-
 
   const [dispatches, setStories] = useState([]);
   const [travelMemories, setTravelMemories] = useState([]);
   const [memories, setMemories] = useState([]);
   const [loading, setLoading] = useState(false);
-
 
   const [likedPosts, setLikedPosts] = useState({});
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
@@ -42,11 +37,7 @@ const Community = () => {
   const [activeCommentPost, setActiveCommentPost] = useState(null);
   const [newCommentText, setNewCommentText] = useState("");
 
-
   const [discussionVotes, setDiscussionVotes] = useState({});
-
-
-
 
   const travelTips = [
   {
@@ -67,7 +58,6 @@ const Community = () => {
     title: "Optimizing backpack weight for squad shares",
     content: "Don't duplicate heavy gears! Before departure, coordinate in the Journeys Checklist tab to allocate group assets. Only one person needs to carry a camping stove, water filters, or first aid kits. It shaves off up to 3kg per person."
   }];
-
 
   const discussions = [
   {
@@ -94,8 +84,6 @@ const Community = () => {
     upvotes: 83,
     tags: ["Leh Ladakh", "Road Trip", "Safety"]
   }];
-
-
 
   useEffect(() => {
     fetchCommunityFeeds();
@@ -127,7 +115,6 @@ const Community = () => {
     }
   };
 
-
   const handleLikePost = async (postId) => {
     setLikedPosts((prev) => ({
       ...prev,
@@ -141,7 +128,6 @@ const Community = () => {
     }
   };
 
-
   const handleBookmarkPost = (postId) => {
     setBookmarkedPosts((prev) => ({
       ...prev,
@@ -149,7 +135,6 @@ const Community = () => {
     }));
     showToast.success(bookmarkedPosts[postId] ? "Removed from bucket list!" : "Added to travel wishlist!");
   };
-
 
   const handleAddComment = (postId) => {
     if (!newCommentText.trim()) return;
@@ -166,14 +151,12 @@ const Community = () => {
     showToast.success("Comment added!");
   };
 
-
   const handleVote = (discId) => {
     setDiscussionVotes((prev) => ({
       ...prev,
       [discId]: (prev[discId] || 0) + 1
     }));
   };
-
 
   const handleHighlightClick = (postId) => {
     setActiveTab("posts");
@@ -375,7 +358,6 @@ const Community = () => {
                 </div>
               </div>}
 
-
             {activeTab === "posts" &&
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-8 items-start">
                 
@@ -522,7 +504,6 @@ const Community = () => {
 
               </div>}
 
-
             {activeTab === "memories" &&
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {memories.map((mem) =>
@@ -568,7 +549,6 @@ const Community = () => {
             )}
               </div>}
 
-
             {activeTab === "tips" &&
           <div className="space-y-4 max-w-3xl mx-auto">
                 {travelTips.map((tip) =>
@@ -583,7 +563,6 @@ const Community = () => {
                   </div>
             )}
               </div>}
-
 
             {activeTab === "discussions" &&
           <div className="space-y-4 max-w-3xl mx-auto">
@@ -620,9 +599,7 @@ const Community = () => {
             })}
               </div>}
 
-
           </div>}
-
 
       </div>
 
@@ -654,7 +631,6 @@ const Community = () => {
         dispatches={[activeStoryGroup]}
         fetchFeedData={fetchCommunityFeeds} />}
 
-
       </AnimatePresence>
 
       <CreateTravelMemoryModal
@@ -663,13 +639,11 @@ const Community = () => {
       onSuccess={fetchCommunityFeeds}
       user={user} />
 
-      
       <CreateDispatchModal
       isOpen={isStoryModalOpen}
       onClose={() => setIsStoryModalOpen(false)}
       onSuccess={fetchCommunityFeeds}
       user={user} />
-
 
     </div>);
 

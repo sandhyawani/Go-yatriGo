@@ -10,7 +10,6 @@ export const GROUP_CATEGORIES = [
 "Wellness & Retreat",
 "City Exploration"];
 
-
 export const LIFECYCLE_STATUSES = {
   UPCOMING: "upcoming",
   ACTIVE: "active",

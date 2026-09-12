@@ -35,11 +35,6 @@ const formatFileSize = (bytes) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-/**
- * Production-ready Identity Verification Modal for Go YatriGo.
- * Provides direct, in-modal Government ID upload flow for unverified/rejected users,
- * and clear status tracking for pending users.
- */
 const VerificationRequiredModal = ({
   isOpen,
   onClose,
@@ -51,7 +46,6 @@ const VerificationRequiredModal = ({
 }) => {
   const { user, updateUser } = useAuth();
 
-  // Internal verification status tracking
   const initialStatus = useMemo(() => {
     return (
       verificationStatus ||
@@ -77,12 +71,10 @@ const VerificationRequiredModal = ({
   const modalRef = useRef(null);
   const previouslyFocusedElementRef = useRef(null);
 
-  // Sync internal status when external prop changes
   useEffect(() => {
     setCurrentStatus(initialStatus);
   }, [initialStatus]);
 
-  // Cleanup object URL on unmount or file clear
   useEffect(() => {
     return () => {
       if (previewUrlRef.current) {
@@ -91,7 +83,6 @@ const VerificationRequiredModal = ({
     };
   }, []);
 
-  // Manage focus trap & restore focus
   useEffect(() => {
     if (isOpen) {
       previouslyFocusedElementRef.current = document.activeElement;
@@ -162,7 +153,6 @@ const VerificationRequiredModal = ({
       return;
     }
 
-    // Generate preview for image files
     if (previewUrlRef.current) {
       URL.revokeObjectURL(previewUrlRef.current);
       previewUrlRef.current = null;
@@ -251,7 +241,6 @@ const VerificationRequiredModal = ({
       );
 
       if (response.data && response.data.success) {
-        // Update user state in AuthContext
         if (typeof updateUser === "function") {
           updateUser({
             ...user,
@@ -263,7 +252,6 @@ const VerificationRequiredModal = ({
           });
         }
 
-        // Transition modal to pending review state
         setCurrentStatus("pending");
         clearFile();
         showToast.success(
@@ -310,7 +298,6 @@ const VerificationRequiredModal = ({
         aria-modal="true"
         aria-labelledby="verification-modal-title"
       >
-        {/* Modal Backdrop */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -322,7 +309,6 @@ const VerificationRequiredModal = ({
           aria-hidden="true"
         />
 
-        {/* Modal Dialog Window */}
         <motion.div
           ref={modalRef}
           initial={{ scale: 0.96, opacity: 0, y: 16 }}
@@ -331,7 +317,6 @@ const VerificationRequiredModal = ({
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="relative w-full max-w-xl bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden z-10 my-auto flex flex-col max-h-[92vh]"
         >
-          {/* Top Bar / Header */}
           <div className="relative px-6 pt-6 pb-5 border-b border-slate-100 text-center bg-white shrink-0">
             <button
               type="button"
@@ -380,9 +365,7 @@ const VerificationRequiredModal = ({
             )}
           </div>
 
-          {/* Scrollable Modal Body */}
           <div className="p-5 sm:p-6 overflow-y-auto space-y-5 bg-white text-left">
-            {/* 1. Pending Status Review Card */}
             {isPending ? (
               <div className="bg-amber-50/80 border border-amber-200 rounded-2xl p-5 space-y-3">
                 <div className="flex items-center gap-2">
@@ -421,7 +404,6 @@ const VerificationRequiredModal = ({
               </div>
             ) : (
               <>
-                {/* Rejection Alert if previous submission was rejected */}
                 {isRejected && (
                   <div className="bg-red-50 border border-red-200 rounded-2xl p-4 text-left">
                     <div className="flex items-center gap-2 mb-1.5">
@@ -436,7 +418,6 @@ const VerificationRequiredModal = ({
                   </div>
                 )}
 
-                {/* 2. Trust & Privacy Information Cards */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="flex items-start gap-3 p-3.5 bg-brand-50/40 rounded-2xl border border-brand-100 shadow-2xs">
                     <div className="p-2 rounded-xl bg-white text-emerald-600 shadow-2xs border border-brand-100 shrink-0">
@@ -463,7 +444,6 @@ const VerificationRequiredModal = ({
                   </div>
                 </div>
 
-                {/* 3. Government ID Upload — MAIN ACTION */}
                 <div className="space-y-3.5 pt-1">
                   <div>
                     <h3 className="text-sm font-bold text-slate-900">
@@ -474,7 +454,6 @@ const VerificationRequiredModal = ({
                     </p>
                   </div>
 
-                  {/* Document Type Selector */}
                   <div className="relative">
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                       Select Document Type <span className="text-red-500">*</span>
@@ -535,14 +514,12 @@ const VerificationRequiredModal = ({
                     </AnimatePresence>
                   </div>
 
-                  {/* Drag & Drop Upload Zone */}
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                       Upload Document File <span className="text-red-500">*</span>
                     </label>
 
                     {!selectedFile ? (
-                      /* Empty Upload Dropzone State */
                       <div
                         onDragOver={handleDragOver}
                         onDragLeave={handleDragLeave}
@@ -578,7 +555,6 @@ const VerificationRequiredModal = ({
                         </p>
                       </div>
                     ) : (
-                      /* Selected File Preview / Status Row */
                       <div className="p-4 bg-brand-50/40 rounded-2xl border border-brand-200 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
                           {filePreview ? (
@@ -627,7 +603,6 @@ const VerificationRequiredModal = ({
                       </div>
                     )}
 
-                    {/* Hidden Accessible File Input */}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -640,7 +615,6 @@ const VerificationRequiredModal = ({
                     />
                   </div>
 
-                  {/* 4. Compact Upload Tips */}
                   <div className="p-3.5 bg-slate-50/80 rounded-xl border border-slate-200/80 text-[11px] text-slate-600">
                     <p className="font-bold text-slate-800 mb-1.5 flex items-center gap-1.5">
                       <span>💡</span> Tips for a successful upload:
@@ -653,7 +627,6 @@ const VerificationRequiredModal = ({
                     </ul>
                   </div>
 
-                  {/* Inline Error Message if any */}
                   {errorMessage && (
                     <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700 flex items-start gap-2">
                       <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -661,7 +634,6 @@ const VerificationRequiredModal = ({
                     </div>
                   )}
 
-                  {/* Upload Progress Bar */}
                   {isSubmitting && uploadProgress > 0 && uploadProgress < 100 && (
                     <div className="space-y-1">
                       <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
@@ -680,7 +652,6 @@ const VerificationRequiredModal = ({
             )}
           </div>
 
-          {/* Security Reassurance & Footer Actions */}
           <div className="p-5 border-t border-slate-100 bg-white shrink-0 space-y-3">
             {!isPending && (
               <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1.5">

@@ -131,7 +131,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
           }
         }
       } catch (err) {
-        // graceful fallback below
       }
       if (isMounted) {
         setWeather({ temp: 32, desc: "Overcast clouds" });
@@ -213,7 +212,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
         nextState ? "Saved to your journey vibes!" : "Removed from saved journeys"
       );
     } catch (err) {
-      // rollback state if failed
       setHasFelt(!nextState);
       setFeltCount((prev) => (!nextState ? prev + 1 : Math.max(0, prev - 1)));
     }
@@ -292,9 +290,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
         onClick={handleNavigateWorkspace}
         className={`overflow-hidden group border border-slate-200/80 shadow-xs hover:shadow-md ${statusConfig.borderHover} transition-all duration-300 relative bg-white rounded-3xl cursor-pointer`}
       >
-        {/* =====================================================================
-            TOP BANNER: IMMERSIVE HERO WITH GLASS CONTROLS
-            ===================================================================== */}
         <div className="relative h-60 sm:h-68 w-full overflow-hidden bg-slate-950">
           <img
             src={tripImage}
@@ -306,12 +301,9 @@ const JourneyStatusWidget = ({ journey, user }) => {
             }}
           />
 
-          {/* Cinematic Vignette Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/45 to-black/30 pointer-events-none" />
 
-          {/* Top Floating Controls Bar */}
           <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-10 gap-2">
-            {/* Status Pill */}
             <span
               className={`px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md shadow-xs transition-transform duration-200 group-hover:scale-102 ${statusConfig.badge}`}
             >
@@ -326,9 +318,7 @@ const JourneyStatusWidget = ({ journey, user }) => {
               <span>{statusConfig.label}</span>
             </span>
 
-            {/* Interactive Top Actions Group */}
             <div className="flex items-center gap-2">
-              {/* Group Chat Shortcut Pill */}
               <button
                 type="button"
                 onClick={handleOpenChat}
@@ -340,7 +330,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </button>
 
-              {/* Explore All Trips Button */}
               <button
                 type="button"
                 onClick={(e) => {
@@ -357,9 +346,7 @@ const JourneyStatusWidget = ({ journey, user }) => {
             </div>
           </div>
 
-          {/* Bottom Overlay over Image: Route, Title & Stylish Cloud Details at Bottom */}
           <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-4 sm:left-4 sm:right-4 z-10 text-white space-y-2">
-            {/* Route Pill */}
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/35 backdrop-blur-md border border-white/15 text-sky-200 text-xs font-semibold">
               <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
               <span className="truncate">
@@ -367,12 +354,10 @@ const JourneyStatusWidget = ({ journey, user }) => {
               </span>
             </div>
 
-            {/* Journey Title */}
             <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight truncate drop-shadow-md font-heading group-hover:text-sky-100 transition-colors">
               {journey.title || "Weekend Escape to Manali"}
             </h3>
 
-            {/* Stylish Cloud Details Bar at Bottom of Image */}
             <div className="flex items-center justify-between pt-0.5 gap-2 flex-wrap">
               <div
                 className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-950/70 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/25 text-white group/cloud hover:bg-slate-950/85 transition-all duration-300"
@@ -396,7 +381,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 </div>
               </div>
 
-              {/* Destination Tag */}
               <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-[11px] font-medium text-white/90">
                 <Compass className="w-3 h-3 text-sky-400" />
                 <span>{routeParts.to} Climate</span>
@@ -405,12 +389,8 @@ const JourneyStatusWidget = ({ journey, user }) => {
           </div>
         </div>
 
-        {/* =====================================================================
-            CARD BODY: INTERACTIVE PROGRESS, TRAVELERS & TOOLBAR
-            ===================================================================== */}
         <div className="p-4 sm:p-5 flex flex-col gap-4 bg-white">
           
-          {/* Live Progress Tracker with Animated Gradient */}
           {durationInfo && (
             <div className="space-y-1.5">
               <div className="flex items-center justify-between text-xs">
@@ -434,7 +414,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 />
               </div>
 
-              {/* Dynamic Next Milestone / Trip Highlight */}
               <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 font-medium">
                 <span className="inline-flex items-center gap-1 text-slate-600">
                   <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
@@ -451,12 +430,9 @@ const JourneyStatusWidget = ({ journey, user }) => {
             </div>
           )}
 
-          {/* Key Trip Information & Interactive Controls Row */}
           <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
             
-            {/* Left: Date & Stacked Traveler Avatars */}
             <div className="flex items-center gap-4 flex-wrap">
-              {/* Date */}
               <div className="flex items-center gap-1.5 min-w-0">
                 <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="text-xs font-semibold text-slate-700 truncate">
@@ -464,7 +440,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 </span>
               </div>
 
-              {/* Interactive Traveler Avatars Stack */}
               <div
                 className="flex items-center gap-2 group/travelers"
                 title={`${travelerCount} confirmed companions on this journey`}
@@ -505,9 +480,7 @@ const JourneyStatusWidget = ({ journey, user }) => {
               </div>
             </div>
 
-            {/* Right: Interactive Quick Actions (Bookmark + Share) */}
             <div className="flex items-center gap-1.5 self-end sm:self-auto">
-              {/* Bookmark Journey */}
               <button
                 type="button"
                 onClick={handleToggleFelt}
@@ -521,7 +494,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 <Bookmark className={`w-3.5 h-3.5 ${hasFelt ? "fill-brand" : ""}`} />
               </button>
 
-              {/* Share Journey */}
               <button
                 type="button"
                 onClick={handleShare}
@@ -535,7 +507,6 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 )}
               </button>
 
-              {/* Trip Details Button */}
               <button
                 type="button"
                 onClick={(e) => {

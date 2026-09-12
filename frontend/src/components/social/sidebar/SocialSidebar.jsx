@@ -24,8 +24,6 @@ const SidebarLayout = ({ children }) => {
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 
-  // Called when a journey is successfully created inside the global modal.
-  // Navigate directly to the new journey's detail page.
   const handleJourneyCreated = (newJourney) => {
     setIsCreateJourneyOpen(false);
     if (newJourney?._id) {
@@ -33,7 +31,6 @@ const SidebarLayout = ({ children }) => {
     }
   };
 
-  // Ensure main scroll container and window reset to 0 when navigating to home page
   React.useEffect(() => {
     if (isHomePage) {
       window.scrollTo(0, 0);
@@ -42,7 +39,6 @@ const SidebarLayout = ({ children }) => {
     }
   }, [isHomePage]);
 
-  // Lock main-scroll-container at top on desktop home page to prevent feed/sidebar shifting
   React.useEffect(() => {
     if (!isHomePage) return;
     const el = document.getElementById("main-scroll-container");
@@ -81,21 +77,18 @@ const SidebarLayout = ({ children }) => {
         <SearchPanel />
       </Suspense>
 
-      {/* Global Travel Memory creation modal */}
       <CreateTravelMemoryModal
         isOpen={isCreatePostOpen}
         onClose={() => setIsCreatePostOpen(false)}
         onSuccess={() => navigate("/")}
       />
 
-      {/* Global Journey creation modal — shared by every entry point */}
       <CreateJourneyModal
         isOpen={isCreateJourneyOpen}
         onClose={() => setIsCreateJourneyOpen(false)}
         onCreated={handleJourneyCreated}
       />
 
-      {/* First-time user onboarding navigation tour */}
       <NavigationTour />
     </div>
   );

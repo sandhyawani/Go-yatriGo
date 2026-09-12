@@ -456,18 +456,14 @@ const AdminContactRequests = () => {
               <CardSkeleton />
             </>}
 
-
           {viewState === ViewState.ERROR &&
           <ErrorState
           message={error}
           onRetry={() => fetchContacts({ isRetry: true })}
           retrying={retrying} />}
 
-
-
           {viewState === ViewState.EMPTY &&
           <EmptyState hasFilters={hasActiveFilters} />}
-
 
           {viewState === ViewState.SUCCESS &&
           filteredContacts.map((contact, index) =>

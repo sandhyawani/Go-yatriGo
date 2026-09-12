@@ -44,7 +44,6 @@ const getFlagForLanguage = (language) => {
 const fetchItunesTracks = async (queryTerm, limit = 20) => {
   const cacheKey = `${queryTerm}_${limit}`;
 
-
   if (musicCache.has(cacheKey)) {
     const cached = musicCache.get(cacheKey);
     if (Date.now() - cached.timestamp < CACHE_TTL) {
@@ -80,7 +79,6 @@ const fetchItunesTracks = async (queryTerm, limit = 20) => {
     );
 
     let tracks = parseTracks(response.data?.results);
-
 
     if (tracks.length < 5) {
       response = await axios.get(
@@ -211,7 +209,6 @@ exports.getTrendingMusic = async (req, res) => {
       "pop hits",
       "kpop",
       "reggaeton"];
-
 
       const results = await Promise.all(
       queries.map((query) => fetchItunesTracks(query, 12))

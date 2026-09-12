@@ -1,4 +1,5 @@
 import axios, { AUTH_UNAUTHORIZED_EVENT } from "../api/axios";
+import { sanitizeCloudinaryUrls } from "../utils/toHttps";
 import {
 createContext,
 useContext,
@@ -30,12 +31,12 @@ const normalizeAuthPayload = (data, fallbackToken) => {
   details.tokenExpiry ||
   null;
 
-  return stripSensitiveFields({
+  return sanitizeCloudinaryUrls(stripSensitiveFields({
     ...details,
     isAdmin: data?.isAdmin ?? details.isAdmin,
     token,
     tokenExpiry
-  });
+  }));
 };
 
 const getStoredUser = () => {
@@ -43,7 +44,7 @@ const getStoredUser = () => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
 
-    const parsed = stripSensitiveFields(JSON.parse(raw));
+    const parsed = sanitizeCloudinaryUrls(stripSensitiveFields(JSON.parse(raw)));
 
     if (parsed?.tokenExpiry && Date.now() > parsed.tokenExpiry) {
       localStorage.removeItem(STORAGE_KEY);

@@ -4,7 +4,6 @@ import { Mail, Phone, MapPin, Send, ShieldCheck, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 import axios from "../api/axios";
 
-
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const INITIAL_FORM = { name: "", email: "", subject: "", message: "" };
 
@@ -18,7 +17,6 @@ const validate = ({ name, email, subject, message }) => {
   return "Message must be at least 10 characters.";
   return null;
 };
-
 
 const CONTACT_INFO = [
 {
@@ -43,12 +41,10 @@ const CONTACT_INFO = [
   color: "from-brand-500 to-brand-700"
 }];
 
-
 const inputClass =
 "w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-text-primary font-medium outline-none focus:bg-white focus:border-brand-500 focus:ring-4 focus:ring-brand-500/10 transition-all placeholder:text-text-muted text-sm shadow-sm";
 const labelClass =
 "text-[11px] font-bold text-text-muted uppercase tracking-wider ml-1 mb-1.5 block";
-
 
 const ContactUs = () => {
   const [formData, setFormData] = useState(INITIAL_FORM);

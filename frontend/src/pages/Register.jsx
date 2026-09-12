@@ -30,7 +30,6 @@ const ALLOWED_MIME_TYPES = [
 "image/webp",
 "image/gif"];
 
-
 const Register = () => {
   const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
@@ -120,7 +119,6 @@ const Register = () => {
     const selectedFile = e.target.files[0];
     if (!selectedFile) return;
 
-
     if (!ALLOWED_MIME_TYPES.includes(selectedFile.type)) {
       showToast.error(
       "Invalid File Type",
@@ -129,7 +127,6 @@ const Register = () => {
       return;
     }
 
-
     if (selectedFile.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
       showToast.error(
       "File Too Large",
@@ -137,7 +134,6 @@ const Register = () => {
       );
       return;
     }
-
 
     if (previewUrlRef.current) URL.revokeObjectURL(previewUrlRef.current);
     const url = URL.createObjectURL(selectedFile);
@@ -223,7 +219,6 @@ const Register = () => {
       try {
         localStorage.setItem(`goyatrigo_newly_registered_${payload.email.trim().toLowerCase()}`, "true");
       } catch (e) {
-        // Safe fallback if localStorage is disabled
       }
       sessionStorage.removeItem("registerFormData");
       navigate("/login", { replace: true });
@@ -324,7 +319,6 @@ const Register = () => {
                     src={preview}
                     alt="Avatar preview"
                     className="w-full h-full object-cover rounded-xl" /> :
-
 
                     <div className="flex flex-col items-center gap-1">
                         <User className="w-5 h-5 text-slate-300 group-hover:text-brand-500 transition-colors" />
@@ -483,7 +477,6 @@ const Register = () => {
                 </div>
               </div>
 
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label htmlFor="password" className={labelClass}>
@@ -511,7 +504,6 @@ const Register = () => {
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1"
                     aria-label={
                     showPassword ? "Hide password" : "Show password"}>
-
 
                       {showPassword ?
                       <EyeOff className="w-3.5 h-3.5" /> :
@@ -545,7 +537,6 @@ const Register = () => {
                         {STRENGTH_META[strength].text}
                       </p>
                     </div>}
-
 
                   <AnimatePresence>
                     {errors.password &&
@@ -595,7 +586,6 @@ const Register = () => {
                     "border-emerald-300 focus:border-emerald-400 focus:ring-emerald-400/20" :
                     "border-slate-200 focus:border-brand-500 focus:ring-brand-500/20"
                     } rounded-xl text-text-primary font-bold outline-none focus:bg-white focus:ring-4 transition-all placeholder:text-text-muted text-sm shadow-sm`} />
-
 
                     {formData.repeatPassword &&
                     formData.repeatPassword === formData.password &&

@@ -94,7 +94,6 @@ const ChatRoom = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [activeMessageOptions, setActiveMessageOptions] = useState(null);
 
-
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
   const [showHeaderOptions, setShowHeaderOptions] = useState(false);
@@ -556,13 +555,6 @@ const ChatRoom = () => {
 
   }, [socket, currentUserId]);
 
-
-
-
-
-
-
-
   const fetchChannels = async () => {
     try {
       setLoading(true);
@@ -580,9 +572,6 @@ const ChatRoom = () => {
       ]);
       if (res.data.success) {
         setRooms(res.data.rooms);
-
-
-
 
         if (targetUserId && roomRes?.room) {
           const targetRoom = roomRes.room;
@@ -659,7 +648,6 @@ const ChatRoom = () => {
     setMessagesPage(1);
     setHasMoreMessages(false);
 
-    // Reset unread count locally for this room
     setRooms((prev) =>
       prev.map((r) => (r._id === room._id ? { ...r, unreadCount: 0 } : r))
     );
@@ -940,7 +928,6 @@ const ChatRoom = () => {
   const handleReaction = async (messageId, emoji) => {
     if (!activeRoom || !messageId || !emoji) return;
 
-    // Optimistic UI update: toggle reaction
     setMessages((prev) =>
       prev.map((m) => {
         if (m._id === messageId || m._id?.toString?.() === messageId?.toString?.()) {
@@ -951,10 +938,8 @@ const ChatRoom = () => {
 
           let updatedReactions;
           if (existingIdx > -1) {
-            // Remove reaction
             updatedReactions = currentReactions.filter((_, idx) => idx !== existingIdx);
           } else {
-            // Filter out any previous reaction by this user, then add the new emoji
             updatedReactions = [
               ...currentReactions.filter(
                 (r) => (r.user?._id || r.user || r.userId)?.toString() !== currentUserId?.toString()
@@ -1568,7 +1553,6 @@ const ChatRoom = () => {
       const senderId = typeof lastMsg?.sender === "object" ? lastMsg.sender?._id || lastMsg.sender?.id : lastMsg?.sender;
       const isSelf = senderId?.toString() === currentUserId?.toString();
 
-
       if (isSelf || !showScrollBottom) {
         setTimeout(scrollToBottom, 50);
       }
@@ -1693,8 +1677,6 @@ const ChatRoom = () => {
       handleDeclineFollowRequest={handleRejectFollow}
       processingRequestIds={processingRequestIds} />}
 
-
-
       <main
       className={`flex-1 flex flex-col h-full bg-background overflow-hidden ${
       isEmbedded || activeRoom ? "flex" : "hidden lg:flex"
@@ -1717,7 +1699,6 @@ const ChatRoom = () => {
           handleClearChat={handleClearChat}
           handleDeleteChat={handleDeleteChat} />
 
-            
             <ChatMessages
           messages={messages}
           currentUserId={currentUserId}
@@ -1739,7 +1720,6 @@ const ChatRoom = () => {
           messagesEndRef={messagesEndRef}
           loadingMessages={loadingMessages} />
 
-            
             {activeRoom.type === "direct" &&
           activeRoom.requestStatus === "pending" ?
           activeRoom.requestedBy?.toString() === currentUserId?.toString() ?
@@ -1924,7 +1904,6 @@ const ChatRoom = () => {
           handleSendMessage={handleSendMessage}
           textareaRef={textareaRef} />
         )}
-
 
           </> :
         loading ?

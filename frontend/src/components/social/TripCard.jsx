@@ -140,7 +140,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
         isInactive ? 'opacity-75 grayscale-[0.2] hover:grayscale-0' : ''
       }`}
     >
-      {/* Card Media Header - Bright, clean, subtle vignette */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100 flex items-center justify-center">
         <img
           src={trip.coverImage || DEFAULT_COVER}
@@ -153,10 +152,8 @@ const TripCard = ({ trip, user, handleFelt }) => {
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
 
-        {/* Subtle top and bottom gradient only for text/badge readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20 pointer-events-none" />
         
-        {/* Top Badges Row */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-center z-10">
           {getStatusBadge()}
           
@@ -178,7 +175,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
           </button>
         </div>
 
-        {/* Bottom Image Info: Duration & Travelers Avatars */}
         <div className="absolute bottom-3 left-3 right-3 flex justify-between items-end z-10">
           {!isInactive && (
             <div className="flex items-center -space-x-1.5 bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">
@@ -216,7 +212,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
             </div>
           )}
 
-          {/* Duration Badge */}
           <span className="bg-black/40 backdrop-blur-md border border-white/20 text-white text-[11px] font-medium px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-xs">
             <Clock className="w-3 h-3 text-sky-300" />
             {durationText}
@@ -224,10 +219,8 @@ const TripCard = ({ trip, user, handleFelt }) => {
         </div>
       </div>
 
-      {/* Card Body - Perfectly Aligned Content */}
       <div className="p-4 flex flex-col flex-1 gap-2.5">
         
-        {/* Line 1: Category Tag & Host */}
         <div className="flex items-center justify-between gap-2 min-w-0">
           <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold tracking-wide border truncate ${categoryStyle.bg} ${categoryStyle.text} ${categoryStyle.border}`}>
             {trip.category || "Adventure"}
@@ -260,7 +253,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
           })()}
         </div>
 
-        {/* Line 2: Headline & Rating IN LINE */}
         <div className="flex items-baseline justify-between gap-2">
           <h3 
             className="font-heading font-bold text-[15px] text-slate-900 tracking-tight leading-snug truncate flex-1 group-hover:text-sky-600 transition-colors" 
@@ -276,7 +268,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
           </div>
         </div>
 
-        {/* Line 3: Route & Dates (Clean, aligned in one horizontal flow) */}
         <div className="flex items-center gap-1.5 text-xs text-slate-500 min-w-0">
           <div className="flex items-center gap-1 min-w-0 truncate">
             <MapPin className="w-3.5 h-3.5 text-sky-600 shrink-0" />
@@ -301,7 +292,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
           </div>
         </div>
 
-        {/* Line 4: Pricing/Capacity & Join CTA Button */}
         <div className="mt-auto pt-3 flex items-center justify-between gap-2 border-t border-slate-100">
           <div className="flex flex-col min-w-0">
             <div className="flex items-baseline gap-1">
@@ -344,7 +334,6 @@ const TripCard = ({ trip, user, handleFelt }) => {
             </div>
           </div>
 
-          {/* Action Button - Unified Brand Button */}
           {!isInactive && hostUser?._id !== user?._id && (() => {
             const canJoin = !hasJoined && !hasRequested && slotsOpen > 0 && !isOngoing;
 

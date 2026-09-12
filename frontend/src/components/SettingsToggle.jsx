@@ -15,7 +15,6 @@ const SettingsToggle = ({
   const [value, setValue] = useState(Boolean(initialValue));
   const [isLoading, setIsLoading] = useState(false);
 
-
   useEffect(() => {
     if (!isLoading) {
       setValue(Boolean(initialValue));

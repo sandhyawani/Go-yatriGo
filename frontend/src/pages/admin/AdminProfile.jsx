@@ -56,7 +56,6 @@ const AdminProfile = () => {
 
   <span className="text-[13px] italic text-text-muted">{fallback}</span>;
 
-
   const fade = (delay = 0) => ({
     initial: { opacity: 0, y: 8 },
     animate: { opacity: 1, y: 0 },

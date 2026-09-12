@@ -8,16 +8,13 @@ export const SocketContext = createContext(null);
 const isProduction = window.location.hostname.includes('vercel.app') || process.env.NODE_ENV === 'production';
 let SOCKET_URL = process.env.REACT_APP_SOCKET_URL || (isProduction ? 'https://go-yatrigo.onrender.com' : 'http://localhost:5000');
 
-
 if (SOCKET_URL) {
 
   SOCKET_URL = SOCKET_URL.replace('go-yatri-go.onrender.com', 'go-yatrigo.onrender.com');
 
-
   if (isProduction && SOCKET_URL.includes('localhost')) {
     SOCKET_URL = 'https://go-yatrigo.onrender.com';
   }
-
 
   SOCKET_URL = SOCKET_URL.replace(/\/+$/, '').replace(/\/api$/, '');
 }

@@ -18,7 +18,6 @@ ShieldCheck,
 AlertCircle } from
 "lucide-react";
 
-
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/login.jpg";
 import travelBg from "../assets/images/bg.jpg";
@@ -88,7 +87,6 @@ const Login = () => {
     });
   }, [loginWithGoogle, navigate]);
 
-  // Always use the latest callback without forcing GIS to initialize again.
   useEffect(() => {
     googleSuccessRef.current = handleGoogleSuccess;
   }, [handleGoogleSuccess]);
@@ -143,7 +141,7 @@ const Login = () => {
          * The callback itself is kept in googleSuccessRef so it can stay
          * current without re-initializing GIS.
          */
-        if (!gisInitializedRef.current) {
+        if (window.__gsi_initialized_client_id !== clientId) {
           window.google.accounts.id.initialize({
             client_id: clientId,
             callback: (response) => {
@@ -155,6 +153,7 @@ const Login = () => {
             cancel_on_tap_outside: true,
           });
 
+          window.__gsi_initialized_client_id = clientId;
           gisInitializedRef.current = true;
         }
 
@@ -350,7 +349,6 @@ const Login = () => {
           localStorage.removeItem(`goyatrigo_newly_registered_${userEmail}`);
         }
       } catch (e) {
-        // Safe fallback
       }
 
       if (loggedInUser.isAdmin === true) {
@@ -373,8 +371,6 @@ const Login = () => {
       customClass: { popup: "rounded-[1.5rem]" }
     });
   };
-
-
 
   const handleSocialAuth = (provider) => {
     Swal.fire({
@@ -550,7 +546,6 @@ const Login = () => {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors p-1"
                   aria-label={
                   showPassword ? "Hide password" : "Show password"}>
-
 
                     {showPassword ?
                     <EyeOff className="w-4 h-4" /> :

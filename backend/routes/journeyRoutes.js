@@ -127,7 +127,6 @@ post(journeyMembershipController.acceptJourneyJoinRequest);
 router.route("/join-requests/:requestId/reject").
 post(journeyMembershipController.rejectJourneyJoinRequest);
 
-// Live Trip Tracking
 router.route("/:id/tracking/settings").
 get(journeyTrackingController.getTrackingSettings).
 put(journeyTrackingController.updateTrackingSettings);

@@ -65,7 +65,6 @@ const JourneyStatistics = ({ userId }) => {
   }
   ];
 
-
   const getTravelerTier = (trips) => {
     if (!trips || trips === 0) return "Novice";
     if (trips <= 2) return "Explorer";
@@ -76,7 +75,6 @@ const JourneyStatistics = ({ userId }) => {
 
   return (
     <div className="space-y-8 animate-fade-in relative">
-      {/* ...existing code for statCards... */}
       <div className="grid grid-cols-4 gap-3">
         {statCards.map((c, i) =>
         <div
@@ -98,9 +96,7 @@ const JourneyStatistics = ({ userId }) => {
         )}
       </div>
 
-      {/* ...existing code for badges... */}
       <div className="relative overflow-hidden bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm transition-all">
-        {/* ...existing bg element... */}
         <div className="absolute -top-24 -right-24 w-64 h-64 bg-brand/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 relative z-10">

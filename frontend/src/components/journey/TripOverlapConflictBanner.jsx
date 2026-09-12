@@ -1,7 +1,6 @@
 import React from "react";
 import { AlertTriangle, ChevronRight } from "lucide-react";
 
-// Banner displayed on trip details when an overlap conflict exists
 const TripOverlapConflictBanner = ({
   conflictType = "ACTIVE_JOURNEY_CONFLICT",
   onOpenDetails,

@@ -55,19 +55,15 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
 
   return (
     <div className="group bg-white rounded-2xl border border-slate-200/80 shadow-[0_2px_12px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_24px_rgba(2,132,199,0.1)] hover:border-brand/40 transition-all duration-200 flex flex-col justify-between overflow-hidden h-full hover:-translate-y-0.5">
-      {/* Compact Media Header */}
       <div className="relative h-[148px] sm:h-[156px] w-full overflow-hidden bg-slate-100 shrink-0">
         <img
           src={journey.coverImage || defaultCover}
           alt={journey.title}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
         />
-        {/* Scrim overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/15" />
 
-        {/* Top Badges */}
         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between gap-1.5 z-10">
-          {/* Status Badge */}
           {isOngoing ? (
             <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9.5px] font-black text-white bg-gradient-to-r from-sky-600/95 to-cyan-600/95 backdrop-blur-md border border-cyan-300/40 shadow-sm">
               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
@@ -90,13 +86,11 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
             </div>
           )}
 
-          {/* Type Badge */}
           <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-extrabold text-white/95 bg-black/45 backdrop-blur-md border border-white/20 shadow-xs">
             {journey.sourceType === "explore" ? "🌍 Explore Group" : isSolo ? "👤 Solo Trip" : "👥 Friends"}
           </div>
         </div>
 
-        {/* Route and Title Overlay */}
         <div className="absolute bottom-2.5 left-3 right-3 text-white z-10">
           <div className="inline-flex items-center gap-1 bg-black/40 backdrop-blur-md px-2 py-0.5 rounded-md border border-white/15 text-[9.5px] font-bold text-slate-200 uppercase tracking-wider mb-1 max-w-full truncate shadow-xs">
             <MapPin className="w-2.5 h-2.5 text-rose-400 shrink-0" />
@@ -114,10 +108,8 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
         </div>
       </div>
 
-      {/* Compact Body Content */}
       <div className="p-3.5 sm:p-4 flex-1 flex flex-col justify-between space-y-3">
         
-        {/* Info Row: Date/Duration + Squad Avatars */}
         <div className="flex items-center justify-between text-xs font-semibold text-text-secondary">
           <div className="flex items-center gap-1.5 text-[11px] text-text-muted font-medium">
             <Calendar className="w-3 h-3 text-brand shrink-0" />
@@ -133,7 +125,6 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
             <span>{durationDays} {durationDays === 1 ? "Day" : "Days"}</span>
           </div>
 
-          {/* Overlapping Explorers */}
           <div className="flex items-center gap-1.5 shrink-0">
             <div className="flex items-center -space-x-1.5">
               {journey.members && journey.members.length > 0 ? (
@@ -161,7 +152,6 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           </div>
         </div>
 
-        {/* Status indicator / Countdown (Compact) */}
         {isOngoing ? (
           <div className="space-y-1.5 bg-slate-50/90 px-3 py-2 rounded-xl border border-slate-200/80">
             <div className="flex items-center justify-between text-[10.5px] font-bold text-slate-800">
@@ -200,7 +190,6 @@ const JourneyCard = ({ journey, onCheckInClick }) => {
           </div>
         ) : null}
 
-        {/* Action Button & Stamp */}
         <div className="mt-auto pt-2 space-y-1.5 border-t border-slate-100">
           <div className="flex items-center gap-1.5">
             <Link

@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 const Journey = require("../models/Journey");
 const JourneyLiveTracking = require("../models/JourneyLiveTracking");
+const { toHttps } = require("../utils/toHttps");
 
-// Helper to verify if user is authorized member/creator of a journey
 const checkJourneyMembership = (journey, userId) => {
   if (!journey || !userId) return false;
   const uid = userId.toString();
@@ -16,7 +16,6 @@ const checkJourneyMembership = (journey, userId) => {
   });
 };
 
-// GET /api/journeys/:id/tracking/settings
 exports.getTrackingSettings = async (req, res) => {
   try {
     const { id } = req.params;
@@ -41,7 +40,6 @@ exports.getTrackingSettings = async (req, res) => {
       });
     }
 
-    // Retrieve other active members currently sharing location
     const activeTrackers = await JourneyLiveTracking.find({
       journeyId: id,
       isLive: true
@@ -71,7 +69,6 @@ exports.getTrackingSettings = async (req, res) => {
   }
 };
 
-// PUT /api/journeys/:id/tracking/settings
 exports.updateTrackingSettings = async (req, res) => {
   try {
     const { id } = req.params;
@@ -91,7 +88,6 @@ exports.updateTrackingSettings = async (req, res) => {
     if (autoTrackingEnabled !== undefined) {
       const enabled = Boolean(autoTrackingEnabled);
       updateFields.autoTrackingEnabled = enabled;
-      // If user turns off auto-tracking, immediately stop any active live tracking
       if (!enabled) {
         updateFields.isLive = false;
       }
@@ -103,7 +99,6 @@ exports.updateTrackingSettings = async (req, res) => {
       { new: true, upsert: true }
     );
 
-    // If auto-tracking was disabled and user was live, notify room of stop
     const io = req.app.get("io");
     if (io && autoTrackingEnabled === false) {
       io.to(id.toString()).emit("journey_tracking_status_changed", {
@@ -131,8 +126,6 @@ exports.updateTrackingSettings = async (req, res) => {
   }
 };
 
-// GET /api/journeys/:id/tracking/live
-// Initial state fetch for live tracking map
 exports.getJourneyLiveTracking = async (req, res) => {
   try {
     const { id } = req.params;
@@ -147,7 +140,6 @@ exports.getJourneyLiveTracking = async (req, res) => {
       return res.status(403).json({ success: false, message: "Access denied. Only journey members can view live tracking." });
     }
 
-    // Only return live tracking data if member opted in or is live
     const liveTrackers = await JourneyLiveTracking.find({
       journeyId: id,
       $or: [{ isLive: true }, { "currentLocation.latitude": { $ne: null } }]
@@ -156,7 +148,7 @@ exports.getJourneyLiveTracking = async (req, res) => {
     const trackersData = liveTrackers.map((t) => ({
       userId: t.userId?._id || t.userId,
       name: t.userId?.name || "Traveler",
-      profilePic: t.userId?.profilePic || "",
+      profilePic: toHttps(t.userId?.profilePic || ""),
       isLive: Boolean(t.isLive),
       currentLocation: t.currentLocation || null,
       recentTrail: Array.isArray(t.recentTrail) ? t.recentTrail.slice(-30) : [],

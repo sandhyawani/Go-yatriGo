@@ -18,6 +18,7 @@ const {
   unblockUserAction,
 } = require("../utils/blockHelper");
 const { isValidObjectId } = require("../utils/validateObjectId");
+const { toHttps, normalizeUserUrls } = require("../utils/toHttps");
 
 const SOCKET_EVENTS = {
   NEW_NOTIFICATION: "new_notification",
@@ -202,7 +203,7 @@ const updateUser = asyncHandler(async (req, res) => {
   res.status(200).json({
     success: true,
     message: "Profile updated successfully",
-    user: userObj,
+    user: normalizeUserUrls(userObj),
   });
 });
 
@@ -249,7 +250,6 @@ const getUser = asyncHandler(async (req, res) => {
   const isOwner =
     currentUserId && currentUserId.toString() === user._id.toString();
 
-  // Check bidirectional blocking
   if (currentUserId && !isOwner && !req.user?.isAdmin) {
     const isBlocked = await isBlockedPair(currentUserId, user._id);
     if (isBlocked) {
@@ -260,7 +260,7 @@ const getUser = asyncHandler(async (req, res) => {
       if (isBlockedByMe) {
         return res.status(200).json({
           success: true,
-          user: {
+          user: normalizeUserUrls({
             _id: user._id,
             name: user.name,
             username: user.username,
@@ -280,7 +280,7 @@ const getUser = asyncHandler(async (req, res) => {
             followingCount: 0,
             mutualsCount: 0,
             tripMatesCount: 0
-          },
+          }),
           isBlocked: true,
           isBlockedByMe: true
         });
@@ -295,7 +295,6 @@ const getUser = asyncHandler(async (req, res) => {
     }
   }
 
-  // Filter out any blocked users from populated followers/following lists
   if (currentUserId) {
     const { idSet: blockedIdSet } = await getBlockedUserIds(currentUserId);
     if (blockedIdSet.size > 0) {
@@ -308,7 +307,6 @@ const getUser = asyncHandler(async (req, res) => {
     }
   }
 
-  // Compute stats before any privacy stripping for private accounts
   user.followersCount = (user.followers || []).length;
   user.followingCount = (user.following || []).length;
   const followersList = (user.followers || []).map((f) => (f._id || f).toString());
@@ -327,7 +325,6 @@ const getUser = asyncHandler(async (req, res) => {
     delete user.govId;
     delete user.govIdType;
     delete user.blockedUsers;
-    // For privacy: do not leak other users' pending requests, but preserve whether current user has requested to follow
     if (user.followRequests && Array.isArray(user.followRequests) && currentUserId) {
       const hasPendingReq = user.followRequests.some(
         (id) => (id._id || id).toString() === currentUserId.toString()
@@ -410,7 +407,7 @@ const getUser = asyncHandler(async (req, res) => {
     }
   }
 
-  res.status(200).json({ success: true, user });
+  res.status(200).json({ success: true, user: normalizeUserUrls(user) });
 });
 
 const getAllUsers = asyncHandler(async (req, res) => {
@@ -419,11 +416,11 @@ const getAllUsers = asyncHandler(async (req, res) => {
   ).lean();
   const users = rawUsers.map((u) => {
     const isActuallyVerified = Boolean(u.isVerified === true && u.verificationStatus === "verified");
-    return {
+    return normalizeUserUrls({
       ...u,
       isVerified: isActuallyVerified,
       verificationStatus: isActuallyVerified ? "verified" : "unverified",
-    };
+    });
   });
   res.status(200).json({ success: true, users });
 });
@@ -469,11 +466,11 @@ const searchUsers = asyncHandler(async (req, res) => {
 
   const users = rawUsers.map((u) => {
     const isActuallyVerified = Boolean(u.isVerified === true && u.verificationStatus === "verified");
-    return {
+    return normalizeUserUrls({
       ...u,
       isVerified: isActuallyVerified,
       verificationStatus: isActuallyVerified ? "verified" : "unverified",
-    };
+    });
   });
 
   res.status(200).json({ success: true, users });
@@ -895,7 +892,6 @@ const rateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check which candidate trips have already been reviewed by currentUserId
   const candidateTripIds = candidateTrips.map((t) => t._id);
   const existingReviews = await Review.find({
     reviewer: currentUserId,
@@ -914,7 +910,6 @@ const rateUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Create review record
   try {
     await Review.create({
       reviewer: currentUserId,
@@ -935,7 +930,6 @@ const rateUser = asyncHandler(async (req, res) => {
     throw err;
   }
 
-  // Recalculate targetUser rating & reviewsCount directly from all Review records
   const allUserReviews = await Review.find({ reviewedUser: targetUserId });
   const totalReviews = allUserReviews.length;
   const ratingSum = allUserReviews.reduce((sum, r) => sum + r.rating, 0);
@@ -1371,7 +1365,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
       .lean(),
   ]);
 
-  // Exclude current user, blocked users, existing following, and existing trip mates from discovery
   const excludeUserIds = new Set();
   excludeUserIds.add(currentUserId.toString());
   followingList.forEach((id) => excludeUserIds.add(id));
@@ -1392,7 +1385,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     }
   }
 
-  // Build candidate trips & group maps
   const candidateTripsMap = {};
   const candidateGroupMap = {};
 
@@ -1598,15 +1590,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
       (!c.createdAt ||
         new Date() - new Date(c.createdAt) < 60 * 24 * 60 * 60 * 1000);
 
-    // Priority Scoring:
-    // 1. Same city + compatible upcoming trip (6000)
-    // 2. Same city + overlapping travel dates (5500)
-    // 3. Same state + compatible destination/trip (4000)
-    // 4. Same destination + overlapping dates (3500)
-    // 5. Nearby/other location + strong trip compatibility (3000)
-    // 6. Same city/state + shared travel interests (2000)
-    // 7. New users from same city/state (1500)
-    // 8. Otherwise weak/random recommendation -> score = 0 (EXCLUDED)
     let score = 0;
 
     if (isSameCity && upcomingTrip) {
@@ -1636,17 +1619,15 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     } else if (isSameState && c.completedTrips > 0) {
       score = 1000;
     } else if (!userBaseCity && !userBaseState) {
-      // User with no location set: score by trip activity
       if (ongoingTrip) score = 1200;
       else if (upcomingTrip) score = 1000;
       else if (c.completedTrips > 0) score = 800;
       else if (isNewUser) score = 600;
     } else {
-      score = 0; // Exclude weak/random candidates
+      score = 0;
     }
 
     if (score > 0) {
-      // Format dynamic details
       const bestTrip = ongoingTrip || upcomingTrip || completedTrip;
       const cleanDest = (
         bestTrip?.destination ||
@@ -1663,14 +1644,12 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
         ? getCountdownString(bestTrip.startDate)
         : null;
 
-      // Extract up to 2 travel interests
       const rawInterests = (c.interests || []).filter(Boolean);
       if (rawInterests.length < 2 && c.preferredTravelStyle) {
         rawInterests.push(c.preferredTravelStyle);
       }
       const interestsStr = rawInterests.slice(0, 2).join(" • ");
 
-      // Check if candidate and current user share destination
       const matchingUserTrips = currentUserTrips.filter(
         (ut) =>
           isSameDestination(ut.destination, bestTrip?.destination) ||
@@ -1807,7 +1786,6 @@ const getTravelerSuggestions = asyncHandler(async (req, res) => {
     }
   }
 
-  // Deduplicate and return top candidates
   scoredCandidates.sort((a, b) => b.score - a.score);
 
   const seenIds = new Set();
@@ -1878,7 +1856,6 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: "User not found" });
   }
 
-  // Idempotency: if already following/accepted
   if (currentUser.followers.some((id) => String(id) === String(requesterId))) {
     return res.status(200).json({
       success: true,
@@ -2313,7 +2290,6 @@ const submitVerification = asyncHandler(async (req, res) => {
     });
   }
 
-  // Determine document URL from uploaded file or request body
   let documentUrl = "";
   if (req.file) {
     documentUrl = req.file.path || req.file.secure_url || req.file.url;
@@ -2335,7 +2311,6 @@ const submitVerification = asyncHandler(async (req, res) => {
     documentUrl = req.body.documentUrl.trim();
   }
 
-  // If document was sent as a base64 string, upload to Cloudinary
   if (documentUrl && documentUrl.startsWith("data:")) {
     try {
       const { cloudinary } = require("../utils/cloudinary");
@@ -2349,7 +2324,7 @@ const submitVerification = asyncHandler(async (req, res) => {
         uploadOptions.fetch_format = "auto";
       }
       const result = await cloudinary.uploader.upload(documentUrl, uploadOptions);
-      documentUrl = result.secure_url || result.url;
+      documentUrl = (result.secure_url || result.url || "").replace(/^http:\/\//i, "https://");
     } catch (uploadErr) {
       console.error("[SUBMIT VERIFICATION UPLOAD ERROR]:", uploadErr);
       return res.status(500).json({
@@ -2447,4 +2422,4 @@ module.exports = {
   updateUserLocation,
   submitVerification,
 };
-
+

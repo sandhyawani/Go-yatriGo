@@ -56,7 +56,6 @@ const supportTicketSchema = new mongoose.Schema(
     trim: true
   }],
 
-
   trackingId: {
     type: String,
     unique: true,

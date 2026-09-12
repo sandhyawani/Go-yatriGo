@@ -41,7 +41,6 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
           transition={{ type: "spring", duration: 0.4, bounce: 0.15 }}
           className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-surface rounded-[var(--radius-card)] shadow-2xl overflow-hidden flex flex-col z-10"
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100">
             <h3 className="text-base sm:text-lg font-black text-text-primary">{title}</h3>
             <button
@@ -53,12 +52,10 @@ const ConfirmModal = ({ isOpen, onClose, onConfirm, title, message, confirmText 
             </button>
           </div>
 
-          {/* Body */}
           <div className="px-4 sm:px-6 py-5 sm:py-6 text-center sm:text-left">
             <p className="text-xs sm:text-sm text-text-secondary font-medium whitespace-pre-wrap leading-relaxed">{message}</p>
           </div>
 
-          {/* Footer */}
           <div className="px-4 sm:px-6 py-3.5 sm:py-4 bg-slate-50 flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3 rounded-b-3xl">
             <button
               onClick={onClose}

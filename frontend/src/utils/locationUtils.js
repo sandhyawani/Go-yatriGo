@@ -36,14 +36,12 @@ export const resolveWeatherQuery = (destination) => {
   const cleaned = destination.trim();
   const lower = cleaned.toLowerCase();
 
-  // 1. Check known trekking spots, forts, and tourist regions
   for (const [alias, city] of Object.entries(WEATHER_LOCATION_ALIASES)) {
     if (lower.includes(alias)) {
       return city;
     }
   }
 
-  // 2. If comma-separated, check if any token matches an alias or city
   const parts = cleaned.split(",").map((p) => p.trim()).filter(Boolean);
   if (parts.length > 1) {
     for (const part of parts) {

@@ -22,7 +22,6 @@ export const STATUS_DROPDOWN_OPTIONS = [
   { id: "cancelled", label: "Cancelled", colorDot: "bg-rose-500" }
 ];
 
-
 export const normalizeJourneyStatus = (status, trip) => {
   const tripObj = typeof status === "object" && status !== null ? status : trip;
   const val = typeof status === "object" && status !== null
@@ -30,7 +29,6 @@ export const normalizeJourneyStatus = (status, trip) => {
     : (status || trip?.lifecycleStatus || trip?.status);
   const s = String(val || "").trim().toLowerCase().replace(/[-_]/g, " ");
 
-  // Cancelled is a distinct lifecycle state and must never be converted to completed
   if (s === "cancelled" || s === "canceled" || s === "archived" || tripObj?.isCancelled === true || Boolean(tripObj?.cancelledAt)) {
     return "cancelled";
   }
@@ -53,7 +51,6 @@ export const normalizeJourneyStatus = (status, trip) => {
     return "active";
   }
 
-  // Date fallbacks if available and not cancelled
   if (tripObj?.startDate && tripObj?.endDate) {
     const now = Date.now();
     const start = new Date(tripObj.startDate).getTime();
@@ -244,15 +241,12 @@ export const checkTripOverlapConflict = (myJourneys = [], targetTrip = null, cur
     const jIdStr = (j?._id || j?.id || "").toString();
     const jSourceIdStr = (j?.sourceId || j?.source_id || "").toString();
 
-    // Skip the target journey itself
     if (jIdStr && targetIdStr && jIdStr === targetIdStr) continue;
     if (jSourceIdStr && targetSourceIdStr && jSourceIdStr === targetSourceIdStr) continue;
 
     const jLifecycle = getJourneyLifecycle(j);
-    // Ignore cancelled or completed commitments
     if (jLifecycle.isCancelled || jLifecycle.isCompleted) continue;
 
-    // Check if user is an active participant in this commitment
     const isHost = (j.creator?._id || j.creator || j.host?._id || j.host)?.toString() === currentUserIdStr;
     const isMember = Array.isArray(j.members) && j.members.some((m) => {
       const uId = (m.user?._id || m.user || m._id || m)?.toString();
@@ -261,7 +255,6 @@ export const checkTripOverlapConflict = (myJourneys = [], targetTrip = null, cur
 
     if (!isHost && !isMember) continue;
 
-    // Evaluate exact timestamp overlap: s1 < e2 && e1 > s2
     if (datesOverlap(j.startDate, j.endDate, targetTrip.startDate, targetTrip.endDate)) {
       if (jLifecycle.isOngoing || j.status === "Ongoing") {
         return {
@@ -306,7 +299,6 @@ export const getNormalizedMembers = (journeyOrTrip) => {
   const seenUserIds = new Set();
   const normalized = [];
 
-  // If host exists, add host first or verify host presence
   if (hostId) {
     seenUserIds.add(hostId);
     const existingHostEntry = rawMembers.find((m) => {
@@ -369,4 +361,4 @@ export const checkIsJourneyMember = (journeyOrTrip, userId) => {
   });
   return inCompanions;
 };
-
+

@@ -45,7 +45,6 @@ const formatLocation = (location) => {
   return shortLoc.length > 30 ? shortLoc.slice(0, 27) + "..." : shortLoc;
 };
 
-
 const PostSkeleton = () =>
 <div className="card overflow-hidden animate-pulse">
     <div className="p-4 flex items-center gap-3">
@@ -69,12 +68,10 @@ const PostSkeleton = () =>
     </div>
   </div>;
 
-
 const StorySkeleton = () =>
 <div className="w-20 h-28 sm:w-24 sm:h-32 rounded-2xl bg-background relative overflow-hidden shrink-0 animate-pulse border border-border">
     <div className="absolute inset-0 -translate-x-full animate-[shimmer_2s_infinite] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
   </div>;
-
 
 const notifIcon = (type) => {
   if (type === "post_like")
@@ -110,7 +107,6 @@ const getTotalCommentCount = (post) => {
 const getVisibleCommentCount = (post) => {
   return getVisibleComments(post).length;
 };
-
 
 const Home = () => {
   const { user } = useContext(AuthContext);
@@ -173,7 +169,6 @@ const Home = () => {
       AudioManager.stopAll();
     };
   }, []);
-
 
   const handleAvatarError = useCallback((e, name) => {
     e.target.onerror = null;
@@ -291,7 +286,6 @@ const Home = () => {
   const [editPostData, setEditPostData] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const audioRefs = useRef({});
   const postRefs = useRef({});
@@ -365,7 +359,6 @@ const Home = () => {
   );
 
   const { connectionStates: tripMateStates = {} } = useTripMates(myUserId);
-
 
   useEffect(() => {
     if (!socket) return;
@@ -449,17 +442,6 @@ const Home = () => {
     };
   }, [socket]);
 
-
-  
-
-  
-
-  
-
-
-
-  
-
   const handleOpenComments = async (postId) => {
     const cleanPostId = (postId?._id || postId?.id || postId || "").toString();
     if (!cleanPostId) return;
@@ -508,7 +490,6 @@ const Home = () => {
     }
   };
 
-
   useEffect(() => {
     const handler = (e) => {
       if (searchRef.current && !searchRef.current.contains(e.target))
@@ -518,11 +499,9 @@ const Home = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-
   useEffect(() => {
     return () => clearTimeout(searchDebounceRef.current);
   }, []);
-
 
   const uploadToCloudinary = useCallback(async (file) => {
     if (!file) return;
@@ -551,7 +530,6 @@ const Home = () => {
     };
     reader.readAsDataURL(file);
   }, []);
-
 
   const handlePostSubmit = useCallback(
   async (e) => {
@@ -592,7 +570,6 @@ const Home = () => {
   },
   [postCaption, postImage, postLocation, postTags]
   );
-
 
   const handleFelt = useCallback(
     async (postId) => {
@@ -689,7 +666,6 @@ const Home = () => {
   [handleDoubleTapLike]
   );
 
-
   const handleCommentSubmit = useCallback(
     async (e, postId) => {
       e.preventDefault();
@@ -785,7 +761,6 @@ const Home = () => {
     }
   }, [updateMemoriesCache]);
 
-
   const handleSaveToggle = useCallback(
   async (postId) => {
     const postIdStr = postId?.toString();
@@ -823,7 +798,6 @@ const Home = () => {
   },
   [saveLoadingMap, savedPostIds]
   );
-
 
   const handleDispatch = useCallback(async (postId) => {
     const url = `${window.location.origin}/post/${postId}`;
@@ -946,7 +920,6 @@ const Home = () => {
     [myUserId, user, tripMateStates, followLoadingMap]
   );
 
-
   const handleEditPostSubmit = async (e) => {
     e.preventDefault();
     if (!editPostData) return;
@@ -976,7 +949,6 @@ const Home = () => {
     }
   };
 
-
   const handleDeletePost = useCallback(async (postId) => {
     const { isConfirmed } = await Swal.fire({
       title: "Delete this travel memory?",
@@ -999,7 +971,6 @@ const Home = () => {
       showToast.error("Action failed");
     }
   }, []);
-
 
   const handleDeleteStory = useCallback(
   (dispatchId) => {
@@ -1024,7 +995,6 @@ const Home = () => {
     }))
     );
   }, [myUserId]);
-
 
   const myStoryGroup = useMemo(
   () => dispatches.find((g) => (g.userId?._id || g.userId)?.toString() === myUserId),
@@ -1072,7 +1042,6 @@ const Home = () => {
     }
   }, [dispatches, location.pathname, location.state, navigate]);
 
-
   const nextStory = useCallback(() => {
     if (!activeStoryGroup) return;
     if (activeStoryIndex < activeStoryGroup.stories.length - 1) {
@@ -1118,7 +1087,6 @@ const Home = () => {
     }
   }, [activeStoryGroup, activeStoryIndex, sortedStories, myUserId]);
 
-
   const handleSearchInput = useCallback((e) => {
     const q = e.target.value;
     setSearchQuery(q);
@@ -1163,7 +1131,6 @@ const Home = () => {
   const whatsHappeningItems = useMemo(() => {
     const items = [];
 
-
     if (dispatches && dispatches.length > 0) {
       dispatches.slice(0, 2).forEach((group) => {
         items.push({
@@ -1174,7 +1141,6 @@ const Home = () => {
         });
       });
     }
-
 
     if (nearbyTrips && nearbyTrips.length > 0) {
       nearbyTrips.slice(0, 2).forEach((trip) => {
@@ -1188,7 +1154,6 @@ const Home = () => {
         });
       });
     }
-
 
     if (memories && memories.length > 0) {
       memories.slice(0, 2).forEach((post) => {
@@ -1216,7 +1181,6 @@ const Home = () => {
     const seenTypes = new Set();
     const seenTexts = new Set();
 
-
     items.forEach((item) => {
       if (!seenTypes.has(item.type) && !seenTexts.has(item.text) && mixed.length < 4) {
         mixed.push(item);
@@ -1237,7 +1201,6 @@ const Home = () => {
 
   return (
     <div className="w-full min-h-[100dvh] lg:min-h-0 lg:h-full overflow-x-hidden lg:overflow-hidden pb-20 lg:pb-0 relative bg-background flex flex-col">
-      {/* Background Ambience */}
       <svg className="absolute inset-0 w-full h-full pointer-events-none opacity-[0.02] text-brand" xmlns="http://www.w3.org/2000/svg">
         <path d="M-100,200 Q200,300 500,100 T1200,400" fill="none" stroke="currentColor" strokeWidth="4" strokeDasharray="12 12" />
         <path d="M-50,600 Q300,500 600,700 T1300,500" fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray="8 12" />
@@ -1258,7 +1221,6 @@ const Home = () => {
 
             <LocationDiscoveryWidget user={user} />
 
-            {/* Current Ongoing Journey OR Featured Next Upcoming Trip */}
             {dashboardJourney ? (
               <div className="space-y-3">
                 <JourneyStatusWidget journey={dashboardJourney} user={user} />
@@ -1294,7 +1256,6 @@ const Home = () => {
               </div>
             )}
 
-            {/* Upcoming Trips Section on Dashboard — show only the nearest 1 */}
             {ongoingJourney && upcomingTripsList.length > 0 ? (
               <div ref={upcomingTripsRef}>
                 <UpcomingTripsWidget upcomingTrips={upcomingTripsList.slice(0, 1)} title="Upcoming Trip" />
@@ -1307,8 +1268,6 @@ const Home = () => {
               <div ref={upcomingTripsRef} />
             )}
 
-
-            {/* 7. Trip Moments */}
             <div className="space-y-2.5">
                <h3 className="text-xs font-bold text-text-primary pl-1 flex items-center gap-1.5 font-heading">
                   <Sparkles className="w-3.5 h-3.5 text-brand" /> Trip Moments
@@ -1327,7 +1286,6 @@ const Home = () => {
                 handleAvatarError={handleAvatarError} />
             </div>
 
-            {/* 8. Recent Travel Memories */}
             <div className="space-y-3">
               <div className="flex items-center justify-between pl-1 pr-1">
                 <h3 className="text-xs font-bold text-text-primary flex items-center gap-1.5 font-heading">
@@ -1470,7 +1428,6 @@ const Home = () => {
 
           </div>
 
-          {/* Desktop Right Sidebar (Travelers for You, Active Groups, Trends & Insights) */}
           <div className="hidden lg:block w-[280px] xl:w-[310px] 2xl:w-[340px] shrink-0 lg:h-full lg:min-h-0 lg:overflow-y-auto pt-1 pb-4 scrollbar-none hide-scrollbar no-scrollbar overscroll-contain">
             <RightSidebar
               className="min-w-0 w-full flex flex-col gap-4 shrink-0"
@@ -1502,7 +1459,6 @@ const Home = () => {
           prevStory={prevStory}
           dispatches={dispatches}
           onStoryViewed={handleStoryViewed} />}
-
 
         </AnimatePresence>
 
@@ -1614,7 +1570,6 @@ const Home = () => {
         targetId={reportModal.targetId}
         targetType={reportModal.targetType}
         reportedUserId={reportModal.reportedUserId} />}
-
 
       </div>
     </div>);

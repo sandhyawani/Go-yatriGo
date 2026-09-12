@@ -22,7 +22,6 @@ export const TripsTab = ({
       trip.status || trip.tripStatus || ""
     ).toLowerCase();
 
-    // Backend status has priority
     if (
       ["cancelled", "canceled"].includes(rawStatus)
     ) {
@@ -51,7 +50,6 @@ export const TripsTab = ({
       ? new Date(trip.endDate)
       : null;
 
-    // If trip has an end date and it has passed
     if (
       endDate &&
       !Number.isNaN(endDate.getTime()) &&
@@ -60,7 +58,6 @@ export const TripsTab = ({
       return "completed";
     }
 
-    // If trip has started
     if (
       startDate &&
       !Number.isNaN(startDate.getTime()) &&
@@ -99,15 +96,12 @@ export const TripsTab = ({
       };
     }
 
-    // Upcoming
     const maxCompanions = Number(trip.maxCompanions);
     const membersList = trip.companions || trip.members || [];
     const companionCount = Array.isArray(membersList)
       ? membersList.length
       : 0;
 
-    // Do not show "0 Slots Left" when the backend
-    // hasn't supplied a valid capacity.
     if (
       !Number.isFinite(maxCompanions) ||
       maxCompanions <= 0
@@ -163,7 +157,6 @@ export const TripsTab = ({
 
   return (
     <div className="space-y-6">
-      {/* Sub tabs */}
       <div className="flex flex-wrap sm:flex-nowrap gap-2 pb-1 border-b border-border select-none">
         <button
           onClick={() => setGroupFilter("hosted")}
@@ -246,7 +239,6 @@ export const TripsTab = ({
                 }
                 className="bg-surface border border-border p-5 rounded-3xl hover:shadow-md transition-all duration-300 cursor-pointer space-y-3 shadow-soft hover:-translate-y-1 flex flex-col justify-between"
               >
-                {/* Category + Lifecycle */}
                 <div className="flex justify-between items-center select-none gap-2">
                   <span className="bg-primary-50 text-primary-600 text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full border border-primary-200 truncate">
                     {trip.category || "Trip"}
@@ -259,7 +251,6 @@ export const TripsTab = ({
                   </span>
                 </div>
 
-                {/* Title */}
                 <h4
                   className="text-sm font-bold text-dark truncate leading-tight mt-1"
                   title={trip.title}
@@ -267,7 +258,6 @@ export const TripsTab = ({
                   {trip.title}
                 </h4>
 
-                {/* Location + Date */}
                 <div className="flex justify-between items-center text-xs text-muted font-medium select-none border-t border-border pt-3 mt-1">
                   <span className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
                     <MapPin className="w-4 h-4 text-danger shrink-0" />

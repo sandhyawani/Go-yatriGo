@@ -35,9 +35,6 @@ const faqs = [
   "You can permanently delete your account from the Account Security (Settings) page in the 'Danger Zone' section."
 }];
 
-
-
-
 const HelpSupport = () => {
   const [activeFaq, setActiveFaq] = useState(null);
   const [reportIssue, setReportIssue] = useState("");
@@ -86,7 +83,6 @@ const HelpSupport = () => {
       "Issue reported successfully. Our team will review it."
       );
       setReportIssue("");
-
 
       setTickets((prev) => [data.ticket, ...prev]);
     } catch (err) {

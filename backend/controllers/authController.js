@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const { getJwtSecret } = require("../config/jwt");
 const sendEmail = require("../utils/sendEmail");
 const { INDIAN_STATES_AND_CITIES } = require("../utils/locationData");
+const { normalizeUserUrls } = require("../utils/toHttps");
 
 const TOKEN_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "30d";
 const TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
@@ -33,7 +34,7 @@ const serializeUser = (user) => {
   delete data.password;
   delete data.resetPasswordToken;
   delete data.resetPasswordExpire;
-  return data;
+  return normalizeUserUrls(data);
 };
 
 const buildTokenPayload = (user) => ({
@@ -329,7 +330,6 @@ const googleAuthUser = async (req, res, next) => {
 
     const { sub, email, name, picture } = googleProfile;
 
-    // 1. Check if user already exists by Google provider and providerId (sub)
     let existingSocialUser = await User.findOne({
       provider: "google",
       providerId: sub
@@ -339,7 +339,6 @@ const googleAuthUser = async (req, res, next) => {
       return await completeAuthSession(existingSocialUser, req, res);
     }
 
-    // 2. Check if an account already exists with this email (anti-collision)
     const existingEmailUser = await User.findOne({ email });
     if (existingEmailUser) {
       const providerName =
@@ -353,7 +352,6 @@ const googleAuthUser = async (req, res, next) => {
       });
     }
 
-    // 3. Create new user safely, handling MongoDB E11000 duplicate race condition
     try {
       const newUser = new User({
         name: name || "Traveler",
@@ -383,7 +381,6 @@ const googleAuthUser = async (req, res, next) => {
       return await completeAuthSession(newUser, req, res);
     } catch (createErr) {
       if (createErr.code === 11000) {
-        // Recover from concurrent request race
         const reFetchedUser = await User.findOne({
           provider: "google",
           providerId: sub

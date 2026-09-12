@@ -70,7 +70,6 @@ const TravelBuddyHub = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-
   const [searchQuery, setSearchQuery] = useState(
   searchParams.get("search") || ""
   );
@@ -169,12 +168,10 @@ const TravelBuddyHub = () => {
     setTrips([]);
   };
 
-
   const [trips, setTrips] = useState([]);
   const [metadata, setMetadata] = useState(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
-
 
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
@@ -229,7 +226,6 @@ const TravelBuddyHub = () => {
     setTrips([]);
   };
 
-
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
@@ -245,7 +241,6 @@ const TravelBuddyHub = () => {
     };
     fetchMetadata();
   }, []);
-
 
   useEffect(() => {
     fetchExploreData(page === 1);
@@ -386,7 +381,6 @@ const TravelBuddyHub = () => {
     }
   };
 
-
   const getStatusColor = (status) => {
     const s = normalizeJourneyStatus(status);
     switch (s) {
@@ -472,7 +466,6 @@ const TravelBuddyHub = () => {
     <main className="w-full min-w-0 min-h-[100dvh] overflow-x-hidden pb-6 lg:pb-8 max-w-none lg:max-w-7xl lg:mx-auto font-sans antialiased">
       <div className="w-full min-w-0 px-0 sm:px-2 lg:px-4 space-y-4">
         
-        {/* Sleek, Light & Airy Header */}
         <div className="relative overflow-hidden rounded-2xl bg-white border border-slate-200/80 p-3.5 sm:p-5 md:p-6 shadow-xs">
           <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-3 sm:gap-4">
             <div className="max-w-2xl space-y-1 sm:space-y-1.5">
@@ -494,7 +487,6 @@ const TravelBuddyHub = () => {
               </p>
             </div>
 
-            {/* Create Trip CTA - Matches Brand Button */}
             <div className="shrink-0 w-full sm:w-auto pt-0.5 sm:pt-0">
               <Link
                 to="/social/buddy/new"
@@ -506,7 +498,6 @@ const TravelBuddyHub = () => {
             </div>
           </div>
 
-          {/* Highlights & Live Stats Row */}
           <div className="mt-3 pt-2.5 sm:mt-3.5 sm:pt-3 border-t border-slate-100 flex items-center gap-1.5 sm:gap-2 overflow-x-auto scrollbar-none pb-0.5 sm:pb-0 sm:flex-wrap text-[11px] sm:text-xs">
             <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 px-2.5 py-1 rounded-lg shrink-0">
               <span className="font-bold text-slate-900">{totalFilteredTrips}</span>
@@ -527,14 +518,11 @@ const TravelBuddyHub = () => {
           </div>
         </div>
 
-        {/* Category Pills Sticky Bar */}
         <div className="sticky top-12 sm:top-16 z-30 bg-background/95 backdrop-blur-xl pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-2 sm:gap-3 select-none">
           {renderFilterChips()}
         </div>
 
-        {/* Search Bar & Filter Controls Container */}
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-2.5 sm:gap-3 bg-white p-3 sm:p-3.5 rounded-2xl border border-slate-200/80 shadow-xs">
-          {/* Sleek Search Box Row */}
           <div className="flex items-center gap-2 flex-1 max-w-none lg:max-w-lg">
             <div className="relative flex-1">
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -574,7 +562,6 @@ const TravelBuddyHub = () => {
             )}
           </div>
 
-          {/* Filters 3-column grid on mobile, flex on desktop */}
           <div className="grid grid-cols-3 lg:flex lg:items-center gap-2 w-full lg:w-auto">
             <div className="relative z-45" ref={locationFilterRef}>
               <button
@@ -639,7 +626,6 @@ const TravelBuddyHub = () => {
                               </div>
                               {isUsingProfile && <Check className="w-4 h-4 text-brand" />}
                             </button>}
-
 
                           <button
                       onClick={() => {
@@ -796,7 +782,6 @@ const TravelBuddyHub = () => {
               </AnimatePresence>
             </div>
 
-
             <div className="relative z-30" ref={sortFilterRef}>
               {(() => {
                 const currentSortObj =
@@ -871,7 +856,6 @@ const TravelBuddyHub = () => {
           </div>
         </div>
 
-        {/* Trips Found Header */}
         <div className="flex items-center justify-between gap-3 px-1 pt-1">
           <div className="flex items-center gap-2">
             <h3 className="text-xs sm:text-sm font-extrabold text-slate-800">
@@ -938,7 +922,6 @@ const TravelBuddyHub = () => {
             </motion.div>
           ) : (
 
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 items-stretch w-full">
               <AnimatePresence>
                 {trips?.map((trip, index) => {
@@ -965,10 +948,8 @@ const TravelBuddyHub = () => {
             </div>
           )}
 
-
           {!loading && trips.length > 0 && hasMore &&
           <div ref={lastTripElementRef} className="h-1 w-full" />}
-
 
           {loadingMore &&
           <div className="flex justify-center py-6">

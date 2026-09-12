@@ -236,7 +236,6 @@ export const NotificationPanel = () => {
     handleManageJoin
   } = useNotificationContext();
 
-  // Close on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (
@@ -267,12 +266,10 @@ export const NotificationPanel = () => {
 
   if (!showNotifPanel) return null;
 
-  // Filter notifications precisely by active category
   const filteredNotifications = notifications.filter((n) => {
     if (activeCategory === "All") return true;
     return getNormalizedCategory(n) === activeCategory;
   });
-
 
   const handleNotificationClick = async (n) => {
     const notifId = n._id || n.id;
@@ -366,16 +363,13 @@ export const NotificationPanel = () => {
     navigate("/");
   };
 
-
   const getTabCount = (catKey) => {
     if (catKey === "All") return counts.all || notifications.length;
     return notifications.filter((n) => getNormalizedCategory(n) === catKey).length;
   };
 
-
   return (
     <>
-      {/* Backdrop for Desktop */}
       <motion.div
         key="notif-backdrop"
         initial={{ opacity: 0 }}
@@ -394,7 +388,6 @@ export const NotificationPanel = () => {
           variants={notificationVariants}
           className="fixed inset-0 lg:inset-auto lg:top-4 lg:left-64 lg:w-[480px] lg:max-h-[85vh] flex flex-col bg-surface rounded-none lg:rounded-[var(--radius-card)] shadow-none lg:shadow-2xl border-0 lg:border lg:border-slate-100 z-[1002] overflow-hidden select-none font-sans"
         >
-          {/* Header */}
           <div className="flex items-center justify-between px-3.5 sm:px-5 py-3 sm:py-4 border-b border-slate-100 bg-white/95 backdrop-blur-md shrink-0 gap-2">
             <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
               <button
@@ -454,7 +447,6 @@ export const NotificationPanel = () => {
             </div>
           </div>
 
-          {/* Category Tabs */}
           <div className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-slate-50/90 border-b border-slate-100 overflow-x-auto shrink-0 scrollbar-none">
             {CATEGORIES.map((catItem) => {
               const count = getTabCount(catItem.key);
@@ -488,9 +480,7 @@ export const NotificationPanel = () => {
             })}
           </div>
 
-          {/* List Content */}
           <div className="overflow-y-auto overflow-x-hidden flex-1 p-3.5 sm:p-4 space-y-2.5 pb-20 lg:pb-4">
-            {/* RECEIVED NOTIFICATIONS LIST */}
             {loading && notifications.length === 0 ? (
               <div className="py-12 flex flex-col items-center justify-center gap-3 text-text-muted">
                 <div className="w-6 h-6 border-2 border-brand border-t-transparent rounded-full animate-spin" />
@@ -516,7 +506,6 @@ export const NotificationPanel = () => {
                 const isUnread = !notif.isRead;
                 const type = (notif.type || "").toLowerCase();
 
-                // Has inline actionable buttons
                 const isJourneyInvite = type === "journey_invitation" && notif.invitation;
                 const isFollowRequest = type === "follow_request";
                 const isMessageRequest = type === "message_request";
@@ -532,7 +521,6 @@ export const NotificationPanel = () => {
                         : "bg-white border-slate-100 hover/80"
                     }`}
                   >
-                    {/* Actor Avatar with event badge */}
                     <div className="relative shrink-0">
                       <img
                         src={getAvatar(notif.sender, senderName)}
@@ -546,7 +534,6 @@ export const NotificationPanel = () => {
                       </div>
                     </div>
 
-                    {/* Notification Body */}
                     <div className="flex-1 min-w-0 pr-6">
                       <div className="text-[13px] text-slate-900 leading-snug break-words">
                         <span className="font-bold text-slate-900 hover:underline">
@@ -569,7 +556,6 @@ export const NotificationPanel = () => {
                         )}
                       </div>
 
-                      {/* Prominent Emergency / Safety Callout */}
                       {visuals.isEmergency && (
                         <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center justify-between gap-2 shadow-2xs">
                           <div className="flex items-center gap-1.5 min-w-0">
@@ -589,13 +575,11 @@ export const NotificationPanel = () => {
                         </div>
                       )}
 
-                      {/* Inline Actions */}
                       {isUnread && (
                         <div
                           className="mt-2.5 flex items-center gap-2 flex-wrap"
                           onClick={(e) => e.stopPropagation()}
                         >
-                          {/* Direct message quick action */}
                           {(type === "new_message" || type === "direct") && (
                             <button
                               onClick={() => handleNotificationClick(notif)}
@@ -645,44 +629,41 @@ export const NotificationPanel = () => {
                             </>
                           )}
 
-                          {isFollowRequest && (
-                            <>
-                              <button
-                                disabled={isProcessingAction}
-                                onClick={async () => {
-                                  try {
-                                    setIsProcessingAction(true);
-                                    const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
-                                    await handleAcceptFollow(reqId, notifId);
-                                  } catch (err) {
-                                    console.error("[NotificationPanel] Error accepting follow request:", err);
-                                  } finally {
-                                    setIsProcessingAction(false);
-                                  }
-                                }}
-                                className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
-                              >
-                                Accept Follow
-                              </button>
-                              <button
-                                disabled={isProcessingAction}
-                                onClick={async () => {
-                                  try {
-                                    setIsProcessingAction(true);
-                                    const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
-                                    await handleRejectFollow(reqId, notifId);
-                                  } catch (err) {
-                                    console.error("[NotificationPanel] Error declining follow request:", err);
-                                  } finally {
-                                    setIsProcessingAction(false);
-                                  }
-                                }}
-                                className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
-                              >
-                                Decline Follow
-                              </button>
-                            </>
-                          )}
+                          <button
+  disabled={isProcessingAction}
+  onClick={async () => {
+    try {
+      setIsProcessingAction(true);
+      const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+      await handleAcceptFollow(reqId, notifId);
+    } catch (err) {
+      console.error("[NotificationPanel] Error accepting follow request:", err);
+    } finally {
+      setIsProcessingAction(false);
+    }
+  }}
+  className="w-[110px] h-8 min-w-[110px] flex-none inline-flex items-center justify-center px-3 bg-brand hover:bg-brand-hover text-white text-[11px] font-semibold rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
+>
+  Accept Follow
+</button>
+
+<button
+  disabled={isProcessingAction}
+  onClick={async () => {
+    try {
+      setIsProcessingAction(true);
+      const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+      await handleRejectFollow(reqId, notifId);
+    } catch (err) {
+      console.error("[NotificationPanel] Error declining follow request:", err);
+    } finally {
+      setIsProcessingAction(false);
+    }
+  }}
+  className="w-[110px] h-8 min-w-[110px] flex-none inline-flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
+>
+  Decline Follow
+</button>
 
                           {isMessageRequest && (
                             <>
@@ -771,12 +752,10 @@ export const NotificationPanel = () => {
                       )}
                     </div>
 
-                    {/* Unread Indicator */}
                     {isUnread && (
                       <div className="w-2 h-2 bg-brand rounded-full shrink-0 mt-2 ring-2 ring-brand-200/50" />
                     )}
 
-                    {/* Delete Action Button */}
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -794,7 +773,6 @@ export const NotificationPanel = () => {
             )}
           </div>
 
-          {/* Footer - Full History Page Link */}
           <div className="p-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
             <button
               onClick={() => {
@@ -810,7 +788,6 @@ export const NotificationPanel = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Clear All Confirmation Modal */}
       {showClearConfirm && (
         <div
           id="confirm-clear-modal"

@@ -1,3 +1,5 @@
+import { toHttps } from "./toHttps";
+
 export const getAvatarUrl = (...args) => {
   const checkUrl = (url) => {
     return url && typeof url === "string" && url.trim() !== "" && !url.includes("no-image-icon") && !url.includes("icon-library") && !url.includes("undefined") && !url.includes("null") && (url.startsWith("http") || url.startsWith("/") || url.startsWith("data:image"));
@@ -30,16 +32,12 @@ export const getAvatarUrl = (...args) => {
 
   for (const url of candidates) {
     if (checkUrl(url)) {
-      if (typeof url === "string" && url.startsWith("http://res.cloudinary.com")) {
-        return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
-      }
-      return url;
+      return toHttps(url);
     }
   }
 
   const displayName = foundName || "Explorer";
   
-  // Palette of diverse, refined colors
   const colors = [
     "0284C7", // Sky / Brand
     "0D9488", // Teal

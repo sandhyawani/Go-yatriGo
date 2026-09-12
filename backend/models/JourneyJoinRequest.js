@@ -32,8 +32,6 @@ const journeyJoinRequestSchema = new mongoose.Schema(
 }
 );
 
-// Partial unique index for "pending" requests
-// A user can only have one pending request per journey at a time
 journeyJoinRequestSchema.index(
   { journeyId: 1, userId: 1 },
   { unique: true, partialFilterExpression: { status: "pending" } }

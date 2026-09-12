@@ -160,7 +160,6 @@ const JourneyMatesSuggestions = ({
 
   return (
     <div className="bg-surface rounded-2xl border border-border shadow-xs overflow-hidden flex flex-col">
-      {/* Header — clean, matching reference */}
       <div className="flex items-center justify-between px-4 pt-3.5 pb-2.5 shrink-0 border-b border-border/40">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-xs">
@@ -187,7 +186,6 @@ const JourneyMatesSuggestions = ({
         </button>
       </div>
 
-      {/* Traveler rows with internal scrolling for ~3 visible items */}
       <div className="px-5 py-2 h-[252px] overflow-y-auto overscroll-contain scrollbar-thin space-y-1.5">
         {displayTravelers.map((traveler) => {
           const travelerId = String(traveler._id || traveler.id);

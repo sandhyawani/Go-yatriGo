@@ -29,6 +29,7 @@ import axiosInstance from "../../api/axios";
 import { AuthContext } from "../../context/authContext";
 import { showToast } from "../../utils/showToast";
 import { getJourneyLifecycle, getEligibilityErrorMessage, checkTripOverlapConflict } from "../../utils/journeyLifecycle";
+import { toHttps } from "../../utils/toHttps";
 
 import JourneyStatusBadge from "../../components/journey/JourneyStatusBadge";
 import JourneyDetails from "../../components/journey/JourneyDetails";
@@ -349,7 +350,6 @@ const JourneyDetailsPage = () => {
   { id: "gallery", label: "Gallery", shortLabel: "Gallery", icon: Image },
   { id: "memories", label: "Scrapbook", shortLabel: "Book", icon: BookOpen }];
 
-
   const defaultBanner =
   "https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1600&q=80";
 
@@ -357,7 +357,6 @@ const JourneyDetailsPage = () => {
     <div className="min-h-screen flex flex-col justify-between bg-background pb-20 lg:pb-10">
       <div className="flex-1 min-h-[calc(100vh-14rem)] flex flex-col">
 
-        {/* Top Sticky Bar on Mobile */}
         <div className="lg:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-100 h-12 flex items-center justify-between px-4">
           <Link
           to="/social/journeys"
@@ -411,7 +410,6 @@ const JourneyDetailsPage = () => {
           </div>
         </div>
 
-        {/* Back Link on Desktop */}
         <div className="hidden lg:flex max-w-6xl mx-auto px-4 sm:px-6 pt-5 items-center justify-between w-full">
           <Link
             to="/social/journeys"
@@ -422,7 +420,6 @@ const JourneyDetailsPage = () => {
         </div>
 
         <div className="max-w-6xl mx-auto px-3 sm:px-6 lg:px-6 space-y-4 mt-3 lg:mt-5 w-full flex-1">
-
 
           {journey.status === "Cancelled" && (
             <div className="bg-rose-50 border border-rose-200 p-4 rounded-2xl flex items-center gap-3 text-rose-700 shadow-sm animate-fade-in">
@@ -458,19 +455,16 @@ const JourneyDetailsPage = () => {
             />
           )}
 
-
-          {/* Banner Media Hero */}
           <div className="relative rounded-3xl overflow-hidden shadow-lg border border-slate-200/80 bg-slate-950 group">
             <div className="min-h-[190px] sm:min-h-[220px] lg:min-h-[240px] w-full relative flex flex-col justify-between p-4 sm:p-6">
               <img
-                src={journey.coverImage || defaultBanner}
+                src={toHttps(journey.coverImage) || defaultBanner}
                 alt={journey.title}
                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-60 pointer-events-none"
               />
 
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/30 pointer-events-none" />
 
-              {/* Top Row: Navigation / Badges / Actions */}
               <div className="relative z-10 flex items-center justify-between gap-2 flex-wrap">
                 <div className="flex items-center gap-2 flex-wrap">
                   <JourneyStatusBadge status={journey.status} size="sm" />
@@ -567,7 +561,6 @@ const JourneyDetailsPage = () => {
                 </div>
               </div>
 
-              {/* Center/Bottom Area: Compact Title + Destination + Dates + Lead */}
               <div className="relative z-10 space-y-2 mt-4">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-white tracking-tight drop-shadow-md leading-tight line-clamp-2 m-0 font-heading">
                   {journey.title}
@@ -618,7 +611,6 @@ const JourneyDetailsPage = () => {
             </div>
           </div>
 
-          {/* Navigation Tabs Bar */}
           <div className="flex bg-white backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-xs items-center gap-1 overflow-x-auto scrollbar-none flex-nowrap whitespace-nowrap">
             {tabs.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -642,7 +634,6 @@ const JourneyDetailsPage = () => {
             })}
           </div>
 
-          {/* Recruitment Analytics (Planning/Upcoming Only) */}
           {activeTab === "overview" && isOrganizer && (lifecycle.isPlanning || lifecycle.isUpcoming) && ((journey.pendingInvitationCount || 0) > 0 || (journey.acceptedInvitationCount || 0) > 0) && (
             <div className="bg-white px-4 py-2.5 rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between gap-3 animate-fade-in">
               <div className="flex items-center gap-2">
@@ -674,7 +665,6 @@ const JourneyDetailsPage = () => {
             </div>
           )}
 
-          {/* Active Tab Views */}
           <div className="lg:mt-0">
             {activeTab === "overview" && (
               <JourneyDetails
@@ -708,8 +698,6 @@ const JourneyDetailsPage = () => {
               />
             )}
 
-
-
             {activeTab === "members" &&
             <JourneyMembers
             journey={journey}
@@ -717,7 +705,6 @@ const JourneyDetailsPage = () => {
             onInviteClick={() => setIsInviteOpen(true)}
             onRemoveMember={handleRemoveMember}
             onRefreshJourney={fetchJourney} />}
-
 
             {activeTab === "gallery" &&
             <JourneyGalleryView journeyId={journey._id} />}
@@ -727,7 +714,6 @@ const JourneyDetailsPage = () => {
             journey={journey}
             currentUserId={currentUserId}
             onUpdated={fetchJourney} />}
-
 
           </div>
         </div>
@@ -763,7 +749,6 @@ const JourneyDetailsPage = () => {
       isOpen={isInviteOpen}
       onClose={() => setIsInviteOpen(false)}
       onInvited={fetchJourney} />
-
 
       <SafeCheckInModal
         journey={journey}

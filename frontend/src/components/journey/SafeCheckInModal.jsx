@@ -20,7 +20,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
 
   const lifecycle = getJourneyLifecycle(journey);
 
-  // Compute safety state from journey prop or fallback timeline
   const safetyState = journey?.safetyState || (() => {
     const timeline = journey?.timeline || [];
     const milestoneEvents = timeline
@@ -141,7 +140,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
-        {/* Header */}
         <div className="bg-white p-5 border-b border-slate-100 text-text-primary relative">
           <button
             onClick={onClose}
@@ -163,7 +161,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
             </div>
           </div>
 
-          {/* Action Tabs */}
           <div className="flex bg-background p-1 rounded-xl mt-4 text-xs font-bold">
             <button
               type="button"
@@ -192,10 +189,8 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
           </div>
         </div>
 
-        {/* Content Body */}
         {activeTab === "milestone" ? (
           <form onSubmit={handleSubmitMilestone} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">
-            {/* Sequential State Machine Progression */}
             <div>
               <div className="flex items-center justify-between mb-2.5">
                 <label className="text-xs font-extrabold text-text-primary uppercase tracking-wider">
@@ -291,7 +286,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               </div>
             ) : (
               <>
-                {/* Location Input */}
                 <div>
                   <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
                     <MapPin className="w-4 h-4 mr-1 text-brand" /> Checkpoint Location
@@ -305,7 +299,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
                   />
                 </div>
 
-                {/* Optional Note */}
                 <div>
                   <label className="block text-xs font-bold text-text-primary uppercase tracking-wider mb-2 flex items-center">
                     <MessageSquare className="w-4 h-4 mr-1 text-brand" /> Optional note
@@ -321,7 +314,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               </>
             )}
 
-            {/* Bottom Action Layout: [ Close ] [ ✓ Check In: {nextExpectedMilestone} ] */}
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
@@ -344,7 +336,6 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
               )}
             </div>
           </form>
-
 
         ) : (
           <form onSubmit={handleQuickSafeConfirm} className="p-4 sm:p-6 space-y-4 overflow-y-auto flex-1">

@@ -12,14 +12,12 @@ const errorHandler = (err, req, res, next) => {
   let code = err.code || (statusCode === 404 ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR");
   let message = err.message || "An unexpected error occurred.";
 
-  // Normalize Mongoose CastError (invalid ObjectId or invalid type cast)
   if (err.name === "CastError") {
     statusCode = 400;
     code = "INVALID_ID";
     message = `Invalid ${err.path || "ID"} format: ${err.value}`;
   }
 
-  // Normalize Mongoose ValidationError
   if (err.name === "ValidationError") {
     statusCode = 422;
     code = "VALIDATION_ERROR";
@@ -27,7 +25,6 @@ const errorHandler = (err, req, res, next) => {
     message = errors.length > 0 ? errors.join(", ") : "Validation failed";
   }
 
-  // Normalize MongoDB duplicate key error (code 11000)
   if (err.code === 11000) {
     statusCode = 409;
     code = "DUPLICATE_RESOURCE";
@@ -35,7 +32,6 @@ const errorHandler = (err, req, res, next) => {
     message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
   }
 
-  // Normalize JWT errors
   if (err.name === "JsonWebTokenError") {
     statusCode = 401;
     code = "UNAUTHORIZED";

@@ -2,7 +2,6 @@ const Journey = require("../models/Journey");
 const JourneyLiveTracking = require("../models/JourneyLiveTracking");
 const User = require("../models/User");
 
-// Haversine formula to compute distance in kilometers between two lat/lng pairs
 function calculateHaversineKm(lat1, lon1, lat2, lon2) {
   const R = 6371; // Earth's radius in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
@@ -20,7 +19,6 @@ function calculateHaversineKm(lat1, lon1, lat2, lon2) {
 function registerJourneyTrackingHandlers(io, socket) {
   const userId = socket.userId;
 
-  // 1. Live location update
   socket.on("journey_location_update", async (data) => {
     try {
       if (!userId) return;
@@ -30,11 +28,9 @@ function registerJourneyTrackingHandlers(io, socket) {
         return;
       }
 
-      // Authorization & Privacy Check on the Server
       const journey = await Journey.findById(journeyId).select("status members creator");
       if (!journey) return;
 
-      // Status must be Ongoing
       const status = String(journey.status || "").trim().toLowerCase();
       if (status !== "ongoing" && status !== "active") {
         return;
@@ -53,7 +49,6 @@ function registerJourneyTrackingHandlers(io, socket) {
         return;
       }
 
-      // Check user's tracking opt-in setting in DB
       let trackingDoc = await JourneyLiveTracking.findOne({ journeyId, userId });
       if (!trackingDoc) {
         trackingDoc = new JourneyLiveTracking({
@@ -64,7 +59,6 @@ function registerJourneyTrackingHandlers(io, socket) {
         });
       }
 
-      // Calculate distance increment
       let distanceIncrementKm = 0;
       if (
         trackingDoc.currentLocation &&
@@ -77,7 +71,6 @@ function registerJourneyTrackingHandlers(io, socket) {
           latitude,
           longitude
         );
-        // Sanity filter: minimum 5 meters (0.005 km) to ignore jitter, maximum 2 km jump between pings
         if (dist >= 0.005 && dist <= 2.0) {
           distanceIncrementKm = dist;
         }
@@ -85,7 +78,6 @@ function registerJourneyTrackingHandlers(io, socket) {
 
       const newDistance = (trackingDoc.distanceTraveled || 0) + distanceIncrementKm;
 
-      // Update current location and bounded trail
       trackingDoc.currentLocation = {
         latitude,
         longitude,
@@ -98,7 +90,6 @@ function registerJourneyTrackingHandlers(io, socket) {
       trackingDoc.isLive = true;
       trackingDoc.lastActive = new Date();
 
-      // Append coordinate to recent visual trail preview (sampled up to max 50 points, not a full route history)
       if (distanceIncrementKm >= 0.01 || trackingDoc.recentTrail.length === 0) {
         trackingDoc.recentTrail.push({
           latitude,
@@ -112,7 +103,6 @@ function registerJourneyTrackingHandlers(io, socket) {
 
       await trackingDoc.save();
 
-      // Retrieve user display details
       const user = await User.findById(userId).select("name profilePic").lean();
 
       const payload = {
@@ -129,21 +119,18 @@ function registerJourneyTrackingHandlers(io, socket) {
         distanceTraveled: trackingDoc.distanceTraveled
       };
 
-      // Broadcast to all authorized journey members in the journey room
       socket.to(journeyId).emit("journey_member_location", payload);
     } catch (err) {
       console.error("[SOCKET TRACKING] Error handling location update:", err.message);
     }
   });
 
-  // 2. Tracking status toggle (User manually pauses or resumes)
   socket.on("journey_tracking_status", async (data) => {
     try {
       if (!userId) return;
       const { journeyId, isLive } = data || {};
       if (!journeyId) return;
 
-      // Event-level authorization check
       const journey = await Journey.findById(journeyId).select("status members creator");
       if (!journey) return;
 
@@ -185,7 +172,6 @@ function registerJourneyTrackingHandlers(io, socket) {
     }
   });
 
-  // 3. User stops tracking
   socket.on("journey_stop_tracking", async (data) => {
     try {
       if (!userId) return;

@@ -20,7 +20,39 @@ const {
 } = require("../services/journeyEligibility");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
 const { isBlockedPair, getBlockedUserIds } = require("../utils/blockHelper");
-const { isActuallyVerified } = require("../utils/verificationHelper");
+const { toHttps, normalizeUserUrls, normalizeJourneyUrls } = require("../utils/toHttps");
+
+const normalizeTripUrls = (trip) => {
+  if (!trip) return trip;
+  const target = (typeof trip.toObject === 'function') ? trip.toObject() : { ...trip };
+  if (target.coverImage) target.coverImage = toHttps(target.coverImage);
+  if (target.image) target.image = toHttps(target.image);
+  if (target.host && typeof target.host === 'object') {
+    target.host = normalizeUserUrls(target.host);
+  }
+  if (target.creator && typeof target.creator === 'object') {
+    target.creator = normalizeUserUrls(target.creator);
+  }
+  if (Array.isArray(target.members)) {
+    target.members = target.members.map((m) => {
+      const memObj = (m && typeof m.toObject === 'function') ? m.toObject() : { ...m };
+      if (memObj.user && typeof memObj.user === 'object') {
+        memObj.user = normalizeUserUrls(memObj.user);
+      }
+      return memObj;
+    });
+  }
+  if (Array.isArray(target.joinRequests)) {
+    target.joinRequests = target.joinRequests.map((r) => {
+      const rObj = (r && typeof r.toObject === 'function') ? r.toObject() : { ...r };
+      if (rObj.userId && typeof rObj.userId === 'object') {
+        rObj.userId = normalizeUserUrls(rObj.userId);
+      }
+      return rObj;
+    });
+  }
+  return target;
+};
 
 const addJourneyMemberAtomic = async (journeyId, userId, role = "Member") => {
   const session = await mongoose.startSession();
@@ -173,7 +205,7 @@ exports.createTravelBuddyTrip = async (req, res) => {
       estimatedBudget: estimatedBudget || "Budget Flexible",
       description: typeof description === "string" ? description.trim() : (description || ""),
       itinerary: Array.isArray(itinerary) ? itinerary : [],
-      coverImage: coverImage || await imageService.fetchAutoCoverImage({ destination, title, category }),
+      coverImage: toHttps(coverImage || await imageService.fetchAutoCoverImage({ destination, title, category })),
       host: userId,
       members: [{ user: userId, role: "host", joinedAt: new Date() }],
       status: "open",
@@ -444,11 +476,9 @@ exports.getAllTravelBuddyTrips = async (req, res) => {
 
     let allTrips = [...mappedTravelGroups, ...mappedJourneys];
 
-    // Apply strict canonical lifecycle status filter
     if (normalizedLifecycle) {
       allTrips = allTrips.filter((t) => t.lifecycleStatus === normalizedLifecycle);
     } else {
-      // For "all" / unfiltered explore feed, exclude cancelled journeys from general view
       allTrips = allTrips.filter((t) => t.lifecycleStatus !== "cancelled");
     }
 
@@ -490,7 +520,7 @@ exports.getAllTravelBuddyTrips = async (req, res) => {
     }
 
     const total = allTrips.length;
-    const paginatedTrips = allTrips.slice(skip, skip + limitNum);
+    const paginatedTrips = allTrips.slice(skip, skip + limitNum).map(normalizeTripUrls);
     const pages = Math.ceil(total / limitNum) || 1;
     const hasMore = pageNum < pages;
 
@@ -566,7 +596,7 @@ exports.getLikedBuddyTrips = async (req, res) => {
       (tg) => !journeySourceIds.has((tg._id || tg.id).toString())
     );
 
-    const trips = [...dedupedTravelGroups, ...mappedJourneys];
+    const trips = [...dedupedTravelGroups, ...mappedJourneys].map(normalizeTripUrls);
 
     res.status(200).json({
       success: true,
@@ -590,7 +620,6 @@ exports.toggleLikeBuddyTrip = async (req, res) => {
       trip = await Journey.findById(req.params.id);
     }
 
-    // Fallback: in case a Post ID was passed to buddy like
     if (!trip) {
       const post = await Post.findById(req.params.id);
       if (post) {
@@ -739,13 +768,15 @@ exports.getTravelBuddyTripById = async (req, res) => {
       }
     }
 
+    const safeTrip = normalizeTripUrls({
+      ...(typeof trip.toObject === 'function' ? trip.toObject() : trip),
+      joinRequestStatus,
+      joinRequests
+    });
+
     res.status(200).json({
       success: true,
-      trip: {
-        ...(typeof trip.toObject === 'function' ? trip.toObject() : trip),
-        joinRequestStatus,
-        joinRequests
-      }
+      trip: safeTrip
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -965,7 +996,6 @@ exports.manageJoinRequest = async (req, res) => {
             link: `/social/journeys/${journey._id}`
           }, io);
 
-          // Notify other journey members that someone joined
           const joinedUser = await User.findById(journeyReq.userId).select("name username");
           (journey.members || []).forEach((m) => {
             const memId = (m.user?._id || m.user).toString();
@@ -1099,7 +1129,6 @@ exports.manageJoinRequest = async (req, res) => {
         link: `/social/buddy/${trip._id}`
       }, io);
 
-      // Notify other group members
       const joinedUser = await User.findById(request.userId).select("name username");
       (trip.members || []).forEach((m) => {
         const memId = (m.user?._id || m.user).toString();
@@ -1366,7 +1395,6 @@ exports.cancelTravelBuddyTrip = async (req, res) => {
       }
 
       const io = req.app.get("io");
-      // Notify all active members
       (journey.members || []).forEach((m) => {
         const memId = (m.user?._id || m.user).toString();
         if (memId !== userId) {
@@ -1747,10 +1775,8 @@ exports.sendWarning = async (req, res) => {
       });
     }
 
-    // Check TravelGroup first
     let trip = await TravelGroup.findById(groupId);
     if (!trip) {
-      // Check Journey if not found in TravelGroup
       const journey = await Journey.findById(groupId).populate("creator", "name username");
       if (journey) {
         const hostIdStr = (journey.creator?._id || journey.creator).toString();
@@ -1807,7 +1833,6 @@ exports.sendWarning = async (req, res) => {
       return res.status(404).json({ success: false, code: "JOURNEY_NOT_FOUND", message: "Journey not found." });
     }
 
-    // TravelGroup logic
     const hostIdStr = (trip.host?._id || trip.host).toString();
     const isHost = hostIdStr === hostId.toString();
     const isCoLeader = (trip.members || []).some(
@@ -1975,7 +2000,6 @@ exports.cancelJoinRequest = async (req, res) => {
       return res.status(404).json({ success: false, message: "Trip not found" });
     }
     
-    // For legacy TravelGroup, delete the pending request since there is no "Cancelled" enum status
     const result = await JoinRequest.deleteOne({
       groupId,
       userId,
@@ -2011,7 +2035,6 @@ const normalizeTravelDiscoveryItem = (item, source) => {
   const owner = isJourney ? item.creator : item.host;
   const members = item.members || [];
 
-  // Compute lifecycle from actual dates — do NOT rely on status field alone
   const now = new Date();
   const startDate = item.startDate ? new Date(item.startDate) : null;
   const endDate = item.endDate ? new Date(item.endDate) : null;

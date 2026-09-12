@@ -57,7 +57,6 @@ const SosConfirmModal = ({
           </button>
         </div>
 
-        {/* Content Body */}
         <div className="p-6 space-y-4">
           <div className="space-y-2">
             <p className="text-sm font-medium text-text-primary leading-relaxed m-0">
@@ -73,7 +72,6 @@ const SosConfirmModal = ({
             )}
           </div>
 
-          {/* Quick Notice Card */}
           {isActivating && (
             <div className="p-3.5 rounded-2xl bg-rose-50/70 border border-rose-100">
               <p className="text-xs font-bold text-rose-700 m-0">
@@ -83,7 +81,6 @@ const SosConfirmModal = ({
           )}
         </div>
 
-        {/* Bottom Action Layout: [ Cancel ] [ Primary Action ] */}
         <div className="flex items-center gap-3 p-6 pt-0">
           <button
             type="button"

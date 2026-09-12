@@ -5,8 +5,6 @@ import { getJourneyLifecycle } from "../../utils/journeyLifecycle";
 import { Shield, ShieldAlert, Users, CheckCircle, AlertTriangle, HeartHandshake, Navigation } from "lucide-react";
 import SosConfirmModal from "../journey/SosConfirmModal";
 
-
-
 const JOURNEY_MILESTONES = [
   "Started Journey",
   "Reached Destination",
@@ -26,7 +24,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
   const lifecycle = getJourneyLifecycle(journey);
   const isOngoing = lifecycle.isOngoing;
 
-  // Compute safety state from journey
   const safetyState = journey?.safetyState || (() => {
     const timeline = journey?.timeline || [];
     const milestoneEvents = timeline
@@ -77,8 +74,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
     }
   };
 
-
-  // One-tap "I'm Safe" quick confirmation
   const handleQuickSafe = async () => {
     if (!journey) {
       showToast.error("No active journey available for check-in.");
@@ -112,7 +107,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
     }
   };
 
-  // Sequential Milestone Check-In
   const handleMilestoneCheckIn = async (e) => {
     if (e) e.preventDefault();
     if (!journey) {
@@ -156,7 +150,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
 
   return (
     <div className="card p-6 bg-white border border-slate-100 relative overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between mb-5 pb-3 border-b border-slate-50">
         <div className="flex items-center gap-2.5">
           <div
@@ -192,7 +185,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
         </span>
       </div>
 
-      {/* Metrics Row */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100/50">
           <span className="text-[9px] text-text-muted font-black block uppercase tracking-widest mb-1">
@@ -219,9 +211,7 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
         </div>
       </div>
 
-      {/* Action Area */}
       <div className="space-y-3">
-        {/* SOS Button */}
         <button
           onClick={handleToggleSOS}
           disabled={sosLoading}
@@ -244,7 +234,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
           )}
         </button>
 
-        {/* Quick Check-In Actions for Ongoing Journeys */}
         {isOngoing && !sosActive && (
           <div className="pt-3 border-t border-slate-100/60 space-y-2.5">
             <div className="flex items-center justify-between">
@@ -258,7 +247,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
               )}
             </div>
 
-            {/* Quick I'm Safe Button */}
             <button
               onClick={handleQuickSafe}
               disabled={safeLoading}
@@ -268,7 +256,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
               <span>{safeLoading ? "Confirming..." : "✓ I'm Safe"}</span>
             </button>
 
-            {/* Milestone Check-In Form Toggle */}
             {!isSafetyComplete && nextExpectedMilestone && (
               <div>
                 {!showMilestoneForm ? (
@@ -307,7 +294,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
                     </div>
                   </form>
 
-
                 )}
               </div>
             )}
@@ -324,7 +310,6 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
         )}
       </div>
 
-      {/* Redesigned Emergency SOS Confirmation Modal */}
       <SosConfirmModal
         isOpen={showSosModal}
         isActivating={!user?.sosActive}
@@ -336,6 +321,5 @@ const SafetyWidget = ({ journey, user, onUserUpdate, onJourneyUpdate }) => {
     </div>
   );
 };
-
 
 export default SafetyWidget;

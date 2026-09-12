@@ -72,18 +72,15 @@ const NavigationTour = () => {
 
   const userId = user?._id || user?.id || user?.email;
 
-  // Determine if tour should be shown for the current user
   const checkEligibility = useCallback(() => {
     if (!userId || Boolean(user?.isAdmin)) return false;
 
-    // Check query param override: ?tour=true
     try {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get("tour") === "true") {
         return true;
       }
     } catch {
-      // ignore
     }
 
     try {
@@ -115,7 +112,6 @@ const NavigationTour = () => {
     }
   }, [user, userId]);
 
-  // Listen for manual trigger event: goyatrigo:start-tour
   useEffect(() => {
     const handleManualStart = () => {
       setCurrentStepIndex(0);
@@ -126,7 +122,6 @@ const NavigationTour = () => {
     return () => window.removeEventListener("goyatrigo:start-tour", handleManualStart);
   }, []);
 
-  // Check reduced motion preference
   useEffect(() => {
     try {
       const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -135,11 +130,9 @@ const NavigationTour = () => {
       mq.addEventListener("change", handler);
       return () => mq.removeEventListener("change", handler);
     } catch {
-      // fallback
     }
   }, []);
 
-  // Check initial eligibility with slight delay to ensure DOM and layout are settled
   useEffect(() => {
     if (!user) {
       setIsActive(false);
@@ -155,7 +148,6 @@ const NavigationTour = () => {
     return () => clearTimeout(timer);
   }, [user, checkEligibility]);
 
-  // Find target element for current step that is currently visible in DOM
   const findTargetElement = useCallback((stepId) => {
     const elements = document.querySelectorAll(`[data-tour="${stepId}"]`);
     for (let i = 0; i < elements.length; i++) {
@@ -166,7 +158,6 @@ const NavigationTour = () => {
     return null;
   }, []);
 
-  // Collision-safe and target-aware positioning calculation
   const updatePositions = useCallback(() => {
     if (!isActive) return;
 
@@ -179,7 +170,6 @@ const NavigationTour = () => {
     const targetEl = findTargetElement(currentStep.targetId);
 
     if (!targetEl) {
-      // If target is temporarily not found, center in viewport as fallback
       setTargetRect(null);
       const cardW = Math.min(window.innerWidth - 32, 350);
       setCardPosition({
@@ -210,14 +200,12 @@ const NavigationTour = () => {
     const cardHeight = cardEl ? cardEl.offsetHeight : 185;
 
     if (mobileLayout) {
-      // Mobile positioning: position above bottom nav, collision-safe
       const bottomNav = document.getElementById("mobile-bottom-nav");
       const bottomNavTop = bottomNav
         ? bottomNav.getBoundingClientRect().top
         : window.innerHeight - 64;
 
       const cardWidth = Math.min(window.innerWidth - 24, 348);
-      // Keep at least 12px margin on sides
       let cardLeft = Math.max(
         12,
         Math.min(
@@ -226,20 +214,16 @@ const NavigationTour = () => {
         )
       );
 
-      // Card must stay ABOVE the bottom navigation bar with a safe margin
       let cardTop = spotlightRect.top - cardHeight - 14;
 
-      // Collision safety check: ensure card is not pushed off the top of the viewport
       if (cardTop < 12) {
         cardTop = 12;
       }
 
-      // Collision safety check: ensure card does NOT overlap or sit under the bottom navigation
       if (cardTop + cardHeight > bottomNavTop - 10) {
         cardTop = bottomNavTop - 10 - cardHeight;
       }
 
-      // Pointer arrow aligns with target element's center
       const arrowLeft = Math.max(
         16,
         Math.min(spotlightRect.centerX - cardLeft - 8, cardWidth - 28)
@@ -253,19 +237,15 @@ const NavigationTour = () => {
         arrowPlacement: "bottom",
       });
     } else {
-      // Desktop positioning: to the right of the vertical sidebar
       const cardWidth = 350;
       let cardLeft = spotlightRect.right + 16;
 
-      // Viewport safety check on right edge
       if (cardLeft + cardWidth > window.innerWidth - 16) {
         cardLeft = window.innerWidth - cardWidth - 16;
       }
 
-      // Vertically center with the spotlighted item
       let cardTop = spotlightRect.centerY - cardHeight / 2;
 
-      // Viewport safety check on top and bottom
       cardTop = Math.max(16, Math.min(cardTop, window.innerHeight - cardHeight - 16));
 
       const arrowTop = Math.max(
@@ -283,7 +263,6 @@ const NavigationTour = () => {
     }
   }, [isActive, currentStepIndex, findTargetElement]);
 
-  // Recalculate positions on step index change, resize, and scroll
   useEffect(() => {
     if (!isActive) return;
 
@@ -292,7 +271,6 @@ const NavigationTour = () => {
 
     updatePositions();
 
-    // If target element was not ready on first paint, retry shortly
     const currentStep = TOUR_STEPS[currentStepIndex];
     if (currentStep && !findTargetElement(currentStep.targetId)) {
       retryTimeout = setTimeout(() => {
@@ -316,14 +294,12 @@ const NavigationTour = () => {
     };
   }, [isActive, currentStepIndex, updatePositions, findTargetElement]);
 
-  // Auto-focus Next / Get Started button on step change for accessibility
   useEffect(() => {
     if (isActive && nextBtnRef.current) {
       nextBtnRef.current.focus({ preventScroll: true });
     }
   }, [isActive, currentStepIndex]);
 
-  // Keyboard navigation: Escape (skip), ArrowRight/Enter (next), ArrowLeft (prev)
   useEffect(() => {
     if (!isActive) return;
 
@@ -350,7 +326,6 @@ const NavigationTour = () => {
       localStorage.setItem(getCompletedKey(userId), "true");
       localStorage.removeItem(getNewUserKey(userId));
     } catch {
-      // storage error fallback
     }
   }, [userId]);
 
@@ -394,7 +369,6 @@ const NavigationTour = () => {
       aria-label="First-time navigation tour"
       tabIndex={-1}
     >
-      {/* Background Dimming with SVG Cutout for Spotlight */}
       <svg
         className="fixed inset-0 w-full h-full pointer-events-none z-[996] transition-opacity duration-300"
         aria-hidden="true"
@@ -426,7 +400,6 @@ const NavigationTour = () => {
         />
       </svg>
 
-      {/* Soft Glow Spotlight Ring around the active target */}
       {targetRect && (
         <motion.div
           key="spotlight-ring"
@@ -443,7 +416,6 @@ const NavigationTour = () => {
         />
       )}
 
-      {/* Floating Explanation Card */}
       {cardPosition && (
         <motion.div
           ref={cardRef}
@@ -460,7 +432,6 @@ const NavigationTour = () => {
           }}
           className="z-[999] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/90 dark:border-slate-800 rounded-3xl shadow-[0_20px_50px_rgba(15,23,42,0.2),0_0_0_1px_rgba(255,255,255,0.7)_inset] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] p-4 sm:p-5 text-slate-800 dark:text-slate-100 flex flex-col font-sans"
         >
-          {/* Arrow Pointer */}
           {cardPosition.arrowPlacement === "bottom" && (
             <div
               style={{ left: `${cardPosition.arrowLeft}px` }}
@@ -476,7 +447,6 @@ const NavigationTour = () => {
             />
           )}
 
-          {/* Header with Step indicator, Dots and Close */}
           <div className="flex items-center justify-between gap-2 mb-2 select-none">
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-extrabold uppercase tracking-wider text-brand-700 dark:text-sky-400 bg-brand-50 dark:bg-sky-950/60 px-2.5 py-0.5 rounded-full border border-brand-200/60 dark:border-sky-800/60">
@@ -507,7 +477,6 @@ const NavigationTour = () => {
             </button>
           </div>
 
-          {/* Content: Title & One-sentence explanation */}
           <div className="flex flex-col min-w-0 mb-4">
             <h3 className="text-[15px] sm:text-base font-bold text-slate-900 dark:text-white font-heading tracking-tight leading-snug">
               {currentStep.title}
@@ -517,7 +486,6 @@ const NavigationTour = () => {
             </p>
           </div>
 
-          {/* Actions: Skip Tour & Next / Get Started */}
           <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-slate-800/80 mt-auto">
             <button
               onClick={handleSkip}

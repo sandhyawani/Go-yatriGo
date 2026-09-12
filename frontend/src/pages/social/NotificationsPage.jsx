@@ -401,7 +401,6 @@ const NotificationsPage = () => {
     <div className="w-full min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
 
-        {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
@@ -450,10 +449,8 @@ const NotificationsPage = () => {
           </div>
         </div>
 
-        {/* Category Tabs & Filter Toolbar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
 
-          {/* Categories */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
@@ -495,7 +492,6 @@ const NotificationsPage = () => {
             })}
           </div>
 
-          {/* Search & Sub-filters */}
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-3 border-t border-slate-100">
             <div className="relative w-full sm:flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -540,7 +536,6 @@ const NotificationsPage = () => {
           </div>
         </div>
 
-        {/* Notifications List */}
         <div className="space-y-3">
           {filteredNotifications.length === 0 ? (
             <div className="bg-white rounded-3xl p-12 text-center border border-slate-100 shadow-sm">
@@ -607,22 +602,20 @@ const NotificationsPage = () => {
                       : "bg-white/80 border-slate-200/80 hover:bg-white hover:border-slate-300"
                   }`}
                 >
-                  {/* Actor Avatar */}
                   <div className="relative shrink-0">
                     <img
                       src={getAvatar(notif.sender, senderName)}
                       alt={senderName}
-                      className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-xs"
+                      className="w-10 h-10 rounded-2xl object-cover border border-slate-200 shadow-xs"
                     />
 
                     <div
-                      className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-xs ${visuals.bg}`}
+                      className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full flex items-center justify-center border-2 border-white shadow-xs ${visuals.bg}`}
                     >
                       {visuals.icon}
                     </div>
                   </div>
 
-                  {/* Body */}
                   <div className="flex-1 min-w-0 pr-8">
                     <div className="flex items-baseline gap-2 flex-wrap">
                       <span className="text-sm font-bold text-slate-900">
@@ -661,13 +654,11 @@ const NotificationsPage = () => {
                       )}
                     </div>
 
-                    {/* Inline Action Buttons */}
                     {isUnread && (
                       <div
                         className="mt-3 flex items-center gap-2 flex-wrap"
                         onClick={(e) => e.stopPropagation()}
                       >
-                        {/* Journey Invitation */}
                         {isJourneyInvite && (
                           <>
                             <button
@@ -704,48 +695,46 @@ const NotificationsPage = () => {
                           </>
                         )}
 
-                        {/* Follow Request */}
-                        {isFollowRequest && (
-                          <>
-                            <button
-                              disabled={isProcessing}
-                              onClick={async () => {
-                                try {
-                                  setIsProcessing(true);
-                                  const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
-                                  await handleAcceptFollow(reqId, notifId);
-                                } catch (err) {
-                                  console.error("[NotificationsPage] Error accepting follow request:", err);
-                                } finally {
-                                  setIsProcessing(false);
-                                }
-                              }}
-                              className="w-[145px] h-10 inline-flex items-center justify-center bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
-                            >
-                              Accept Follow
-                            </button>
+{isFollowRequest && (
+  <>
+    <button
+      disabled={isProcessing}
+      onClick={async () => {
+        try {
+          setIsProcessing(true);
+          const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+          await handleAcceptFollow(reqId, notifId);
+        } catch (err) {
+          console.error("[NotificationsPage] Error accepting follow request:", err);
+        } finally {
+          setIsProcessing(false);
+        }
+      }}
+      className="w-[110px] h-8 min-w-[110px] inline-flex items-center justify-center px-3 bg-brand hover:bg-brand-hover text-white text-[11px] font-semibold rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
+    >
+      Accept Follow
+    </button>
 
-                            <button
-                              disabled={isProcessing}
-                              onClick={async () => {
-                                try {
-                                  setIsProcessing(true);
-                                  const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
-                                  await handleRejectFollow(reqId, notifId);
-                                } catch (err) {
-                                  console.error("[NotificationsPage] Error declining follow request:", err);
-                                } finally {
-                                  setIsProcessing(false);
-                                }
-                              }}
-                              className="w-[145px] h-10 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
-                            >
-                              Decline Follow
-                            </button>
-                          </>
-                        )}
+    <button
+      disabled={isProcessing}
+      onClick={async () => {
+        try {
+          setIsProcessing(true);
+          const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+          await handleRejectFollow(reqId, notifId);
+        } catch (err) {
+          console.error("[NotificationsPage] Error declining follow request:", err);
+        } finally {
+          setIsProcessing(false);
+        }
+      }}
+      className="w-[110px] h-8 min-w-[110px] inline-flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
+    >
+      Decline Follow
+    </button>
+  </>
+)}
 
-                        {/* Join Request */}
                         {isJoinRequest && (
                           <>
                             <button
@@ -794,7 +783,6 @@ const NotificationsPage = () => {
                           </>
                         )}
 
-                        {/* Message Request */}
                         {isMessageRequest && (
                           <>
                             <button
@@ -852,7 +840,6 @@ const NotificationsPage = () => {
                     )}
                   </div>
 
-                  {/* Right Side Controls */}
                   <div className="flex items-center gap-2 shrink-0">
                     {isUnread && (
                       <button
@@ -887,7 +874,6 @@ const NotificationsPage = () => {
         </div>
       </div>
 
-      {/* Clear All Modal */}
       {showClearConfirm && (
         <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-slate-100 animate-in fade-in zoom-in-95 duration-200">

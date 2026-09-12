@@ -12,10 +12,8 @@ const MobileCreateDrawer = () => {
   const navigate = useNavigate();
 
   const handleActionClick = (e, action) => {
-    // Prevent clicks from bubbling up to the underlying page / Journey Hub card
     e.stopPropagation();
 
-    // Always close the drawer first so the overlay is gone before the modal appears
     closeDrawer();
 
     if (action.isAction) {
@@ -25,8 +23,6 @@ const MobileCreateDrawer = () => {
         openCreatePost();
       }
     }
-    // path-based actions (Travel Squad → /social/buddy/new) are handled via the
-    // Link element below; no extra navigation call needed here.
   };
 
   return (
@@ -92,7 +88,6 @@ const MobileCreateDrawer = () => {
                   </>
                 );
 
-                // Travel Squad — path-based navigation using a regular button + navigate
                 if (action.path) {
                   return (
                     <button
@@ -110,7 +105,6 @@ const MobileCreateDrawer = () => {
                   );
                 }
 
-                // Action-based items (Start Journey, Travel Memory)
                 return (
                   <button
                     key={idx}

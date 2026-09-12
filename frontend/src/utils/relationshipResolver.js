@@ -219,7 +219,6 @@ export const resolveReviewEligibility = (
     return false;
   }
 
-  // Authoritative backend flag for unreviewed eligibility
   if (typeof targetUser.canReview === "boolean") {
     return targetUser.canReview;
   }

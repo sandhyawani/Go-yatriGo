@@ -31,7 +31,6 @@ router.get("/ready", async (req, res) => {
   cloudinaryConfig.api_key &&
   cloudinaryConfig.api_secret);
 
-
   const io = req.app.get("io");
   const isSocketInitialized = !!io;
   const activeSocketClients = io ? io.engine.clientsCount : 0;

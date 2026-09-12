@@ -16,7 +16,6 @@ const FeedMedia = ({
 
   return (
     <>
-      {/* Soundtrack of the Moment Preview */}
       {post.music?.title && (
         <div className="px-3.5 sm:px-5 mt-3 mb-1 relative z-10">
           <div
@@ -73,7 +72,6 @@ const FeedMedia = ({
         </div>
       )}
 
-      {/* Mobile Travel Tag */}
       {travelTag && (
         <div className="px-4 pb-2 sm:hidden">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-amber-200/80 bg-amber-50/80 px-2.5 py-0.5 text-[10px] font-bold text-amber-800">
@@ -83,14 +81,12 @@ const FeedMedia = ({
         </div>
       )}
 
-      {/* Keepsake Photo Print Frame */}
       <div className="px-3.5 sm:px-5 pt-2 pb-1">
         <div
           onClick={(event) => handlePostTap(event, post._id, post.likes)}
           style={{ touchAction: "manipulation" }}
           className="relative p-1.5 sm:p-2 bg-white rounded-2xl border border-slate-200/80 shadow-xs cursor-pointer select-none transition-all duration-300 group-hover:border-amber-200/70"
         >
-          {/* Inner Photo Container */}
           <div className="relative overflow-hidden rounded-xl bg-slate-950">
             {post.mediaType === "video" ? (
               <video
@@ -110,7 +106,6 @@ const FeedMedia = ({
               />
             )}
 
-            {/* Organic Scrapbook Stickers / Tags */}
             {post.tags?.length > 0 && (
               <div className="pointer-events-none absolute left-2.5 top-2.5 z-10 flex flex-wrap gap-1.5 sm:left-3.5 sm:top-3.5">
                 {post.tags.slice(0, 3).map((tag) => (
@@ -124,7 +119,6 @@ const FeedMedia = ({
               </div>
             )}
 
-            {/* Like Animation Overlay */}
             <AnimatePresence>
               {journeyLikeAnim?.postId === post._id && (
                 <motion.div

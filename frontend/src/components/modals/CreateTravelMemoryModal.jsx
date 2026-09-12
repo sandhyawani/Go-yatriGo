@@ -26,7 +26,6 @@ const popularLanguages = [
 { label: "🌸 K-Pop", value: "K-Pop" },
 { label: "💃 Spanish", value: "Spanish" }];
 
-
 const popularDestinations = [
 { label: "🏖️ Goa", value: "Goa, India" },
 { label: "🏔️ Manali", value: "Manali, Himachal Pradesh, India" },
@@ -38,7 +37,6 @@ const popularDestinations = [
 { label: "🏰 Udaipur", value: "Udaipur, Rajasthan, India" },
 { label: "🛕 Varanasi", value: "Varanasi, Uttar Pradesh, India" },
 { label: "☕ Coorg", value: "Coorg, Karnataka, India" }];
-
 
 const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
   const [mediaFiles, setMediaFiles] = useState([]);
@@ -210,7 +208,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
   const [croppedImage, setCroppedImage] = useState(null);
 
-
   useEffect(() => {
     if (mediaFiles.length > 0 && mediaFiles[currentMediaIndex]) {
       const activeMedia = mediaFiles[currentMediaIndex];
@@ -222,7 +219,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       setCroppedImage(activeMedia.croppedImage || null);
     }
   }, [currentMediaIndex, mediaFiles.length]);
-
 
   useEffect(() => {
     const tags = caption.match(/#[a-z0-9_]+/gi) || [];
@@ -273,8 +269,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
     };
   }, []);
 
-
-
   const isImageFile = (file) => {
     if (file.type && file.type.startsWith("image/")) return true;
     const ext = file.name?.split(".").pop()?.toLowerCase();
@@ -305,7 +299,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
   const setSelectedFiles = (selectedFiles) => {
     if (!selectedFiles || selectedFiles.length === 0) return;
 
-
     const newFiles = Array.from(selectedFiles).filter(validateFile);
     if (newFiles.length === 0) return;
 
@@ -314,13 +307,10 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       return;
     }
 
-
-
     const readPromises = newFiles.map(
     (file) =>
     new Promise((resolve) => {
       if (file.type.startsWith("video/")) {
-
 
         resolve({
           file,
@@ -610,7 +600,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       return;
     }
 
-
     for (let i = 0; i < mediaFiles.length; i++) {
       if (mediaFiles[i].type === "image" && !mediaFiles[i].croppedImage) {
         showToast.error(`Please apply crop to image ${i + 1}.`);
@@ -744,7 +733,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
       exit={{ opacity: 0 }}
       onClick={handleClose}
       className="absolute inset-0 bg-slate-950/45 backdrop-blur-md" />
-
 
           <motion.div
       initial={{ opacity: 0, y: 20, scale: 0.96 }}
@@ -943,7 +931,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   </div>
                 </div>}
 
-
               {step === "crop" && mediaFiles[currentMediaIndex] &&
           <div className="flex flex-1 flex-col bg-slate-950">
                   <div className="relative h-[300px] md:h-auto md:min-h-[400px] md:flex-1">
@@ -963,7 +950,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
               style={{
                 containerStyle: { backgroundColor: "#020617" }
               }} />
-
 
                     {mediaFiles.length > 1 &&
               <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-10 px-4 overflow-x-auto">
@@ -995,11 +981,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   muted
                   playsInline /> :
 
-
                   <img
                   src={m.croppedImage || m.preview}
                   className="w-full h-full object-cover" />}
-
 
                           </div>
                 )}
@@ -1103,7 +1087,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                     </div>
                   </div>
                 </div>}
-
 
               {step === "caption" &&
           <div className="grid flex-1 grid-cols-1 overflow-visible md:grid-cols-[58%_42%]">
@@ -1346,7 +1329,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           </div>
                         </motion.div>}
 
-
                       {showMusicPicker &&
                 <motion.div
                 initial={{ opacity: 0, x: 20 }}
@@ -1431,7 +1413,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                                 </button>
                     )}
                             </div>}
-
 
                           <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin">
                             {isSearchingMusic ?
@@ -1617,11 +1598,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 onError={() => setImgError(true)}
                 className="h-11 w-11 shrink-0 rounded-full object-cover ring-2 ring-brand-100" /> :
 
-
                 <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-extrabold text-white ring-2 ring-brand-100">
                           {username?.charAt(0)?.toUpperCase() || "T"}
                         </div>}
-
 
                       <div>
                         <h4 className="text-sm font-extrabold text-slate-950">
@@ -1648,7 +1627,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                 maxLength={2200}
                 className="min-h-[90px] flex-1 resize-none bg-transparent text-sm font-medium leading-6 text-text-primary outline-none placeholder:text-text-muted" />
 
-
                       {extractedTags.length > 0 &&
                 <div className="flex flex-wrap gap-1.5 mt-2 mb-1">
                           {extractedTags.map((tag) =>
@@ -1660,7 +1638,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             </span>
                   )}
                         </div>}
-
 
                       <div className="relative mt-3 flex items-center justify-between overflow-visible border-t border-slate-200 pt-3">
                         <div className="flex items-center gap-2">
@@ -1764,7 +1741,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                             <X className="h-3.5 w-3.5" />
                           </button>
                         </div>}
-
 
                       {selectedMusic &&
                 <div className="mt-3 flex w-fit max-w-full items-center gap-2 rounded-2xl bg-brand-50 border border-brand-100 p-1.5 pr-4 text-[11px] font-bold text-primary-600 shadow-sm">
@@ -1906,7 +1882,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                   </div>
                 </div>
               </div>}
-
 
             <audio
         ref={audioRef}

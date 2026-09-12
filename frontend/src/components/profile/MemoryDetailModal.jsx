@@ -4,6 +4,7 @@ import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../utils/avatar";
+import { toHttps } from "../../utils/toHttps";
 import { renderClickableText } from "../home/feed/utils/feedHelpers";
 import ChangeCoverModal from "../modals/ChangeCoverModal";
 import { isActuallyVerified } from "../../utils/verification";
@@ -44,7 +45,6 @@ export const MemoryDetailModal = ({
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const menuRef = useRef(null);
 
-  // Prevent background page scrolling while modal is open
   useEffect(() => {
     if (selectedMemory) {
       const originalOverflow = document.body.style.overflow;
@@ -55,7 +55,6 @@ export const MemoryDetailModal = ({
     }
   }, [selectedMemory]);
 
-  // Load full comments if not loaded already
   useEffect(() => {
     if (selectedMemory) {
       const postId = selectedMemory._id || selectedMemory.id;
@@ -65,7 +64,6 @@ export const MemoryDetailModal = ({
     }
   }, [selectedMemory, handleOpenComments, activeCommentPost]);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -110,11 +108,12 @@ export const MemoryDetailModal = ({
     profileUser?.name ||
     "Traveler";
 
-  const authorAvatar =
+  const authorAvatar = toHttps(
     selectedMemory.userPic ||
     selectedMemory.userId?.pic ||
     selectedMemory.userId?.avatar ||
-    getAvatarUrl(selectedMemory.userId || profileUser || selectedMemory);
+    getAvatarUrl(selectedMemory.userId || profileUser || selectedMemory)
+  );
 
   const likesCount = Array.isArray(selectedMemory.likes)
     ? selectedMemory.likes.length
@@ -133,7 +132,7 @@ export const MemoryDetailModal = ({
       ? selectedMemory.commentsCount
       : comments.length;
 
-  const mediaList = Array.isArray(selectedMemory.mediaUrls) &&
+  const rawMediaList = Array.isArray(selectedMemory.mediaUrls) &&
     selectedMemory.mediaUrls.length > 0
     ? selectedMemory.mediaUrls
     : selectedMemory.mediaUrl
@@ -145,12 +144,14 @@ export const MemoryDetailModal = ({
     : selectedMemory.img
     ? [selectedMemory.img]
     : [];
+  const mediaList = rawMediaList.map((url) => toHttps(url)).filter(Boolean);
 
-  const audioSrc =
+  const audioSrc = toHttps(
     selectedMemory.music?.preview ||
     selectedMemory.audio ||
     selectedMemory.audioUrl ||
-    selectedMemory.songUrl;
+    selectedMemory.songUrl
+  );
 
   const songTitle =
     selectedMemory.music?.title ||
@@ -192,7 +193,6 @@ export const MemoryDetailModal = ({
             className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl text-text-primary flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* ─── 1. MEMORY HEADER (User, Badge, Date, Location, Owner Menu) ──── */}
             <div className="sticky top-0 z-40 flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 bg-white/95 backdrop-blur-md border-b border-slate-100 min-h-[58px]">
               <div
                 className={`flex items-center gap-3 min-w-0 flex-1 ${
@@ -250,9 +250,7 @@ export const MemoryDetailModal = ({
                 </div>
               </div>
 
-              {/* Header Actions: 3-dot Menu & Close Button */}
               <div className="flex items-center gap-1 shrink-0">
-                {/* Three-dot dropdown menu */}
                 <div className="relative" ref={menuRef}>
                   <button
                     type="button"
@@ -344,7 +342,6 @@ export const MemoryDetailModal = ({
                   </AnimatePresence>
                 </div>
 
-                {/* Close modal */}
                 <button
                   type="button"
                   onClick={() => setSelectedMemory(null)}
@@ -356,7 +353,6 @@ export const MemoryDetailModal = ({
               </div>
             </div>
 
-            {/* ─── 2. COMPACT MUSIC SECTION ─────────────────────────────────── */}
             {(audioSrc || songTitle) && (
               <div className="px-4 sm:px-5 pt-2.5 pb-1 select-none">
                 <div className="flex items-center justify-between rounded-xl border border-primary-100 bg-primary-50/70 px-3 py-1.5 shadow-2xs">
@@ -406,7 +402,6 @@ export const MemoryDetailModal = ({
               </div>
             )}
 
-            {/* ─── 3. COVER IMAGE SECTION (16:9 Aspect Ratio & Hover Change Cover) ── */}
             <div className="px-4 sm:px-5 pt-2.5 select-none">
               <div className="group/cover relative w-full aspect-[16/9] max-h-[340px] overflow-hidden rounded-2xl bg-background border border-slate-200">
                 {mediaList.length === 0 ? (
@@ -434,7 +429,6 @@ export const MemoryDetailModal = ({
                     />
                   )
                 ) : (
-                  /* Carousel view */
                   <div className="relative w-full h-full">
                     {mediaList[activeMediaIndex]?.match(/\.(mp4|webm|mov)$/i) ? (
                       <video
@@ -451,7 +445,6 @@ export const MemoryDetailModal = ({
                       />
                     )}
 
-                    {/* Carousel Nav Buttons */}
                     <button
                       type="button"
                       onClick={(e) => {
@@ -478,14 +471,12 @@ export const MemoryDetailModal = ({
                       <ChevronRight className="w-4 h-4" />
                     </button>
 
-                    {/* Indicator pill */}
                     <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
                       {activeMediaIndex + 1} / {mediaList.length}
                     </div>
                   </div>
                 )}
 
-                {/* Owner Hover "Change Cover" overlay button */}
                 {isCreator && (
                   <button
                     type="button"
@@ -500,7 +491,6 @@ export const MemoryDetailModal = ({
                   </button>
                 )}
 
-                {/* Double-tap felt animation indicator */}
                 {journeyLikeAnim?.postId === postId && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
@@ -517,23 +507,19 @@ export const MemoryDetailModal = ({
               </div>
             </div>
 
-            {/* ─── 4. MEMORY CONTENT (Title, Caption, Travel Metadata Row) ─── */}
             <div className="px-4 sm:px-5 pt-3.5 pb-2 text-left space-y-2">
-              {/* Memory Title */}
               {selectedMemory.title && (
                 <h2 className="text-base sm:text-lg font-bold text-text-primary leading-snug font-heading">
                   {selectedMemory.title}
                 </h2>
               )}
 
-              {/* Caption / Description */}
               {selectedMemory.caption && (
                 <p className="text-xs sm:text-sm text-text-primary font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
                   {renderClickableText(selectedMemory.caption)}
                 </p>
               )}
 
-              {/* Travel Metadata Pills Row */}
               <div className="flex flex-wrap items-center gap-2 pt-1">
                 {selectedMemory.location && (
                   <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
@@ -558,7 +544,6 @@ export const MemoryDetailModal = ({
                   </div>
                 )}
 
-                {/* Tags if any */}
                 {selectedMemory.tags &&
                   selectedMemory.tags.map((tag) => (
                     <span
@@ -571,10 +556,8 @@ export const MemoryDetailModal = ({
               </div>
             </div>
 
-            {/* ─── 5. SOCIAL ACTIONS ROW (Like, Comment, Share, Save) ────────── */}
             <div className="px-4 sm:px-5 py-2.5 mt-1 flex items-center justify-between border-y border-slate-100 bg-slate-50/70 select-none">
               <div className="flex items-center gap-5 sm:gap-6">
-                {/* Like / Felt */}
                 <button
                   type="button"
                   disabled={feltLoadingMap[postId]}
@@ -597,13 +580,11 @@ export const MemoryDetailModal = ({
                   <span>{likesCount > 0 ? `${likesCount} Felt` : "Felt"}</span>
                 </button>
 
-                {/* Comments count */}
                 <div className="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary">
                   <MessageCircle className="w-4 h-4 text-primary-600" />
                   <span>{commentsCount} Thoughts</span>
                 </div>
 
-                {/* Dispatch / Share */}
                 <button
                   type="button"
                   onClick={() => {
@@ -616,7 +597,6 @@ export const MemoryDetailModal = ({
                 </button>
               </div>
 
-              {/* Save */}
               <button
                 type="button"
                 disabled={saveLoadingMap[postId]}
@@ -640,7 +620,6 @@ export const MemoryDetailModal = ({
               </button>
             </div>
 
-            {/* ─── 6. COMMENTS THREAD & INPUT ───────────────────────────────── */}
             <div className="px-4 sm:px-5 py-3 flex-1 flex flex-col min-h-[160px]">
               <h4 className="text-[11px] font-bold uppercase tracking-wider text-text-muted mb-2.5">
                 Thoughts & Comments ({comments.length})
@@ -681,11 +660,12 @@ export const MemoryDetailModal = ({
                       comment.user?.name ||
                       "Traveler";
 
-                    const cmtUserPic =
+                    const cmtUserPic = toHttps(
                       comment.userPic ||
                       comment.userId?.pic ||
                       comment.userId?.avatar ||
-                      comment.user?.pic;
+                      comment.user?.pic
+                    );
 
                     const cmtAuthorId = (
                       comment.userId?._id ||
@@ -777,7 +757,6 @@ export const MemoryDetailModal = ({
                 </div>
               )}
 
-              {/* Comment Input Form */}
               <form
                 onSubmit={(e) => {
                   if (handleCommentSubmit) handleCommentSubmit(e, postId);
@@ -785,11 +764,11 @@ export const MemoryDetailModal = ({
                 className="mt-3 flex items-center gap-2 pt-2 border-t border-slate-100"
               >
                 <img
-                  src={
+                  src={toHttps(
                     currentUser?.pic ||
                     currentUser?.profilePic ||
                     getAvatarUrl(currentUser)
-                  }
+                  )}
                   alt="My avatar"
                   className="h-7 w-7 rounded-full object-cover shrink-0 ring-1 ring-slate-200"
                   onError={(e) => {
@@ -839,7 +818,6 @@ export const MemoryDetailModal = ({
         </div>
       </AnimatePresence>
 
-      {/* Change Cover Modal */}
       {showChangeCoverModal && (
         <ChangeCoverModal
           isOpen={showChangeCoverModal}

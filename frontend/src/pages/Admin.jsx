@@ -64,7 +64,6 @@ const KPI_CONFIG = [
   glowClass: "from-brand-200"
 }];
 
-
 const STATUS_COLORS = {
   pending: "#30afff",
   resolved: "#92eeff",
@@ -103,7 +102,6 @@ const MetricSkeleton = () =>
     </div>
   </div>;
 
-
 const MetricCard = ({ config, value, index }) => {
   const { label, detail, to, Icon, iconClass, glowClass, priority } = config;
 
@@ -138,7 +136,6 @@ const MetricCard = ({ config, value, index }) => {
         <p className="text-[10px] text-text-muted">{detail}</p>
       </div>
     </div>;
-
 
   return (
     <motion.div
@@ -186,7 +183,6 @@ const EmptyChart = ({ children }) =>
 <div className="flex h-[160px] items-center justify-center text-sm text-text-muted">
     {children}
   </div>;
-
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -341,7 +337,6 @@ const Admin = () => {
               Retry
             </button>
           </motion.div>}
-
 
         <div
         role="region"
@@ -629,7 +624,6 @@ const Admin = () => {
                     fill={
                     STATUS_COLORS[item.name.toLowerCase()] ||
                     STATUS_COLORS.unknown} />
-
 
                     )}
                     </Pie>

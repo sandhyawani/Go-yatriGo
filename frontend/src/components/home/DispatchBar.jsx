@@ -34,8 +34,6 @@ const DispatchBar = ({
     }
   }, []);
 
-
-
   return (
     <div className="relative group/storybar w-full max-w-full min-w-0">
       <button
@@ -57,7 +55,6 @@ const DispatchBar = ({
         ref={storyContainerRef}
         className="w-full max-w-full bg-surface border border-border-default rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-xs flex items-center gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory select-none scroll-smooth relative"
       >
-        {/* User's Story Trigger */}
         <div className="flex flex-col items-center shrink-0 relative z-10 gap-1.5">
           {myStoryGroup ? (
             <div
@@ -128,7 +125,6 @@ const DispatchBar = ({
           </span>
         </div>
 
-        {/* Stories List */}
         {loadingStories
           ? [1, 2, 3, 4].map((i) => <StorySkeleton key={i} />)
           : sortedStories.length > 0

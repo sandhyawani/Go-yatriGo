@@ -1,9 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Mail, Phone, Calendar, MapPin, Clock, Edit, Share2, Ban, ShieldAlert, Star, ShieldCheck, XCircle, MoreVertical, MessageCircle, Check, UserPlus, UserCheck, Loader2, X } from "lucide-react";
+import { Mail, Phone, Calendar, MapPin, Clock, Edit, Share2, Ban, ShieldAlert, Star, ShieldCheck, XCircle, MoreVertical, MessageCircle, Check, UserPlus, UserCheck, Loader2, X, Eye } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
+import { toHttps } from "../../utils/toHttps";
 import { showToast } from "../../utils/showToast";
 import { compressImage } from "../../utils/compressImage";
 import { chatService } from "../../services/chatService";
@@ -40,8 +41,23 @@ export const ProfileHeader = ({
   const [coverFile, setCoverFile] = useState(null);
   const [coverPreview, setCoverPreview] = useState("");
   const [isUploadingCover, setIsUploadingCover] = useState(false);
+  const [showPhotoModal, setShowPhotoModal] = useState(false);
   const coverInputRef = useRef(null);
   const previewUrlRef = useRef(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setShowPhotoModal(false);
+      }
+    };
+    if (showPhotoModal) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [showPhotoModal]);
 
   useEffect(() => {
     return () => {
@@ -114,7 +130,7 @@ export const ProfileHeader = ({
         headers: { "Content-Type": "multipart/form-data" },
       });
 
-      const uploadedUrl = uploadRes.data?.url || uploadRes.data?.secure_url;
+      const uploadedUrl = (uploadRes.data?.secure_url || uploadRes.data?.url || "").replace(/^http:\/\//i, "https://");
       if (!uploadedUrl) {
         throw new Error(uploadRes.data?.message || "Upload failed");
       }
@@ -395,15 +411,14 @@ export const ProfileHeader = ({
   };
 
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-surface shadow-sm">
-      {/* ─── 1. COVER AREA ────────────────────────────────────────── */}
+    <>
+      <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-surface shadow-sm">
       <div className="relative h-28 sm:h-36 md:h-44 w-full overflow-hidden bg-gradient-to-r from-sky-800 via-brand to-sky-900 select-none group/cover">
         {coverPreview || profileUser?.coverImage || profileUser?.coverPic ? (
           <img
             src={
               coverPreview ||
-              profileUser?.coverImage ||
-              profileUser?.coverPic
+              toHttps(profileUser?.coverImage || profileUser?.coverPic)
             }
             alt="Cover"
             className="w-full h-full object-cover"
@@ -425,7 +440,6 @@ export const ProfileHeader = ({
           </div>
         )}
 
-        {/* Cover Photo Edit / Action Controls */}
         {isOwnProfile && (
           <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 z-20 flex items-center gap-2">
             <input
@@ -484,23 +498,22 @@ export const ProfileHeader = ({
         )}
       </div>
 
-      {/* ─── 2. PROFILE DETAILS & OVERLAPPING AVATAR ─────────────── */}
       <div className="px-4 sm:px-6 pb-5 pt-0">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 -mt-12 sm:-mt-14 mb-4">
-          {/* Avatar with Story ring & Edit button */}
           <div className="relative shrink-0 self-start">
             <div
-              onClick={hasStories ? () => handleOpenStory(0) : undefined}
-              className={`relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-4 border-surface bg-secondary-100 shadow-md ${
+              onClick={() => setShowPhotoModal(true)}
+              className={`relative h-24 w-24 sm:h-28 sm:w-28 rounded-full overflow-hidden border-4 border-surface bg-secondary-100 shadow-md cursor-pointer hover:ring-3 hover:ring-primary-400 hover:scale-[1.02] transition-all duration-200 group/avatar ${
                 hasStories
-                  ? "cursor-pointer ring-3 ring-primary-500 ring-offset-2 hover:scale-[1.02] transition-transform"
+                  ? "ring-3 ring-primary-500 ring-offset-2"
                   : ""
               }`}
+              title="Click to view profile photo"
             >
               <img
                 src={getAvatarUrl(profileUser)}
                 alt={profileUser?.name || "Traveler"}
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover transition-transform duration-300 group-hover/avatar:scale-105"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -508,13 +521,17 @@ export const ProfileHeader = ({
                   )}&background=0284c7&color=fff&bold=true`;
                 }}
               />
+              <div className="absolute inset-0 bg-black/25 opacity-0 group-hover/avatar:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                <Eye className="w-6 h-6 text-white drop-shadow-md" />
+              </div>
             </div>
 
             {isOwnProfile && (
               <button
-                onClick={() =>
-                  navigate("/updateProfile", { state: profileUser })
-                }
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate("/updateProfile", { state: profileUser });
+                }}
                 className="absolute bottom-0 right-0 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full border-2 border-surface shadow-sm hover:scale-105 transition-transform"
                 title="Edit Profile"
                 aria-label="Edit Profile"
@@ -524,7 +541,6 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          {/* Action buttons on top right */}
           <div className="flex flex-wrap items-center gap-2 self-start sm:self-end pt-1">
             {isOwnProfile ? (
               <>
@@ -565,7 +581,6 @@ export const ProfileHeader = ({
                   </button>
                 )}
 
-                {/* More options menu */}
                 <div className="relative dropdown-container">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
@@ -629,7 +644,6 @@ export const ProfileHeader = ({
           </div>
         </div>
 
-        {/* Identity & Bio */}
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
             <h1 className="text-base sm:text-xl font-bold tracking-tight text-dark font-heading leading-snug">
@@ -665,7 +679,6 @@ export const ProfileHeader = ({
             </p>
           )}
 
-          {/* Metadata chips (Location, Member since, Email/Phone) */}
           <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-muted font-medium pt-1 font-sans">
             {profileUser?.city || profileUser?.state || profileUser?.country ? (
               <span className="inline-flex items-center gap-1 text-secondary-600">
@@ -700,7 +713,6 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          {/* Travel Interests & Styles (Compact chips) */}
           {profileUser?.interests && profileUser.interests.length > 0 && (
             <div className="flex flex-wrap items-center gap-1.5 pt-1.5 font-sans">
               {profileUser.interests
@@ -727,9 +739,7 @@ export const ProfileHeader = ({
           )}
         </div>
 
-        {/* ─── 3. UNIFIED HORIZONTAL PROFILE STATISTICS ───────────── */}
         <div className="mt-4 grid grid-cols-3 min-[430px]:grid-cols-5 overflow-hidden rounded-2xl border border-border/80 bg-secondary-50/60 divide-y min-[430px]:divide-y-0 divide-x divide-border/60">
-          {/* Travel Memories */}
           <button
             type="button"
             onClick={() => setActiveTab("posts")}
@@ -743,7 +753,6 @@ export const ProfileHeader = ({
             </span>
           </button>
 
-          {/* My Trips */}
           <button
             type="button"
             onClick={() => setActiveTab("trips")}
@@ -757,7 +766,6 @@ export const ProfileHeader = ({
             </span>
           </button>
 
-          {/* Followers */}
           <button
             type="button"
             onClick={() => openRelationsModal("followers")}
@@ -771,7 +779,6 @@ export const ProfileHeader = ({
             </span>
           </button>
 
-          {/* Following */}
           <button
             type="button"
             onClick={() => openRelationsModal("following")}
@@ -785,7 +792,6 @@ export const ProfileHeader = ({
             </span>
           </button>
 
-          {/* Mutuals / Trip Mates / Badges */}
           <button
             type="button"
             onClick={() =>
@@ -805,6 +811,114 @@ export const ProfileHeader = ({
         </div>
       </div>
     </section>
+
+      <AnimatePresence>
+        {showPhotoModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 sm:p-6"
+            onClick={() => setShowPhotoModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.85, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.85, opacity: 0 }}
+              transition={{ type: "spring", stiffness: 320, damping: 26 }}
+              className="relative max-w-md sm:max-w-lg w-full flex flex-col items-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="w-full flex items-center justify-between pb-3 text-white">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white/20 shadow-xs">
+                    <img
+                      src={getAvatarUrl(profileUser)}
+                      alt={profileUser?.name || "Traveler"}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-white leading-tight">
+                      {profileUser?.name || "Traveler"}
+                    </h3>
+                    {profileUser?.username && (
+                      <p className="text-xs text-white/70">
+                        @{profileUser.username}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {isOwnProfile && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowPhotoModal(false);
+                        navigate("/updateProfile", { state: profileUser });
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition active:scale-95 border border-white/15 cursor-pointer"
+                    >
+                      <Edit className="w-3.5 h-3.5" />
+                      <span>Change Photo</span>
+                    </button>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPhotoModal(false)}
+                    className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition active:scale-95 border border-white/15 cursor-pointer"
+                    title="Close (Esc)"
+                    aria-label="Close"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="relative w-full max-h-[72vh] flex items-center justify-center rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-2xl p-2 sm:p-3">
+                <img
+                  src={getAvatarUrl(profileUser)}
+                  alt={profileUser?.name || "Profile Photo"}
+                  className="max-h-[66vh] w-auto max-w-full object-contain rounded-xl select-none"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
+                      profileUser?.name || "Explorer"
+                    )}&background=0284c7&color=fff&bold=true`;
+                  }}
+                />
+              </div>
+
+              <div className="flex items-center gap-3 pt-3">
+                {hasStories && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowPhotoModal(false);
+                      handleOpenStory?.(0);
+                    }}
+                    className="flex items-center gap-1.5 px-4 py-1.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold shadow-md transition active:scale-95 cursor-pointer"
+                  >
+                    <span>View Story</span>
+                  </button>
+                )}
+                <a
+                  href={getAvatarUrl(profileUser)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white text-xs font-semibold transition border border-white/15 cursor-pointer"
+                >
+                  <span>Open Full Size</span>
+                </a>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 };
 

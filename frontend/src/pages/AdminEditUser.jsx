@@ -161,7 +161,6 @@ const AdminEditUser = () => {
 
         <div className="bg-surface rounded-2xl border border-slate-100 shadow-sm overflow-hidden bg-white">
           <form onSubmit={handleSubmit} className="flex flex-col lg:flex-row">
-            {/* User Profile Avatar Section */}
             <div className="lg:w-1/3 bg-brand-50/50 border-r border-brand-100 p-8 text-text-primary flex flex-col items-center justify-center text-center relative overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-br from-brand-100/40 to-transparent pointer-events-none" />
 
@@ -224,7 +223,6 @@ const AdminEditUser = () => {
               )}
             </div>
 
-            {/* Profile Form Details */}
             <div className="lg:w-2/3 p-8">
               <div className="flex items-center justify-between mb-8 border-b border-slate-50 pb-4">
                 <h2 className="text-xs font-bold text-text-muted uppercase tracking-wider">

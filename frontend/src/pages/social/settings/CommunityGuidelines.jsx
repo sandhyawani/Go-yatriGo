@@ -114,7 +114,6 @@ const GUIDELINES = [
 
 }];
 
-
 const GuidelineCard = ({ icon: Icon, title, color, bg, items }) =>
 <div className="bg-white p-6 rounded-3xl border border-border-default shadow-sm">
     <div className="flex items-center gap-3 mb-4">
@@ -138,7 +137,6 @@ const GuidelineCard = ({ icon: Icon, title, color, bg, items }) =>
     )}
     </ul>
   </div>;
-
 
 const CommunityGuidelines = () => {
   const navigate = useNavigate();

@@ -107,15 +107,12 @@ const DeactivateAccountModal = ({ isOpen, onClose, onConfirm }) => {
 
 };
 
-
-
 const Settings = () => {
   const { logout, updateUser: updateAuthUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isDeactivateModalOpen, setIsDeactivateModalOpen] = useState(false);
   const [fetchError, setFetchError] = useState(false);
-
 
   const [user, setUser] = useState(null);
   const [privacySettings, setPrivacySettings] = useState(null);
@@ -242,7 +239,6 @@ const Settings = () => {
             <div className="flex flex-col gap-1">
               <SettingsRow icon={User} title="Edit Profile" subtitle="Public travel identity" to="/updateProfile" />
               
-              {/* Email Display */}
               <div className="flex items-center justify-between p-4 rounded-xl hover transition-colors">
                 <div className="flex flex-col">
                   <span className="text-sm font-semibold text-text-primary">Email Address</span>

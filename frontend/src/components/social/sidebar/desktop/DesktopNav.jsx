@@ -12,7 +12,6 @@ const DesktopNav = () => {
   const { setIsSearchOpen, showNotifPanel, setShowNotifPanel } = useSidebar();
   const { unreadCount } = useNotifications();
 
-  // Keyboard shortcut Ctrl+K / Cmd+K to open search
   useEffect(() => {
     const handleKeyDown = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
@@ -38,7 +37,6 @@ const DesktopNav = () => {
 
   return (
     <div className="flex flex-col gap-1 font-sans">
-      {/* Brand Logo Header */}
       <Link
         to="/"
         className="flex items-center gap-3 px-2 py-2 mb-1 group rounded-2xl transition-colors"
@@ -56,9 +54,7 @@ const DesktopNav = () => {
         </div>
       </Link>
 
-      {/* Nav Items with Create in the middle */}
       <div className="flex flex-col gap-1 pt-0.5">
-        {/* First Half: Home, Explore, Search */}
         {navItems.slice(0, 3).map((item, idx) => {
           const Icon = item.icon;
 
@@ -90,12 +86,10 @@ const DesktopNav = () => {
           );
         })}
 
-        {/* Create Action in the middle of other options */}
         <div className="w-full">
           <CreateDropdown />
         </div>
 
-        {/* Second Half: Journey Hub, Chat */}
         {navItems.slice(3).map((item, idx) => {
           const Icon = item.icon;
           const isActive = item.matchPrefix
@@ -113,7 +107,6 @@ const DesktopNav = () => {
           );
         })}
 
-        {/* Notifications Nav Item */}
         <div className="relative w-full">
           <button
             onClick={() => setShowNotifPanel((prev) => !prev)}
@@ -137,7 +130,5 @@ const DesktopNav = () => {
   );
 };
 
-
 export default React.memo(DesktopNav);
-
-
+

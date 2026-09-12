@@ -55,7 +55,6 @@ const CreateDropdown = () => {
             leaveTo="opacity-0 scale-95 -translate-x-2"
           >
             <Menu.Items className="absolute left-[calc(100%+22px)] top-0 w-[270px] bg-white/95 backdrop-blur-2xl rounded-2xl shadow-[0_15px_35px_rgba(15,23,42,0.16),0_2px_8px_rgba(15,23,42,0.06)] focus:outline-none z-[100] p-1.5 border border-slate-200/80">
-              {/* Pointer arrow notch pointing to the Create button */}
               <div className="absolute -left-1.5 top-3.5 w-3 h-3 bg-white border-l border-t border-slate-200/80 -rotate-45 pointer-events-none" />
 
               <div className="relative px-2.5 py-1.5 border-b border-slate-100 mb-1 flex items-center justify-between">
@@ -127,7 +126,5 @@ const CreateDropdown = () => {
   );
 };
 
-
 export default React.memo(CreateDropdown);
-
-
+

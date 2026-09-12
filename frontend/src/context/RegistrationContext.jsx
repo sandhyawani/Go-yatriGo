@@ -25,7 +25,6 @@ export const RegistrationProvider = ({ children }) => {
         return { ...defaultFormData, ...parsed, password: "", repeatPassword: "" };
       }
     } catch (e) {
-      // ignore JSON parse errors
     }
     return defaultFormData;
   });
@@ -35,12 +34,10 @@ export const RegistrationProvider = ({ children }) => {
       const updated = typeof updater === "function" ? updater(prev) : updater;
       const merged = { ...prev, ...updated };
 
-      // Persist non-sensitive fields to sessionStorage
       try {
         const { password, repeatPassword, ...safeFields } = merged;
         sessionStorage.setItem(REGISTRATION_SESSION_KEY, JSON.stringify(safeFields));
       } catch (e) {
-        // ignore storage errors
       }
 
       return merged;
@@ -52,7 +49,6 @@ export const RegistrationProvider = ({ children }) => {
     try {
       sessionStorage.removeItem(REGISTRATION_SESSION_KEY);
     } catch (e) {
-      // ignore
     }
   };
 

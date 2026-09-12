@@ -29,8 +29,6 @@ const createTicket = asyncHandler(async (req, res) => {
 
   await ticket.save();
 
-
-
   res.status(201).json({
     success: true,
     ticket
@@ -78,8 +76,6 @@ const submitContactForm = asyncHandler(async (req, res) => {
   });
 
   await ticket.save();
-
-
 
   res.status(200).json({
     success: true,

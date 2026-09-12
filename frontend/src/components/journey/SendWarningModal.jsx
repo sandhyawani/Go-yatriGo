@@ -89,7 +89,6 @@ const SendWarningModal = ({
   return (
     <div className="fixed inset-0 bg-brand/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 animate-fade-in">
       <div className="bg-white rounded-3xl p-4 sm:p-6 w-full max-w-md shadow-2xl border border-slate-200/80 relative max-h-[90vh] overflow-y-auto">
-        {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-4 pb-1">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
@@ -121,7 +120,6 @@ const SendWarningModal = ({
           </div>
         )}
 
-        {/* Reason Select */}
         <form onSubmit={handleConfirmWarning} className="space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-bold text-text-primary block">
@@ -157,7 +155,6 @@ const SendWarningModal = ({
             </div>
           </div>
 
-          {/* Custom explanation if 'Other' */}
           {isOther && (
             <div className="space-y-1.5 pt-1 animate-fade-in">
               <label className="text-xs font-bold text-text-primary block">
@@ -181,7 +178,6 @@ const SendWarningModal = ({
             </div>
           )}
 
-          {/* Actions */}
           <div className="flex items-center justify-end gap-3 pt-3 mt-4 border-t border-slate-100">
             <button
               type="button"

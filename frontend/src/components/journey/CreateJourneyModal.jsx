@@ -235,12 +235,10 @@ const CreateJourneyModal = ({
   return (
     <div className="fixed inset-0 z-[1050] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full sm:max-w-xl bg-surface rounded-t-[var(--radius-card)] sm:rounded-[var(--radius-card)] shadow-md border border-border-default overflow-hidden flex flex-col max-h-[92dvh] sm:max-h-[88vh]">
-        {/* Mobile touch indicator bar */}
         <div className="pt-2.5 pb-1 flex justify-center sm:hidden">
           <div className="w-10 h-1 rounded-full bg-slate-300" />
         </div>
 
-        {/* Modal Header */}
         <div className="bg-white px-4 sm:px-5 py-3 sm:py-4 border-b border-slate-100 text-text-primary flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3">
             <div className="p-2 bg-brand rounded-xl shadow-md shadow-brand/20 shrink-0">
@@ -266,7 +264,6 @@ const CreateJourneyModal = ({
           </button>
         </div>
 
-        {/* Step Progress Bar */}
         <div className="flex items-center px-4 sm:px-6 py-2.5 bg-slate-50 border-b border-slate-100 select-none">
           <div
             className={`flex items-center gap-1.5 text-xs font-bold ${step >= 1 ? "text-brand" : "text-text-muted"}`}
@@ -314,7 +311,6 @@ const CreateJourneyModal = ({
           </div>
         </div>
 
-        {/* Scrollable Form Content */}
         <div className="p-4 sm:p-5 overflow-y-auto flex-1 custom-scrollbar space-y-4">
           {createdJourney ? (
             <div className="py-6 px-3 text-center space-y-5 animate-fade-in">
@@ -372,7 +368,6 @@ const CreateJourneyModal = ({
             </div>
           ) : (
             <>
-              {/* Step 1: Trip Details */}
               {step === 1 && (
                 <form id="step1Form" onSubmit={handleNextStep1} className="space-y-4">
                   <div>
@@ -555,8 +550,6 @@ const CreateJourneyModal = ({
                 </form>
               )}
 
-
-              {/* Step 2: Invite Group */}
               {step === 2 && (
                 <div>
                   <div className="mb-4 bg-brand-50 p-4 rounded-2xl border border-brand-200 flex items-start gap-3">
@@ -683,7 +676,6 @@ const CreateJourneyModal = ({
           )}
         </div>
 
-        {/* Modal Action Footer */}
         {!createdJourney && (
           <div className="sticky bottom-0 z-20 px-4 py-3 pb-[max(env(safe-area-inset-bottom,0px),0.875rem)] border-t border-slate-100 flex items-center justify-between gap-3 bg-white shrink-0">
             {step > 1 ? (

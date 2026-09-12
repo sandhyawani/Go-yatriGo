@@ -44,8 +44,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
     }
   ];
 
-
-
   const parseNoteDetails = (contentStr) => {
     if (!contentStr) return { details: "" };
     try {
@@ -69,7 +67,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
     fetchNotes();
   }, [journeyId]);
 
-  // Support Escape to close modal
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.key === "Escape" && isModalOpen) {
@@ -82,7 +79,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
     }
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isModalOpen]);
-
 
   const handleAddItem = (e) => {
     e.preventDefault();
@@ -158,7 +154,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
       if (category === "Packing") backendCategory = "Packing List";
       if (category === "Emergency Info" || category === "Emergency") backendCategory = "Emergency Information";
       if (category === "Travel Tips" || category === "Travel Tip") backendCategory = "Travel Tips";
-
 
       const payload = {
         category: backendCategory,
@@ -360,7 +355,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Category Tabs Header */}
       <div className="bg-background/90 backdrop-blur-md p-1.5 rounded-2xl border border-slate-200/80 shadow-xs flex items-center justify-between gap-2 overflow-hidden">
         <div className="flex items-center gap-1 overflow-x-auto hide-scrollbar py-0.5 px-0.5 flex-1 whitespace-nowrap flex-nowrap">
           <button
@@ -413,7 +407,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
         </button>
       </div>
 
-      {/* Grid of Workspace Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 items-stretch">
         {filteredNotes.length === 0 ? (
           <div className="col-span-full py-8 px-6 text-center bg-white rounded-3xl border border-slate-200/80 shadow-xs">
@@ -505,8 +498,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
         )}
       </div>
 
-      {/* Redesigned Add / Edit Workspace Item Modal */}
-
       {isModalOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
@@ -522,7 +513,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             aria-modal="true"
             className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto relative animate-scale-up"
           >
-            {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-text-primary flex items-center gap-2 m-0 tracking-tight">
                 <Sparkles className="w-4 h-4 text-brand" />{" "}
@@ -543,7 +533,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
             </div>
 
             <form onSubmit={handleCreateNote} className="space-y-4 pt-1">
-              {/* Category Select */}
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                   Category
@@ -556,7 +545,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 />
               </div>
 
-              {/* Title / Name */}
               <div>
                 <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
                   {["Emergency Info", "Emergency"].includes(category)
@@ -587,7 +575,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 />
               </div>
 
-              {/* Meeting Point Specific Fields */}
               {category === "Meeting Point" && (
                 <>
                   <div>
@@ -631,7 +618,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </>
               )}
 
-              {/* Emergency Info Specific Fields */}
               {["Emergency Info", "Emergency"].includes(category) && (
                 <>
                   <div>
@@ -662,7 +648,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </>
               )}
 
-              {/* Packing / Checklist Fields */}
               {["Packing", "Checklists / Packing", "Checklist", "Packing List"].includes(category) && (
                 <div>
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
@@ -704,7 +689,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </div>
               )}
 
-              {/* Travel Tips */}
               {(category === "Travel Tips" || category === "Travel Tip") && (
                 <div>
                   <label className="block text-xs font-extrabold uppercase tracking-wider text-text-muted mb-1.5">
@@ -720,7 +704,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </div>
               )}
 
-              {/* Pin Checkbox */}
               <div className="flex items-center gap-2 pt-1">
                 <input
                   type="checkbox"
@@ -737,7 +720,6 @@ const JourneyWorkspaceView = ({ journeyId }) => {
                 </label>
               </div>
 
-              {/* Bottom Action Layout: [ Cancel ] [ Save Item ] */}
               <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
                 <button
                   type="button"
@@ -771,4 +753,4 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 };
 
 export default JourneyWorkspaceView;
-
+

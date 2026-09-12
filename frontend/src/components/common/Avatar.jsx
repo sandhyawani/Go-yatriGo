@@ -4,7 +4,6 @@ import { getAvatarUrl } from '../../utils/avatar';
 const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
   const [error, setError] = useState(false);
 
-
   const finalName = name || user?.name || user?.username || "User";
   const finalPic = pic || profilePic || avatar || img || user?.profilePic || user?.pic || user?.avatar || user?.img || user?.profilePicture || user?.userPic;
   const finalImg = img || user?.img || user?.pic || user?.avatar || user?.profilePic;
@@ -41,7 +40,6 @@ const Avatar = ({ pic, img, profilePic, avatar, user, name, className }) => {
     alt={finalName}
     className={`rounded-full border-2 border-white shadow-sm object-cover ${className}`}
     onError={() => setError(true)} />);
-
 
 };
 

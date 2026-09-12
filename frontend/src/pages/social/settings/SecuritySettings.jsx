@@ -24,7 +24,6 @@ const PasswordStrength = ({ password }) => {
   { label: "Number", pass: /\d/.test(password) },
   { label: "Special character", pass: /[^A-Za-z0-9]/.test(password) }];
 
-
   const score = checks.filter((item) => item.pass).length;
   const levels = [
   { label: "Weak", color: "#ef4444" },
@@ -313,7 +312,6 @@ const SectionHeader = ({ icon: Icon, iconBg = "#E0F7FC", iconColor = "#0284c7", 
     </div>
   </div>;
 
-
 const Card = ({ children, style = {} }) =>
 <div
 style={{
@@ -328,7 +326,6 @@ style={{
 
     {children}
   </div>;
-
 
 const SecuritySettings = () => {
   const location = useLocation();
@@ -654,7 +651,6 @@ const SecuritySettings = () => {
             title="Change password"
             subtitle="Use a strong, unique password you don't use elsewhere" />
 
-
             <form
             onSubmit={handlePasswordChange}
             style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -748,7 +744,6 @@ const SecuritySettings = () => {
                     undefined
                   }} />
 
-
                   {confirmPassword &&
                   <div
                   style={{
@@ -797,7 +792,6 @@ const SecuritySettings = () => {
             </form>
             </Card>}
 
-
           {(activeTab === "all" || activeTab === "2fa") &&
           <Card>
               <SectionHeader
@@ -806,7 +800,6 @@ const SecuritySettings = () => {
             iconColor="#d97706"
             title="Two-factor authentication"
             subtitle="Require a second verification step when signing in" />
-
 
               <SettingsToggle
             title="Enable 2FA"
@@ -817,7 +810,6 @@ const SecuritySettings = () => {
 
             </Card>}
 
-
           {(activeTab === "all" || activeTab === "sessions") &&
           <Card>
               <SectionHeader
@@ -826,7 +818,6 @@ const SecuritySettings = () => {
             iconColor="#0284c7"
             title="Active sessions"
             subtitle={`${sessions.length} device${sessions.length !== 1 ? "s" : ""} currently signed in`} />
-
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
               {sessions.length === 0 ?
@@ -935,7 +926,6 @@ const SecuritySettings = () => {
               </div>}
 
             </Card>}
-
 
         </div>
       </div>

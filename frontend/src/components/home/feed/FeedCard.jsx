@@ -73,10 +73,8 @@ const FeedCard = React.forwardRef(
         transition={FEED_CARD_SPRING}
         className="group relative overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm hover:shadow-md transition-all duration-300"
       >
-        {/* Scrapbook Washi Tape Top Accent */}
         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-16 sm:w-20 h-3.5 bg-amber-100/85 border border-amber-200/70 rounded-xs shadow-2xs rotate-[-1deg] backdrop-blur-[1px] z-20 pointer-events-none opacity-80" />
 
-        {/* Vintage Postmark / Visited Ink Stamp */}
         {post.location && (
           <div className="absolute top-4 right-4 sm:right-6 w-20 h-20 border-[2px] border-dashed border-brand-500/25 rounded-full flex flex-col items-center justify-center pointer-events-none rotate-[-8deg] z-0 select-none opacity-45">
             <div className="absolute inset-1 border border-brand-500/20 rounded-full"></div>
@@ -95,7 +93,6 @@ const FeedCard = React.forwardRef(
           </div>
         )}
 
-        {/* Header */}
         <FeedHeader
           post={post}
           isCreator={isCreator}
@@ -107,7 +104,6 @@ const FeedCard = React.forwardRef(
           handleAvatarError={handleAvatarError}
         />
 
-        {/* Media Section */}
         <FeedMedia
           post={post}
           playingAudioId={playingAudioId}
@@ -117,7 +113,6 @@ const FeedCard = React.forwardRef(
           audioRefCallback={audioRefCallback}
         />
 
-        {/* Bottom Section: Caption, Interactions, Comments */}
         <div className="px-4 pb-3 pt-2 sm:px-5">
           <FeedCaption post={post} />
 

@@ -4,7 +4,6 @@ const JourneyTimeline = require("../models/JourneyTimeline");
 const JourneyInvitation = require("../models/JourneyInvitation");
 const JourneyJoinRequest = require("../models/JourneyJoinRequest");
 
-// Sync journey status based on dates and cancellation state.
 const syncJourneyStatus = async (journey) => {
   if (!journey) return journey;
   const currentStat = String(journey.status || "").trim().toLowerCase();
@@ -39,7 +38,6 @@ const syncJourneyStatus = async (journey) => {
     expectedStatus = "Ongoing";
   }
 
-  // When journey is Ongoing, pending invitations and join requests must expire (Rule 3)
   if (expectedStatus === "Ongoing") {
     try {
       await JourneyInvitation.updateMany(
@@ -164,7 +162,6 @@ const syncJourneyStatus = async (journey) => {
   return journey;
 };
 
-// HTTP handler to sync journey status on demand.
 const syncJourneyStatusHandler = async (req, res) => {
   try {
     const { id } = req.params;

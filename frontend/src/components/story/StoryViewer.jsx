@@ -149,7 +149,6 @@ const StoryViewer = ({
     return () => document.removeEventListener("visibilitychange", handle);
   }, []);
 
-  // Stop background audio on mount and unmount
   useEffect(() => {
     AudioManager.stopAll();
     AudioManager.lock();
@@ -189,7 +188,6 @@ const StoryViewer = ({
       const audio = new Audio(currentStory.song.audioUrl);
       audio.loop = true;
       audio.currentTime = 0;
-      // Initialize with current mute state, updated by another effect
       audio.muted = isStoryMuted;
       AudioManager.play("story-preview", audio, { source: "story" });
       audioRef.current = audio;
@@ -208,7 +206,6 @@ const StoryViewer = ({
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isStoryMuted;
-      // If unmuted and it was previously blocked from playing (paused), try playing again
       if (
         !isStoryMuted &&
         !isStoryPaused &&
@@ -342,7 +339,6 @@ const StoryViewer = ({
       exit={{ opacity: 0 }}
       className="fixed inset-0 bg-black/95 backdrop-blur-xl z-[99999] flex items-center justify-center overflow-hidden"
     >
-      {/* Prev / Next ghost buttons for desktop */}
       <button
         onClick={prevStory}
         className="hidden sm:flex absolute left-4 z-50 w-10 h-10 items-center justify-center bg-white/10 hover:bg-white/20 border border-white/20 rounded-full text-white transition-all backdrop-blur-sm"
@@ -365,7 +361,6 @@ const StoryViewer = ({
         onDragEnd={handleDragEnd}
         className="relative w-full h-full max-w-[430px] mx-auto sm:h-[95vh] sm:rounded-[36px] overflow-hidden bg-black flex flex-col shadow-2xl ring-1 ring-white/10"
       >
-        {/* Progress bars */}
         <div className="absolute top-3 inset-x-3 z-40 flex gap-1">
           {activeStoryGroup.stories?.map((st, idx) => (
             <div
@@ -387,7 +382,6 @@ const StoryViewer = ({
           ))}
         </div>
 
-        {/* Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full p-[2px] bg-gradient-to-tr from-sky-400 via-primary-500 to-brand shrink-0">
@@ -451,7 +445,6 @@ const StoryViewer = ({
           </button>
         </div>
 
-        {/* Tap zones */}
         <div
           className="absolute inset-y-0 left-0 w-1/3 z-20 touch-none select-none"
           onPointerDown={handlePointerDown}
@@ -471,7 +464,6 @@ const StoryViewer = ({
           onPointerCancel={() => setIsStoryPaused(false)}
         />
 
-        {/* Media */}
         <div className="w-full h-full flex items-center justify-center relative bg-black">
           {!storyMediaLoaded && (
             <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
@@ -479,7 +471,6 @@ const StoryViewer = ({
             </div>
           )}
 
-          {/* Ambient bg */}
           {mediaUrl && (
             <div
               className="absolute inset-0 z-0 overflow-hidden opacity-25"
@@ -503,7 +494,6 @@ const StoryViewer = ({
             </div>
           )}
 
-          {/* Main media */}
           <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
             {isVideo ? (
               <video
@@ -526,7 +516,6 @@ const StoryViewer = ({
             )}
           </div>
 
-          {/* Music tag */}
           <AnimatePresence>
             {storyMediaLoaded &&
               currentStory?.song &&
@@ -554,13 +543,11 @@ const StoryViewer = ({
               )}
           </AnimatePresence>
 
-          {/* Mute button */}
           {(isVideo || currentStory?.song) && (
             <button
               onClick={(e) => {
                 e.stopPropagation();
                 setIsStoryMuted((m) => !m);
-                // trigger audio play on click for iOS audio unmuting
                 if (
                   isStoryMuted &&
                   audioRef.current &&
@@ -580,7 +567,6 @@ const StoryViewer = ({
             </button>
           )}
 
-          {/* stickers & caption */}
           <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
               {storyMediaLoaded && currentStory?.stickers?.length > 0
@@ -626,11 +612,9 @@ const StoryViewer = ({
           </div>
         </div>
 
-        {/* Bottom bar */}
         <div className="absolute bottom-0 left-0 right-0 z-50 px-4 pt-10 pb-8 sm:pb-5 bg-gradient-to-t from-black/85 via-black/40 to-transparent pointer-events-none">
           {!isOwnStory ? (
             <div className="pointer-events-auto flex flex-col gap-3 w-full">
-              {/* Reactions */}
               <div className="flex justify-center gap-3">
                 {["✨", "🔥", "😍", "😂", "🌍"].map((emoji, i) => (
                   <motion.button
@@ -653,7 +637,6 @@ const StoryViewer = ({
                   </motion.button>
                 ))}
               </div>
-              {/* Reply */}
               <div className="flex gap-2 items-center">
                 <button
                   onClick={(e) => {
@@ -800,7 +783,6 @@ const StoryViewer = ({
         />
       )}
 
-      {/* Viewers Bottom Sheet */}
       <AnimatePresence>
         {showViewersLocal &&
           activeStoryGroup &&

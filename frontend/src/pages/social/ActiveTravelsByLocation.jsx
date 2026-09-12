@@ -100,7 +100,6 @@ const ActiveTravelsByLocation = () => {
         params.set("scope", "all");
       }
 
-      // Skip if required params are missing
       const finalScope = params.get("scope");
       if (finalScope === "city" && !params.get("city")) {
         setTrips([]);
@@ -126,7 +125,6 @@ const ActiveTravelsByLocation = () => {
         setTrips(res.data.trips || []);
         setLocationGroups(res.data.locationGroups || []);
         setSummary(res.data.summary || { totalTrips: 0, totalDestinations: 0 });
-        // Auto-expand first destination if there's only one
         if (res.data.locationGroups?.length === 1) {
           setExpandedDest(res.data.locationGroups[0].destination);
         } else {
@@ -317,7 +315,6 @@ const ActiveTravelsByLocation = () => {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Header */}
       <div className="sticky top-0 z-30 bg-white/80 backdrop-blur-xl border-b border-slate-100">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           <button
@@ -345,7 +342,6 @@ const ActiveTravelsByLocation = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pt-4 pb-20">
-        {/* ── Scope filter buttons ── */}
         <div className="flex gap-2 overflow-x-auto pb-3 scrollbar-none snap-x">
           {scopeButtons.map((btn) => {
             const Icon = btn.icon;
@@ -365,7 +361,6 @@ const ActiveTravelsByLocation = () => {
             );
           })}
 
-          {/* Custom location picker toggle */}
           <div className="relative shrink-0" ref={pickerRef}>
             <button
               onClick={() => setShowLocationPicker(!showLocationPicker)}
@@ -385,7 +380,6 @@ const ActiveTravelsByLocation = () => {
               <ChevronDown className={`w-3 h-3 transition-transform ${showLocationPicker ? "rotate-180" : ""}`} />
             </button>
 
-            {/* Dropdown picker */}
             <AnimatePresence>
               {showLocationPicker && (
                 <motion.div
@@ -407,7 +401,6 @@ const ActiveTravelsByLocation = () => {
                     </button>
                   </div>
 
-                  {/* State search */}
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none" />
                     <input
@@ -423,7 +416,6 @@ const ActiveTravelsByLocation = () => {
                     />
                   </div>
 
-                  {/* State list */}
                   <div className="max-h-36 overflow-y-auto space-y-1 scrollbar-none">
                     {filteredStates.map((st) => (
                       <button
@@ -446,7 +438,6 @@ const ActiveTravelsByLocation = () => {
                     )}
                   </div>
 
-                  {/* City list */}
                   {customState && citiesForState.length > 0 && (
                     <>
                       <div className="text-[10px] font-bold text-text-muted uppercase tracking-wider">
@@ -470,7 +461,6 @@ const ActiveTravelsByLocation = () => {
                     </>
                   )}
 
-                  {/* Apply buttons */}
                   <div className="flex gap-2 pt-1">
                     {customState && !customCity && (
                       <button
@@ -499,7 +489,6 @@ const ActiveTravelsByLocation = () => {
           </div>
         </div>
 
-        {/* Current filter indicator */}
         <div className="flex items-center gap-2 mb-4">
           <MapPin className="w-3.5 h-3.5 text-brand-500" />
           <span className="text-xs font-bold text-text-muted">
@@ -510,7 +499,6 @@ const ActiveTravelsByLocation = () => {
           </span>
         </div>
 
-        {/* ── Loading ── */}
         {loading && (
           <div className="space-y-6">
             <DestinationSkeleton />
@@ -518,7 +506,6 @@ const ActiveTravelsByLocation = () => {
           </div>
         )}
 
-        {/* ── Error ── */}
         {!loading && error && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-14 h-14 rounded-full bg-rose-50 flex items-center justify-center mb-4">
@@ -538,7 +525,6 @@ const ActiveTravelsByLocation = () => {
           </div>
         )}
 
-        {/* ── Empty state ── */}
         {!loading && !error && trips.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <div className="w-14 h-14 rounded-full bg-background flex items-center justify-center mb-4">
@@ -566,10 +552,8 @@ const ActiveTravelsByLocation = () => {
           </div>
         )}
 
-        {/* ── Content ── */}
         {!loading && !error && trips.length > 0 && (
           <div className="space-y-6">
-            {/* Destination summary cards */}
             <div>
               <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-3 flex items-center gap-2">
                 <Compass className="w-3.5 h-3.5 text-brand-500" />
@@ -612,7 +596,6 @@ const ActiveTravelsByLocation = () => {
               </div>
             </div>
 
-            {/* Expanded destination trips */}
             <AnimatePresence mode="wait">
               {expandedDest && tripsForDestination.length > 0 && (
                 <motion.div
@@ -652,7 +635,6 @@ const ActiveTravelsByLocation = () => {
               )}
             </AnimatePresence>
 
-            {/* All trips when no destination is selected */}
             {!expandedDest && (
               <div>
                 <h2 className="text-[10px] font-black text-text-muted uppercase tracking-[0.15em] mb-3 flex items-center gap-2">

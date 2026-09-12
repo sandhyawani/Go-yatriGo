@@ -5,7 +5,6 @@ import { showToast } from "../../utils/showToast";
 import { getJourneyLifecycle } from "../../utils/journeyLifecycle";
 import SosConfirmModal from "./SosConfirmModal";
 
-
 const JOURNEY_MILESTONES = [
   "Started Journey",
   "Reached Destination",
@@ -36,7 +35,6 @@ const JourneyTimelineView = ({
 
   const jId = journeyId || journey?._id;
 
-  // Load Enjoy Mode and Snooze state from localStorage
   useEffect(() => {
     if (jId) {
       const savedEnjoy = localStorage.getItem(`journey_enjoy_mode_${jId}`);
@@ -55,7 +53,6 @@ const JourneyTimelineView = ({
     }
   }, [jId]);
 
-  // Keep local timeline synced with props or fetch if empty
   useEffect(() => {
     if (timeline && timeline.length > 0) {
       setLocalTimeline(timeline);
@@ -71,7 +68,6 @@ const JourneyTimelineView = ({
     }
   }, [timeline, jId]);
 
-  // Compute safety state from journey prop or local timeline
   const safetyState = journey?.safetyState || (() => {
     const milestoneEvents = (localTimeline || [])
       .filter((e) => e.eventType === "safe_checkin" && JOURNEY_MILESTONES.includes(e.checkInType))
@@ -157,7 +153,6 @@ const JourneyTimelineView = ({
         }
       }
     } else {
-      // Upcoming / Planning (Pre-trip standby)
       sStatus = "PRE_TRIP_STANDBY";
       sText = "Pre-trip standby";
       sColor = "slate";
@@ -176,7 +171,6 @@ const JourneyTimelineView = ({
     };
   })();
 
-
   const {
     completedMilestones = [],
     nextExpectedMilestone,
@@ -187,7 +181,6 @@ const JourneyTimelineView = ({
     isSafetyComplete
   } = safetyState;
 
-  // Toggle Enjoy Mode
   const handleToggleEnjoyMode = () => {
     if (!lifecycle.isOngoing) return;
     const nextVal = !isEnjoyMode;
@@ -202,7 +195,6 @@ const JourneyTimelineView = ({
     }
   };
 
-  // Snooze reminders
   const handleSnooze = (minutes) => {
     if (!lifecycle.isOngoing) return;
     const expiry = Date.now() + minutes * 60 * 1000;
@@ -226,7 +218,6 @@ const JourneyTimelineView = ({
 
   const isSnoozed = snoozeUntil && snoozeUntil > Date.now();
 
-  // One-tap "I'm Safe" quick confirmation
   const handleQuickSafe = async () => {
     if (!jId) return;
     const lc = getJourneyLifecycle(journey);
@@ -258,7 +249,6 @@ const JourneyTimelineView = ({
     }
   };
 
-  // SOS Handler
   const handleToggleSOS = () => {
     setShowSosModal(true);
   };
@@ -284,7 +274,6 @@ const JourneyTimelineView = ({
       setSosLoading(false);
     }
   };
-
 
   const getEventIcon = (eventType, checkInType) => {
     if (eventType === "safe_checkin") {
@@ -343,7 +332,6 @@ const JourneyTimelineView = ({
 
   return (
     <div className="space-y-5 animate-fade-in">
-      {/* Top Quiet Advisory */}
       <div className="bg-background/80 border border-slate-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className={`w-4 h-4 shrink-0 ${lifecycle.isOngoing ? "text-emerald-500" : "text-text-muted"}`} />
@@ -387,7 +375,6 @@ const JourneyTimelineView = ({
         )}
       </div>
 
-      {/* Enjoy Mode Active Banner */}
       {lifecycle.isOngoing && isEnjoyMode && (
         <div className="bg-amber-500/10 border border-amber-500/30 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 animate-fade-in">
           <div className="flex items-center gap-3">
@@ -410,7 +397,6 @@ const JourneyTimelineView = ({
         </div>
       )}
 
-      {/* Snooze Active Banner */}
       {lifecycle.isOngoing && !isEnjoyMode && isSnoozed && (
         <div className="bg-primary-50 border border-primary-200 p-3.5 rounded-2xl flex items-center justify-between gap-3 text-xs text-primary-900 animate-fade-in">
           <div className="flex items-center gap-2.5">
@@ -428,7 +414,6 @@ const JourneyTimelineView = ({
         </div>
       )}
 
-      {/* Gentle Overdue / Check-In Due Banner */}
       {lifecycle.isOngoing && !isEnjoyMode && !isSnoozed && (safetyStatus === "CHECK_IN_DUE" || safetyStatus === "CHECK_IN_OVERDUE" || safetyStatus === "ATTENTION_NEEDED") && (
         <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-amber-900 animate-fade-in">
           <div className="flex items-center gap-3">
@@ -493,7 +478,6 @@ const JourneyTimelineView = ({
         </div>
       )}
 
-      {/* Main Smart Safety Status Card */}
       <div className="bg-slate-800 p-6 rounded-3xl text-white shadow-xl border border-slate-800 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
@@ -556,7 +540,6 @@ const JourneyTimelineView = ({
             </div>
           </div>
 
-          {/* Emergency SOS Button */}
           <button
             onClick={handleToggleSOS}
             disabled={sosLoading}
@@ -571,9 +554,7 @@ const JourneyTimelineView = ({
           </button>
         </div>
 
-        {/* State Information Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2 border-t border-slate-800/80">
-          {/* Last Check-In */}
           <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800">
             <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               Last Check-In
@@ -597,7 +578,6 @@ const JourneyTimelineView = ({
             )}
           </div>
 
-          {/* Next Expected Milestone */}
           <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800">
             <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               NEXT EXPECTED MILESTONE
@@ -629,7 +609,6 @@ const JourneyTimelineView = ({
             )}
           </div>
 
-          {/* Active Protection / Status */}
           <div className="bg-brand/80 p-3.5 rounded-2xl border border-slate-800 sm:col-span-2 lg:col-span-1">
             <span className="text-[10px] font-black text-text-muted uppercase tracking-wider block mb-1">
               Safety Signal Mode
@@ -659,10 +638,8 @@ const JourneyTimelineView = ({
           </div>
         </div>
 
-        {/* Primary Action Buttons */}
         {lifecycle.isOngoing ? (
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-            {/* Quick "I'm Safe" */}
             <button
               onClick={handleQuickSafe}
               disabled={loadingSafe}
@@ -672,7 +649,6 @@ const JourneyTimelineView = ({
               <span>{loadingSafe ? "Confirming Safe..." : "✓ I'm Safe"}</span>
             </button>
 
-            {/* Open Milestone Check-In Modal */}
             {onTriggerCheckIn && (
               <button
                 onClick={onTriggerCheckIn}
@@ -698,8 +674,6 @@ const JourneyTimelineView = ({
           </div>
         )}
       </div>
-
-      {/* Chronological Timeline Feed */}
 
       <div className="bg-white p-4 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4">
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -733,12 +707,10 @@ const JourneyTimelineView = ({
 
               return (
                 <div key={item._id} className="relative group">
-                  {/* Event Icon on Line */}
                   <div className="absolute -left-[35px] sm:-left-[43px] top-0 ring-4 ring-white transition-transform group-hover:scale-110">
                     {getEventIcon(item.eventType, item.checkInType)}
                   </div>
 
-                  {/* Card Content */}
                   <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 hover transition-all">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-1.5">
                       <div className="flex items-center gap-2 flex-wrap">
@@ -805,7 +777,6 @@ const JourneyTimelineView = ({
         )}
       </div>
 
-      {/* Redesigned Emergency SOS Confirmation Modal */}
       <SosConfirmModal
         isOpen={showSosModal}
         isActivating={!sosActive}
@@ -817,6 +788,5 @@ const JourneyTimelineView = ({
     </div>
   );
 };
-
 
 export default JourneyTimelineView;

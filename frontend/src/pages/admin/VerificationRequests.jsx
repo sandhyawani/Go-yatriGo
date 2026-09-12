@@ -24,11 +24,12 @@ Fingerprint } from
 "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import moment from "moment";
+import { toHttps } from "../../utils/toHttps";
 
 const getImageUrl = (url) => {
   if (!url) return "";
   if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
-    return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
+    return toHttps(url);
   }
   const isProduction = process.env.NODE_ENV === "production" || window.location.hostname !== "localhost";
   const defaultBase = isProduction ? "https://go-yatrigo.onrender.com" : "http://localhost:5000";
@@ -73,7 +74,6 @@ const VerificationRequests = () => {
   useEffect(() => {
     fetchRequests();
   }, []);
-
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -182,7 +182,6 @@ const VerificationRequests = () => {
   "Information mismatch",
   "Unsupported document",
   "Custom"];
-
 
   const handleDownload = (url, name) => {
     const link = document.createElement("a");
@@ -429,7 +428,6 @@ const VerificationRequests = () => {
                         </button>
                       </div>}
 
-
                     <div className="flex-1 overflow-hidden flex items-center justify-center p-8 relative">
                       {!imageLoaded &&
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -461,7 +459,6 @@ const VerificationRequests = () => {
                     right: 200,
                     bottom: 200
                   }} />}
-
 
                     </div>
                   </div>

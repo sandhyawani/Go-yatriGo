@@ -17,7 +17,6 @@ const SearchPanel = () => {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchTab, setSearchTab] = useState("all");
 
-  // Close on outside click
   React.useEffect(() => {
     const handler = (e) => {
       if (
@@ -32,7 +31,6 @@ const SearchPanel = () => {
     return () => document.removeEventListener("mousedown", handler);
   }, [setIsSearchOpen]);
 
-  // Reset on close
   useEffect(() => {
     if (!isSearchOpen) {
       setSearchQuery("");
@@ -41,7 +39,6 @@ const SearchPanel = () => {
     }
   }, [isSearchOpen]);
 
-  // Debounced search
   useEffect(() => {
     if (!searchQuery || searchQuery.trim().length < 2) {
       setSearchResults(null);
@@ -107,7 +104,6 @@ const SearchPanel = () => {
         transition={{ type: "spring", stiffness: 320, damping: 30 }}
         className="fixed top-0 right-0 bottom-0 z-[1002] w-full sm:w-[420px] lg:w-[460px] max-w-full flex flex-col bg-white shadow-2xl border-l border-slate-100 overflow-hidden"
       >
-        {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
           <h3 className="text-base font-bold text-text-primary flex items-center gap-2 font-heading">
             <Search className="w-4 h-4 text-brand-500" /> Search
@@ -120,7 +116,6 @@ const SearchPanel = () => {
           </button>
         </div>
 
-        {/* Search Input */}
         <div className="px-5 py-3 border-b border-slate-50 shrink-0">
           <div className="relative">
             <input
@@ -143,7 +138,6 @@ const SearchPanel = () => {
           </div>
         </div>
 
-        {/* Category Tabs */}
         <div className="flex items-center gap-1.5 px-4 py-2 bg-slate-50 border-b border-slate-100 overflow-x-auto shrink-0 select-none">
           {["all", "travelers", "groups", "posts"].map((tab) => (
             <button
@@ -159,7 +153,6 @@ const SearchPanel = () => {
           ))}
         </div>
 
-        {/* Results */}
         <div className="overflow-y-auto overflow-x-hidden flex-1 p-4">
           {searchLoading ? (
             <div className="space-y-3">
@@ -186,7 +179,6 @@ const SearchPanel = () => {
             </div>
           ) : filteredResults ? (
             <div className="space-y-4">
-              {/* Travelers */}
               {filteredResults.travelers?.length > 0 && (
                 <div className="space-y-2">
                   <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
@@ -226,7 +218,6 @@ const SearchPanel = () => {
                 </div>
               )}
 
-              {/* Trips */}
               {filteredResults.trips?.length > 0 && (
                 <div className="space-y-2">
                   <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
@@ -286,7 +277,6 @@ const SearchPanel = () => {
                 </div>
               )}
 
-              {/* Travel Memories */}
               {filteredResults.memories?.length > 0 && (
                 <div className="space-y-2">
                   <span className="text-[9px] font-bold text-text-muted uppercase tracking-widest block">
@@ -345,7 +335,6 @@ const SearchPanel = () => {
                 </div>
               )}
 
-              {/* No results */}
               {filteredResults.travelers?.length === 0 &&
                 filteredResults.trips?.length === 0 &&
                 filteredResults.memories?.length === 0 && (

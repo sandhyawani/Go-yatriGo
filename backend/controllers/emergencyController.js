@@ -149,7 +149,6 @@ const toggleSOS = asyncHandler(async (req, res) => {
 
     primaryContacts = merged.sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0));
 
-    // Send in-app Safety notifications to members of active journeys
     try {
       const io = req.app.get("io");
       const activeJourneys = await Journey.find({

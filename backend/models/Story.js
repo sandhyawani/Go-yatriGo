@@ -69,13 +69,11 @@ const storySchema = new mongoose.Schema(
     ref: "User"
   }],
 
-
   hiddenFrom: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   song: {
     songTitle: String,
@@ -108,13 +106,11 @@ const storySchema = new mongoose.Schema(
     ref: "User"
   }],
 
-
   reactions: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   viewers: [
   {
@@ -128,13 +124,11 @@ const storySchema = new mongoose.Schema(
     }
   }],
 
-
   viewedBy: [
   {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User"
   }],
-
 
   storyReactions: [
   {
@@ -151,7 +145,6 @@ const storySchema = new mongoose.Schema(
       default: Date.now
     }
   }],
-
 
   comments: [
   {
@@ -171,7 +164,6 @@ const storySchema = new mongoose.Schema(
       default: Date.now
     }
   }],
-
 
   expiresAt: {
     type: Date,

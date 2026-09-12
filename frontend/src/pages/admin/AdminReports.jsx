@@ -39,7 +39,6 @@ className={`flex h-7 w-7 items-center justify-center rounded-lg border transitio
     <Icon className="h-3.5 w-3.5" />
   </button>;
 
-
 const AdminReports = () => {
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -217,7 +216,6 @@ const AdminReports = () => {
             </button>
           </div>}
 
-
         <div
         role="region"
         aria-label="Moderation report queue"
@@ -334,7 +332,6 @@ const AdminReports = () => {
 
                           toneClass="border-brand-300 bg-brand-50 text-brand-dark hover:bg-brand-100" />}
 
-
                             {report.targetType === "group" &&
                           <ActionIconButton
                           icon={Trash2}
@@ -349,7 +346,6 @@ const AdminReports = () => {
                           })}
 
                           toneClass="border-brand-300 bg-brand-50 text-brand-dark hover:bg-brand-100" />}
-
 
                             {report.reportedUser?._id &&
                           <>
@@ -376,7 +372,6 @@ const AdminReports = () => {
 
                             toneClass="border-brand-200 bg-white text-brand hover:bg-brand-50" /> :
 
-
                             <ActionIconButton
                             icon={Ban}
                             title="Suspend user"
@@ -390,7 +385,6 @@ const AdminReports = () => {
                             })}
 
                             toneClass="border-brand-400 bg-brand-100 text-brand-800 hover:bg-brand-200" />}
-
 
                               </>}
 
@@ -446,7 +440,6 @@ const AdminReports = () => {
               </div>
             </motion.div>
           </motion.div>}
-
 
         {warnModal.isOpen &&
         <motion.div

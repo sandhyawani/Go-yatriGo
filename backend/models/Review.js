@@ -42,10 +42,8 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-// Compound unique index ensuring at most ONE review per reviewer -> reviewedUser for a given tripId
 reviewSchema.index({ reviewer: 1, reviewedUser: 1, tripId: 1 }, { unique: true });
 
-// Prevent self-review at schema validation level
 reviewSchema.pre("validate", function (next) {
   if (this.reviewer && this.reviewedUser && this.reviewer.toString() === this.reviewedUser.toString()) {
     return next(new Error("You cannot review yourself."));

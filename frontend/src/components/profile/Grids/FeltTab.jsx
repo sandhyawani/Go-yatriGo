@@ -1,5 +1,6 @@
 import React from "react";
 import { Star, MapPin, Clapperboard, Users, FileText, User, Video, MessageCircle, ChevronRight } from "lucide-react";
+import { toHttps } from "../../../utils/toHttps";
 
 export const FeltTab = ({
   feltPosts,
@@ -9,11 +10,11 @@ export const FeltTab = ({
 }) => {
   if (feltLoading && feltPosts.length === 0) {
     return (
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-        {[1, 2, 3].map((i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {[1, 2, 3, 4].map((i) => (
           <div
             key={i}
-            className="aspect-[3/4] bg-secondary-100 animate-pulse rounded-3xl shadow-sm border border-border"
+            className="aspect-square bg-secondary-100 animate-pulse rounded-2xl shadow-sm border border-border"
           />
         ))}
       </div>
@@ -39,8 +40,8 @@ export const FeltTab = ({
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-        {feltPosts.slice(0, 3).map((post) => {
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+        {feltPosts.slice(0, 4).map((post) => {
           let badgeInfo = {
             icon: <MapPin className="w-3 h-3" />,
             label: "Travel Memory",
@@ -77,16 +78,19 @@ export const FeltTab = ({
               bg: "text-primary-600",
             };
 
+          const rawMediaUrl = post.image || post.mediaUrl || post.mediaUrls?.[0] || "";
+          const mediaUrl = toHttps(rawMediaUrl);
+
           return (
             <div
               key={post._id}
               onClick={() => setSelectedMemory(post)}
-              className="aspect-[3/4] bg-surface/80 backdrop-blur-xl rounded-3xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_12px_40px_rgba(2,132,199,0.12)] hover:-translate-y-1 transition-all duration-300"
+              className="aspect-square bg-surface/80 backdrop-blur-xl rounded-2xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(2,132,199,0.12)] hover:-translate-y-1 transition-all duration-300"
             >
               {post.mediaType === "video" ||
-              (post.image || post.mediaUrl || post.mediaUrls?.[0] || "").match(/\.(mp4|webm|mov)$/i) ? (
+              rawMediaUrl.match(/\.(mp4|webm|mov)$/i) ? (
                 <video
-                  src={`${post.image || post.mediaUrl || post.mediaUrls?.[0]}#t=0.1`}
+                  src={`${mediaUrl}#t=0.1`}
                   muted
                   loop
                   playsInline
@@ -95,7 +99,7 @@ export const FeltTab = ({
                 />
               ) : (
                 <img
-                  src={post.image || post.mediaUrl || post.mediaUrls?.[0]}
+                  src={mediaUrl}
                   alt={post.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
@@ -128,7 +132,7 @@ export const FeltTab = ({
           );
         })}
       </div>
-      {feltPosts.length > 3 && (
+      {feltPosts.length > 4 && (
         <button
           onClick={() => navigate("/felt-vibes")}
           className="w-full py-3 bg-surface border border-border hover:bg-secondary-50 text-primary-600 font-bold rounded-2xl transition-all duration-300 shadow-sm flex items-center justify-center gap-2 group"

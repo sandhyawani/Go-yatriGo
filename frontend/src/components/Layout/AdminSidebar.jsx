@@ -20,7 +20,6 @@ const navigation = [
 { label: "Contact Requests", to: "/admin/contacts", Icon: Mail },
 { label: "Create Operator", to: "/adduser", Icon: UserPlus }];
 
-
 const AdminSidebar = ({ isOpen, onClose }) => {
 
   const sidebar =
@@ -73,14 +72,12 @@ const AdminSidebar = ({ isOpen, onClose }) => {
           "text-text-secondary hover:bg-brand-50/50 hover:text-brand-dark"
           }`}>
 
-
                 {({ isActive }) =>
             <>
                     {isActive &&
               <motion.span
               layoutId="admin-active-route"
               className="absolute inset-y-1.5 left-0 w-1 rounded-r-full bg-gradient-to-b from-brand-400 to-brand-600 shadow-sm" />}
-
 
                     <Icon
               className={`h-[18px] w-[18px] ${
@@ -112,7 +109,6 @@ const AdminSidebar = ({ isOpen, onClose }) => {
       </div>
     </aside>;
 
-
   return (
     <>
       <AnimatePresence>
@@ -125,7 +121,6 @@ const AdminSidebar = ({ isOpen, onClose }) => {
         className="fixed inset-0 z-[999] bg-slate-950/70 backdrop-blur-sm md:hidden"
         onClick={onClose}
         aria-label="Close navigation overlay" />}
-
 
       </AnimatePresence>
       {sidebar}

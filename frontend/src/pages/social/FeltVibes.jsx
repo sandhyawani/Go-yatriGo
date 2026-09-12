@@ -12,7 +12,6 @@ const CreatorGroup = ({ authorId, groupData }) => {
   const navigate = useNavigate();
   const [expanded, setExpanded] = useState(false);
 
-
   const sortedItems = [...groupData.items].sort(
   (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
   );
@@ -140,7 +139,6 @@ const FeltVibes = () => {
         case "Groups":
           return item.postType === "group";
 
-
         default:
           return true;
       }
@@ -190,7 +188,6 @@ const FeltVibes = () => {
       ).length,
       stories: feltVibes.filter((i) => i.postType === "story").length,
       groups: feltVibes.filter((i) => i.postType === "group").length
-
 
     };
   }, [feltVibes]);
@@ -259,7 +256,6 @@ const FeltVibes = () => {
                 case "Groups":
                   count = stats.groups;
                   break;
-
 
                 default:
                   break;

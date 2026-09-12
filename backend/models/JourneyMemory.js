@@ -37,7 +37,6 @@ const journeyMemorySchema = new mongoose.Schema(
     role: String
   }],
 
-
   aiSummary: {
     type: String,
     default: ""

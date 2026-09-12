@@ -12,7 +12,6 @@ const REPORT_REASONS = [
   { id: "Other", label: "Other", icon: MoreHorizontal, description: "Something else that violates our community guidelines" },
 ];
 
-
 const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) => {
   const [reason, setReason] = useState("");
   const [loading, setLoading] = useState(false);
@@ -46,7 +45,6 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
     }
   };
 
-  // Map internal targetType values to user-friendly display names
   const getDisplayTitle = () => {
     const typeMap = {
       post: "Travel Memory",
@@ -65,7 +63,6 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
         aria-modal="true"
         aria-labelledby="report-modal-title"
       >
-        {/* Header */}
         <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
@@ -91,7 +88,6 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
           </button>
         </div>
 
-        {/* Reasons Grid */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
           <div className="p-4 overflow-y-auto custom-scrollbar">
             <div className="grid grid-cols-2 gap-2.5">
@@ -142,7 +138,6 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
             </div>
           </div>
 
-          {/* Footer */}
           <div className="flex items-center justify-end gap-2.5 px-4 py-3.5 border-t border-gray-100 bg-gray-50/50">
             <button
               type="button"

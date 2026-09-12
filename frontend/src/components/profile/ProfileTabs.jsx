@@ -5,7 +5,6 @@ import {
   Compass,
   Bookmark,
   Sparkles,
-  Clapperboard,
 } from "lucide-react";
 
 export const ProfileTabs = ({
@@ -41,13 +40,6 @@ export const ProfileTabs = ({
       label: "Journeys",
       shortLabel: "Journeys",
       show: true,
-    },
-    {
-      id: "stories",
-      icon: Clapperboard,
-      label: "Moments",
-      shortLabel: "Moments",
-      show: Boolean(isOwnProfile),
     },
     {
       id: "saved",

@@ -6,6 +6,28 @@ const ChatRoom = require("../models/ChatRoom");
 const Message = require("../models/Message");
 const { canInteractWithContent } = require("../utils/privacyHelper");
 const { isBlockedPair, getBlockedUserIds } = require("../utils/blockHelper");
+const { toHttps, normalizeUserUrls } = require("../utils/toHttps");
+
+const normalizeStoryUrls = (story) => {
+  if (!story) return story;
+  const target = (typeof story.toObject === 'function') ? story.toObject() : { ...story };
+  if (target.media) target.media = toHttps(target.media);
+  if (target.mediaUrl) target.mediaUrl = toHttps(target.mediaUrl);
+  if (target.userPic) target.userPic = toHttps(target.userPic);
+  if (target.userId && typeof target.userId === 'object') {
+    target.userId = normalizeUserUrls(target.userId);
+  }
+  if (Array.isArray(target.viewers)) {
+    target.viewers = target.viewers.map((v) => {
+      const vObj = (v && typeof v.toObject === 'function') ? v.toObject() : { ...v };
+      if (vObj.userId && typeof vObj.userId === 'object') {
+        vObj.userId = normalizeUserUrls(vObj.userId);
+      }
+      return vObj;
+    });
+  }
+  return target;
+};
 
 const parseJSONField = (field, fallback) => {
   if (!field) return fallback;
@@ -42,7 +64,7 @@ exports.createStory = async (req, res) => {
     let mediaUrl = req.body.media || req.body.img || req.body.image || req.body.mediaUrl || "";
 
     if (req.file) {
-      mediaUrl = req.file.path || req.file.secure_url || req.file.url;
+      mediaUrl = req.file.secure_url || req.file.path || req.file.url;
     } else if (req.files) {
       const file =
         req.files.media?.[0] ||
@@ -50,8 +72,11 @@ exports.createStory = async (req, res) => {
         req.files.file?.[0] ||
         (Array.isArray(req.files) ? req.files[0] : null);
       if (file) {
-        mediaUrl = file.path || file.secure_url || file.url;
+        mediaUrl = file.secure_url || file.path || file.url;
       }
+    }
+    if (typeof mediaUrl === "string") {
+      mediaUrl = toHttps(mediaUrl);
     }
 
     if (!mediaUrl && (req.body.text || req.body.type === "text")) {
@@ -77,7 +102,7 @@ exports.createStory = async (req, res) => {
         : "image");
 
     const userName = (user.name || user.username || user.fullname || "Traveler").trim();
-    const userPic = user.pic || user.avatar || user.profilePic || user.profilePicture || "";
+    const userPic = toHttps(user.pic || user.avatar || user.profilePic || user.profilePicture || "");
 
     const caption = req.body.caption || req.body.text || "";
     const captionPosition = ["top", "center", "bottom"].includes(req.body.captionPosition)
@@ -126,7 +151,7 @@ exports.createStory = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Dispatch created successfully",
-      story: populatedStory
+      story: normalizeStoryUrls(populatedStory)
     });
   } catch (error) {
     res.status(500).json({
@@ -221,13 +246,13 @@ exports.getActiveStories = async (req, res) => {
         groupsMap.set(authorIdStr, {
           userId: authorDoc?._id || story.userId,
           userName: authorName,
-          userPic: authorPic,
+          userPic: toHttps(authorPic),
           isVerified,
           stories: []
         });
       }
 
-      groupsMap.get(authorIdStr).stories.push(story);
+      groupsMap.get(authorIdStr).stories.push(normalizeStoryUrls(story));
     }
 
     const groupedStories = Array.from(groupsMap.values());
@@ -273,7 +298,7 @@ exports.getStoryById = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      story
+      story: normalizeStoryUrls(story)
     });
   } catch (error) {
     res.status(500).json({
@@ -516,7 +541,7 @@ exports.updateStory = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      story
+      story: normalizeStoryUrls(story)
     });
   } catch (error) {
     res.status(500).json({

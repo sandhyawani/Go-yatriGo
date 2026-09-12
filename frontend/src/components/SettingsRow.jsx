@@ -69,9 +69,7 @@ const SettingsRow = ({
     className="w-5 h-5 text-text-muted shrink-0"
     aria-hidden="true" />}
 
-
     </>;
-
 
   if (to) {
     return (

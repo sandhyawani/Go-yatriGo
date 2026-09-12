@@ -15,8 +15,8 @@ const Story = require("../models/Story");
 const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const imageService = require("../utils/imageService");
-const { isActuallyVerified } = require("../utils/verificationHelper");
 const { isValidObjectId } = require("../utils/validateObjectId");
+const { toHttps, normalizeUserUrls, normalizeJourneyUrls } = require("../utils/toHttps");
 
 exports.getAutoCoverPreview = async (req, res) => {
   try {
@@ -32,7 +32,6 @@ exports.getAutoCoverPreview = async (req, res) => {
   }
 };
 
-// Import domain sub-controllers
 const journeyLifecycleController = require("./journeyLifecycleController");
 const journeyHostController = require("./journeyHostController");
 const journeyCancellationController = require("./journeyCancellationController");
@@ -133,7 +132,6 @@ exports.createJourney = async (req, res) => {
       }
     }
     
-    // Guard 2: If an existing Journey was already converted from this source entity (e.g. TravelGroup), return it
     if (finalSourceType === "explore" && sourceId) {
       const existingJourney = await Journey.findOne({
         $or: [
@@ -200,7 +198,8 @@ exports.createJourney = async (req, res) => {
     }], { session });
     const chatRoomId = chatRoom[0]._id;
 
-    const finalCoverImage = exploreGroupCoverImage || coverImage?.trim() || await imageService.fetchAutoCoverImage({ destination, title, category });
+    const rawCoverImage = exploreGroupCoverImage || coverImage?.trim() || await imageService.fetchAutoCoverImage({ destination, title, category });
+    const finalCoverImage = toHttps(rawCoverImage);
 
     const journeyPayload = {
       title: title.trim(),
@@ -297,7 +296,6 @@ exports.createJourney = async (req, res) => {
     await session.commitTransaction();
     session.endSession();
 
-    // Send notifications after transaction commits
     if (validIds.length > 0 && newJourney[0]) {
       const io = req.app.get("io");
       const createdInvites = await JourneyInvitation.find({ journeyId: newJourney[0]._id, status: "pending" });
@@ -321,13 +319,12 @@ exports.createJourney = async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Journey created successfully",
-      journey: newJourney[0]
+      journey: normalizeJourneyUrls(newJourney[0])
     });
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
 
-    // Check for duplicate key error OR TransientTransactionError (WriteConflict) during concurrent creation
     const isDuplicateKey = error.code === 11000 && error.keyPattern && error.keyPattern.sourceType && error.keyPattern.sourceId;
     const isWriteConflict = error.code === 112 || (error.hasErrorLabel && error.hasErrorLabel('TransientTransactionError'));
     
@@ -336,7 +333,6 @@ exports.createJourney = async (req, res) => {
       const finalSourceType = sourceType || "manual";
       
       if (sourceId) {
-        // The transaction is aborted and session ended; we can safely fetch the Journey that won the race
         let existingJourney = await Journey.findOne({
           $or: [
             ...(mongoose.isValidObjectId(sourceId) ? [{ _id: sourceId }] : []),
@@ -345,7 +341,6 @@ exports.createJourney = async (req, res) => {
           ]
         });
         
-        // If WriteConflict aborted us but the winner hasn't committed yet, existingJourney will be null.
         if (!existingJourney && isWriteConflict) {
           await new Promise(resolve => setTimeout(resolve, 800));
           existingJourney = await Journey.findOne({
@@ -361,7 +356,7 @@ exports.createJourney = async (req, res) => {
           return res.status(200).json({
             success: true,
             message: "Journey created successfully",
-            journey: existingJourney
+            journey: normalizeJourneyUrls(existingJourney)
           });
         }
       }
@@ -411,7 +406,7 @@ exports.getMyJourneys = async (req, res) => {
     res.json({
       success: true,
       count: finalJourneys.length,
-      journeys: finalJourneys
+      journeys: finalJourneys.map(normalizeJourneyUrls)
     });
   } catch (error) {
     console.error("Error fetching user journeys:", error);
@@ -433,7 +428,6 @@ exports.getJourneyById = async (req, res) => {
     const userId = req.user ? (req.user._id || req.user.id) : null;
     const userIdStr = userId ? userId.toString() : "";
 
-    // 1. Fetch raw journey and synchronize status before populating (prevents Mongoose casting bugs)
     let journey = await Journey.findById(id);
     if (!journey) {
       return res.status(404).json({
@@ -445,7 +439,6 @@ exports.getJourneyById = async (req, res) => {
 
     journey = await syncJourneyStatus(journey);
 
-    // 2. Fetch fully populated journey
     journey = await Journey.findById(id).
     populate("creator", "name username profilePic pic img avatar bio isVerified").
     populate("members.user", "name username profilePic pic img avatar bio isVerified");
@@ -458,7 +451,6 @@ exports.getJourneyById = async (req, res) => {
       });
     }
 
-    // 3. Null-safe membership check
     const isMember = Boolean(
       userIdStr && (
         (journey.members || []).some((m) => {
@@ -486,7 +478,7 @@ exports.getJourneyById = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      journey: journeyObj,
+      journey: normalizeJourneyUrls(journeyObj),
       isMember,
       safetyState
     });
@@ -540,6 +532,8 @@ exports.updateJourney = async (req, res) => {
       if (req.body[field] !== undefined) {
         if (field === "description") {
           journey[field] = typeof req.body[field] === "string" ? req.body[field].trim() : (req.body[field] || "");
+        } else if (field === "coverImage") {
+          journey[field] = toHttps(req.body[field]);
         } else {
           journey[field] = req.body[field];
         }
@@ -575,7 +569,7 @@ exports.updateJourney = async (req, res) => {
       }
     });
 
-    res.json({ success: true, message: "Journey updated successfully", journey });
+    res.json({ success: true, message: "Journey updated successfully", journey: normalizeJourneyUrls(journey) });
   } catch (error) {
     console.error("Error updating journey:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -699,12 +693,10 @@ exports.JOURNEY_MILESTONES = JOURNEY_MILESTONES;
 const computeSafetyState = (journey, timelineEvents = []) => {
   if (!journey) return null;
 
-  // Filter timeline events for milestone checkins
   const milestoneEvents = timelineEvents
     .filter(e => e.eventType === "safe_checkin" && JOURNEY_MILESTONES.includes(e.checkInType))
     .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
 
-  // Extract unique ordered completed milestones
   const completedMilestones = [];
   const completedMilestoneDetails = {};
   for (const ev of milestoneEvents) {
@@ -724,7 +716,6 @@ const computeSafetyState = (journey, timelineEvents = []) => {
   const isSafetyComplete = completedMilestones.length === JOURNEY_MILESTONES.length || journey.status === "Completed";
   const canCheckIn = !isSafetyComplete && journey.status !== "Cancelled" && journey.status !== "Archived" && journey.isCancelled !== true;
 
-  // All safe check-in events (milestone OR safe_confirmation)
   const allCheckInEvents = timelineEvents
     .filter(e => e.eventType === "safe_checkin")
     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
@@ -739,10 +730,8 @@ const computeSafetyState = (journey, timelineEvents = []) => {
     isQuickSafe: allCheckInEvents[0].checkInType === "safe_confirmation" || !allCheckInEvents[0].checkInType
   } : null;
 
-  // Check if SOS is active on journey or timeline
   const isSosActive = journey.isEmergencyActive === true || journey.safetyStatus === "SOS_ACTIVE" || timelineEvents.some(e => e.eventType === "emergency_alert" && !e.isResolved);
 
-  // Status calculation: 🟢 SAFE, 🟡 CHECK-IN DUE, 🟠 CHECK-IN OVERDUE, 🔴 SOS ACTIVE
   let safetyStatus = "SAFE";
   let safetyStatusText = "Recently confirmed";
   let safetyStatusSubtext = "All good with your travel squad.";
@@ -921,7 +910,6 @@ exports.safeCheckIn = async (req, res) => {
         await journey.save();
       }
 
-      // Notify other members
       const recipientIds = (journey.members || [])
         .map(m => (m.user?._id || m.user).toString())
         .filter(uId => uId !== userId.toString());
@@ -1029,8 +1017,6 @@ exports.safeCheckIn = async (req, res) => {
       });
     }
 
-
-    // Create the milestone event
     const createPayload = {
       journeyId: id,
       userId,
@@ -1052,7 +1038,6 @@ exports.safeCheckIn = async (req, res) => {
       checkIn = await JourneyTimeline.create(createPayload);
     }
 
-    // Status progressions
     if (checkInType === "Started Journey" && (journey.status === "Planning" || journey.status === "Upcoming")) {
       journey.status = "Ongoing";
     }
@@ -1070,7 +1055,6 @@ exports.safeCheckIn = async (req, res) => {
       await journey.save();
     }
 
-    // Notify other members
     const recipientIds = (journey.members || [])
       .map(m => (m.user?._id || m.user).toString())
       .filter(uId => uId !== userId.toString());
@@ -1138,7 +1122,6 @@ exports.safeCheckIn = async (req, res) => {
         });
       } catch (err) {
 
-        // fallback
       }
     }
     console.error("Error doing safe check-in:", error);
@@ -1154,7 +1137,16 @@ exports.getGallery = async (req, res) => {
       await syncJourneyStatus(journey);
     }
     const gallery = await JourneyGallery.find({ journeyId: id }).populate("uploadedBy", "name profilePic").sort({ createdAt: -1 });
-    res.json({ success: true, gallery });
+    const normalizedGallery = gallery.map((item) => {
+      const it = item.toObject ? item.toObject() : { ...item };
+      it.mediaUrl = toHttps(it.mediaUrl);
+      it.uploaderPic = toHttps(it.uploaderPic);
+      if (it.uploadedBy && typeof it.uploadedBy === "object") {
+        it.uploadedBy = normalizeUserUrls(it.uploadedBy);
+      }
+      return it;
+    });
+    res.json({ success: true, gallery: normalizedGallery });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
   }
@@ -1168,16 +1160,20 @@ exports.addGalleryItem = async (req, res) => {
 
     const item = await JourneyGallery.create({
       journeyId: id,
-      mediaUrl: url,
+      mediaUrl: toHttps(url),
       caption,
       mediaType: type || "image",
       itemType: type === "video" ? "video" : "photo",
       uploaderId: userId,
       uploaderName: req.user.name || "",
-      uploaderPic: req.user.profilePic || req.user.pic || req.user.avatar || ""
+      uploaderPic: toHttps(req.user.profilePic || req.user.pic || req.user.avatar || "")
     });
 
-    res.status(201).json({ success: true, item });
+    const normalizedItem = item.toObject ? item.toObject() : { ...item };
+    normalizedItem.mediaUrl = toHttps(normalizedItem.mediaUrl);
+    normalizedItem.uploaderPic = toHttps(normalizedItem.uploaderPic);
+
+    res.status(201).json({ success: true, item: normalizedItem });
   } catch (error) {
     console.error("Error adding gallery item:", error);
     res.status(500).json({ success: false, message: "Server Error" });
@@ -1205,11 +1201,30 @@ exports.getMemories = async (req, res) => {
     const memory = await JourneyMemory.findOne({ journeyId: id }).
     populate("comments.userId", "name profilePic");
 
+    let normalizedMemory = null;
+    if (memory) {
+      normalizedMemory = memory.toObject ? memory.toObject() : { ...memory };
+      normalizedMemory.coverImage = toHttps(normalizedMemory.coverImage);
+      if (Array.isArray(normalizedMemory.comments)) {
+        normalizedMemory.comments = normalizedMemory.comments.map((c) => ({
+          ...c,
+          userPic: toHttps(c.userPic),
+          userId: c.userId && typeof c.userId === "object" ? normalizeUserUrls(c.userId) : c.userId,
+        }));
+      }
+      if (Array.isArray(normalizedMemory.participants)) {
+        normalizedMemory.participants = normalizedMemory.participants.map((p) => ({
+          ...p,
+          pic: toHttps(p.pic),
+        }));
+      }
+    }
+
     res.json({
       success: true,
       unlocked: true,
-      memory,
-      memories: memory ? [memory] : []
+      memory: normalizedMemory,
+      memories: normalizedMemory ? [normalizedMemory] : []
     });
   } catch (error) {
     res.status(500).json({ success: false, message: "Server Error" });
@@ -1380,7 +1395,6 @@ exports.getUserStatistics = async (req, res) => {
         tripMatesCount,
         reputationPoints: userDoc?.reputationPoints || 100,
         isVerified: userDoc?.verified || false,
-        // ExplorerDashboardWidget expected fields
         ongoing,
         upcoming,
         postsShared: totalPostsCount,
@@ -1467,7 +1481,7 @@ exports.getPreviousCompanions = async (req, res) => {
               name: u.name,
               username: u.username,
               bio: u.bio || "Travel Enthusiast",
-              profilePic: u.profilePic || u.pic || u.avatar,
+              profilePic: toHttps(u.profilePic || u.pic || u.avatar),
               verified: u.isVerified || u.verificationStatus === "verified",
               tripsCount: 0,
               lastJourney: {
@@ -1515,7 +1529,7 @@ exports.getPreviousCompanions = async (req, res) => {
               name: u.name,
               username: u.username,
               bio: u.bio || "Travel Enthusiast",
-              profilePic: u.profilePic || u.pic || u.avatar,
+              profilePic: toHttps(u.profilePic || u.pic || u.avatar),
               verified: u.isVerified || u.verificationStatus === "verified",
               tripsCount: 0,
               lastJourney: {

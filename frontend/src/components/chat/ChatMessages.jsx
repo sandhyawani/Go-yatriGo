@@ -36,7 +36,6 @@ export const ChatMessages = ({
           <p className="text-xs font-medium text-text-muted">Loading messages...</p>
         </div>}
 
-
       {!loadingMessages && messages.length === 0 ?
       <div className="h-full flex flex-col items-center justify-center text-center p-8 select-none">
           <div className="w-16 h-16 rounded-full bg-brand-50 flex items-center justify-center mb-4 shadow-sm border border-brand-100/50">
@@ -78,8 +77,6 @@ export const ChatMessages = ({
         (messages[index - 1].sender?._id || messages[index - 1].sender)?.toString() !==
         (msg.sender?._id || msg.sender)?.toString() ||
         showDate);
-
-
 
         const currentStoryRef = msg.storyId ?
         typeof msg.storyId === "object" ?
@@ -128,7 +125,6 @@ export const ChatMessages = ({
             </div>);
 
       })}
-
 
       {typingUsers[activeRoom._id] &&
       <div className="flex items-end gap-2 justify-start">

@@ -86,7 +86,6 @@ export const NotificationItem = ({
       {!n.isRead &&
       <div className="absolute right-3.5 top-3.5 w-1.5 h-1.5 bg-brand rounded-full" />}
 
-
       <div className="relative shrink-0">
         <img
         src={getAvatar(n.sender, n.sender?.name)}
@@ -140,7 +139,6 @@ export const NotificationItem = ({
                   Decline Chat
                 </button>
               </>}
-
 
             {n.type === "buddy_request" &&
           <>

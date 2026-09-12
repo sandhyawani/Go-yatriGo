@@ -136,13 +136,11 @@ const MemberSelector = ({
           const tripsCount = typeof compData?.tripsCount === "number" ? compData.tripsCount : 0;
           const lastJourney = compData?.lastJourney || null;
 
-          // Determine priority (1 is highest: Mutual + Trip Mate)
           let priority = 4;
           if (rel.socialState === "mutual" && rel.tripMateState === "trip_mate") priority = 1;
           else if (rel.socialState === "mutual") priority = 2;
           else if (rel.tripMateState === "trip_mate") priority = 3;
 
-          // Dynamic badges strictly from resolved states
           const badges = [];
           if (rel.socialState === "mutual") badges.push("Mutual");
           if (rel.tripMateState === "trip_mate") badges.push("Trip Mate");
@@ -183,7 +181,6 @@ const MemberSelector = ({
 
   const searchKw = search.toLowerCase().trim();
   
-  // Filter by active tab first
   let tabList = usersList;
   if (activeTab === "Mutuals") {
     tabList = usersList.filter(u => u.socialState === "mutual");
@@ -191,7 +188,6 @@ const MemberSelector = ({
     tabList = usersList.filter(u => u.tripMateState === "trip_mate");
   }
 
-  // Search within the active tab's list
   let filteredList = tabList.filter(
     (u) =>
       (u.name && u.name.toLowerCase().includes(searchKw)) ||
@@ -199,7 +195,6 @@ const MemberSelector = ({
       (u.email && u.email.toLowerCase().includes(searchKw))
   );
 
-  // Sort by priority, then alphabetically
   filteredList.sort((a, b) => {
     if (a.priority !== b.priority) return a.priority - b.priority;
     

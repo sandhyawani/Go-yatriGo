@@ -17,7 +17,6 @@ export const ActionModals = ({
   showReportModal,
   setShowReportModal,
   profileUser,
-  // Edit/Delete Post Props
   showEditPostModal,
   setShowEditPostModal,
   editPostData,
@@ -27,7 +26,6 @@ export const ActionModals = ({
   setShowDeletePostModal,
   postToDelete,
   handleDeletePost,
-  // Edit/Delete Story Props
   showEditStoryModal,
   setShowEditStoryModal,
   editStoryData,
@@ -41,7 +39,6 @@ export const ActionModals = ({
 }) => {
   return (
     <>
-      {/* ─── 1. BLOCK CONFIRMATION MODAL ────────────────────────────────────── */}
       <AnimatePresence>
         {showBlockModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
@@ -87,7 +84,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 2. RATE USER MODAL ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {showRateModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
@@ -148,7 +144,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 3. REPORT SAFETY MODAL ─────────────────────────────────────────── */}
       <AnimatePresence>
         {showReportModal && (
           <ReportModal
@@ -161,7 +156,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 4. EDIT TRAVEL MEMORY MODAL ──────────────────────────────────── */}
       <AnimatePresence>
         {showEditPostModal && editPostData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
@@ -222,7 +216,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 5. DELETE TRAVEL MEMORY MODAL ────────────────────────────────── */}
       <AnimatePresence>
         {showDeletePostModal && postToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
@@ -264,7 +257,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 6. EDIT STORY MODAL ────────────────────────────────────────────── */}
       <AnimatePresence>
         {showEditStoryModal && editStoryData && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
@@ -345,7 +337,6 @@ export const ActionModals = ({
         )}
       </AnimatePresence>
 
-      {/* ─── 7. DELETE STORY MODAL ──────────────────────────────────────────── */}
       <AnimatePresence>
         {showDeleteStoryModal && storyToDelete && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">

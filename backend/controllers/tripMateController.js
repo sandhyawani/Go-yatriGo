@@ -223,8 +223,6 @@ exports.getTripMates = async (req, res) => {
     const User = require("../models/User");
     const targetUser = await User.findById(userId).lean();
     if (!targetUser) {
-      // Return empty list instead of 404 — not a fatal error in production
-      // where some host users may not exist in the database yet
       return res.status(200).json({
         success: true,
         trip_mates: [],

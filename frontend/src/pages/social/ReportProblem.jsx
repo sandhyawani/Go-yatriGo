@@ -56,7 +56,6 @@ const CATEGORIES = [
   desc: "Anything else that isn't working as expected"
 }];
 
-
 const ReportProblem = () => {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(
@@ -171,7 +170,6 @@ const ReportProblem = () => {
                 </button>
               </div>
             </motion.div> :
-
 
           <motion.div
           key="form"

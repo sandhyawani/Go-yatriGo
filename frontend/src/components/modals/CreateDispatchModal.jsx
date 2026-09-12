@@ -32,7 +32,6 @@ const fonts = [
   { name: "Brand", family: "Outfit, sans-serif" }
 ];
 
-
 const textColors = [
   "#ffffff",
   "#0f172a",
@@ -42,7 +41,6 @@ const textColors = [
   "#10b981",
   "#8b5cf6"
 ];
-
 
 const popularLanguages = [
 { label: "All Languages", value: "" },
@@ -56,7 +54,6 @@ const popularLanguages = [
 { label: "English Pop", value: "English" },
 { label: "K-Pop", value: "K-Pop" },
 { label: "Spanish", value: "Spanish" }];
-
 
 const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
   const { user } = useAuth();
@@ -118,7 +115,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
     );
   };
 
-
   const [textInput, setTextInput] = useState("");
   const [textStyle, setTextStyle] = useState({
     font: fonts[0].family,
@@ -164,7 +160,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
   },
   [editingStickerId, updateSticker, addSticker]
   );
-
 
   const [locationQuery, setLocationQuery] = useState("");
   const [locationResults, setLocationResults] = useState([]);
@@ -342,12 +337,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
     return () => clearTimeout(timeout);
   }, [musicSearchQuery, activeOverlay, selectedMusicLang]);
 
-
-
-
-
-
-
   const resetState = () => {
     setStep(1);
     setActiveOverlay(null);
@@ -382,8 +371,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
   }, []);
-
-
 
   const isImageFile = (file) => {
     if (file.type && file.type.startsWith("image/")) return true;
@@ -420,8 +407,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       if (file.size > 10 * 1024 * 1024)
       return showToast.error("Image must be under 10MB");
 
-
-
       const reader = new FileReader();
       reader.onload = (ev) => {
         setMediaType("image");
@@ -436,7 +421,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       showToast.error("Unsupported file type");
     }
   };
-
 
   const getExifOrientation = (file) =>
   new Promise((resolve) => {
@@ -490,7 +474,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
         const canvas = document.createElement("canvas");
         const ctx = canvas.getContext("2d");
-
 
         const swapped = orientation >= 5 && orientation <= 8;
         canvas.width = swapped ? pixelCrop.height : pixelCrop.width;
@@ -746,7 +729,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       className="hidden"
       onChange={handleFileChange} />
 
-
           {step === 1 &&
       <motion.div
       initial={{ scale: 0.95, opacity: 0 }}
@@ -804,7 +786,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
               </div>
             </motion.div>}
 
-
           {step === 2 &&
       <motion.div
       initial={{ scale: 0.95, opacity: 0 }}
@@ -823,12 +804,10 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
           playsInline
           className="w-full h-full object-contain bg-black" /> :
 
-
           <img
           src={mediaUrl}
           alt="Preview"
           className="w-full h-full object-contain bg-black" />}
-
 
               </div>
 
@@ -866,7 +845,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                   }
                 }
               }} />);
-
 
           })}
               </div>
@@ -987,7 +965,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </div>
                 </motion.div>}
-
 
               <AnimatePresence>
                 {activeOverlay === "caption" &&
@@ -1156,7 +1133,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </motion.div>}
 
-
                 {activeOverlay === "location" &&
           <motion.div
           initial={{ y: "100%" }}
@@ -1292,7 +1268,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </motion.div>}
 
-
                 {activeOverlay === "emoji" &&
           <motion.div
           initial={{ y: "100%" }}
@@ -1328,7 +1303,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
               )}
                     </div>
                   </motion.div>}
-
 
                 {activeOverlay === "music" &&
           <motion.div
@@ -1444,7 +1418,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                       alt="Art"
                       className="w-full h-full object-cover" /> :
 
-
                       <div className="w-full h-full flex items-center justify-center">
                                         <Music className="w-5 h-5 text-slate-300" />
                                       </div>}
@@ -1504,7 +1477,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </motion.div>}
 
-
                 {activeOverlay === "privacy" &&
           <motion.div
           initial={{ opacity: 0 }}
@@ -1529,7 +1501,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                           <X className="w-4 h-4" />
                         </button>
                       </div>
-
 
                           <div className="p-2 overflow-y-auto">
                             {[
@@ -1597,7 +1568,6 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
 
               </AnimatePresence>
             </motion.div>}
-
 
           <audio
       ref={audioRef}

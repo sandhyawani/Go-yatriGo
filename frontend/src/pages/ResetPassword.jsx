@@ -221,7 +221,6 @@ const ResetPassword = () => {
                   </AnimatePresence>
                 </div>}
 
-
               <div className="space-y-1">
                 <label
                 htmlFor="new-password"

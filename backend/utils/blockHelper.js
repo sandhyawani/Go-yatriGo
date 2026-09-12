@@ -2,7 +2,6 @@ const mongoose = require("mongoose");
 const User = require("../models/User");
 const Block = require("../models/Block");
 
-// Checks if a block exists between userA and userB in either direction
 const isBlockedPair = async (userAId, userBId) => {
   if (!userAId || !userBId) return false;
 
@@ -23,7 +22,6 @@ const isBlockedPair = async (userAId, userBId) => {
 
   if (blockDoc) return true;
 
-  // Fallback check in User.blockedUsers array
   const users = await User.find({
     _id: { $in: [aId, bId] }
   }).select("blockedUsers").lean();
@@ -39,7 +37,6 @@ const isBlockedPair = async (userAId, userBId) => {
   return false;
 };
 
-// Gets all user IDs that have a block relationship with userId in either direction
 const getBlockedUserIds = async (userId) => {
   if (!userId) {
     return { objectIds: [], stringIds: [], idSet: new Set() };
@@ -53,7 +50,6 @@ const getBlockedUserIds = async (userId) => {
 
   const blockedIdSet = new Set();
 
-  // 1. Block collection: blocker == uId OR blocked == uId
   const blockDocs = await Block.find({
     $or: [
       { blocker: uId },
@@ -70,8 +66,6 @@ const getBlockedUserIds = async (userId) => {
     }
   }
 
-  // 2. User collection:
-  // a) currentUser's blockedUsers
   const currentUser = await User.findById(uId).select("blockedUsers").lean();
   if (currentUser && Array.isArray(currentUser.blockedUsers)) {
     for (const bId of currentUser.blockedUsers) {
@@ -80,7 +74,6 @@ const getBlockedUserIds = async (userId) => {
     }
   }
 
-  // b) Users who have currentUser in their blockedUsers
   const usersWhoBlocked = await User.find({
     blockedUsers: uId
   }).select("_id").lean();
@@ -102,13 +95,6 @@ const getBlockedUserIds = async (userId) => {
   };
 };
 
-/**
- * Returns a MongoDB query filter to exclude all blocked users on a specific field (default "userId").
- * 
- * @param {string|mongoose.Types.ObjectId} userId
- * @param {string} field
- * @returns {Promise<Object>}
- */
 const getBlockFilter = async (userId, field = "userId") => {
   const { objectIds } = await getBlockedUserIds(userId);
   if (!objectIds || objectIds.length === 0) {
@@ -125,7 +111,6 @@ const getModel = (name) => {
   }
 };
 
-// Handles complete block action across users, relations, and messaging
 const blockUserAction = async (blockerId, blockedId) => {
   const b1Str = blockerId.toString();
   const b2Str = blockedId.toString();
@@ -142,7 +127,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     { upsert: true, new: true }
   );
 
-  // Update blocker: add to blockedUsers and remove relations
   await User.findByIdAndUpdate(b1, {
     $addToSet: { blockedUsers: b2 },
     $pull: {
@@ -153,7 +137,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     }
   });
 
-  // Update blocked user: remove relations
   await User.findByIdAndUpdate(b2, {
     $pull: {
       followers: b1,
@@ -163,7 +146,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     }
   });
 
-  // Clean up follow records
   const Follow = getModel("Follow");
   if (Follow) {
     await Follow.deleteMany({
@@ -174,7 +156,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // Clean up connections
   const TripMateConnection = getModel("TripMateConnection");
   if (TripMateConnection) {
     await TripMateConnection.deleteMany({
@@ -185,7 +166,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // Clean up pending invitations
   const JourneyInvitation = getModel("JourneyInvitation");
   if (JourneyInvitation) {
     await JourneyInvitation.deleteMany({
@@ -196,7 +176,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // Clean up follow notifications
   const Notification = getModel("Notification");
   if (Notification) {
     await Notification.deleteMany({
@@ -208,7 +187,6 @@ const blockUserAction = async (blockerId, blockedId) => {
     });
   }
 
-  // Update direct chat room status
   const ChatRoom = getModel("ChatRoom");
   if (ChatRoom) {
     await ChatRoom.updateMany(
@@ -225,7 +203,6 @@ const blockUserAction = async (blockerId, blockedId) => {
   return { success: true };
 };
 
-// Handles unblocking and restores direct chat room status if not blocked in opposite direction
 const unblockUserAction = async (blockerId, blockedId) => {
   const b1Str = blockerId.toString();
   const b2Str = blockedId.toString();
@@ -238,7 +215,6 @@ const unblockUserAction = async (blockerId, blockedId) => {
     $pull: { blockedUsers: b2 }
   });
 
-  // Reset direct chat status only if not still blocked in opposite direction
   const isStillBlocked = await isBlockedPair(b1, b2);
   const ChatRoom = getModel("ChatRoom");
   if (ChatRoom && !isStillBlocked) {

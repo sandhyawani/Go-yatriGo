@@ -52,7 +52,6 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
       <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[88vh]">
-        {/* Header */}
         <div className="bg-white p-5 border-b border-slate-100 text-text-primary flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-brand rounded-2xl shadow-md shadow-brand/20">
@@ -73,7 +72,6 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
           </button>
         </div>
 
-        {/* Member Selector Content */}
         <div className="p-4 overflow-y-auto flex-1">
           <MemberSelector
           selectedIds={selectedIds}
@@ -82,7 +80,6 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
 
         </div>
 
-        {/* External Invitation Link */}
         <div className="px-4 py-3 bg-brand-50/70 border-t border-brand-100 flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <p className="text-[11px] font-extrabold text-text-primary truncate">
@@ -115,7 +112,6 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
           </button>
         </div>
 
-        {/* Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
           <span className="text-xs font-black text-text-muted truncate">
             {selectedIds.length > 0 ?

@@ -13,7 +13,6 @@ const GroupHeaderAvatar = ({ room }) => {
       onError={() => setImgError(true)}
       className="w-9 h-9 rounded-full object-cover shadow-sm border border-slate-100" />);
 
-
   }
 
   return (
@@ -82,7 +81,6 @@ export const ChatHeader = ({
           activeRoom.type === "direct" ? "cursor-pointer hover:opacity-80 transition-opacity" : ""
           }`}
           onClick={handleProfileNavigation} />}
-
 
           {activeRoom.type === "direct" &&
           (() => {
@@ -155,7 +153,6 @@ export const ChatHeader = ({
 
             <Compass className="w-3.5 h-3.5" /> View Journey
           </Link>}
-
 
         <div ref={headerOptionsRef} className="relative">
           <button

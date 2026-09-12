@@ -2,14 +2,11 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Go YatriGo - Global Design Tokens */
-
 :root {
-  /* Typography Tokens */
+  
   --font-heading: 'Outfit', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-  /* Brand & Palette: Radiant Sky, Deep Ocean, Sunset Gold, Warm Amber, Fresh Mint */
   --brand: #0284c7;
   --brand-primary: #0ea5e9;
   --brand-cyan: #38bdf8;
@@ -18,26 +15,22 @@
   --brand-light: #f0f9ff;
   --brand-dark: #0369a1;
 
-  /* Text - High Legibility and Contrast */
   --text: #0f172a;
   --text-primary: #0f172a;
   --text-secondary: #334155;
   --text-muted: #64748b;
 
-  /* Background */
   --background: #f1f5f9;
   --surface: #ffffff;
   --border: #e2e8f0;
   --border-default: #e2e8f0;
 
-  /* Semantic */
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #f43f5e;
   --info: #0284c7;
   --error: var(--danger);
 
-  /* Production Pop & Accent Color Tokens */
   --pop-primary: #0ea5e9;
   --pop-accent: #f43f5e;
   --pop-warning: #f59e0b;
@@ -48,7 +41,6 @@
   --pop-glow: 0 0 20px -2px rgba(14, 165, 233, 0.45);
   --pop-glow-accent: 0 0 20px -2px rgba(244, 63, 94, 0.45);
 
-  /* Modern Red Scale (Ruby / Sunset Coral) */
   --ruby-50: #fff1f2;
   --ruby-100: #ffe4e6;
   --ruby-200: #fecdd3;
@@ -60,7 +52,6 @@
   --ruby-800: #9f1239;
   --ruby-900: #881337;
 
-  /* Modern Green Scale (Emerald / Fresh Mint) */
   --emerald-50: #ecfdf5;
   --emerald-100: #d1fae5;
   --emerald-200: #a7f3d0;
@@ -72,7 +63,6 @@
   --emerald-800: #065f46;
   --emerald-900: #064e3b;
 
-  /* Modern Yellow Scale (Warm Honey / Amber Gold) */
   --amber-50: #fffbeb;
   --amber-100: #fef3c7;
   --amber-200: #fde68a;
@@ -84,7 +74,6 @@
   --amber-800: #92400e;
   --amber-900: #78350f;
 
-  /* Primary scale based on modern travel sky & ocean */
   --primary-50: #f0f9ff;
   --primary-100: #e0f2fe;
   --primary-200: #bae6fd;
@@ -96,7 +85,6 @@
   --primary-800: #075985;
   --primary-900: #0c4a6e;
 
-  /* Brand scale */
   --brand-50: #f0f9ff;
   --brand-100: #e0f2fe;
   --brand-200: #bae6fd;
@@ -108,7 +96,6 @@
   --brand-800: #075985;
   --brand-900: #0c4a6e;
 
-  /* Neutral scale */
   --secondary-50: #f8fafc;
   --secondary-100: #f1f5f9;
   --secondary-200: #e2e8f0;
@@ -120,7 +107,6 @@
   --secondary-800: #1e293b;
   --secondary-900: #0f172a;
 
-  /* Radius */
   --radius-sm: 8px;
   --radius-md: 10px;
   --radius-lg: 12px;
@@ -129,17 +115,13 @@
   --radius-input: 16px;
   --radius-pill: 999px;
 
-  /* Shadows - Layered Depth */
   --shadow-card-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
   --shadow-card-md: 0 4px 16px -2px rgba(15, 23, 42, 0.08), 0 2px 6px -2px rgba(15, 23, 42, 0.05);
   --shadow-card-lg: 0 12px 32px -4px rgba(15, 23, 42, 0.12), 0 4px 10px -2px rgba(15, 23, 42, 0.06);
 
-  /* Layout */
   --spacing-section: 24px;
   --spacing-card: 20px;
 }
-
-/* Base */
 
 body {
   margin: 0;
@@ -180,11 +162,8 @@ button:disabled {
   outline-offset: 2px;
 }
 
-/* Reusable Components */
-
 @layer components {
-  /* Cards */
-
+  
   .card {
     @apply bg-white border transition-all duration-200;
     border-color: #e2e8f0;
@@ -195,8 +174,6 @@ button:disabled {
   .card:hover {
     box-shadow: var(--shadow-card-md);
   }
-
-  /* Buttons */
 
   .btn-primary,
   .btn-secondary,
@@ -287,7 +264,6 @@ button:disabled {
     color: #0f172a;
   }
 
-  /* Modern Badges */
   .badge-pop {
     @apply inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full;
     background-color: var(--pop-bg-subtle, #f0f9ff);
@@ -360,8 +336,6 @@ button:disabled {
     -webkit-text-fill-color: transparent;
   }
 
-  /* Inputs */
-
   .input-field {
     @apply w-full px-4 py-3 bg-white text-sm outline-none transition-all duration-200;
 
@@ -378,7 +352,6 @@ button:disabled {
     box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.15);
   }
 
-  /* Global fix: prevent icon overlapping across all pages for inputs/selects with leading icons */
   [class*="relative"]:has(> svg[class*="left-"]) > input,
   [class*="relative"]:has(> svg[class*="left-"]) > select,
   [class*="relative"]:has(> svg[class*="left-"]) > textarea,
@@ -393,8 +366,6 @@ button:disabled {
   .relative > svg.absolute + .input-field {
     padding-left: 2.75rem !important;
   }
-
-  /* Chat */
 
   .chat-bubble-self {
     @apply text-white px-4 py-2.5 text-sm;
@@ -412,7 +383,6 @@ button:disabled {
     box-shadow: var(--shadow-card-sm);
   }
 
-  /* Premium Glassmorphism */
   .glass-card {
     background: rgba(255, 255, 255, 0.82);
     backdrop-filter: blur(16px);
@@ -435,7 +405,6 @@ button:disabled {
     border: 1px solid rgba(255, 255, 255, 0.8);
   }
 
-  /* Premium Interactive Card Effects */
   .card-hover-lift {
     @apply transition-all duration-300 ease-spring;
   }
@@ -444,7 +413,6 @@ button:disabled {
     box-shadow: 0 16px 36px -10px rgba(15, 23, 42, 0.09), 0 0 0 1px rgba(2, 132, 199, 0.12);
   }
 
-  /* Premium Button Micro-Interactions */
   .btn-press {
     @apply transition-all duration-200 active:scale-[0.96] select-none;
   }
@@ -473,7 +441,6 @@ button:disabled {
     transform: rotate(25deg) translateY(100%);
   }
 
-  /* Live Radar Beacon */
   .beacon-live {
     position: relative;
     display: inline-flex;
@@ -491,7 +458,6 @@ button:disabled {
     opacity: 0.75;
   }
 
-  /* Ambient Glows */
   .glow-brand {
     box-shadow: 0 0 20px -4px rgba(2, 132, 199, 0.35);
   }
@@ -505,7 +471,6 @@ button:disabled {
     box-shadow: 0 0 20px -4px rgba(244, 63, 94, 0.35);
   }
 
-  /* Skeleton Shimmer Overlay */
   .skeleton-shimmer {
     position: relative;
     overflow: hidden;
@@ -525,7 +490,6 @@ button:disabled {
     animation: shimmer 1.6s infinite;
   }
 
-  /* Tab Navigation System */
   .tabs-container {
     @apply flex items-center gap-1.5 p-1.5 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-sm;
   }
@@ -542,7 +506,6 @@ button:disabled {
     @apply text-slate-600 hover:text-slate-900 hover:bg-slate-100/70;
   }
 
-  /* Pill Filter Buttons */
   .tab-pill {
     @apply px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer inline-flex items-center gap-1.5;
   }
@@ -555,8 +518,6 @@ button:disabled {
     @apply bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50 hover:text-slate-900 shadow-sm;
   }
 }
-
-/* Scrollbar */
 
 ::-webkit-scrollbar {
   width: 6px;
@@ -588,7 +549,6 @@ button:disabled {
   scrollbar-width: none !important;
 }
 
-/* Subtle thin scrollbar for compact scrollable boxes */
 .scrollbar-thin::-webkit-scrollbar {
   width: 4px;
   height: 4px;
@@ -611,11 +571,6 @@ button:disabled {
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
-
-
-/* ==========================================================================
-   SweetAlert2 - Production UI Theme Modal & Popup Styling
-   ========================================================================== */
 
 .swal2-container {
   z-index: 999999 !important;
@@ -750,10 +705,6 @@ button:disabled {
   border-color: #0ea5e9 !important;
   color: #0ea5e9 !important;
 }
-
-/* ==========================================================================
-   Sonner Toast Theme Polish
-   ========================================================================== */
 
 [data-sonner-toaster] {
   font-family: var(--font-body) !important;

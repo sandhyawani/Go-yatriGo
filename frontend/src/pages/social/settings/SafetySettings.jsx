@@ -51,7 +51,6 @@ const SafetySettings = () => {
             <p className="text-sm font-semibold">{error}</p>
           </div>}
 
-
         {loading ?
         <div className="p-8 text-center text-text-muted flex justify-center items-center h-48">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>

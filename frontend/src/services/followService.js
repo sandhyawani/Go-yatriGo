@@ -1,14 +1,6 @@
 import axiosInstance from "../api/axios";
 
-/**
- * Standardized service for all user follow, unfollow, and follow-request actions.
- * Automatically relies on axiosInstance interceptors for authentication and credentials.
- */
 export const followService = {
-  /**
-   * Follow a user (or send follow request if private).
-   * @param {string} targetUserId
-   */
   followUser: async (targetUserId) => {
     const id = typeof targetUserId === "object" && targetUserId !== null
       ? targetUserId._id || targetUserId.id
@@ -18,10 +10,6 @@ export const followService = {
     return res.data;
   },
 
-  /**
-   * Unfollow a user.
-   * @param {string} targetUserId
-   */
   unfollowUser: async (targetUserId) => {
     const id = typeof targetUserId === "object" && targetUserId !== null
       ? targetUserId._id || targetUserId.id
@@ -31,10 +19,6 @@ export const followService = {
     return res.data;
   },
 
-  /**
-   * Cancel a pending outgoing follow request.
-   * @param {string} targetUserId
-   */
   cancelFollowRequest: async (targetUserId) => {
     const id = typeof targetUserId === "object" && targetUserId !== null
       ? targetUserId._id || targetUserId.id
@@ -44,10 +28,6 @@ export const followService = {
     return res.data;
   },
 
-  /**
-   * Accept an incoming follow request.
-   * @param {string} requesterId
-   */
   acceptFollowRequest: async (requesterId) => {
     const id = typeof requesterId === "object" && requesterId !== null
       ? requesterId._id || requesterId.id
@@ -57,10 +37,6 @@ export const followService = {
     return res.data;
   },
 
-  /**
-   * Reject/decline an incoming follow request.
-   * @param {string} requesterId
-   */
   rejectFollowRequest: async (requesterId) => {
     const id = typeof requesterId === "object" && requesterId !== null
       ? requesterId._id || requesterId.id
@@ -70,10 +46,6 @@ export const followService = {
     return res.data;
   },
 
-  /**
-   * Remove a follower from own followers list.
-   * @param {string} followerId
-   */
   removeFollower: async (followerId) => {
     const id = typeof followerId === "object" && followerId !== null
       ? followerId._id || followerId.id

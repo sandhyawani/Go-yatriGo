@@ -44,7 +44,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     if (onUpdated) onUpdated(true);
   };
 
-
   if (loading) {
     return (
       <div className="space-y-8 animate-pulse pb-12 max-w-5xl mx-auto">
@@ -86,7 +85,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
       </div>);
 
   }
-
 
   if (!unlocked) {
     const isCancelled = journey?.status === "Cancelled";
@@ -169,7 +167,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
 
   }
 
-
   const handleReact = async (emoji) => {
     setReacting(true);
     try {
@@ -216,8 +213,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
     createdAt: journey.completedAt || new Date()
   }];
 
-
-
   const getMilestoneConfig = (title, idx, total) => {
     const lowerTitle = title.toLowerCase();
     if (idx === 0 || lowerTitle.includes("created")) {
@@ -247,7 +242,6 @@ const JourneyMemoryCard = ({ journey, currentUserId, onUpdated }) => {
       borderColor: "border-emerald-200"
     };
   };
-
 
   const getAvatarGradient = (name) => {
     const len = name ? name.length : 0;

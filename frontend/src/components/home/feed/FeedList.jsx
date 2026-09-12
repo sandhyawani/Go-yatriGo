@@ -75,7 +75,6 @@ export const FeedList = ({
             onlineUsersMap={onlineUsersMap}
             handleAvatarError={handleAvatarError}
             user={user}
-            // Pass loaders if needed
             likeLoadingMap={likeLoadingMap}
             saveLoadingMap={saveLoadingMap}
             commentsLoadingMap={commentsLoadingMap}

@@ -53,7 +53,6 @@ const DispatchViewer = ({
   const [replyingToStory, setReplyingToStory] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(null);
 
-
   const [isEditingCaption, setIsEditingCaption] = useState(false);
   const [captionInput, setCaptionInput] = useState("");
   const [savingCaption, setSavingCaption] = useState(false);
@@ -63,7 +62,6 @@ const DispatchViewer = ({
   const socket = useContext(SocketContext);
 
   const currentStory = activeStoryGroup?.stories?.[activeStoryIndex];
-
 
   const handleOpenEditCaption = (e) => {
     e?.stopPropagation();
@@ -92,7 +90,6 @@ const DispatchViewer = ({
       setSavingCaption(false);
     }
   };
-
 
   const handleOpenDeleteStory = (e) => {
     e?.stopPropagation();
@@ -125,7 +122,6 @@ const DispatchViewer = ({
     }
   };
 
-
   useEffect(() => {
     if (activeStoryGroup) {
       document.body.style.overflow = "hidden";
@@ -136,7 +132,6 @@ const DispatchViewer = ({
       document.body.style.overflow = "";
     };
   }, [activeStoryGroup]);
-
 
   const handleStoryReply = async () => {
     if (!storyReplyText.trim() || !activeStoryGroup) return;
@@ -166,7 +161,6 @@ const DispatchViewer = ({
       setReplyingToStory(false);
     }
   };
-
 
   const handleStoryReaction = async (emoji) => {
     if (!activeStoryGroup) return;
@@ -203,7 +197,6 @@ const DispatchViewer = ({
 
   const prefersReducedMotion = useReducedMotion();
 
-
   useEffect(() => {
     if (!activeStoryGroup || !myUserId) return;
     const currentStory = activeStoryGroup.stories[activeStoryIndex];
@@ -223,13 +216,11 @@ const DispatchViewer = ({
     }
   }, [activeStoryGroup, activeStoryIndex, myUserId, onStoryViewed]);
 
-
   useEffect(() => {
     const handle = () => setIsTabActive(!document.hidden);
     document.addEventListener("visibilitychange", handle);
     return () => document.removeEventListener("visibilitychange", handle);
   }, []);
-
 
   useEffect(() => {
     AudioManager.stopAll();
@@ -239,7 +230,6 @@ const DispatchViewer = ({
       AudioManager.unlock();
     };
   }, []);
-
 
   useEffect(() => {
     const handle = (e) => {
@@ -256,7 +246,6 @@ const DispatchViewer = ({
     window.addEventListener("keydown", handle);
     return () => window.removeEventListener("keydown", handle);
   }, [nextStory, prevStory, closeStoryViewer, setIsStoryPaused]);
-
 
   useEffect(() => {
     setStoryProgress(0);
@@ -289,7 +278,6 @@ const DispatchViewer = ({
     };
   }, [activeStoryGroup, activeStoryIndex]);
 
-
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.muted = isStoryMuted;
@@ -307,7 +295,6 @@ const DispatchViewer = ({
     }
   }, [isStoryMuted, isStoryPaused, isTabActive]);
 
-
   useEffect(() => {
     if (audioRef.current) {
       if (isStoryPaused || !isTabActive) {
@@ -319,7 +306,6 @@ const DispatchViewer = ({
       }
     }
   }, [isStoryPaused, isTabActive]);
-
 
   useEffect(() => {
     if (
@@ -470,7 +456,6 @@ const DispatchViewer = ({
         )}
         </div>
 
-        {/* Author Header */}
         <div className="absolute top-7 inset-x-3 z-40 flex items-center justify-between">
           {(() => {
             const storyAuthorId = (
@@ -573,13 +558,11 @@ const DispatchViewer = ({
       onPointerUp={(e) => handlePointerUp(e, "none")}
       onPointerCancel={() => setIsStoryPaused(false)} />
 
-
         <div className="w-full h-full flex items-center justify-center relative bg-black">
           {!storyMediaLoaded &&
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
               <Loader2 className="w-7 h-7 text-white animate-spin" />
             </div>}
-
 
           {mediaUrl &&
         <div
@@ -594,15 +577,12 @@ const DispatchViewer = ({
           playsInline
           className="w-full h-full object-cover blur-[40px] scale-110 brightness-50" /> :
 
-
           <img
           src={mediaUrl}
           alt=""
           className="w-full h-full object-cover blur-[40px] scale-110 brightness-50" />}
 
-
             </div>}
-
 
           <div className="relative z-10 w-full h-full flex items-center justify-center overflow-hidden">
             {isVideo ?
@@ -616,13 +596,11 @@ const DispatchViewer = ({
           className="w-full h-full object-contain"
           onLoadedMetadata={() => setStoryMediaLoaded(true)} /> :
 
-
           <img
           src={mediaUrl}
           alt="Moment"
           className="w-full h-full object-contain"
           onLoad={() => setStoryMediaLoaded(true)} />}
-
 
           </div>
 
@@ -676,7 +654,6 @@ const DispatchViewer = ({
           <Volume2 className="w-3.5 h-3.5" />}
 
             </button>}
-
 
           <div className="absolute inset-0 z-30 pointer-events-none overflow-hidden">
             <AnimatePresence mode="wait">
@@ -973,8 +950,6 @@ const DispatchViewer = ({
         </div>
       </motion.div>
 
-      {/* Old edit/delete modals removed - now inline in the ⋮ popup */}
-
       {reportModal.isOpen &&
     <ReportModal
     isOpen={reportModal.isOpen}
@@ -985,8 +960,6 @@ const DispatchViewer = ({
     targetId={currentStory?._id}
     targetType="story"
     reportedUserId={activeStoryGroup?.userId} />}
-
-
 
       <AnimatePresence>
         {showViewersLocal &&

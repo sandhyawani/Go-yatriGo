@@ -13,7 +13,6 @@ const GroupSidebarAvatar = ({ room }) => {
       onError={() => setImgError(true)}
       className="w-10 h-10 rounded-full object-cover shadow-sm border border-slate-100" />);
 
-
   }
 
   return (
@@ -179,7 +178,6 @@ export const ChatSidebar = ({
 
             </div>
           </div>}
-
 
         <div className="relative">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
@@ -488,7 +486,6 @@ export const ChatSidebar = ({
               handleToggleRoomSelection(room._id) :
               handleSelectRoom(room)}>
 
-
                   {isDeleteSelectionMode &&
                 <div className="shrink-0 flex items-center justify-center">
                       <div
@@ -504,7 +501,6 @@ export const ChatSidebar = ({
                       </div>
                     </div>}
 
-
                   <div className="relative shrink-0">
                     {room.type === "group" || room.type === "journey" || room.travelGroupId || room.journeyId ?
                   <GroupSidebarAvatar room={room} /> :
@@ -516,7 +512,6 @@ export const ChatSidebar = ({
                   room.type === "direct" ? "cursor-pointer hover:opacity-80 transition-opacity" : ""
                   }`}
                   onClick={(e) => handleProfileClick(e, room)} />}
-
 
                     {room.type === "direct" &&
                   (() => {

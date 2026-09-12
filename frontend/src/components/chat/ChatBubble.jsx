@@ -48,8 +48,6 @@ const renderReadReceipt = (msg, isSelf) => {
 
 };
 
-
-
 const renderClickableText = (text, isSelf = false) => {
   if (!text) return "";
 
@@ -158,7 +156,6 @@ const ChatBubble = ({
         </div>
       )}
 
-      
       <div
       className="flex flex-col max-w-[80%] sm:max-w-[65%] lg:max-w-[60%] transition-transform duration-150 ease-out"
       style={{ transform: `translateX(${swipeOffset}px)` }}
@@ -182,7 +179,6 @@ const ChatBubble = ({
           </span>
         )}
 
-        
         <div
         className={`relative px-4 py-2.5 cursor-pointer group transition-all duration-200 hover:-translate-y-[1px] min-w-[80px] ${
         msg.isUnsent ?
@@ -239,7 +235,6 @@ const ChatBubble = ({
                             </div>
                           </> :
 
-
                   <div className="w-full h-full bg-brand-100 flex items-center justify-center text-brand text-lg">
                           📷
                         </div>}
@@ -271,7 +266,6 @@ const ChatBubble = ({
                       <div className="truncate max-w-[180px]">{msg.replyTo.text || "Media"}</div>
                     </div>}
 
-
                   {msg.media &&
               <div className="mb-1 rounded-xl overflow-hidden">
                       <img
@@ -285,7 +279,6 @@ const ChatBubble = ({
 
                     </div>}
 
-
                   {msg.text &&
               <p className="text-sm leading-relaxed whitespace-pre-wrap" style={{ overflowWrap: 'anywhere' }}>
                       {renderClickableText(msg.text, isSelf)}
@@ -294,7 +287,6 @@ const ChatBubble = ({
                 </>}
 
             </>}
-
 
           {activeMessageOptions === msg._id &&
           <div className={`absolute top-full mt-1 z-50 bg-white shadow-lg rounded-xl border border-slate-100 w-36 overflow-hidden ${isSelf ? "right-0" : "left-0"}`}>
@@ -313,7 +305,6 @@ const ChatBubble = ({
                 </button>}
 
             </div>}
-
 
           <div
           className={`flex items-center justify-end gap-1 mt-1.5 ${
@@ -344,7 +335,6 @@ const ChatBubble = ({
                 <Reply className="w-3.5 h-3.5" />
               </button>
             </div>}
-
 
           {showEmojiPicker &&
           <div className={`hidden sm:block absolute bottom-full mb-2 z-50 ${isSelf ? "right-0" : "left-0"}`}>
@@ -390,13 +380,11 @@ const ChatBubble = ({
         playsInline
         onClick={(e) => e.stopPropagation()} /> :
 
-
         <img
         src={lightboxData.url}
         alt="Full size media"
         className="max-w-full max-h-[90vh] object-contain rounded-lg"
         onClick={(e) => e.stopPropagation()} />}
-
 
         </div>}
 

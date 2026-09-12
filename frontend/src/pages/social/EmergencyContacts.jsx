@@ -36,7 +36,6 @@ const EmergencyContacts = () => {
     isPrimary: false
   });
 
-
   const [sosActive, setSosActive] = useState(user?.sosActive || false);
   const [locationSharing, setLocationSharing] = useState(true);
 
@@ -179,7 +178,6 @@ const EmergencyContacts = () => {
       setSosLoading(false);
     }
   };
-
 
   return (
     <div className="bg-slate-50 pt-3 md:pt-0 pb-20">
@@ -386,7 +384,6 @@ const EmergencyContacts = () => {
             </form>
           </div>}
 
-
         <div className="space-y-4">
           {loading ?
           <div className="text-center py-10">
@@ -466,7 +463,6 @@ const EmergencyContacts = () => {
         </div>
       </div>
 
-      {/* Redesigned Emergency SOS Confirmation Modal */}
       <SosConfirmModal
         isOpen={showSosModal}
         isActivating={!sosActive}
@@ -477,6 +473,5 @@ const EmergencyContacts = () => {
     </div>
   );
 };
-
 
 export default EmergencyContacts;

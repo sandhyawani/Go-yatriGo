@@ -131,7 +131,6 @@ const TravelerSuggestionCard = ({
 
   const detailConfig = getDetailConfig();
 
-  // Button config
   const getButtonConfig = () => {
     if (isFollowing) {
       return {
@@ -172,7 +171,6 @@ const TravelerSuggestionCard = ({
       className="group flex items-center gap-2.5 p-2 rounded-xl hover:bg-background transition-all duration-200 cursor-pointer"
       onClick={() => navigate(`/profile/${user._id || user.id}`)}
     >
-      {/* Avatar */}
       <div className="relative shrink-0">
         <img
           src={getAvatarUrl(user, user.name)}
@@ -185,11 +183,9 @@ const TravelerSuggestionCard = ({
             )}&background=0284c7&color=fff&bold=true`;
           }}
         />
-        {/* Online/status dot */}
         <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-white" />
       </div>
 
-      {/* Info: Name, Location, Primary Detail */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1 min-w-0">
           <span className="text-[12px] font-bold text-text-primary truncate leading-tight group-hover:text-brand transition-colors">
@@ -200,7 +196,6 @@ const TravelerSuggestionCard = ({
           )}
         </div>
 
-        {/* Home / Origin Location with distinct rose map pin and neutral slate text */}
         {locationString && (
           <p className="text-[10.5px] text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1 mt-0.5 truncate">
             <MapPin className="w-2.5 h-2.5 shrink-0 text-rose-500" />
@@ -208,7 +203,6 @@ const TravelerSuggestionCard = ({
           </p>
         )}
 
-        {/* Travel Status / Current Journey badge: clearly distinct in style, color and icon */}
         {detailConfig && (
           <div className="mt-1 flex items-center">
             <span
@@ -221,7 +215,6 @@ const TravelerSuggestionCard = ({
         )}
       </div>
 
-      {/* Follow Button - compact pill */}
       <button
         onClick={(e) => {
           e.preventDefault();

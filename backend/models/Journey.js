@@ -108,7 +108,6 @@ const journeySchema = new mongoose.Schema(
     default: 50
   },
 
-  // Explore/Buddy Trip Compatibility Fields
   category: {
     type: String,
     default: "Adventure",
@@ -178,7 +177,6 @@ const journeySchema = new mongoose.Schema(
     }
   }],
 
-
   chatRoomId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "ChatRoom",
@@ -243,7 +241,6 @@ journeySchema.index({
   description: "text"
 });
 
-// Partial unique index for Explore TravelGroups to prevent multiple Journeys from the same group
 journeySchema.index(
   { sourceType: 1, sourceId: 1 },
   { unique: true, partialFilterExpression: { sourceType: "explore", sourceId: { $type: "objectId" } } }

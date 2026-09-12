@@ -1,5 +1,4 @@
 
-
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Session = require("../models/Session");
@@ -18,7 +17,6 @@ const markSessionActive = (token) => {
 const getTokens = (req) => {
   const tokens = [];
 
-  // 1. Check Authorization: Bearer <token> header (standard for SPA / JWT clients)
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
     const headerToken = req.headers.authorization.split(" ")[1]?.trim();
     if (headerToken && headerToken !== "null" && headerToken !== "undefined") {
@@ -26,7 +24,6 @@ const getTokens = (req) => {
     }
   }
 
-  // 2. Check HTTP-only access_token cookie
   if (req.cookies?.access_token) {
     const cookieToken = req.cookies.access_token.trim();
     if (cookieToken && cookieToken !== "null" && cookieToken !== "undefined" && !tokens.includes(cookieToken)) {
@@ -84,7 +81,6 @@ const protect = asyncHandler(async (req, res, next) => {
       }
 
       if (!session) {
-        // If session was revoked or expired explicitly, do not accept it
         const revokedSession = await Session.findOne({
           token,
           user: userId,
@@ -96,7 +92,6 @@ const protect = asyncHandler(async (req, res, next) => {
           continue;
         }
 
-        // If JWT signature is valid and user is active, backfill active session document
         try {
           session = await Session.create({
             user: user._id,
@@ -106,7 +101,6 @@ const protect = asyncHandler(async (req, res, next) => {
             status: "active"
           });
         } catch (sessErr) {
-          // If duplicate key race condition or index error, look it up again
           session = await Session.findOne({ token, user: userId, status: "active" }).select("_id");
         }
       }
@@ -142,7 +136,6 @@ protect,
   next();
 }];
 
-
 const verifyUser = [
 protect,
 (req, res, next) => {
@@ -158,7 +151,6 @@ protect,
     message: "You are not authorized to perform this action."
   });
 }];
-
 
 const checkSuspended = asyncHandler(async (req, res, next) => {
   if (!req.user) {
@@ -196,7 +188,6 @@ const optionalVerifyToken = asyncHandler(async (req, res, next) => {
         break;
       }
     } catch (error) {
-      // Continue to next candidate token
     }
   }
   next();

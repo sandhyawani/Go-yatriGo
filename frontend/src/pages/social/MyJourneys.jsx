@@ -10,7 +10,6 @@ import { useAuth } from "../../context/authContext";
 
 import { useSidebar } from "../../components/social/sidebar/SidebarProvider";
 
-
 const MyJourneys = () => {
   const { user } = useAuth();
   const myUserId = user?._id || user?.id;
@@ -23,7 +22,6 @@ const MyJourneys = () => {
   const [viewAllJourneys, setViewAllJourneys] = useState(false);
   const [showPastInvites, setShowPastInvites] = useState(false);
   const [sourceFilter, setSourceFilter] = useState("all");
-
 
   const { openCreateJourney } = useSidebar() || {};
   const [checkInJourney, setCheckInJourney] = useState(null);
@@ -131,7 +129,6 @@ const MyJourneys = () => {
     return "upcoming";
   };
 
-  // Derive ALL counts from the same journeys array used to render cards
   const upcomingCount = journeys.filter(j => getJourneyStatusKey(j) === "upcoming").length;
   const activeCount = journeys.filter(j => getJourneyStatusKey(j) === "active").length;
   const completedCount = journeys.filter(j => getJourneyStatusKey(j) === "completed").length;
@@ -194,7 +191,6 @@ const MyJourneys = () => {
 
   return (
     <div className="min-h-screen bg-background pb-24 lg:pb-8">
-      {/* Mobile Header Card */}
       <div className="lg:hidden px-4 pt-3 pb-1">
         <div className="bg-white rounded-2xl p-3.5 sm:p-4 border border-slate-200/80 shadow-xs">
           <div className="flex items-center justify-between gap-3">
@@ -229,10 +225,8 @@ const MyJourneys = () => {
         </div>
       </div>
 
-      {/* Desktop Header Hero */}
       <div className="hidden lg:block max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-7">
         <div className="relative overflow-hidden bg-white rounded-3xl p-6 border border-slate-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.03)]">
-          {/* Subtle background glow */}
           <div className="absolute top-0 right-0 w-80 h-80 bg-gradient-to-bl from-primary-200/20 via-primary-100/10 to-transparent rounded-full blur-3xl pointer-events-none" />
 
           <div className="relative z-10 flex items-center justify-between gap-6">
@@ -250,7 +244,6 @@ const MyJourneys = () => {
                   </span>
                 </div>
 
-                {/* Quick Status Stats Chips */}
                 <div className="flex flex-wrap items-center gap-2 mt-2 font-sans">
                   <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-sky-900 bg-sky-50/90 px-2.5 py-0.5 rounded-full border border-sky-200/80 shadow-2xs">
                     <Clock className="w-3 h-3 text-sky-600" />
@@ -293,10 +286,8 @@ const MyJourneys = () => {
         </div>
       </div>
 
-      {/* Main Content Area */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 lg:pt-6 space-y-6">
 
-        {/* Tab Navigation Pill Bar */}
         <div className="sticky top-0 lg:top-auto z-20 pt-2 lg:pt-0 bg-background/90 lg:bg-transparent backdrop-blur-md -mx-4 sm:mx-0">
           <div className="w-full overflow-x-auto scrollbar-none pb-1">
             <div className="flex w-max min-w-full px-4 sm:px-0 sm:justify-start">
@@ -381,7 +372,6 @@ const MyJourneys = () => {
 
             )}
               </div>}
-
 
             {pastInvitations.length > 0 && (
               <div className="mt-6 border-t border-border-default pt-6">
@@ -521,7 +511,6 @@ const MyJourneys = () => {
         <div className="space-y-6">
             {activeTab === "Ongoing" && journeys.length > 0 &&
           <>
-                {/* Live Underway Hero Card */}
                 <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-slate-800/80 mb-4 relative overflow-hidden animate-fade-in">
                   <div className="absolute right-6 top-1/2 -translate-y-1/2 opacity-5 pointer-events-none hidden md:block">
                     <Compass className="w-40 h-40 text-white animate-spin-slow" />
@@ -572,7 +561,6 @@ const MyJourneys = () => {
                   </div>
                 </div>
 
-                {/* Live Underway Safety & Progress Counters */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 mb-6">
                   <div className="bg-white rounded-2xl p-3.5 border border-slate-200/80 shadow-xs flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-sky-500/10 text-sky-600 flex items-center justify-center text-lg shrink-0">
@@ -611,7 +599,6 @@ const MyJourneys = () => {
                   </div>
                 </div>
               </>}
-
 
             {(() => {
             const hasExplore = journeys.some((j) => j.sourceType === "explore");
@@ -701,7 +688,6 @@ const MyJourneys = () => {
                       </div>
                     </div>}
 
-
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
                     {displayList.map((j) =>
                   <JourneyCard
@@ -741,7 +727,6 @@ const MyJourneys = () => {
 
       </div>
 
-
       <SafeCheckInModal
         journey={checkInJourney}
         isOpen={Boolean(checkInJourney)}
@@ -751,7 +736,6 @@ const MyJourneys = () => {
           fetchJourneys();
         }}
       />
-
 
     </div>);
 

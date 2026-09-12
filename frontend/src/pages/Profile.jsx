@@ -380,7 +380,6 @@ const Profile = () => {
 
       if (!post) return;
 
-      // Check if comments are already populated objects with text
       const hasPopulatedComments =
         Array.isArray(post.comments) &&
         post.comments.length > 0 &&
@@ -395,7 +394,6 @@ const Profile = () => {
         return;
       }
 
-      // If commentsCount is explicitly 0 and comments array is empty, no need to fetch
       if (
         post.commentsCount === 0 &&
         (!Array.isArray(post.comments) || post.comments.length === 0)
@@ -712,7 +710,6 @@ const Profile = () => {
     const effectiveId = id || currentUser?._id || currentUser?.id;
     if (!effectiveId) return;
 
-    // Abort previous in-flight profile and tab requests when switching profile
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -728,7 +725,6 @@ const Profile = () => {
       String(currentUser._id || currentUser.id) === String(effectiveId)
     );
 
-    // Reset tab data immediately to avoid stale data flashes
     setFetchedTabs({});
     setUserMemories([]);
     setUserMemoriesTotal(0);
@@ -743,7 +739,6 @@ const Profile = () => {
 
     setLoading(true);
 
-    // Determine target initial tab
     const initialTab =
       location.pathname === "/saved" ||
         new URLSearchParams(location.search).get("tab") === "saved"
@@ -752,7 +747,6 @@ const Profile = () => {
           ? "posts"
           : "trips";
 
-    // Fetch tab data in parallel with profile fetch
     fetchTabData(initialTab, effectiveId, true, currentSignal, currentRequestId);
 
     try {
@@ -780,7 +774,6 @@ const Profile = () => {
             },
           });
         } else {
-          // Asynchronously fetch self relations without blocking main flow
           axios
             .get(`/users/${currentUser._id}`, {
               withCredentials: true,
@@ -810,7 +803,6 @@ const Profile = () => {
       }
 
       if (!isOwn) {
-        // Asynchronously fetch review candidate journeys without blocking main flow
         axios
           .get(`/social/buddy?userId=${effectiveId}&limit=50`, {
             withCredentials: true,
@@ -855,7 +847,6 @@ const Profile = () => {
     }
   }, [activeTab]);
 
-  // Deep Link Handling
   useEffect(() => {
     const handleDeepLink = async () => {
       if (location.state?.selectedMemory) {
@@ -1065,7 +1056,6 @@ const Profile = () => {
           );
         }
 
-        // Fetch journey stats in background without blocking memory render
         axios
           .get(`/journeys/stats/user/${targetId}`, {
             withCredentials: true,
@@ -1562,7 +1552,6 @@ const Profile = () => {
         }
       }
 
-      // Merge travel history if available
       try {
         const compRes = await axios.get(
           `/journeys/previous-companions?userId=${targetId}`,
@@ -1596,10 +1585,8 @@ const Profile = () => {
           });
         }
       } catch (e) {
-        // Travel history is optional; keep the main relations list if it fails.
       }
 
-      // Fetch my connections so UI can resolve trip mate status
       try {
         if (currentUser) {
           const myConnections = await axios.get(
@@ -1963,7 +1950,6 @@ const Profile = () => {
     <div className="w-full overflow-x-hidden pb-20 lg:pb-12 font-sans antialiased relative bg-background pt-2 sm:pt-4">
       <div className="max-w-[1100px] mx-auto px-3 sm:px-4 lg:px-8 relative z-10 space-y-4">
 
-        {/* ─── 1. PROFILE HEADER ─────────────────────────────── */}
         <ProfileHeader
           profileUser={profileUser}
           currentUser={currentUser}
@@ -2000,7 +1986,6 @@ const Profile = () => {
           }}
         />
 
-        {/* ─── 2. BLOCKED ACCOUNT ─────────────────────────────── */}
         {!isOwnProfile && isBlockedByMe ? (
           <div className="bg-surface/70 backdrop-blur-sm border border-red-200 rounded-3xl p-12 sm:p-16 text-center select-none shadow-soft mt-8">
             <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-5 relative">
@@ -2042,7 +2027,6 @@ const Profile = () => {
         ) : (
           <div className="space-y-4">
 
-            {/* ─── 3. ONBOARDING CHECKLIST ─────────────── */}
             {isOwnProfile &&
               userMemories?.length === 0 &&
               (profileUser?.postsCount || 0) === 0 &&
@@ -2082,7 +2066,6 @@ const Profile = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
 
-                    {/* Item 1 */}
                     <div className="flex items-center justify-between bg-surface border border-border p-3.5 rounded-xl shadow-soft">
                       <div className="flex items-center gap-3">
                         <span>
@@ -2119,7 +2102,6 @@ const Profile = () => {
                       )}
                     </div>
 
-                    {/* Item 2 */}
                     <div className="flex items-center justify-between bg-surface border border-border p-3.5 rounded-xl shadow-soft">
                       <div className="flex items-center gap-3">
                         <span>
@@ -2169,7 +2151,6 @@ const Profile = () => {
                         )}
                     </div>
 
-                    {/* Item 3 */}
                     <div className="flex items-center justify-between bg-surface border border-border p-3.5 rounded-xl shadow-soft">
                       <div className="flex items-center gap-3">
                         <span>
@@ -2206,7 +2187,6 @@ const Profile = () => {
                       )}
                     </div>
 
-                    {/* Item 4 */}
                     <div className="flex items-center justify-between bg-surface border border-border p-3.5 rounded-xl shadow-soft">
                       <div className="flex items-center gap-3">
                         <span>
@@ -2247,7 +2227,6 @@ const Profile = () => {
                         )}
                     </div>
 
-                    {/* Item 5 */}
                     <div className="flex items-center justify-between bg-surface border border-border p-3.5 rounded-xl shadow-soft sm:col-span-2">
                       <div className="flex items-center gap-3">
                         <span>
@@ -2287,7 +2266,6 @@ const Profile = () => {
                 </div>
               )}
 
-            {/* ─── 4. PROFILE NAVIGATION TABS ─────────────── */}
             <ProfileTabs
               activeTab={activeTab}
               setActiveTab={setActiveTab}
@@ -2297,7 +2275,6 @@ const Profile = () => {
               savedCount={savedPosts?.length || 0}
             />
 
-            {/* ─── 5. ACTIVE TAB CONTENT ───────────────────── */}
             <div>
               <motion.div
                 key={activeTab}
@@ -2402,7 +2379,6 @@ const Profile = () => {
           </div>
         )}
 
-        {/* ─── 6. ACTION & CONFIRMATION MODALS ───────────── */}
         <ActionModals
           showBlockModal={showBlockModal}
           setShowBlockModal={setShowBlockModal}
@@ -2445,7 +2421,6 @@ const Profile = () => {
           isSaving={isSaving}
         />
 
-        {/* ─── 7. MEMORY DETAIL MODAL ───────────────────── */}
         <MemoryDetailModal
           selectedMemory={selectedMemory}
           setSelectedMemory={setSelectedMemory}
@@ -2480,7 +2455,6 @@ const Profile = () => {
           audioRefs={audioRefs}
         />
 
-        {/* ─── 8. RELATIONS MODALS ───────────────────────── */}
         {relationsModalType === "trip_mates" ? (
           <TripMatesModal
             showRelationsModal={showRelationsModal}
@@ -2578,7 +2552,6 @@ const Profile = () => {
           />
         )}
 
-        {/* ─── 9. STORY VIEWER ──────────────────────────── */}
         <AnimatePresence>
           {activeStoryGroup && (
             <DispatchViewer
@@ -2604,7 +2577,6 @@ const Profile = () => {
           )}
         </AnimatePresence>
 
-        {/* ─── 10. CREATION MODALS ───────────────────────── */}
         <CreateTravelMemoryModal
           isOpen={showCreatePostModal}
           onClose={() =>
@@ -2628,7 +2600,6 @@ const Profile = () => {
           }}
         />
 
-        {/* ─── 11. REPORT MODAL ──────────────────────────── */}
         <ReportModal
           isOpen={reportModal.isOpen}
           onClose={() =>

@@ -47,7 +47,6 @@ new winston.transports.File({
   filename: path.join(__dirname, "../logs/combined.log")
 })];
 
-
 const logger = winston.createLogger({
   level: level(),
   levels,

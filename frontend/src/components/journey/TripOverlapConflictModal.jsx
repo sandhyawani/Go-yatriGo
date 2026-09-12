@@ -1,7 +1,6 @@
 import React from "react";
 import { AlertTriangle, Calendar, MapPin, X, Info } from "lucide-react";
 
-// Modal shown when an active or scheduled trip conflict is detected
 const TripOverlapConflictModal = ({
   isOpen,
   onClose,
@@ -45,7 +44,6 @@ const TripOverlapConflictModal = ({
         className="relative w-full w-[calc(100%-1.5rem)] sm:w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-amber-200 p-5 sm:p-6 flex flex-col items-center text-center my-auto transition-all animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Close Button */}
         <button
           onClick={onClose}
           className="absolute top-4 right-4 p-2 rounded-full bg-background hover text-text-muted hover:text-text-primary transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
@@ -71,14 +69,12 @@ const TripOverlapConflictModal = ({
           </p>
         </div>
 
-        {/* Details / Explanation */}
         <p className="text-xs text-text-muted mb-4 leading-relaxed px-1">
           {isActiveConflict
             ? "Go YatriGo ensures travel safety by allowing participation in only one active trip at a time. Please complete your current journey before joining overlapping trips."
             : "You already have another travel commitment scheduled during these overlapping dates. You cannot join two overlapping journeys at the same time."}
         </p>
 
-        {/* Conflicting Trip Snippet (if available) */}
         {conflictingTrip && (
           <div className="w-full bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 mb-5 text-left space-y-1.5 text-xs">
             <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-wider text-text-muted">
@@ -105,7 +101,6 @@ const TripOverlapConflictModal = ({
           </div>
         )}
 
-        {/* Action Button */}
         <button
           onClick={onClose}
           type="button"

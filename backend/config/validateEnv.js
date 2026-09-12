@@ -9,7 +9,6 @@ const validateEnv = () => {
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET"];
 
-
   const missing = [];
 
   required.forEach((variable) => {
