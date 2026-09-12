@@ -21,18 +21,26 @@ const serializePublicUser = (userDoc, options = {}) => {
     user.isVerified === true && user.verificationStatus === "verified"
   );
 
+  const toHttps = (url) => {
+    if (typeof url !== "string") return "";
+    return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
+  };
+
+  const primaryPic = toHttps(user.pic || user.avatar || user.profilePic || user.profilePicture || user.img || "");
+  const primaryCover = toHttps(user.coverImage || user.coverPic || "");
+
   const serialized = {
     _id: user._id,
     name: user.name || "",
     username: user.username || "",
-    pic: user.pic || user.avatar || user.profilePic || user.profilePicture || user.img || "",
-    avatar: user.avatar || user.pic || "",
-    profilePic: user.profilePic || user.pic || "",
-    profilePicture: user.profilePicture || user.pic || "",
-    img: user.img || user.pic || "",
-    userPic: user.userPic || user.pic || "",
-    coverImage: user.coverImage || user.coverPic || "",
-    coverPic: user.coverPic || user.coverImage || "",
+    pic: primaryPic,
+    avatar: toHttps(user.avatar) || primaryPic,
+    profilePic: toHttps(user.profilePic) || primaryPic,
+    profilePicture: toHttps(user.profilePicture) || primaryPic,
+    img: toHttps(user.img) || primaryPic,
+    userPic: toHttps(user.userPic) || primaryPic,
+    coverImage: primaryCover,
+    coverPic: toHttps(user.coverPic) || primaryCover,
     bio: user.bio || "",
     role: user.role || "Traveler",
     type: user.type || "traveler",
@@ -157,12 +165,13 @@ const serializeReviewer = (reviewerDoc) => {
   if (!reviewerDoc) return null;
   const rev = reviewerDoc.toObject ? reviewerDoc.toObject() : { ...reviewerDoc };
 
+  const revPic = (rev.pic || rev.avatar || rev.profilePic || rev.img || "").replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
   return {
     _id: rev._id,
     name: rev.name || "Traveler",
     username: rev.username || "",
-    pic: rev.pic || rev.avatar || rev.profilePic || rev.img || "",
-    avatar: rev.avatar || rev.pic || "",
+    pic: revPic,
+    avatar: (rev.avatar ? rev.avatar.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com") : revPic),
     isVerified: Boolean(rev.isVerified === true && rev.verificationStatus === "verified"),
   };
 };

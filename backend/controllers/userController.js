@@ -17,6 +17,7 @@ const {
   blockUserAction,
   unblockUserAction,
 } = require("../utils/blockHelper");
+const { isValidObjectId } = require("../utils/validateObjectId");
 
 const SOCKET_EVENTS = {
   NEW_NOTIFICATION: "new_notification",
@@ -482,6 +483,10 @@ const followUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
 
+  if (!isValidObjectId(targetUserId)) {
+    return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid target user ID" });
+  }
+
   if (currentUserId.toString() === targetUserId.toString()) {
     return res
       .status(400)
@@ -630,6 +635,10 @@ const followUser = asyncHandler(async (req, res) => {
 const unfollowUser = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const targetUserId = req.params.id;
+
+  if (!isValidObjectId(targetUserId)) {
+    return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid target user ID" });
+  }
 
   const [currentUser, targetUser] = await Promise.all([
     User.findById(currentUserId),
@@ -1860,6 +1869,10 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
 
+  if (!isValidObjectId(requesterId)) {
+    return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid requester ID format" });
+  }
+
   const currentUser = await User.findById(currentUserId);
   if (!currentUser) {
     return res.status(404).json({ success: false, message: "User not found" });
@@ -1963,6 +1976,10 @@ const acceptFollowRequest = asyncHandler(async (req, res) => {
 const rejectFollowRequest = asyncHandler(async (req, res) => {
   const currentUserId = req.user._id || req.user.id;
   const requesterId = req.params.id;
+
+  if (!isValidObjectId(requesterId)) {
+    return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid requester ID format" });
+  }
 
   const currentUser = await User.findById(currentUserId);
   if (!currentUser) {

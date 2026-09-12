@@ -35,6 +35,11 @@ split(",").
 map((origin) => origin.trim().replace(/\/$/, "")).
 filter(Boolean);
 
+const productionClientOrigins = [
+  "https://go-yatri-go.vercel.app",
+  "https://go-yatrigo.vercel.app"
+];
+
 const developmentClientOrigins =
 process.env.NODE_ENV === "production" ?
 [] :
@@ -44,7 +49,6 @@ process.env.NODE_ENV === "production" ?
 "http://localhost:5173",
 "http://127.0.0.1:5173"];
 
-
 const capacitorOrigins = [
   "https://localhost",
   "http://localhost",
@@ -52,25 +56,29 @@ const capacitorOrigins = [
 ];
 
 const allowedClientOrigins = [
-  ...new Set([...configuredClientOrigins, ...developmentClientOrigins, ...capacitorOrigins])
+  ...new Set([...configuredClientOrigins, ...productionClientOrigins, ...developmentClientOrigins, ...capacitorOrigins])
 ];
-
 
 const isDev = process.env.NODE_ENV !== "production";
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const normalizedOrigin = origin.trim().replace(/\/$/, "");
+
+  if (
+    allowedClientOrigins.includes(normalizedOrigin) ||
+    productionClientOrigins.includes(normalizedOrigin) ||
+    /\.vercel\.app$/.test(normalizedOrigin) ||
+    (isDev && (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)))
+  ) {
+    return true;
+  }
+  return false;
+};
+
 const corsOptions = {
   origin(origin, callback) {
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    const normalizedOrigin = origin.replace(/\/$/, "");
-
-    if (
-      allowedClientOrigins.includes(normalizedOrigin) ||
-      /\.vercel\.app$/.test(normalizedOrigin) ||
-      (isDev && (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)))
-    ) {
+    if (isAllowedOrigin(origin)) {
       return callback(null, true);
     }
 
@@ -218,8 +226,14 @@ app.use(errorHandler);
 
 const io = new Server(server, {
   cors: {
-    origin: allowedClientOrigins,
-    credentials: true
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error(`Socket origin rejected by CORS: ${origin}`), false);
+    },
+    credentials: true,
+    methods: ["GET", "POST"]
   }
 });
 

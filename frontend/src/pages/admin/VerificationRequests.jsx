@@ -27,8 +27,12 @@ import moment from "moment";
 
 const getImageUrl = (url) => {
   if (!url) return "";
-  if (url.startsWith("http") || url.startsWith("data:")) return url;
-  const baseUrl = axios.defaults.baseURL ? axios.defaults.baseURL.replace("/api", "") : "http://localhost:5000";
+  if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("data:")) {
+    return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
+  }
+  const isProduction = process.env.NODE_ENV === "production" || window.location.hostname !== "localhost";
+  const defaultBase = isProduction ? "https://go-yatrigo.onrender.com" : "http://localhost:5000";
+  const baseUrl = axios.defaults.baseURL ? axios.defaults.baseURL.replace("/api", "") : defaultBase;
   return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`;
 };
 

@@ -30,6 +30,9 @@ export const getAvatarUrl = (...args) => {
 
   for (const url of candidates) {
     if (checkUrl(url)) {
+      if (typeof url === "string" && url.startsWith("http://res.cloudinary.com")) {
+        return url.replace(/^http:\/\/res\.cloudinary\.com/i, "https://res.cloudinary.com");
+      }
       return url;
     }
   }

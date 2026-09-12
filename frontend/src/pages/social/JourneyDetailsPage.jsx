@@ -105,12 +105,24 @@ const JourneyDetailsPage = () => {
     axiosInstance
     .get(`/journeys/${id}`)
     .then((res) => {
-      if (res.data?.success) setJourney(res.data.journey);
+      if (res.data?.success && res.data.journey) {
+        setJourney(res.data.journey);
+      }
     })
     .catch((err) => {
       console.error("Error loading journey details:", err);
       if (!silent) {
-        showToast.error("Journey not found or access denied");
+        const status = err.response?.status;
+        const msg = err.response?.data?.message;
+        if (status === 404) {
+          showToast.error("This journey no longer exists.");
+        } else if (status === 403) {
+          showToast.error(msg || "This journey is private and accessible only to confirmed members.");
+        } else if (status === 400) {
+          showToast.error("Invalid journey link.");
+        } else {
+          showToast.error(msg || "Failed to load journey details. Please try again.");
+        }
         navigate("/social/journeys");
       }
     })
@@ -130,8 +142,15 @@ const JourneyDetailsPage = () => {
   useEffect(() => {
     if (journey && user) {
       const currentUserIdStr = (currentUserId?._id || currentUserId?.id || currentUserId || "").toString();
-      const isMem = (journey.creator?._id || journey.creator)?.toString() === currentUserIdStr ||
-        journey.members?.some(m => (m.user?._id || m.user || m._id || m)?.toString() === currentUserIdStr && (!m.status || m.status === "active"));
+      const isMem = Boolean(
+        currentUserIdStr && (
+          (journey.creator?._id || journey.creator)?.toString() === currentUserIdStr ||
+          (journey.members || []).some(m => {
+            const mId = (m?.user?._id || m?.user || m?._id || m)?.toString();
+            return mId && mId === currentUserIdStr && (!m?.status || m?.status === "active");
+          })
+        )
+      );
       if (!isMem) {
         axiosInstance.get(`/journeys/${id}/my-join-request`)
           .then(res => {

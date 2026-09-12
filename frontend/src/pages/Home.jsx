@@ -36,9 +36,7 @@ import { normalizeJourneyStatus } from "../utils/journeyLifecycle";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRecentMemoriesQuery, useHomeSideDataQuery } from "../hooks/queries/useHomeData";
 import { useScrollRestoration } from "../hooks/useScrollRestoration";
-
-const SOCKET_URL =
-process.env.REACT_APP_SOCKET_URL || "http://10.126.5.219:5000";
+import followService from "../services/followService";
 
 const formatLocation = (location) => {
   if (!location) return "";
@@ -903,14 +901,14 @@ const Home = () => {
 
       try {
         if (isCurrentlyFollowing) {
-          await axios.post(`/users/${targetId}/unfollow`, {}, { withCredentials: true });
+          await followService.unfollowUser(targetId);
           showToast.success(`Unfollowed ${targetUser.name || "traveler"}`);
         } else if (isCurrentlyRequested) {
-          await axios.delete(`/users/follow-requests/${targetId}`, { withCredentials: true });
+          await followService.cancelFollowRequest(targetId);
           showToast.success(`Follow request cancelled`);
         } else {
-          const res = await axios.post(`/users/${targetId}/follow`, {}, { withCredentials: true });
-          if (res.data?.status === "requested" || targetUser.privateAccount) {
+          const res = await followService.followUser(targetId);
+          if (res?.status === "requested" || targetUser.privateAccount) {
             showToast.success(`Follow request sent!`);
           } else {
             showToast.success(`Following ${targetUser.name || "traveler"}`);

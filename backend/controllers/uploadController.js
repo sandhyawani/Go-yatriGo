@@ -9,10 +9,11 @@ exports.uploadImage = async (req, res) => {
       });
     }
 
+    const secureUrl = (req.file.secure_url || req.file.path || "").replace(/^http:\/\//i, "https://");
     res.status(200).json({
       success: true,
       message: "File uploaded successfully",
-      url: req.file.path,
+      url: secureUrl,
       public_id: req.file.filename
     });
   } catch (error) {

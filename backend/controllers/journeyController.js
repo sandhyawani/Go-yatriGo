@@ -16,6 +16,7 @@ const User = require("../models/User");
 const TravelGroup = require("../models/TravelGroup");
 const imageService = require("../utils/imageService");
 const { isActuallyVerified } = require("../utils/verificationHelper");
+const { isValidObjectId } = require("../utils/validateObjectId");
 
 exports.getAutoCoverPreview = async (req, res) => {
   try {
@@ -387,22 +388,24 @@ exports.getMyJourneys = async (req, res) => {
       query.status = status;
     }
 
-    let journeys = await Journey.find(query).
-    populate("creator", "name profilePic pic img avatar").
-    populate("members.user", "name profilePic pic img avatar").
+    let journeys = await Journey.find(query).sort({ startDate: 1 });
+    const syncedJourneys = await Promise.all(journeys.map((j) => syncJourneyStatus(j)));
+    const syncedIds = syncedJourneys.map((j) => j._id);
+
+    const populatedJourneys = await Journey.find({ _id: { $in: syncedIds } }).
+    populate("creator", "name profilePic pic img avatar isVerified").
+    populate("members.user", "name profilePic pic img avatar isVerified").
     sort({ startDate: 1 });
 
-    const syncedJourneys = await Promise.all(journeys.map((j) => syncJourneyStatus(j)));
-
-    let finalJourneys = syncedJourneys;
+    let finalJourneys = populatedJourneys;
     if (filter === "upcoming") {
-      finalJourneys = syncedJourneys.filter((j) => j.status === "Upcoming" || j.status === "Planning");
+      finalJourneys = populatedJourneys.filter((j) => j.status === "Upcoming" || j.status === "Planning");
     } else if (filter === "ongoing") {
-      finalJourneys = syncedJourneys.filter((j) => j.status === "Ongoing");
+      finalJourneys = populatedJourneys.filter((j) => j.status === "Ongoing");
     } else if (filter === "completed") {
-      finalJourneys = syncedJourneys.filter((j) => j.status === "Completed");
+      finalJourneys = populatedJourneys.filter((j) => j.status === "Completed");
     } else if (filter === "cancelled") {
-      finalJourneys = syncedJourneys.filter((j) => j.status === "Cancelled" || j.isCancelled);
+      finalJourneys = populatedJourneys.filter((j) => j.status === "Cancelled" || j.isCancelled);
     }
 
     res.json({
@@ -412,41 +415,76 @@ exports.getMyJourneys = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching user journeys:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch user journeys" });
   }
 };
 
 exports.getJourneyById = async (req, res) => {
   try {
-    const { id } = req.params;
-    const userId = req.user._id || req.user.id;
-
-    let journey = await Journey.findById(id).
-    populate("creator", "name profilePic pic img avatar bio").
-    populate("members.user", "name profilePic pic img avatar bio");
-
-    if (!journey) {
-      return res.status(404).json({ success: false, message: "Journey not found" });
+    const id = req.params.id || req.params.journeyId;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_ID",
+        message: "Invalid journey ID format: must be a 24-character hexadecimal ObjectId."
+      });
     }
 
-    const isMember = journey.members.some(
-      (m) => (m.user?._id || m.user).toString() === userId.toString()
-    ) || (journey.creator && (journey.creator._id || journey.creator).toString() === userId.toString());
+    const userId = req.user ? (req.user._id || req.user.id) : null;
+    const userIdStr = userId ? userId.toString() : "";
 
-    if (journey.privacy === "Private" && !isMember) {
-      return res.status(403).json({ success: false, message: "Access denied. Private journey." });
+    // 1. Fetch raw journey and synchronize status before populating (prevents Mongoose casting bugs)
+    let journey = await Journey.findById(id);
+    if (!journey) {
+      return res.status(404).json({
+        success: false,
+        code: "NOT_FOUND",
+        message: "Journey not found"
+      });
     }
 
     journey = await syncJourneyStatus(journey);
 
+    // 2. Fetch fully populated journey
+    journey = await Journey.findById(id).
+    populate("creator", "name username profilePic pic img avatar bio isVerified").
+    populate("members.user", "name username profilePic pic img avatar bio isVerified");
+
+    if (!journey) {
+      return res.status(404).json({
+        success: false,
+        code: "NOT_FOUND",
+        message: "Journey not found"
+      });
+    }
+
+    // 3. Null-safe membership check
+    const isMember = Boolean(
+      userIdStr && (
+        (journey.members || []).some((m) => {
+          const mUserId = m?.user?._id || m?.user;
+          return mUserId && mUserId.toString() === userIdStr;
+        }) ||
+        Boolean(journey.creator && (journey.creator._id || journey.creator).toString() === userIdStr)
+      )
+    );
+
+    if (journey.privacy === "Private" && !isMember && (!req.user || !req.user.isAdmin)) {
+      return res.status(403).json({
+        success: false,
+        code: "FORBIDDEN",
+        message: "Access denied. Private journey."
+      });
+    }
+
     const timeline = await JourneyTimeline.find({ journeyId: id }).sort({ createdAt: -1 });
-    const safetyState = computeSafetyState(journey, timeline);
+    const safetyState = computeSafetyState(journey, timeline || []);
 
     const journeyObj = journey.toObject ? journey.toObject() : { ...journey };
-    journeyObj.timeline = timeline;
+    journeyObj.timeline = timeline || [];
     journeyObj.safetyState = safetyState;
 
-    res.json({
+    return res.status(200).json({
       success: true,
       journey: journeyObj,
       isMember,
@@ -454,17 +492,24 @@ exports.getJourneyById = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching journey by ID:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    return res.status(500).json({
+      success: false,
+      code: "INTERNAL_SERVER_ERROR",
+      message: "An unexpected error occurred while loading journey details."
+    });
   }
 };
 
 exports.updateJourney = async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = req.params.id || req.params.journeyId;
+    if (!isValidObjectId(id)) {
+      return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid journey ID format" });
+    }
     const userId = req.user._id || req.user.id;
 
     let journey = await Journey.findById(id);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+    if (!journey) return res.status(404).json({ success: false, code: "NOT_FOUND", message: "Journey not found" });
 
     if (journey.creator.toString() !== userId.toString()) {
       return res.status(403).json({ success: false, message: "Only the journey creator can edit details" });
@@ -538,14 +583,21 @@ exports.updateJourney = async (req, res) => {
 };
 
 exports.deleteJourney = async (req, res) => {
+  const id = req.params.id || req.params.journeyId;
+  if (!isValidObjectId(id)) {
+    return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid journey ID format" });
+  }
   const session = await mongoose.startSession();
   try {
     session.startTransaction();
-    const { id } = req.params;
     const userId = req.user._id || req.user.id;
 
     const journey = await Journey.findById(id).session(session);
-    if (!journey) return res.status(404).json({ success: false, message: "Journey not found" });
+    if (!journey) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(404).json({ success: false, code: "NOT_FOUND", message: "Journey not found" });
+    }
 
     if (journey.creator.toString() !== userId.toString()) {
       return res.status(403).json({ success: false, message: "Only the creator can delete this journey" });

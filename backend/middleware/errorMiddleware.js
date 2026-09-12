@@ -2,26 +2,66 @@ const logger = require("../utils/logger");
 
 const notFound = (req, res, next) => {
   const error = new Error(`Not Found - ${req.originalUrl}`);
-  res.status(404);
+  error.statusCode = 404;
+  error.code = "NOT_FOUND";
   next(error);
 };
 
 const errorHandler = (err, req, res, next) => {
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let statusCode = err.statusCode || (res.statusCode && res.statusCode !== 200 ? res.statusCode : 500);
+  let code = err.code || (statusCode === 404 ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR");
+  let message = err.message || "An unexpected error occurred.";
+
+  // Normalize Mongoose CastError (invalid ObjectId or invalid type cast)
+  if (err.name === "CastError") {
+    statusCode = 400;
+    code = "INVALID_ID";
+    message = `Invalid ${err.path || "ID"} format: ${err.value}`;
+  }
+
+  // Normalize Mongoose ValidationError
+  if (err.name === "ValidationError") {
+    statusCode = 422;
+    code = "VALIDATION_ERROR";
+    const errors = Object.values(err.errors || {}).map((e) => e.message);
+    message = errors.length > 0 ? errors.join(", ") : "Validation failed";
+  }
+
+  // Normalize MongoDB duplicate key error (code 11000)
+  if (err.code === 11000) {
+    statusCode = 409;
+    code = "DUPLICATE_RESOURCE";
+    const field = Object.keys(err.keyPattern || err.keyValue || {})[0] || "field";
+    message = `${field.charAt(0).toUpperCase() + field.slice(1)} already exists`;
+  }
+
+  // Normalize JWT errors
+  if (err.name === "JsonWebTokenError") {
+    statusCode = 401;
+    code = "UNAUTHORIZED";
+    message = "Invalid or malformed authentication token. Please log in again.";
+  }
+  if (err.name === "TokenExpiredError") {
+    statusCode = 401;
+    code = "TOKEN_EXPIRED";
+    message = "Your authentication session has expired. Please log in again.";
+  }
 
   logger.error({
     message: err.message,
-    stack: err.stack,
-    requestId: req.id,
-    userId: req.user ? req.user._id : "unauthenticated",
+    statusCode,
+    code,
+    requestId: req.id || "unassigned",
+    userId: req.user ? (req.user._id || req.user.id) : "unauthenticated",
     method: req.method,
-    url: req.originalUrl
+    url: req.originalUrl,
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack })
   });
 
-  res.status(statusCode).json({
+  return res.status(statusCode).json({
     success: false,
-    code: err.code || (statusCode === 404 ? "NOT_FOUND" : "INTERNAL_SERVER_ERROR"),
-    message: err.message || "An unexpected error occurred.",
+    code,
+    message,
     requestId: req.id || "unassigned",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack })
   });

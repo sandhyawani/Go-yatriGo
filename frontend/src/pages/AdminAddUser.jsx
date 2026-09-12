@@ -176,7 +176,7 @@ const AdminAddUser = () => {
     }
 
     const result = await response.json();
-    return result.url;
+    return (result.secure_url || result.url || "").replace(/^http:\/\//i, "https://");
   };
 
   const validateAll = () => {

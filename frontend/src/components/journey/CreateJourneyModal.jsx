@@ -195,15 +195,17 @@ const CreateJourneyModal = ({
       let imageUrl = formData.coverImage?.trim();
 
       if (file) {
+        const cloudName = process.env.REACT_APP_CLOUDINARY_CLOUD || "ddgjxum9j";
+        const preset = process.env.REACT_APP_CLOUDINARY_PRESET || "upload";
         const data = new FormData();
         data.append("file", file);
-        data.append("upload_preset", "upload");
+        data.append("upload_preset", preset);
 
         const uploadRes = await fetch(
-          "https://api.cloudinary.com/v1_1/dpgelkpd4/image/upload",
+          `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
           { method: "POST", body: data }
         ).then((res) => res.json());
-        imageUrl = uploadRes.url;
+        imageUrl = (uploadRes.secure_url || uploadRes.url || "").replace(/^http:\/\//i, "https://");
       }
 
       const payload = {

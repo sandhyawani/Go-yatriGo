@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "../../api/axios";
+import followService from "../../services/followService";
 import { showToast } from "../../utils/showToast";
 import { resolveRelationship } from "../../utils/relationshipResolver";
 
@@ -19,17 +19,17 @@ export const useSuggestedUsers = () => {
       const isCurrentlyFollowing = rel.socialState === "following" || rel.socialState === "mutual" || Boolean(targetUser.isFollowing);
       const isCurrentlyRequested = rel.socialState === "requested" || Boolean(targetUser.isRequested);
 
-      const endpoint = isCurrentlyFollowing
-        ? `/users/${targetId}/unfollow`
-        : isCurrentlyRequested
-        ? `/users/follow-requests/${targetId}`
-        : `/users/${targetId}/follow`;
-
-      const method = isCurrentlyRequested ? 'delete' : 'post';
-      const res = await axios[method](endpoint, {}, { withCredentials: true });
+      let res;
+      if (isCurrentlyFollowing) {
+        res = await followService.unfollowUser(targetId);
+      } else if (isCurrentlyRequested) {
+        res = await followService.cancelFollowRequest(targetId);
+      } else {
+        res = await followService.followUser(targetId);
+      }
       
-      if (res.data?.success) {
-        showToast.success(res.data.message || (isCurrentlyFollowing ? "Unfollowed" : "Following"));
+      if (res?.success) {
+        showToast.success(res.message || (isCurrentlyFollowing ? "Unfollowed" : "Following"));
       }
       
       if (callback) callback();

@@ -1,4 +1,5 @@
 import axios from "../api/axios";
+import followService from "./followService";
 
 const getAuthHeaders = () => {
   let token = null;
@@ -89,39 +90,11 @@ export const notificationService = {
   },
 
   acceptFollowRequest: async (requesterId) => {
-    const targetId =
-      typeof requesterId === "object" && requesterId !== null
-        ? requesterId._id || requesterId.id
-        : requesterId;
-
-    if (!targetId) {
-      throw new Error("Invalid requester ID for acceptFollowRequest");
-    }
-
-    const res = await axios.post(
-      `/users/${targetId}/follow-request/accept`,
-      {},
-      getRequestConfig()
-    );
-    return res.data;
+    return followService.acceptFollowRequest(requesterId);
   },
 
   rejectFollowRequest: async (requesterId) => {
-    const targetId =
-      typeof requesterId === "object" && requesterId !== null
-        ? requesterId._id || requesterId.id
-        : requesterId;
-
-    if (!targetId) {
-      throw new Error("Invalid requester ID for rejectFollowRequest");
-    }
-
-    const res = await axios.post(
-      `/users/${targetId}/follow-request/reject`,
-      {},
-      getRequestConfig()
-    );
-    return res.data;
+    return followService.rejectFollowRequest(requesterId);
   },
 
   acceptMessageRequest: async (roomId) => {
@@ -197,8 +170,7 @@ export const notificationService = {
   },
 
   cancelFollowRequest: async (targetUserId) => {
-    const res = await axios.delete(`/users/follow-requests/${targetUserId}`, getRequestConfig());
-    return res.data;
+    return followService.cancelFollowRequest(targetUserId);
   },
 
   cancelBuddyJoinRequest: async (groupId) => {

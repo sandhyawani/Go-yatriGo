@@ -63,6 +63,9 @@ router.get("/blocked", verifyToken, getBlockedUsers);
 router.put("/follow/:id", verifyToken, followUser);
 router.put("/unfollow/:id", verifyToken, unfollowUser);
 router.delete("/follow-requests/:id", verifyToken, cancelFollowRequest);
+router.delete("/:id/follow-request", verifyToken, cancelFollowRequest);
+router.delete("/:id/follow-request/cancel", verifyToken, cancelFollowRequest);
+router.post("/:id/follow-request/cancel", verifyToken, cancelFollowRequest);
 
 router.post("/:id/follow", verifyToken, followUser);
 router.post("/:id/unfollow", verifyToken, unfollowUser);

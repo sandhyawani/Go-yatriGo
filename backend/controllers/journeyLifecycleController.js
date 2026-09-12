@@ -63,54 +63,101 @@ const syncJourneyStatus = async (journey) => {
     if (expectedStatus === "Completed" && !journey.completedAt) {
       journey.completedAt = now;
 
-      await JourneyMemory.findOneAndUpdate(
-        { journeyId: journey._id },
-        {
-          $setOnInsert: {
-            journeyId: journey._id,
-            title: journey.title,
-            destination: journey.destination,
-            coverImage: journey.coverImage,
-            durationDays: journey.durationDays,
-            participantsCount: journey.members?.length || 1,
-            participants: journey.members?.map((m) => ({
-              userId: m.user?._id || m.user,
-              name: m.user?.name || "Traveler",
-              pic: m.user?.profilePic || "",
-              role: m.role
-            })),
-            highlights: [
-              { title: "Journey Created", eventType: "journey_created", createdAt: journey.createdAt },
-              { title: "Journey Started", eventType: "journey_started", createdAt: journey.startDate },
-              { title: "Journey Completed Successfully", eventType: "journey_completed", createdAt: now }
-            ]
-          }
-        },
-        { upsert: true, new: true }
-      );
-
-      await JourneyTimeline.create({
-        journeyId: journey._id,
-        userId: journey.creator,
-        userName: "System",
-        eventType: "journey_completed",
-        title: "Journey Completed",
-        description: `Congratulations on completing ${journey.title}!`
-      });
-    } else if (expectedStatus === "Ongoing" && oldStatus === "Upcoming") {
-      await JourneyTimeline.create({
-        journeyId: journey._id,
-        userId: journey.creator,
-        userName: "System",
-        eventType: "journey_started",
-        title: "Journey Started",
-        description: `The journey to ${journey.destination} has officially begun!`
-      });
-    }
-    if (typeof journey.save === "function") {
       try {
+        const participants = (journey.members || [])
+          .map((m) => {
+            const uid = m?.user?._id || m?.user;
+            if (!uid) return null;
+            return {
+              userId: uid,
+              name: m?.user?.name || "Traveler",
+              pic: m?.user?.profilePic || m?.user?.pic || m?.user?.avatar || "",
+              role: m?.role || "Member"
+            };
+          })
+          .filter(Boolean);
+
+        await JourneyMemory.findOneAndUpdate(
+          { journeyId: journey._id },
+          {
+            $setOnInsert: {
+              journeyId: journey._id,
+              title: journey.title,
+              destination: journey.destination,
+              coverImage: journey.coverImage,
+              durationDays: journey.durationDays,
+              participantsCount: participants.length || 1,
+              participants,
+              highlights: [
+                { title: "Journey Created", eventType: "journey_created", createdAt: journey.createdAt },
+                { title: "Journey Started", eventType: "journey_started", createdAt: journey.startDate },
+                { title: "Journey Completed Successfully", eventType: "journey_completed", createdAt: now }
+              ]
+            }
+          },
+          { upsert: true, new: true }
+        );
+      } catch (memErr) {
+        console.error("Error creating auto journey memory on completion:", memErr);
+      }
+
+      try {
+        const creatorId = journey.creator?._id || journey.creator;
+        if (creatorId) {
+          await JourneyTimeline.create({
+            journeyId: journey._id,
+            userId: creatorId,
+            userName: "System",
+            eventType: "journey_completed",
+            title: "Journey Completed",
+            description: `Congratulations on completing ${journey.title}!`
+          });
+        }
+      } catch (timeErr) {
+        console.error("Error creating timeline event for journey completion:", timeErr);
+      }
+    } else if (expectedStatus === "Ongoing" && oldStatus === "Upcoming") {
+      try {
+        const creatorId = journey.creator?._id || journey.creator;
+        if (creatorId) {
+          await JourneyTimeline.create({
+            journeyId: journey._id,
+            userId: creatorId,
+            userName: "System",
+            eventType: "journey_started",
+            title: "Journey Started",
+            description: `The journey to ${journey.destination} has officially begun!`
+          });
+        }
+      } catch (timeErr) {
+        console.error("Error creating timeline event for journey start:", timeErr);
+      }
+    }
+
+    try {
+      if (typeof journey.save === "function") {
         await journey.save();
-      } catch (e) {}
+      } else {
+        await Journey.findByIdAndUpdate(journey._id, {
+          $set: {
+            status: journey.status,
+            isCancelled: journey.isCancelled,
+            completedAt: journey.completedAt
+          }
+        });
+      }
+    } catch (saveErr) {
+      try {
+        await Journey.findByIdAndUpdate(journey._id, {
+          $set: {
+            status: journey.status,
+            isCancelled: journey.isCancelled,
+            completedAt: journey.completedAt
+          }
+        });
+      } catch (fallbackErr) {
+        console.error("Error persisting synced journey status:", fallbackErr);
+      }
     }
   }
 

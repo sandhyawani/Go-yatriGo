@@ -6,6 +6,7 @@ import { SOCKET_EVENTS } from "../constants/socketEvents";
 import { Compass, ShieldCheck, Ban } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import axios from "../api/axios";
+import followService from "../services/followService";
 import { showToast } from "../utils/showToast";
 import AudioManager from "../utils/AudioManager";
 import {
@@ -1273,24 +1274,17 @@ const Profile = () => {
     setFollowLoading(true);
 
     try {
-      const endpoint = profileRelationship.isFollowing
-        ? `/users/${profileUser._id}/unfollow`
-        : profileRelationship.requestSent
-          ? `/users/follow-requests/${profileUser._id}`
-          : `/users/${profileUser._id}/follow`;
+      let res;
+      if (profileRelationship.isFollowing) {
+        res = await followService.unfollowUser(profileUser._id);
+      } else if (profileRelationship.requestSent) {
+        res = await followService.cancelFollowRequest(profileUser._id);
+      } else {
+        res = await followService.followUser(profileUser._id);
+      }
 
-      const method = profileRelationship.requestSent
-        ? "delete"
-        : "post";
-
-      const res = await axios[method](
-        endpoint,
-        {},
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        showToast.success(res.data.message);
+      if (res && res.success) {
+        showToast.success(res.message);
         await fetchProfileSilent();
 
         if (showRelationsModal) {
@@ -1338,13 +1332,9 @@ const Profile = () => {
 
   const handleAcceptRequest = async () => {
     try {
-      const res = await axios.post(
-        `/users/${profileUser._id}/follow-request/accept`,
-        {},
-        { withCredentials: true }
-      );
+      const res = await followService.acceptFollowRequest(profileUser._id);
 
-      if (res.data.success) {
+      if (res && res.success) {
         showToast.success("Follow request accepted");
 
         const freshSelf = await axios.get(
@@ -1373,13 +1363,9 @@ const Profile = () => {
 
   const handleDeclineRequest = async () => {
     try {
-      const res = await axios.post(
-        `/users/${profileUser._id}/follow-request/reject`,
-        {},
-        { withCredentials: true }
-      );
+      const res = await followService.rejectFollowRequest(profileUser._id);
 
-      if (res.data.success) {
+      if (res && res.success) {
         const freshSelf = await axios.get(
           `/users/${currentUser._id}`,
           { withCredentials: true }
@@ -1416,22 +1402,17 @@ const Profile = () => {
         tripMateStates?.[String(targetId)]
       );
 
-      const endpoint = rel.isFollowing
-        ? `/users/${targetId}/unfollow`
-        : rel.requestSent
-          ? `/users/follow-requests/${targetId}`
-          : `/users/${targetId}/follow`;
+      let res;
+      if (rel.isFollowing) {
+        res = await followService.unfollowUser(targetId);
+      } else if (rel.requestSent) {
+        res = await followService.cancelFollowRequest(targetId);
+      } else {
+        res = await followService.followUser(targetId);
+      }
 
-      const method = rel.requestSent ? "delete" : "post";
-
-      const res = await axios[method](
-        endpoint,
-        {},
-        { withCredentials: true }
-      );
-
-      if (res.data.success) {
-        showToast.success(res.data.message);
+      if (res && res.success) {
+        showToast.success(res.message);
         await fetchProfileSilent();
 
         if (showRelationsModal) {

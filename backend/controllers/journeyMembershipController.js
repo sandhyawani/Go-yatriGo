@@ -11,6 +11,7 @@ const ChatRoom = require("../models/ChatRoom");
 const User = require("../models/User");
 const { syncJourneyStatus } = require("./journeyLifecycleController");
 const { isBlockedPair } = require("../utils/blockHelper");
+const { isValidObjectId } = require("../utils/validateObjectId");
 const {
   canJoinJourney,
   canInviteMembers,
@@ -1246,13 +1247,16 @@ exports.rejectJourneyJoinRequest = async (req, res) => {
 
 exports.getMyJoinRequest = async (req, res) => {
   try {
-    const journeyId = req.params.id;
+    const journeyId = req.params.id || req.params.journeyId;
+    if (!isValidObjectId(journeyId)) {
+      return res.status(400).json({ success: false, code: "INVALID_ID", message: "Invalid journey ID format" });
+    }
     const userId = req.user._id || req.user.id;
     const joinRequest = await JourneyJoinRequest.findOne({ journeyId, userId, status: "pending" });
-    res.json({ success: true, joinRequest });
+    res.json({ success: true, joinRequest: joinRequest || null });
   } catch (error) {
     console.error("Error fetching my join request:", error);
-    res.status(500).json({ success: false, message: "Server Error" });
+    res.status(500).json({ success: false, code: "INTERNAL_SERVER_ERROR", message: "Failed to fetch join request" });
   }
 };
 
