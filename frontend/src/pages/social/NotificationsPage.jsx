@@ -18,7 +18,7 @@ import {
   RefreshCw,
   X,
   ChevronRight,
-  ExternalLink
+  ExternalLink,
 } from "lucide-react";
 import moment from "moment";
 import { useNotificationContext } from "../../context/NotificationContext";
@@ -35,6 +35,7 @@ const CATEGORIES = [
 
 const getNormalizedCategory = (notif) => {
   if (!notif) return "Social";
+
   const c = (notif.category || "").toLowerCase();
   const t = (notif.type || "").toLowerCase();
 
@@ -88,83 +89,112 @@ const getNotificationVisuals = (type, category) => {
       bg: "bg-rose-50 text-rose-600 border-rose-200",
       badge: "Emergency Alert",
       colorType: "danger",
-      isEmergency: true
+      isEmergency: true,
     };
   }
+
   if (t.includes("warning") || t.includes("admin_warning")) {
     return {
       icon: <AlertTriangle className="w-5 h-5 text-amber-600" />,
       bg: "bg-amber-50 text-amber-600 border-amber-200",
       badge: "Safety Warning",
-      colorType: "warning"
+      colorType: "warning",
     };
   }
-  if (t.includes("cancelled") || t.includes("rejected") || t.includes("reject")) {
+
+  if (
+    t.includes("cancelled") ||
+    t.includes("rejected") ||
+    t.includes("reject")
+  ) {
     return {
       icon: <X className="w-5 h-5 text-rose-500" />,
       bg: "bg-rose-50 text-rose-500 border-rose-100",
       badge: "Declined",
-      colorType: "danger"
+      colorType: "danger",
     };
   }
+
   if (t.includes("safe") || t.includes("checkin")) {
     return {
       icon: <ShieldCheck className="w-5 h-5 text-emerald-600" />,
       bg: "bg-emerald-50 text-emerald-600 border-emerald-200",
       badge: "Safe Check-in",
-      colorType: "success"
+      colorType: "success",
     };
   }
-  if (t.includes("accepted") || t.includes("approved") || t.includes("accept") || t.includes("completed")) {
+
+  if (
+    t.includes("accepted") ||
+    t.includes("approved") ||
+    t.includes("accept") ||
+    t.includes("completed")
+  ) {
     return {
       icon: <CheckCheck className="w-5 h-5 text-emerald-600" />,
       bg: "bg-emerald-50 text-emerald-600 border-emerald-100",
       badge: "Accepted",
-      colorType: "success"
+      colorType: "success",
     };
   }
-  if (t.includes("message") || t.includes("chat") || t.includes("direct") || c === "messages" || c === "message") {
+
+  if (
+    t.includes("message") ||
+    t.includes("chat") ||
+    t.includes("direct") ||
+    c === "messages" ||
+    c === "message"
+  ) {
     return {
       icon: <MessageSquare className="w-5 h-5 text-sky-600" />,
       bg: "bg-sky-50 text-sky-600 border-sky-200",
       badge: t === "message_request" ? "Message Request" : "Message",
-      colorType: "primary"
+      colorType: "primary",
     };
   }
-  if (t.includes("journey") || t.includes("trip") || t.includes("join")) {
+
+  if (
+    t.includes("journey") ||
+    t.includes("trip") ||
+    t.includes("join")
+  ) {
     return {
       icon: <Compass className="w-5 h-5 text-brand" />,
       bg: "bg-brand-50 text-brand border-brand-100",
       badge: "Journey",
-      colorType: "primary"
+      colorType: "primary",
     };
   }
+
   if (t.includes("follow")) {
     return {
       icon: <UserPlus className="w-5 h-5 text-brand" />,
       bg: "bg-brand-50 text-brand border-brand-100",
       badge: "Social",
-      colorType: "primary"
+      colorType: "primary",
     };
   }
+
   if (t.includes("like") || t.includes("reaction")) {
     return {
       icon: <Sparkles className="w-5 h-5 text-brand fill-brand" />,
       bg: "bg-primary-50 text-brand border-primary-100",
       badge: "Interaction",
-      colorType: "primary"
+      colorType: "primary",
     };
   }
+
   return {
     icon: <Bell className="w-5 h-5 text-brand" />,
     bg: "bg-brand-50 text-brand border-brand-100",
     badge: "Update",
-    colorType: "primary"
+    colorType: "primary",
   };
 };
 
 const NotificationsPage = () => {
   const navigate = useNavigate();
+
   const {
     notifications,
     unreadCount,
@@ -181,37 +211,49 @@ const NotificationsPage = () => {
     handleRejectFollow,
     handleAcceptMessage,
     handleRejectMessage,
-    handleManageJoin
+    handleManageJoin,
   } = useNotificationContext();
 
   const [activeTab, setActiveTab] = useState("All");
-  const [filterRead, setFilterRead] = useState("all"); // 'all' | 'unread' | 'read'
+  const [filterRead, setFilterRead] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const filteredNotifications = useMemo(() => {
     return notifications.filter((n) => {
-      // Category filter
       if (activeTab !== "All") {
         if (getNormalizedCategory(n) !== activeTab) return false;
       }
-      // Read/Unread filter
+
       if (filterRead === "unread" && n.isRead) return false;
       if (filterRead === "read" && !n.isRead) return false;
-      // Search query
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        const sender = (n.sender?.name || n.sender?.username || "").toLowerCase();
-        const text = (n.message || n.title || "").toLowerCase();
+
+        const sender = (
+          n.sender?.name ||
+          n.sender?.username ||
+          ""
+        ).toLowerCase();
+
+        const text = (
+          n.message ||
+          n.title ||
+          ""
+        ).toLowerCase();
+
         return sender.includes(q) || text.includes(q);
       }
+
       return true;
     });
   }, [notifications, activeTab, filterRead, searchQuery]);
 
   const handleNotificationClick = async (n) => {
     const notifId = n._id || n.id;
+
     if (!n.isRead && notifId) {
       await markAsRead(notifId);
     }
@@ -224,73 +266,132 @@ const NotificationsPage = () => {
     const type = (n.type || "").toLowerCase();
 
     if (n.journey || type.includes("journey") || type.includes("invite")) {
-      const journeyId = typeof n.journey === "object" ? n.journey?._id : n.journey;
+      const journeyId =
+        typeof n.journey === "object"
+          ? n.journey?._id
+          : n.journey;
+
       if (journeyId) {
         navigate(`/social/journeys/${journeyId}`);
         return;
       }
+
       navigate("/social/journeys");
       return;
     }
 
-    if (n.group || type.includes("group") || type.includes("join_request")) {
-      const groupId = typeof n.group === "object" ? n.group?._id : n.group;
+    if (
+      n.group ||
+      type.includes("group") ||
+      type.includes("join_request")
+    ) {
+      const groupId =
+        typeof n.group === "object"
+          ? n.group?._id
+          : n.group;
+
       if (groupId) {
         navigate(`/social/buddy/${groupId}`);
         return;
       }
+
       navigate("/social/buddy");
       return;
     }
 
-    if (n.room || type.includes("message") || type.includes("chat") || type.includes("direct")) {
-      const roomId = typeof n.room === "object" ? n.room?._id : n.room;
+    if (
+      n.room ||
+      type.includes("message") ||
+      type.includes("chat") ||
+      type.includes("direct")
+    ) {
+      const roomId =
+        typeof n.room === "object"
+          ? n.room?._id
+          : n.room;
+
       if (roomId) {
         navigate(`/social/chat/${roomId}`);
         return;
       }
-      const targetUserId = n.sender?._id || n.sender?.id;
+
+      const targetUserId =
+        n.sender?._id ||
+        n.sender?.id;
+
       if (targetUserId) {
         try {
-          const directRoomId = await chatService.getDirectRoomId(targetUserId);
+          const directRoomId =
+            await chatService.getDirectRoomId(targetUserId);
+
           if (directRoomId) {
             navigate(`/social/chat/${directRoomId}`);
             return;
           }
-        } catch {}
+        } catch (error) {
+          console.error("Failed to get direct room:", error);
+        }
       }
+
       navigate("/social/chat");
       return;
     }
 
     if (type.includes("follow")) {
-      const actorId = n.sender?._id || n.sender?.id || (typeof n.sender === "string" ? n.sender : null);
+      const actorId =
+        n.sender?._id ||
+        n.sender?.id ||
+        (typeof n.sender === "string" ? n.sender : null);
+
       if (actorId) {
         navigate(`/profile/${actorId}`);
         return;
       }
+
       navigate("/profile");
       return;
     }
 
     if (n.story || type.includes("story")) {
-      const dispatchId = typeof n.story === "object" ? n.story?._id : n.story;
-      navigate("/", { state: dispatchId ? { dispatchId } : undefined });
+      const dispatchId =
+        typeof n.story === "object"
+          ? n.story?._id
+          : n.story;
+
+      navigate("/", {
+        state: dispatchId ? { dispatchId } : undefined,
+      });
+
       return;
     }
 
-    if (n.post || type.includes("post") || type.includes("memory")) {
-      const memoryId = typeof n.post === "object" ? n.post?._id : n.post;
-      const actorId = n.sender?._id || n.sender?.id;
+    if (
+      n.post ||
+      type.includes("post") ||
+      type.includes("memory")
+    ) {
+      const memoryId =
+        typeof n.post === "object"
+          ? n.post?._id
+          : n.post;
+
+      const actorId =
+        n.sender?._id ||
+        n.sender?.id;
+
       if (memoryId && actorId) {
         navigate(`/profile/${actorId}?postId=${memoryId}`);
       } else {
         navigate(actorId ? `/profile/${actorId}` : "/");
       }
+
       return;
     }
 
-    if (type.includes("sos") || type.includes("emergency")) {
+    if (
+      type.includes("sos") ||
+      type.includes("emergency")
+    ) {
       navigate("/emergency-contacts");
       return;
     }
@@ -299,16 +400,19 @@ const NotificationsPage = () => {
   return (
     <div className="w-full min-h-screen bg-slate-50/50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-6">
+
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
           <div className="flex items-center gap-3.5">
             <div className="w-12 h-12 rounded-2xl bg-brand/10 border border-brand/20 flex items-center justify-center text-brand">
               <Bell className="w-6 h-6" />
             </div>
+
             <div>
               <h1 className="text-2xl font-black text-slate-900 font-heading">
                 Notifications
               </h1>
+
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 Stay updated with trips, messages, interactions, and safety alerts
               </p>
@@ -323,6 +427,7 @@ const NotificationsPage = () => {
             >
               <RefreshCw className="w-4 h-4" />
             </button>
+
             {unreadCount > 0 && (
               <button
                 onClick={() => markAllAsRead()}
@@ -332,6 +437,7 @@ const NotificationsPage = () => {
                 <span>Mark all read</span>
               </button>
             )}
+
             {notifications.length > 0 && (
               <button
                 onClick={() => setShowClearConfirm(true)}
@@ -346,13 +452,18 @@ const NotificationsPage = () => {
 
         {/* Category Tabs & Filter Toolbar */}
         <div className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-4">
+
           {/* Categories */}
           <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
             {CATEGORIES.map((cat) => {
               const Icon = cat.icon;
               const isActive = activeTab === cat.key;
               const countKey = cat.key.toLowerCase();
-              const badgeCount = cat.key === "All" ? (counts.all || notifications.length) : (counts[countKey] || 0);
+
+              const badgeCount =
+                cat.key === "All"
+                  ? counts.all || notifications.length
+                  : counts[countKey] || 0;
 
               return (
                 <button
@@ -365,11 +476,15 @@ const NotificationsPage = () => {
                   }`}
                 >
                   <Icon className="w-3.5 h-3.5" />
+
                   <span>{cat.label}</span>
+
                   {badgeCount > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
-                        isActive ? "bg-white/20 text-white" : "bg-slate-200 text-slate-700"
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-slate-200 text-slate-700"
                       }`}
                     >
                       {badgeCount}
@@ -384,6 +499,7 @@ const NotificationsPage = () => {
           <div className="flex flex-col sm:flex-row items-center gap-3 pt-3 border-t border-slate-100">
             <div className="relative w-full sm:flex-1">
               <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+
               <input
                 type="text"
                 value={searchQuery}
@@ -391,6 +507,7 @@ const NotificationsPage = () => {
                 placeholder="Search notifications..."
                 className="w-full pl-10 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-hidden focus:border-brand focus:bg-white transition-all text-slate-800 font-medium"
               />
+
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
@@ -402,7 +519,10 @@ const NotificationsPage = () => {
             </div>
 
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <span className="text-xs text-slate-400 font-medium">Filter:</span>
+              <span className="text-xs text-slate-400 font-medium">
+                Filter:
+              </span>
+
               {["all", "unread", "read"].map((f) => (
                 <button
                   key={f}
@@ -427,9 +547,11 @@ const NotificationsPage = () => {
               <div className="w-16 h-16 rounded-3xl bg-slate-50 border border-slate-100 flex items-center justify-center mx-auto text-slate-300 mb-4">
                 <Bell className="w-8 h-8" />
               </div>
+
               <h3 className="text-base font-bold text-slate-800 font-heading">
                 No notifications found
               </h3>
+
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 {searchQuery
                   ? "No notifications matching your search query."
@@ -440,16 +562,40 @@ const NotificationsPage = () => {
             </div>
           ) : (
             filteredNotifications.map((notif) => {
-              const notifId = (notif._id || notif.id).toString();
-              const visuals = getNotificationVisuals(notif.type, notif.category);
-              const senderName = notif.sender?.name || notif.sender?.username || "Go YatriGo";
+              const notifId = (
+                notif._id ||
+                notif.id
+              ).toString();
+
+              const visuals = getNotificationVisuals(
+                notif.type,
+                notif.category
+              );
+
+              const senderName =
+                notif.sender?.name ||
+                notif.sender?.username ||
+                "Go YatriGo";
+
               const isUnread = !notif.isRead;
               const type = (notif.type || "").toLowerCase();
 
-              const isJourneyInvite = type === "journey_invitation" && notif.invitation;
-              const isFollowRequest = type === "follow_request";
-              const isMessageRequest = type === "message_request";
-              const isJoinRequest = (type === "join_request" || type === "journey_join_request") && (notif.group || notif.journey);
+              const isJourneyInvite =
+                type === "journey_invitation" &&
+                notif.invitation;
+
+              const isFollowRequest =
+                type === "follow_request";
+
+              const isMessageRequest =
+                type === "message_request";
+
+              const isJoinRequest =
+                (
+                  type === "join_request" ||
+                  type === "journey_join_request"
+                ) &&
+                (notif.group || notif.journey);
 
               return (
                 <div
@@ -468,6 +614,7 @@ const NotificationsPage = () => {
                       alt={senderName}
                       className="w-12 h-12 rounded-2xl object-cover border border-slate-200 shadow-xs"
                     />
+
                     <div
                       className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full flex items-center justify-center border-2 border-white shadow-xs ${visuals.bg}`}
                     >
@@ -481,6 +628,7 @@ const NotificationsPage = () => {
                       <span className="text-sm font-bold text-slate-900">
                         {notif.title || senderName}
                       </span>
+
                       {visuals.badge && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 uppercase tracking-wider">
                           {visuals.badge}
@@ -489,17 +637,25 @@ const NotificationsPage = () => {
                     </div>
 
                     <p className="text-xs text-slate-700 font-medium mt-1 leading-relaxed">
-                      {notif.message || notif.content || notif.text}
+                      {notif.message ||
+                        notif.content ||
+                        notif.text}
                     </p>
 
                     <div className="flex items-center gap-2 mt-2 text-[11px] text-slate-400 font-medium">
                       <Clock className="w-3 h-3" />
-                      <span>{moment(notif.createdAt).fromNow()}</span>
+
+                      <span>
+                        {moment(notif.createdAt).fromNow()}
+                      </span>
+
                       {notif.link && (
                         <>
                           <span>•</span>
+
                           <span className="text-brand flex items-center gap-1 font-semibold hover:underline">
-                            View details <ExternalLink className="w-2.5 h-2.5" />
+                            View details
+                            <ExternalLink className="w-2.5 h-2.5" />
                           </span>
                         </>
                       )}
@@ -511,24 +667,34 @@ const NotificationsPage = () => {
                         className="mt-3 flex items-center gap-2 flex-wrap"
                         onClick={(e) => e.stopPropagation()}
                       >
+                        {/* Journey Invitation */}
                         {isJourneyInvite && (
                           <>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleAcceptJourneyInvitation(notif.invitation);
+
+                                await handleAcceptJourneyInvitation(
+                                  notif.invitation
+                                );
+
                                 setIsProcessing(false);
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
                               Accept Squad Invite
                             </button>
+
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleRejectJourneyInvitation(notif.invitation);
+
+                                await handleRejectJourneyInvitation(
+                                  notif.invitation
+                                );
+
                                 setIsProcessing(false);
                               }}
                               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
@@ -538,61 +704,87 @@ const NotificationsPage = () => {
                           </>
                         )}
 
+                        {/* Follow Request */}
                         {isFollowRequest && (
                           <>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleAcceptFollow(notif.sender?._id || notif.sender, notifId);
+
+                                await handleAcceptFollow(
+                                  notif.sender?._id ||
+                                    notif.sender,
+                                  notifId
+                                );
+
                                 setIsProcessing(false);
                               }}
-                              className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
+                              className="w-[145px] h-10 inline-flex items-center justify-center bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
                             >
                               Accept Follow
                             </button>
+
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                await handleRejectFollow(notif.sender?._id || notif.sender, notifId);
+
+                                await handleRejectFollow(
+                                  notif.sender?._id ||
+                                    notif.sender,
+                                  notifId
+                                );
+
                                 setIsProcessing(false);
                               }}
-                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                              className="w-[145px] h-10 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
                             >
                               Decline Follow
                             </button>
                           </>
                         )}
 
+                        {/* Join Request */}
                         {isJoinRequest && (
                           <>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
+
                                 await handleManageJoin(
-                                  notif.group || notif.journey,
-                                  notif.sender?._id || notif.sender,
+                                  notif.group ||
+                                    notif.journey,
+                                  notif.sender?._id ||
+                                    notif.sender,
                                   "accept",
-                                  notif.entityId || notif.journeyJoinRequest
+                                  notif.entityId ||
+                                    notif.journeyJoinRequest
                                 );
+
                                 setIsProcessing(false);
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
                               Approve Join
                             </button>
+
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
+
                                 await handleManageJoin(
-                                  notif.group || notif.journey,
-                                  notif.sender?._id || notif.sender,
+                                  notif.group ||
+                                    notif.journey,
+                                  notif.sender?._id ||
+                                    notif.sender,
                                   "reject",
-                                  notif.entityId || notif.journeyJoinRequest
+                                  notif.entityId ||
+                                    notif.journeyJoinRequest
                                 );
+
                                 setIsProcessing(false);
                               }}
                               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
@@ -602,29 +794,55 @@ const NotificationsPage = () => {
                           </>
                         )}
 
+                        {/* Message Request */}
                         {isMessageRequest && (
                           <>
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
-                                await handleAcceptMessage(roomId, notifId);
+
+                                const roomId =
+                                  typeof notif.room === "object"
+                                    ? notif.room?._id
+                                    : (
+                                        notif.room ||
+                                        notif.entityId
+                                      );
+
+                                await handleAcceptMessage(
+                                  roomId,
+                                  notifId
+                                );
+
                                 setIsProcessing(false);
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
                               Accept Chat
                             </button>
+
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
                                 setIsProcessing(true);
-                                const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
-                                await handleRejectMessage(roomId, notifId);
+
+                                const roomId =
+                                  typeof notif.room === "object"
+                                    ? notif.room?._id
+                                    : (
+                                        notif.room ||
+                                        notif.entityId
+                                      );
+
+                                await handleRejectMessage(
+                                  roomId,
+                                  notifId
+                                );
+
                                 setIsProcessing(false);
                               }}
-                              className="px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
+                              className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                             >
                               Decline Chat
                             </button>
@@ -634,7 +852,7 @@ const NotificationsPage = () => {
                     )}
                   </div>
 
-                  {/* Right side controls */}
+                  {/* Right Side Controls */}
                   <div className="flex items-center gap-2 shrink-0">
                     {isUnread && (
                       <button
@@ -648,6 +866,7 @@ const NotificationsPage = () => {
                         <CheckCheck className="w-4 h-4" />
                       </button>
                     )}
+
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -658,6 +877,7 @@ const NotificationsPage = () => {
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
+
                     <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-slate-500 transition-colors" />
                   </div>
                 </div>
@@ -674,12 +894,15 @@ const NotificationsPage = () => {
             <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-500 mb-4">
               <Trash2 className="w-6 h-6" />
             </div>
+
             <h4 className="text-lg font-bold text-slate-900 font-heading">
               Clear All Notifications?
             </h4>
+
             <p className="text-xs text-slate-500 mt-2 leading-relaxed">
               Are you sure you want to permanently clear your notifications history? This action cannot be undone.
             </p>
+
             <div className="flex items-center justify-end gap-3 mt-6">
               <button
                 onClick={() => setShowClearConfirm(false)}
@@ -687,6 +910,7 @@ const NotificationsPage = () => {
               >
                 Cancel
               </button>
+
               <button
                 onClick={async () => {
                   await clearAllNotifications();
