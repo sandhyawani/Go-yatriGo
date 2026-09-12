@@ -323,34 +323,60 @@ export const NotificationProvider = ({ children }) => {
 
   const handleAcceptFollow = async (requesterId, notificationId) => {
     try {
-      const res = await notificationService.acceptFollowRequest(requesterId);
+      const id =
+        typeof requesterId === "object" && requesterId !== null
+          ? requesterId._id || requesterId.id
+          : requesterId;
+
+      if (!id) {
+        console.warn("[NotificationContext] handleAcceptFollow called without valid requesterId:", requesterId);
+        showToast.error("Cannot accept request: invalid user ID");
+        return false;
+      }
+
+      const res = await notificationService.acceptFollowRequest(id);
       if (res && res.success) {
-        showToast.success("Follow request accepted");
+        showToast.success(res.message || "Follow request accepted");
         if (notificationId) {
           deleteNotification(notificationId);
         }
         return true;
       }
+      showToast.error(res?.message || "Failed to accept request");
       return false;
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to accept request");
+      console.error("[NotificationContext] Error accepting follow request:", err?.response?.data || err.message);
+      showToast.error(err.response?.data?.message || err.message || "Failed to accept request");
       return false;
     }
   };
 
   const handleRejectFollow = async (requesterId, notificationId) => {
     try {
-      const res = await notificationService.rejectFollowRequest(requesterId);
+      const id =
+        typeof requesterId === "object" && requesterId !== null
+          ? requesterId._id || requesterId.id
+          : requesterId;
+
+      if (!id) {
+        console.warn("[NotificationContext] handleRejectFollow called without valid requesterId:", requesterId);
+        showToast.error("Cannot decline request: invalid user ID");
+        return false;
+      }
+
+      const res = await notificationService.rejectFollowRequest(id);
       if (res && res.success) {
-        showToast.info("Follow request declined");
+        showToast.info(res.message || "Follow request declined");
         if (notificationId) {
           deleteNotification(notificationId);
         }
         return true;
       }
+      showToast.error(res?.message || "Failed to decline request");
       return false;
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to decline request");
+      console.error("[NotificationContext] Error declining follow request:", err?.response?.data || err.message);
+      showToast.error(err.response?.data?.message || err.message || "Failed to decline request");
       return false;
     }
   };

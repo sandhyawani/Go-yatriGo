@@ -1,21 +1,53 @@
 import axios from "../api/axios";
 
+const getAuthHeaders = () => {
+  let token = null;
+  try {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      token =
+        user?.token ||
+        user?.accessToken ||
+        user?.access_token ||
+        user?.details?.token ||
+        user?.data?.token;
+    }
+    if (!token) {
+      token =
+        localStorage.getItem("token") ||
+        localStorage.getItem("accessToken") ||
+        localStorage.getItem("access_token");
+    }
+  } catch (e) {
+    console.error("[NotificationService] Error reading auth token:", e);
+  }
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+const getRequestConfig = (extraConfig = {}) => ({
+  withCredentials: true,
+  ...extraConfig,
+  headers: {
+    ...getAuthHeaders(),
+    ...(extraConfig.headers || {})
+  }
+});
+
 export const notificationService = {
   getNotifications: async (category = "All") => {
     const params = category && category !== "All" ? `?category=${category}` : "";
-    const res = await axios.get(`/notifications${params}`, { withCredentials: true });
+    const res = await axios.get(`/notifications${params}`, getRequestConfig());
     return res.data;
   },
 
   getJourneyInvitations: async () => {
-    const res = await axios.get("/journeys/invitations/my?status=pending", {
-      withCredentials: true
-    });
+    const res = await axios.get("/journeys/invitations/my?status=pending", getRequestConfig());
     return res.data;
   },
 
   markAllRead: async () => {
-    const res = await axios.put("/notifications/read-all", {}, { withCredentials: true });
+    const res = await axios.put("/notifications/read-all", {}, getRequestConfig());
     return res.data;
   },
 
@@ -23,22 +55,18 @@ export const notificationService = {
     const res = await axios.put(
       `/notifications/${notificationId}/read`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
 
   deleteNotification: async (notificationId) => {
-    const res = await axios.delete(`/notifications/${notificationId}`, {
-      withCredentials: true
-    });
+    const res = await axios.delete(`/notifications/${notificationId}`, getRequestConfig());
     return res.data;
   },
 
   clearAllNotifications: async () => {
-    const res = await axios.delete(`/notifications/clear-all`, {
-      withCredentials: true
-    });
+    const res = await axios.delete(`/notifications/clear-all`, getRequestConfig());
     return res.data;
   },
 
@@ -46,7 +74,7 @@ export const notificationService = {
     const res = await axios.post(
       `/journeys/invitations/${invitationId}/accept`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
@@ -55,25 +83,43 @@ export const notificationService = {
     const res = await axios.post(
       `/journeys/invitations/${invitationId}/reject`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
 
   acceptFollowRequest: async (requesterId) => {
+    const targetId =
+      typeof requesterId === "object" && requesterId !== null
+        ? requesterId._id || requesterId.id
+        : requesterId;
+
+    if (!targetId) {
+      throw new Error("Invalid requester ID for acceptFollowRequest");
+    }
+
     const res = await axios.post(
-      `/users/${requesterId}/follow-request/accept`,
+      `/users/${targetId}/follow-request/accept`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
 
   rejectFollowRequest: async (requesterId) => {
+    const targetId =
+      typeof requesterId === "object" && requesterId !== null
+        ? requesterId._id || requesterId.id
+        : requesterId;
+
+    if (!targetId) {
+      throw new Error("Invalid requester ID for rejectFollowRequest");
+    }
+
     const res = await axios.post(
-      `/users/${requesterId}/follow-request/reject`,
+      `/users/${targetId}/follow-request/reject`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
@@ -82,7 +128,7 @@ export const notificationService = {
     const res = await axios.put(
       `/chat/room/${roomId}/accept`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
@@ -91,7 +137,7 @@ export const notificationService = {
     const res = await axios.put(
       `/chat/room/${roomId}/decline`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
@@ -100,7 +146,7 @@ export const notificationService = {
     const res = await axios.post(
       `/social/buddy/manage-request/${groupId}`,
       { requestId, status },
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
@@ -108,13 +154,13 @@ export const notificationService = {
   searchSocial: async (query) => {
     const res = await axios.get(
       `/social/search?q=${encodeURIComponent(query)}`,
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
 
   getSentRequests: async () => {
-    const res = await axios.get("/notifications/sent", { withCredentials: true });
+    const res = await axios.get("/notifications/sent", getRequestConfig());
     return res.data;
   },
 
@@ -137,23 +183,21 @@ export const notificationService = {
       }
 
       const res = await axios.delete(`/notifications/sent/${targetId}`, {
-        data: { cancelType: type, cancelId: targetId },
-        withCredentials: true
+        ...getRequestConfig(),
+        data: { cancelType: type, cancelId: targetId }
       });
       return res.data;
     }
 
     const res = await axios.delete(`/notifications/sent/${requestOrId}`, {
-      data: { cancelType },
-      withCredentials: true
+      ...getRequestConfig(),
+      data: { cancelType }
     });
     return res.data;
   },
 
   cancelFollowRequest: async (targetUserId) => {
-    const res = await axios.delete(`/users/follow-requests/${targetUserId}`, {
-      withCredentials: true
-    });
+    const res = await axios.delete(`/users/follow-requests/${targetUserId}`, getRequestConfig());
     return res.data;
   },
 
@@ -161,22 +205,18 @@ export const notificationService = {
     const res = await axios.post(
       `/social/buddy/cancel-request/${groupId}`,
       {},
-      { withCredentials: true }
+      getRequestConfig()
     );
     return res.data;
   },
 
   cancelJourneyJoinRequest: async (requestId) => {
-    const res = await axios.delete(`/journeys/join-requests/${requestId}`, {
-      withCredentials: true
-    });
+    const res = await axios.delete(`/journeys/join-requests/${requestId}`, getRequestConfig());
     return res.data;
   },
 
   cancelJourneyInvitation: async (invitationId) => {
-    const res = await axios.delete(`/journeys/invitations/${invitationId}/cancel`, {
-      withCredentials: true
-    });
+    const res = await axios.delete(`/journeys/invitations/${invitationId}/cancel`, getRequestConfig());
     return res.data;
   }
 };

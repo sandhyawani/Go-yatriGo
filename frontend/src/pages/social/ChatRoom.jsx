@@ -19,6 +19,7 @@ import { isActuallyVerified } from "../../utils/verification";
 import Swal from "sweetalert2";
 import { motion, AnimatePresence } from "framer-motion";
 import { chatService } from "../../services/chatService";
+import { notificationService } from "../../services/notificationService";
 
 const getRoomIdString = (roomField) => {
   if (!roomField) return "";
@@ -1101,27 +1102,29 @@ const ChatRoom = () => {
   };
 
   const handleAcceptFollow = async (requesterId, notificationId) => {
-    if (!requesterId) return;
-    const key = notificationId || requesterId;
+    const id =
+      typeof requesterId === "object" && requesterId !== null
+        ? requesterId._id || requesterId.id
+        : requesterId;
+
+    if (!id) return;
+    const key = notificationId || id;
     if (processingRequestIds.has(key)) return;
     setProcessingRequestIds((prev) => new Set(prev).add(key));
 
     try {
-      const res = await axios.post(
-      `/users/${requesterId}/follow-request/accept`,
-      {},
-      { withCredentials: true }
-      );
-      if (res.data?.success || res.status === 200) {
+      const res = await notificationService.acceptFollowRequest(id);
+      if (res?.success) {
         setNotifications((prev) =>
-        prev.filter(
-        (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId))
-        )
+          prev.filter(
+            (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(id) || n._id === notificationId))
+          )
         );
-        showToast.success("Follow request accepted");
+        showToast.success(res.message || "Follow request accepted");
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to accept request");
+      console.error("[ChatRoom] Error accepting follow request:", err?.response?.data || err.message);
+      showToast.error(err.response?.data?.message || err.message || "Failed to accept request");
     } finally {
       setProcessingRequestIds((prev) => {
         const next = new Set(prev);
@@ -1132,27 +1135,29 @@ const ChatRoom = () => {
   };
 
   const handleRejectFollow = async (requesterId, notificationId) => {
-    if (!requesterId) return;
-    const key = notificationId || requesterId;
+    const id =
+      typeof requesterId === "object" && requesterId !== null
+        ? requesterId._id || requesterId.id
+        : requesterId;
+
+    if (!id) return;
+    const key = notificationId || id;
     if (processingRequestIds.has(key)) return;
     setProcessingRequestIds((prev) => new Set(prev).add(key));
 
     try {
-      const res = await axios.post(
-      `/users/${requesterId}/follow-request/reject`,
-      {},
-      { withCredentials: true }
-      );
-      if (res.data?.success || res.status === 200) {
+      const res = await notificationService.rejectFollowRequest(id);
+      if (res?.success) {
         setNotifications((prev) =>
-        prev.filter(
-        (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(requesterId) || n._id === notificationId))
-        )
+          prev.filter(
+            (n) => !(n.type === "follow_request" && (String(n.sender?._id || n.sender) === String(id) || n._id === notificationId))
+          )
         );
-        showToast.success("Follow request declined");
+        showToast.info(res.message || "Follow request declined");
       }
     } catch (err) {
-      showToast.error(err.response?.data?.message || "Failed to decline request");
+      console.error("[ChatRoom] Error declining follow request:", err?.response?.data || err.message);
+      showToast.error(err.response?.data?.message || err.message || "Failed to decline request");
     } finally {
       setProcessingRequestIds((prev) => {
         const next = new Set(prev);

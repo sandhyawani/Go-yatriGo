@@ -15,75 +15,117 @@ const markSessionActive = (token) => {
   });
 };
 
-const getToken = (req) => {
-  if (req.cookies?.access_token) {
-    return req.cookies.access_token;
-  }
+const getTokens = (req) => {
+  const tokens = [];
+
+  // 1. Check Authorization: Bearer <token> header (standard for SPA / JWT clients)
   if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
-    return req.headers.authorization.split(" ")[1];
+    const headerToken = req.headers.authorization.split(" ")[1]?.trim();
+    if (headerToken && headerToken !== "null" && headerToken !== "undefined") {
+      tokens.push(headerToken);
+    }
   }
-  return null;
+
+  // 2. Check HTTP-only access_token cookie
+  if (req.cookies?.access_token) {
+    const cookieToken = req.cookies.access_token.trim();
+    if (cookieToken && cookieToken !== "null" && cookieToken !== "undefined" && !tokens.includes(cookieToken)) {
+      tokens.push(cookieToken);
+    }
+  }
+
+  return tokens;
+};
+
+const getToken = (req) => {
+  const tokens = getTokens(req);
+  return tokens.length > 0 ? tokens[0] : null;
 };
 
 const protect = asyncHandler(async (req, res, next) => {
-  const token = getToken(req);
+  const tokens = getTokens(req);
 
-  if (!token) {
+  if (tokens.length === 0) {
     return res.status(401).json({
       success: false,
       message: "Not authorized. No token provided."
     });
   }
 
-  try {
-    const decoded = jwt.verify(token, getJwtSecret());
-    const userId = decoded.id || decoded._id;
+  let lastError = null;
 
-    const [user, session] = await Promise.all([
-    User.findById(userId),
-    Session.findOne({ token, user: userId, status: "active" }).select("_id")]
-    );
+  for (const token of tokens) {
+    try {
+      const decoded = jwt.verify(token, getJwtSecret());
+      const userId = decoded.id || decoded._id;
 
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        message: "User not found."
-      });
+      let [user, session] = await Promise.all([
+        User.findById(userId),
+        Session.findOne({ token, user: userId, status: "active" }).select("_id")
+      ]);
+
+      if (!user) {
+        lastError = { status: 401, message: "User not found." };
+        continue;
+      }
+
+      if (user.isDeleted || user.isDeactivated) {
+        return res.status(401).json({
+          success: false,
+          message: "Not authorized. Account is not active."
+        });
+      }
+
+      if (user.isSuspended) {
+        return res.status(403).json({
+          success: false,
+          message: "Your account is suspended. Access denied."
+        });
+      }
+
+      if (!session) {
+        // If session was revoked or expired explicitly, do not accept it
+        const revokedSession = await Session.findOne({
+          token,
+          user: userId,
+          status: { $in: ["revoked", "expired"] }
+        }).select("_id status");
+
+        if (revokedSession) {
+          lastError = { status: 401, message: "Not authorized. Session is no longer active." };
+          continue;
+        }
+
+        // If JWT signature is valid and user is active, backfill active session document
+        try {
+          session = await Session.create({
+            user: user._id,
+            token,
+            browser: req.headers["user-agent"] || "Unknown",
+            ipAddress: req.ip || "Unknown",
+            status: "active"
+          });
+        } catch (sessErr) {
+          // If duplicate key race condition or index error, look it up again
+          session = await Session.findOne({ token, user: userId, status: "active" }).select("_id");
+        }
+      }
+
+      req.user = user;
+      req.token = token;
+
+      markSessionActive(token);
+      return next();
+    } catch (error) {
+      console.warn("[Auth Middleware] Token candidate failed:", error.message);
+      lastError = { status: 401, message: "Not authorized. Invalid or expired token." };
     }
-
-    if (!session) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized. Session is no longer active."
-      });
-    }
-
-    if (user.isDeleted || user.isDeactivated) {
-      return res.status(401).json({
-        success: false,
-        message: "Not authorized. Account is not active."
-      });
-    }
-
-    if (user.isSuspended) {
-      return res.status(403).json({
-        success: false,
-        message: "Your account is suspended. Access denied."
-      });
-    }
-
-    req.user = user;
-    req.token = token;
-
-    markSessionActive(token);
-    next();
-  } catch (error) {
-    console.error("[Auth Middleware Error]:", error.message);
-    return res.status(401).json({
-      success: false,
-      message: "Not authorized. Invalid or expired token."
-    });
   }
+
+  return res.status(lastError?.status || 401).json({
+    success: false,
+    message: lastError?.message || "Not authorized. Invalid or expired token."
+  });
 });
 
 const verifyToken = protect;
@@ -137,22 +179,24 @@ const checkSuspended = asyncHandler(async (req, res, next) => {
 });
 
 const optionalVerifyToken = asyncHandler(async (req, res, next) => {
-  const token = getToken(req);
+  const tokens = getTokens(req);
 
-  if (token) {
+  for (const token of tokens) {
     try {
       const decoded = jwt.verify(token, getJwtSecret());
       const userId = decoded.id || decoded._id;
       const [user, session] = await Promise.all([
-      User.findById(userId),
-      Session.findOne({ token, user: userId, status: "active" }).select("_id")]
-      );
+        User.findById(userId),
+        Session.findOne({ token, user: userId, status: "active" }).select("_id")
+      ]);
       if (user && session && !user.isSuspended && !user.isDeleted && !user.isDeactivated) {
         req.user = user;
         req.token = token;
         markSessionActive(token);
+        break;
       }
     } catch (error) {
+      // Continue to next candidate token
     }
   }
   next();

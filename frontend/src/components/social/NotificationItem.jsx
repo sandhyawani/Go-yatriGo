@@ -110,13 +110,13 @@ export const NotificationItem = ({
             {n.type === "follow_request" &&
               <>
                 <button
-                  onClick={(e) => handleAcceptRequest(e, n.sender?._id)}
-                  className="btn-primary">
+                  onClick={(e) => handleAcceptRequest(e, n.sender?._id || n.sender?.id || n.sender)}
+                  className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap">
                   Accept Follow
                 </button>
                 <button
-                  onClick={(e) => handleRejectRequest(e, n.sender?._id)}
-                  className="px-3.5 py-1 bg-background text-text-secondary text-[11px] font-bold rounded-lg hover transition-all">
+                  onClick={(e) => handleRejectRequest(e, n.sender?._id || n.sender?.id || n.sender)}
+                  className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap">
                   Decline Follow
                 </button>
               </>}

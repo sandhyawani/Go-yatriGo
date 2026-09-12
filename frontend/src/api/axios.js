@@ -29,32 +29,64 @@ const axiosInstance = axios.create({
 });
 
 axiosInstance.interceptors.request.use(
-(config) => {
-  try {
-    const userStr = localStorage.getItem(STORAGE_KEY);
-    if (userStr) {
-      const user = JSON.parse(userStr);
-      if (user?.tokenExpiry && Date.now() > user.tokenExpiry) {
-        localStorage.removeItem(STORAGE_KEY);
-        window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
-        return config;
+  (config) => {
+    try {
+      let token = null;
+      let tokenExpiry = null;
+
+      const userStr = localStorage.getItem(STORAGE_KEY);
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        tokenExpiry = user?.tokenExpiry || user?.tokenExpiresAt;
+        token =
+          user?.token ||
+          user?.accessToken ||
+          user?.access_token ||
+          user?.details?.token ||
+          user?.data?.token;
+
+        if (tokenExpiry && Date.now() > tokenExpiry) {
+          localStorage.removeItem(STORAGE_KEY);
+          window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
+          return config;
+        }
       }
-      if (user && user.token) {
-        config.headers.Authorization = `Bearer ${user.token}`;
+
+      if (!token) {
+        token =
+          localStorage.getItem('token') ||
+          localStorage.getItem('accessToken') ||
+          localStorage.getItem('access_token');
       }
+
+      if (token && token !== 'null' && token !== 'undefined') {
+        const bearerString = `Bearer ${token}`;
+        if (!config.headers) {
+          config.headers = {};
+        }
+
+        if (typeof config.headers.set === 'function') {
+          config.headers.set('Authorization', bearerString);
+        } else {
+          config.headers.Authorization = bearerString;
+          config.headers['authorization'] = bearerString;
+        }
+      }
+    } catch (error) {
+      console.error("[Axios] Error parsing auth state from localStorage:", error);
     }
-  } catch (error) {
-    console.error("Error parsing user from localStorage:", error);
-  }
-  return config;
-},
-(error) => Promise.reject(error)
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401 && !error.config?.skipAuthRedirect) {
+      const errorMsg = error.response?.data?.message || error.message;
+      console.warn(`[Axios 401 Unauthorized] ${error.config?.method?.toUpperCase()} ${error.config?.url}:`, errorMsg);
+
       // Only treat as unauthorized if the user was actually logged in (had a token).
       // This prevents register/upload 401 errors from incorrectly clearing session state.
       let hadToken = false;
@@ -62,12 +94,23 @@ axiosInstance.interceptors.response.use(
         const userStr = localStorage.getItem(STORAGE_KEY);
         if (userStr) {
           const user = JSON.parse(userStr);
-          hadToken = Boolean(user?.token);
+          hadToken = Boolean(
+            user?.token ||
+            user?.accessToken ||
+            user?.access_token ||
+            user?.details?.token
+          );
+        }
+        if (!hadToken) {
+          hadToken = Boolean(
+            localStorage.getItem('token') ||
+            localStorage.getItem('accessToken')
+          );
         }
       } catch (_) {}
 
       if (hadToken) {
-        console.warn("Unauthorized request. Clearing local session.");
+        console.warn("[Axios] Session invalid on backend. Clearing local session.");
         localStorage.removeItem(STORAGE_KEY);
         window.dispatchEvent(new CustomEvent(AUTH_UNAUTHORIZED_EVENT));
 

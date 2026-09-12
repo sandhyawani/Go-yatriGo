@@ -710,15 +710,15 @@ const NotificationsPage = () => {
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
-                                setIsProcessing(true);
-
-                                await handleAcceptFollow(
-                                  notif.sender?._id ||
-                                    notif.sender,
-                                  notifId
-                                );
-
-                                setIsProcessing(false);
+                                try {
+                                  setIsProcessing(true);
+                                  const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+                                  await handleAcceptFollow(reqId, notifId);
+                                } catch (err) {
+                                  console.error("[NotificationsPage] Error accepting follow request:", err);
+                                } finally {
+                                  setIsProcessing(false);
+                                }
                               }}
                               className="w-[145px] h-10 inline-flex items-center justify-center bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
                             >
@@ -728,15 +728,15 @@ const NotificationsPage = () => {
                             <button
                               disabled={isProcessing}
                               onClick={async () => {
-                                setIsProcessing(true);
-
-                                await handleRejectFollow(
-                                  notif.sender?._id ||
-                                    notif.sender,
-                                  notifId
-                                );
-
-                                setIsProcessing(false);
+                                try {
+                                  setIsProcessing(true);
+                                  const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+                                  await handleRejectFollow(reqId, notifId);
+                                } catch (err) {
+                                  console.error("[NotificationsPage] Error declining follow request:", err);
+                                } finally {
+                                  setIsProcessing(false);
+                                }
                               }}
                               className="w-[145px] h-10 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
                             >

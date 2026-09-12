@@ -252,7 +252,7 @@ const completeAuthSession = async (user, req, res) => {
     .cookie("access_token", token, {
       httpOnly: true,
       maxAge: 30 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production"
     })
     .status(200)
@@ -426,7 +426,7 @@ const logoutUser = async (req, res, next) => {
 
     res.clearCookie("access_token", {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       secure: process.env.NODE_ENV === "production"
     });
     res.status(200).json({

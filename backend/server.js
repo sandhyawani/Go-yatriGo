@@ -68,6 +68,7 @@ const corsOptions = {
 
     if (
       allowedClientOrigins.includes(normalizedOrigin) ||
+      /\.vercel\.app$/.test(normalizedOrigin) ||
       (isDev && (/^http:\/\/localhost(:\d+)?$/.test(normalizedOrigin) || /^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalizedOrigin)))
     ) {
       return callback(null, true);

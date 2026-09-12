@@ -611,10 +611,15 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const invId = typeof notif.invitation === "object" ? notif.invitation._id : notif.invitation;
-                                  await handleAcceptJourneyInvitation(invId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const invId = typeof notif.invitation === "object" ? notif.invitation._id : notif.invitation;
+                                    await handleAcceptJourneyInvitation(invId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error accepting journey invitation:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
                                 className="btn-primary"
                               >
@@ -623,10 +628,15 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const invId = typeof notif.invitation === "object" ? notif.invitation._id : notif.invitation;
-                                  await handleRejectJourneyInvitation(invId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const invId = typeof notif.invitation === "object" ? notif.invitation._id : notif.invitation;
+                                    await handleRejectJourneyInvitation(invId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error declining journey invitation:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
                                 className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
@@ -640,24 +650,34 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const reqId = notif.sender?._id || notif.sender;
-                                  await handleAcceptFollow(reqId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+                                    await handleAcceptFollow(reqId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error accepting follow request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
-                                className="btn-primary"
+                                className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer whitespace-nowrap"
                               >
                                 Accept Follow
                               </button>
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const reqId = notif.sender?._id || notif.sender;
-                                  await handleRejectFollow(reqId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const reqId = notif.sender?._id || notif.sender?.id || notif.sender;
+                                    await handleRejectFollow(reqId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error declining follow request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
-                                className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
+                                className="w-[145px] h-10 min-w-[145px] flex-none inline-flex items-center justify-center px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer whitespace-nowrap"
                               >
                                 Decline Follow
                               </button>
@@ -669,10 +689,15 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
-                                  await handleAcceptMessage(roomId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
+                                    await handleAcceptMessage(roomId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error accepting message request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
                                 className="btn-primary"
                               >
@@ -681,10 +706,15 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
-                                  await handleRejectMessage(roomId, notifId);
-                                  setIsProcessingAction(false);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const roomId = typeof notif.room === "object" ? notif.room?._id : (notif.room || notif.entityId);
+                                    await handleRejectMessage(roomId, notifId);
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error declining message request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
+                                  }
                                 }}
                                 className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
@@ -698,13 +728,18 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
-                                  const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
-                                  if (groupId && reqId) {
-                                    await handleManageJoin(groupId, reqId, "approved", notifId);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
+                                    const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
+                                    if (groupId && reqId) {
+                                      await handleManageJoin(groupId, reqId, "approved", notifId);
+                                    }
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error approving join request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
                                   }
-                                  setIsProcessingAction(false);
                                 }}
                                 className="btn-primary"
                               >
@@ -713,13 +748,18 @@ export const NotificationPanel = () => {
                               <button
                                 disabled={isProcessingAction}
                                 onClick={async () => {
-                                  setIsProcessingAction(true);
-                                  const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
-                                  const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
-                                  if (groupId && reqId) {
-                                    await handleManageJoin(groupId, reqId, "rejected", notifId);
+                                  try {
+                                    setIsProcessingAction(true);
+                                    const reqId = typeof notif.joinRequest === "object" ? notif.joinRequest._id : notif.joinRequest;
+                                    const groupId = typeof notif.group === "object" ? notif.group._id : notif.group;
+                                    if (groupId && reqId) {
+                                      await handleManageJoin(groupId, reqId, "rejected", notifId);
+                                    }
+                                  } catch (err) {
+                                    console.error("[NotificationPanel] Error rejecting join request:", err);
+                                  } finally {
+                                    setIsProcessingAction(false);
                                   }
-                                  setIsProcessingAction(false);
                                 }}
                                 className="px-3 py-1 bg-background hover active:scale-95 text-text-primary text-xs font-bold rounded-lg transition-all cursor-pointer"
                               >
