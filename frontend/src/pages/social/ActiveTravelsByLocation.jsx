@@ -387,7 +387,7 @@ const ActiveTravelsByLocation = () => {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -8, scale: 0.95 }}
                   transition={{ duration: 0.2 }}
-                  className="absolute top-full mt-2 right-0 z-50 w-72 bg-surface rounded-[var(--radius-card)] shadow-2xl border border-slate-200 p-4 space-y-3"
+                  className="absolute top-full mt-2 right-0 sm:right-auto sm:left-0 z-50 w-72 max-w-[calc(100vw-2rem)] bg-surface rounded-[var(--radius-card)] shadow-2xl border border-slate-200 p-4 space-y-3"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-black text-text-secondary uppercase tracking-wider">

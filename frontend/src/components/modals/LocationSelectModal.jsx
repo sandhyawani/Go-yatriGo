@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Loader2, Check, ChevronDown } from "lucide-react";
+import { X, MapPin, Loader2, Check } from "lucide-react";
 import axios from "../../api/axios";
 import { useAuth } from "../../context/authContext";
 import { showToast } from "../../utils/showToast";
 import { INDIAN_STATES_AND_CITIES } from "../../constants/locationData";
+import CustomSelect from "../ui/CustomSelect";
 
 export const LocationSelectModal = ({
   isOpen,
@@ -140,48 +141,41 @@ export const LocationSelectModal = ({
                 <label htmlFor="modal-state-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
                   State
                 </label>
-                <div className="relative">
-                  <select
-                    id="modal-state-select"
-                    value={selectedState}
-                    onChange={(e) => {
-                      setSelectedState(e.target.value);
-                      setSelectedCity("");
-                    }}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all appearance-none cursor-pointer"
-                  >
-                    <option value="">Select State</option>
-                    {states.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <CustomSelect
+                  id="modal-state-select"
+                  name="state"
+                  label="Select State"
+                  value={selectedState}
+                  onChange={(e) => {
+                    setSelectedState(e.target.value);
+                    setSelectedCity("");
+                    if (error) setError("");
+                  }}
+                  searchable={true}
+                  disabled={isSaving}
+                  placeholder="Select State"
+                  options={states.map((st) => ({ label: st, value: st }))}
+                />
               </div>
 
               <div className="space-y-1.5">
                 <label htmlFor="modal-city-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
                   City
                 </label>
-                <div className="relative">
-                  <select
-                    id="modal-city-select"
-                    value={selectedCity}
-                    onChange={(e) => setSelectedCity(e.target.value)}
-                    disabled={!selectedState}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <option value="">Select City</option>
-                    {cities.map((city) => (
-                      <option key={city} value={city}>
-                        {city}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <CustomSelect
+                  id="modal-city-select"
+                  name="city"
+                  label="Select City"
+                  value={selectedCity}
+                  onChange={(e) => {
+                    setSelectedCity(e.target.value);
+                    if (error) setError("");
+                  }}
+                  searchable={true}
+                  disabled={!selectedState || isSaving}
+                  placeholder={selectedState ? "Select City" : "Select State first"}
+                  options={cities.map((ct) => ({ label: ct, value: ct }))}
+                />
               </div>
 
               {/* Quick Select Popular Cities */}

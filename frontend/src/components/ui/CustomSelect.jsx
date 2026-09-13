@@ -17,6 +17,7 @@ const CustomSelect = ({
   loading = false,
   error = "",
   helperText = "",
+  label = "",
   className = "",
   dropdownClassName = "",
   optionRenderer = null,
@@ -27,17 +28,28 @@ const CustomSelect = ({
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const [dropdownStyle, setDropdownStyle] = useState({});
   const [direction, setDirection] = useState("down");
+  const [isMobile, setIsMobile] = useState(false);
 
   const containerRef = useRef(null);
   const searchInputRef = useRef(null);
   const listboxRef = useRef(null);
   const buttonRef = useRef(null);
 
+  // Detect mobile viewport (< 640px)
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(typeof window !== 'undefined' && window.innerWidth < 640);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   const filteredOptions = useMemo(() => {
     if (!searchable || !searchQuery) return options;
     return options.filter(opt => {
-      if (opt.options) return true; // Keep groups, we'll filter their items below
-      return String(opt.label || opt).toLowerCase().includes(searchQuery.toLowerCase());
+      if (opt.options) return true; // Keep groups, filter sub-options below
+      return String(opt.label || opt.value || opt).toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [options, searchable, searchQuery]);
 
@@ -45,20 +57,32 @@ const CustomSelect = ({
     return filteredOptions.reduce((acc, opt) => {
       if (opt.options) {
         return [...acc, ...opt.options.filter(subOpt => 
-          !searchQuery || String(subOpt.label || subOpt).toLowerCase().includes(searchQuery.toLowerCase())
+          !searchQuery || String(subOpt.label || subOpt.value || subOpt).toLowerCase().includes(searchQuery.toLowerCase())
         )];
       }
       return [...acc, opt];
     }, []).filter(opt => !opt.disabled);
   }, [filteredOptions, searchQuery]);
 
+  // Use bottom sheet only on mobile AND if the list is long or explicitly searchable
+  const shouldUseBottomSheet = isMobile && (searchable || options.length > 8);
+
+  // Lock background body scroll when mobile bottom sheet is active
+  useEffect(() => {
+    if (!isOpen || !shouldUseBottomSheet) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen, shouldUseBottomSheet]);
+
   const updateDropdownPosition = useCallback(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || shouldUseBottomSheet) return;
     
     const rect = containerRef.current.getBoundingClientRect();
     const spaceBelow = window.innerHeight - rect.bottom;
     const spaceAbove = rect.top;
-    
     const minDropdownHeight = 150;
     
     let openDirection = placement === "auto" 
@@ -70,16 +94,24 @@ const CustomSelect = ({
     const availableSpace = openDirection === "down" ? spaceBelow - 20 : spaceAbove - 20;
     const maxDropdownHeight = Math.max(availableSpace, minDropdownHeight);
 
+    // Safeguard position to remain within viewport boundaries
+    const viewportWidth = window.innerWidth;
+    const desiredWidth = Math.min(rect.width, viewportWidth - 24);
+    let leftPos = rect.left;
+    if (leftPos + desiredWidth > viewportWidth - 12) {
+      leftPos = Math.max(12, viewportWidth - desiredWidth - 12);
+    }
+
     setDropdownStyle({
       position: 'fixed',
-      width: `${rect.width}px`,
-      left: `${rect.left}px`,
+      width: `${desiredWidth}px`,
+      left: `${leftPos}px`,
       top: openDirection === "down" ? `${rect.bottom + 6}px` : 'auto',
       bottom: openDirection === "up" ? `${window.innerHeight - rect.top + 6}px` : 'auto',
       maxHeight: `${Math.min(maxDropdownHeight, 350)}px`,
-      zIndex: 99999
+      zIndex: 1300
     });
-  }, [placement]);
+  }, [placement, shouldUseBottomSheet]);
 
   useLayoutEffect(() => {
     if (isOpen) {
@@ -95,8 +127,8 @@ const CustomSelect = ({
       
       if (searchable && searchInputRef.current) {
         setTimeout(() => {
-          searchInputRef.current.focus();
-        }, 50);
+          searchInputRef.current?.focus();
+        }, 80);
       }
       
       const selectedIdx = flatOptions.findIndex(opt => getOptionValue(opt) === value);
@@ -113,6 +145,9 @@ const CustomSelect = ({
 
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // In bottom sheet mode, the backdrop handles outside clicks
+      if (shouldUseBottomSheet) return;
+
       if (
         containerRef.current && 
         !containerRef.current.contains(event.target) &&
@@ -127,7 +162,7 @@ const CustomSelect = ({
       document.addEventListener('mousedown', handleClickOutside);
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isOpen]);
+  }, [isOpen, shouldUseBottomSheet]);
 
   const handleKeyDown = (e) => {
     if (disabled) return;
@@ -179,14 +214,22 @@ const CustomSelect = ({
 
   const handleSelect = (opt) => {
     if (opt.disabled) return;
-    onChange({ target: { id, name: name || id, value: getOptionValue(opt) } }, opt);
+    const optVal = getOptionValue(opt);
+
+    if (typeof onChange === 'function') {
+      const syntheticEvent = { target: { id, name: name || id, value: optVal } };
+      onChange(syntheticEvent, opt);
+    }
+
     setIsOpen(false);
     buttonRef.current?.focus();
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
-    onChange({ target: { id, name: name || id, value: "" } });
+    if (typeof onChange === 'function') {
+      onChange({ target: { id, name: name || id, value: "" } });
+    }
     buttonRef.current?.focus();
   };
 
@@ -197,6 +240,8 @@ const CustomSelect = ({
   const displayLabel = value !== "" && value !== undefined && value !== null && selectedOption 
     ? getOptionLabel(selectedOption) 
     : placeholder;
+
+  const titleText = label || placeholder || "Select Option";
 
   const renderOptionItem = (opt, index = -1, isGroup = false) => {
     if (isGroup) {
@@ -212,7 +257,7 @@ const CustomSelect = ({
     
     return (
       <button
-        key={getOptionValue(opt)}
+        key={String(getOptionValue(opt))}
         type="button"
         role="option"
         aria-selected={isSelected}
@@ -224,9 +269,9 @@ const CustomSelect = ({
           handleSelect(opt);
         }}
         className={`w-full flex items-center justify-between text-left px-4 min-h-[44px] py-2 text-xs sm:text-sm font-medium transition-colors outline-none
-          ${opt.disabled ? 'opacity-50 cursor-not-allowed text-text-muted' : 'cursor-pointer'}
-          ${isSelected ? 'bg-brand/10 text-brand font-bold' : 'text-text-primary hover:bg-brand/5/80 hover:text-brand-dark'}
-          ${isHighlighted && !isSelected ? 'bg-brand/5 text-brand-dark' : ''}
+          ${opt.disabled ? 'opacity-50 cursor-not-allowed text-text-muted' : 'cursor-pointer active:bg-brand/10'}
+          ${isSelected ? 'bg-brand/10 text-brand font-bold' : 'text-text-primary hover:bg-slate-50 hover:text-brand-dark'}
+          ${isHighlighted && !isSelected && !shouldUseBottomSheet ? 'bg-slate-50 text-brand-dark' : ''}
         `}
       >
         <span className="truncate pr-4">
@@ -289,63 +334,174 @@ const CustomSelect = ({
       {typeof window !== 'undefined' && createPortal(
         <AnimatePresence>
           {isOpen && (
-            <motion.div
-              key="custom-select-dropdown"
-              ref={listboxRef}
-              initial={{ opacity: 0, scale: 0.95, y: direction === "down" ? -10 : 10 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: direction === "down" ? -10 : 10 }}
-              transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
-              style={dropdownStyle}
-              className={`bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col ${dropdownClassName}`}
-              role="listbox"
-              onKeyDown={handleKeyDown}
-            >
-              {searchable && (
-                <div className="p-2 border-b border-slate-100 bg-white sticky top-0 z-10">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      className="w-full pl-9 pr-3 py-2 bg-slate-50 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand/20 text-text-primary"
-                      placeholder="Search..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
-                          e.preventDefault();
-                          handleKeyDown(e);
+            shouldUseBottomSheet ? (
+              /* Mobile Bottom Sheet Modal */
+              <div className="fixed inset-0 z-[1290] flex items-end justify-center">
+                {/* Backdrop */}
+                <motion.div
+                  key="bottom-sheet-backdrop"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsOpen(false)}
+                  className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[1290]"
+                />
+
+                {/* Bottom Sheet Card */}
+                <motion.div
+                  key="bottom-sheet-content"
+                  ref={listboxRef}
+                  initial={{ y: "100%" }}
+                  animate={{ y: 0 }}
+                  exit={{ y: "100%" }}
+                  transition={{ type: "spring", damping: 28, stiffness: 320 }}
+                  role="listbox"
+                  className={`relative z-[1300] w-full max-w-lg bg-white rounded-t-3xl shadow-2xl border-t border-slate-100 flex flex-col max-h-[80dvh] pb-[calc(env(safe-area-inset-bottom,0px)+0.75rem)] ${dropdownClassName}`}
+                >
+                  {/* Drag / Indicator Handle */}
+                  <div className="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mt-3 mb-1 shrink-0" />
+
+                  {/* Header */}
+                  <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-text-primary font-heading truncate max-w-[240px]">
+                        {titleText}
+                      </h4>
+                      <span className="text-[10px] font-bold text-text-muted bg-slate-100 px-2 py-0.5 rounded-full">
+                        {flatOptions.length}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsOpen(false)}
+                      className="p-1.5 text-text-muted hover:text-text-primary hover:bg-slate-100 rounded-lg transition-colors"
+                      aria-label="Close"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Sticky Search Field (Always present for long lists) */}
+                  {(searchable || options.length > 8) && (
+                    <div className="p-3 border-b border-slate-100 bg-slate-50/70 shrink-0">
+                      <div className="relative">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          className="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-200/90 rounded-xl text-xs sm:text-sm outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand text-text-primary transition-all shadow-2xs"
+                          placeholder={`Search ${titleText.toLowerCase()}...`}
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                        {searchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setSearchQuery("")}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1 text-text-muted hover:text-text-primary"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Scrollable Option Items */}
+                  <div className="overflow-y-auto py-1 overscroll-contain flex-1 min-h-0 divide-y divide-slate-100/60">
+                    {filteredOptions.length === 0 ? (
+                      <div className="px-4 py-8 text-center text-xs sm:text-sm text-text-muted">
+                        No results found matching "{searchQuery}"
+                      </div>
+                    ) : (
+                      filteredOptions.map((opt) => {
+                        if (opt.options) {
+                          return (
+                            <div key={`group-container-${opt.label}`}>
+                              {renderOptionItem(opt, -1, true)}
+                              {opt.options
+                                .filter(
+                                  (subOpt) =>
+                                    !searchQuery ||
+                                    String(subOpt.label || subOpt.value || subOpt)
+                                      .toLowerCase()
+                                      .includes(searchQuery.toLowerCase())
+                                )
+                                .map((subOpt) => renderOptionItem(subOpt))}
+                            </div>
+                          );
                         }
-                      }}
-                    />
+                        return renderOptionItem(opt);
+                      })
+                    )}
                   </div>
-                </div>
-              )}
-
-              <div className="overflow-y-auto py-1 overscroll-contain flex-1 min-h-0">
-
-                {filteredOptions.length === 0 ? (
-                  <div className="px-4 py-6 text-center text-sm text-text-muted">
-                    No options found
-                  </div>
-                ) : (
-                  filteredOptions.map((opt, i) => {
-                    if (opt.options) {
-                      return (
-                        <div key={`group-container-${opt.label}`}>
-                          {renderOptionItem(opt, -1, true)}
-                          {opt.options.filter(subOpt => 
-                            !searchQuery || String(subOpt.label || subOpt).toLowerCase().includes(searchQuery.toLowerCase())
-                          ).map((subOpt) => renderOptionItem(subOpt))}
-                        </div>
-                      );
-                    }
-                    return renderOptionItem(opt);
-                  })
-                )}
+                </motion.div>
               </div>
-            </motion.div>
+            ) : (
+              /* Desktop Compact Popover / Short Mobile Menu */
+              <motion.div
+                key="custom-select-dropdown"
+                ref={listboxRef}
+                initial={{ opacity: 0, scale: 0.95, y: direction === "down" ? -8 : 8 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: direction === "down" ? -8 : 8 }}
+                transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
+                style={dropdownStyle}
+                className={`bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl shadow-xl overflow-hidden flex flex-col z-[1300] ${dropdownClassName}`}
+                role="listbox"
+                onKeyDown={handleKeyDown}
+              >
+                {searchable && (
+                  <div className="p-2 border-b border-slate-100 bg-white sticky top-0 z-10">
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted" />
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        className="w-full pl-9 pr-3 py-2 bg-slate-50 border-none rounded-xl text-xs outline-none focus:ring-2 focus:ring-brand/20 text-text-primary"
+                        placeholder="Search..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                            e.preventDefault();
+                            handleKeyDown(e);
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="overflow-y-auto py-1 overscroll-contain flex-1 min-h-0">
+                  {filteredOptions.length === 0 ? (
+                    <div className="px-4 py-6 text-center text-sm text-text-muted">
+                      No options found
+                    </div>
+                  ) : (
+                    filteredOptions.map((opt) => {
+                      if (opt.options) {
+                        return (
+                          <div key={`group-container-${opt.label}`}>
+                            {renderOptionItem(opt, -1, true)}
+                            {opt.options
+                              .filter(
+                                (subOpt) =>
+                                  !searchQuery ||
+                                  String(subOpt.label || subOpt.value || subOpt)
+                                    .toLowerCase()
+                                    .includes(searchQuery.toLowerCase())
+                              )
+                              .map((subOpt) => renderOptionItem(subOpt))}
+                          </div>
+                        );
+                      }
+                      return renderOptionItem(opt);
+                    })
+                  )}
+                </div>
+              </motion.div>
+            )
           )}
         </AnimatePresence>,
         document.body

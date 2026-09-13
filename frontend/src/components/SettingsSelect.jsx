@@ -54,8 +54,8 @@ const SettingsSelect = ({
   const descId = `${uid}-desc`;
 
   return (
-    <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50/80 relative">
-      <div className="mr-4">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl bg-slate-50/80 relative">
+      <div className="sm:mr-4">
         <span id={labelId} className="text-sm font-semibold text-text-primary block">
           {title ?? "Setting"}
         </span>
@@ -66,8 +66,8 @@ const SettingsSelect = ({
 
       </div>
 
-      <div className="relative shrink-0 flex items-center gap-2">
-        <div className="w-[180px]">
+      <div className="relative shrink-0 flex items-center gap-2 w-full sm:w-auto">
+        <div className="w-full sm:w-[180px]">
           <CustomSelect
             value={value}
             onChange={handleChange}
