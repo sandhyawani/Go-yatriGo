@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, MapPin, Loader2, Check } from "lucide-react";
+import { X, MapPin, Loader2, Check, ChevronDown } from "lucide-react";
 import axios from "../../api/axios";
 import { useAuth } from "../../context/authContext";
 import { showToast } from "../../utils/showToast";
