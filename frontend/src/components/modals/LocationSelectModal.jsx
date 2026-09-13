@@ -89,13 +89,13 @@ export const LocationSelectModal = ({
 
   const modalContent = (
     <AnimatePresence>
-      <div className="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           onClick={() => !isSaving && onClose()}
-          className="fixed inset-0 bg-slate-950/40 backdrop-blur-xs"
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
         />
 
         <motion.div
@@ -103,11 +103,11 @@ export const LocationSelectModal = ({
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: "100%", opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className="relative z-10 w-full sm:max-w-md bg-white rounded-t-[1.75rem] sm:rounded-2xl border border-slate-100 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="relative z-10 w-full sm:max-w-md bg-white rounded-t-[1.75rem] sm:rounded-2xl border border-slate-100 shadow-2xl overflow-hidden flex flex-col max-h-[88dvh]"
         >
-          <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between">
+          <div className="px-5 pt-5 pb-4 border-b border-slate-100 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-brand-50 text-brand flex items-center justify-center shrink-0">
                 <MapPin className="w-4 h-4" />
               </div>
               <div>
@@ -128,76 +128,109 @@ export const LocationSelectModal = ({
             </button>
           </div>
 
-          <form onSubmit={handleSave} className="p-5 space-y-4 overflow-y-auto">
-            {error && (
-              <div className="p-2.5 rounded-xl bg-red-50 border border-red-200/60 text-red-600 text-xs font-semibold">
-                {error}
-              </div>
-            )}
+          <form onSubmit={handleSave} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+            <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 overscroll-contain">
+              {error && (
+                <div className="p-2.5 rounded-xl bg-red-50 border border-red-200/60 text-red-600 text-xs font-semibold">
+                  {error}
+                </div>
+              )}
 
-            <div className="space-y-1.5">
-              <label htmlFor="modal-state-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
-                State
-              </label>
-              <div className="relative">
-                <select
-                  id="modal-state-select"
-                  value={selectedState}
-                  onChange={handleStateChange}
-                  disabled={isSaving}
-                  className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-text-primary font-bold text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all cursor-pointer"
-                >
-                  <option value="">Select State</option>
-                  {states.map((st) => (
-                    <option key={st} value={st}>
-                      {st}
-                    </option>
+              <div className="space-y-1.5">
+                <label htmlFor="modal-state-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
+                  State
+                </label>
+                <div className="relative">
+                  <select
+                    id="modal-state-select"
+                    value={selectedState}
+                    onChange={(e) => {
+                      setSelectedState(e.target.value);
+                      setSelectedCity("");
+                    }}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all appearance-none cursor-pointer"
+                  >
+                    <option value="">Select State</option>
+                    {states.map((state) => (
+                      <option key={state} value={state}>
+                        {state}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label htmlFor="modal-city-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
+                  City
+                </label>
+                <div className="relative">
+                  <select
+                    id="modal-city-select"
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                    disabled={!selectedState}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200/80 rounded-xl text-xs font-medium text-text-primary focus:outline-none focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all appearance-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <option value="">Select City</option>
+                    {cities.map((city) => (
+                      <option key={city} value={city}>
+                        {city}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 text-text-muted absolute right-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              </div>
+
+              {/* Quick Select Popular Cities */}
+              <div className="pt-2">
+                <span className="text-[10px] font-bold text-text-muted uppercase tracking-wider block mb-2">
+                  Popular Hubs
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { state: "Maharashtra", city: "Mumbai" },
+                    { state: "Delhi", city: "New Delhi" },
+                    { state: "Karnataka", city: "Bengaluru" },
+                    { state: "Goa", city: "Panaji" },
+                    { state: "Rajasthan", city: "Jaipur" },
+                    { state: "Himachal Pradesh", city: "Manali" },
+                  ].map((loc) => (
+                    <button
+                      key={loc.city}
+                      type="button"
+                      onClick={() => {
+                        setSelectedState(loc.state);
+                        setSelectedCity(loc.city);
+                      }}
+                      className={`px-2.5 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                        selectedCity === loc.city
+                          ? "bg-brand/10 border-brand/30 text-brand font-semibold"
+                          : "bg-slate-50 border-slate-200/60 text-text-muted hover:border-slate-300 hover:text-text-primary"
+                      }`}
+                    >
+                      {loc.city}
+                    </button>
                   ))}
-                </select>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <label htmlFor="modal-city-select" className="text-[11px] font-bold text-text-muted uppercase tracking-wider block">
-                City
-              </label>
-              <div className="relative">
-                <select
-                  id="modal-city-select"
-                  value={selectedCity}
-                  onChange={handleCityChange}
-                  disabled={!selectedState || isSaving}
-                  className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-text-primary font-bold text-sm outline-none focus:bg-white focus:border-brand focus:ring-2 focus:ring-brand/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <option value="">
-                    {selectedState ? "Select City" : "Select State first"}
-                  </option>
-                  {cities.map((ct) => (
-                    <option key={ct} value={ct}>
-                      {ct}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-text-muted font-medium">
-              Your location is optional and can be updated anytime from your profile.
-            </p>
-
-            <div className="pt-2 flex items-center justify-end gap-2.5">
+            <div className="pt-3 pb-4 px-4 sm:px-5 border-t border-slate-100 flex items-center justify-end gap-2 bg-slate-50/50 shrink-0">
               <button
                 type="button"
                 onClick={onClose}
                 disabled={isSaving}
-                className="px-4 py-2 text-xs font-bold text-text-muted hover:text-text-primary hover:bg-slate-100 rounded-xl transition-colors"
+                className="px-4 py-2.5 text-xs font-bold text-text-muted hover:text-text-primary hover:bg-slate-100 rounded-xl transition-colors min-h-[38px]"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={isSaving || !selectedState || !selectedCity}
-                className="px-5 py-2 text-xs font-bold bg-brand hover:bg-brand-dark text-white rounded-xl shadow-xs transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-5 py-2.5 text-xs font-bold bg-brand hover:bg-brand-dark text-white rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-h-[38px]"
               >
                 {isSaving ? (
                   <>

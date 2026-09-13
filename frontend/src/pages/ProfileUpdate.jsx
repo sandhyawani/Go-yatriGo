@@ -312,13 +312,13 @@ const VerificationModal = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-brand/40 backdrop-blur-sm p-4"
+      className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-3 sm:p-4"
     >
       <motion.div
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-surface rounded-2xl shadow-xl w-full max-w-md overflow-hidden flex flex-col bg-white"
+        className="bg-surface rounded-2xl shadow-xl w-full max-w-md max-h-[88dvh] overflow-y-auto overscroll-contain flex flex-col bg-white"
       >
         <div className="flex items-center justify-between p-5 border-b border-slate-100">
           <h3 className="text-lg font-bold text-text-primary">Verify Identity</h3>
@@ -1415,50 +1415,6 @@ const ProfileUpdate = () => {
           />
         )}
       </AnimatePresence>
-
-      {!isAdminMode && (
-        <nav className="fixed bottom-0 left-0 right-0 z-20 flex h-[4.5rem] items-center justify-around border-t border-slate-100 bg-white/90 backdrop-blur-md px-4 pb-safe md:hidden shadow-[0_-10px_40px_rgba(0,0,0,0.03)]">
-          <Link
-            to="/"
-            className="flex flex-col items-center gap-1 text-text-muted hover:text-brand transition-colors p-2"
-          >
-            <HomeIcon className="h-5 w-5" />
-            <span className="text-[9px] font-bold">Home</span>
-          </Link>
-          <Link
-            to="/social/buddy"
-            className="flex flex-col items-center gap-1 text-text-muted hover:text-brand transition-colors p-2"
-          >
-            <Compass className="h-5 w-5" />
-            <span className="text-[9px] font-bold">Explore</span>
-          </Link>
-          <Link
-            to="/social/buddy/new"
-            className="relative -top-5 flex flex-col items-center"
-          >
-            <div className="bg-brand text-white p-3.5 rounded-2xl shadow-lg shadow-brand/30 transform rotate-3 hover:rotate-6 transition-transform">
-              <Plus className="h-6 w-6" />
-            </div>
-          </Link>
-          <Link
-            to="/social/chat"
-            className="flex flex-col items-center gap-1 text-text-muted hover:text-brand transition-colors p-2"
-          >
-            <MessageCircle className="h-5 w-5" />
-            <span className="text-[9px] font-bold">Chat</span>
-          </Link>
-          <Link
-            to="/profile"
-            className="flex flex-col items-center gap-1 text-brand transition-colors p-2"
-          >
-            <div className="relative">
-              <UserIcon className="h-5 w-5" />
-              <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-brand rounded-full"></div>
-            </div>
-            <span className="text-[9px] font-bold">Profile</span>
-          </Link>
-        </nav>
-      )}
     </div>
   );
 };

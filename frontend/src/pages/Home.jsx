@@ -1468,13 +1468,13 @@ const Home = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand/20 backdrop-blur-xs">
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs">
 
               <motion.div
             initial={{ scale: 0.95, y: 20 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.95, y: 20 }}
-            className="bg-surface rounded-[var(--radius-card)] w-full max-w-md shadow-xl overflow-hidden border border-border">
+            className="bg-surface rounded-[var(--radius-card)] w-full max-w-md max-h-[88dvh] overflow-y-auto overscroll-contain shadow-xl border border-border flex flex-col">
 
                 <div className="flex items-center justify-between p-5 border-b border-border">
                   <h3 className="text-base font-bold text-text-primary">

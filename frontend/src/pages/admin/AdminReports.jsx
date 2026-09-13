@@ -406,13 +406,13 @@ const AdminReports = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-brand/40 p-4 backdrop-blur-sm">
+        className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 p-3 sm:p-4 backdrop-blur-sm">
 
             <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
-          className="w-full max-w-sm rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl">
+          className="w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain rounded-3xl border border-brand-200 bg-white p-5 sm:p-6 shadow-2xl">
 
               <div className="mb-2 flex items-start justify-between">
                 <h3 className="text-base font-semibold text-text-primary">{confirmModal.title}</h3>
@@ -446,13 +446,13 @@ const AdminReports = () => {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 flex items-center justify-center bg-brand/40 p-4 backdrop-blur-sm">
+        className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/60 p-3 sm:p-4 backdrop-blur-sm">
 
             <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 12, scale: 0.98 }}
-          className="w-full max-w-md rounded-3xl border border-brand-200 bg-white p-6 shadow-2xl">
+          className="w-full max-w-md max-h-[88dvh] overflow-y-auto overscroll-contain rounded-3xl border border-brand-200 bg-white p-5 sm:p-6 shadow-2xl">
 
               <div className="mb-2 flex items-start justify-between">
                 <h3 className="text-base font-semibold text-text-primary">Send warning</h3>

@@ -902,25 +902,25 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                     </div>
                   </div>
 
-                  <div className="bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-[2rem] h-[72px] flex items-center justify-between shadow-2xl px-2 mb-4 mx-3 relative">
-                    <div className="flex gap-1">
+                  <div className="bg-white/95 backdrop-blur-xl border border-slate-200/50 rounded-[2rem] h-[64px] sm:h-[72px] flex items-center justify-between shadow-2xl px-1.5 sm:px-2 mb-4 mx-2 sm:mx-3 relative">
+                    <div className="flex gap-0.5 sm:gap-1">
                       <button
               onClick={() => {
                 setTextInput("");
                 setEditingStickerId(null);
                 setActiveOverlay("caption");
               }}
-              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Text">
 
-                        <Type className="w-6 h-6" />
+                        <Type className="w-5 h-5 sm:w-6 sm:h-6" />
                       </button>
                       <button
               onClick={() => setActiveOverlay("music")}
-              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Music">
 
-                        <Music className="w-6 h-6" />
+                        <Music className="w-5 h-5 sm:w-6 sm:h-6" />
                       </button>
                       <button
               onClick={() => {
@@ -928,38 +928,38 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
                 setEditingStickerId(null);
                 setActiveOverlay("location");
               }}
-              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Location">
 
-                        <MapPin className="w-6 h-6" />
+                        <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
                       </button>
                       <button
               onClick={() => setActiveOverlay("emoji")}
-              className="w-11 h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
+              className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center text-text-primary hover:bg-background rounded-full transition-all hover:scale-105 active:scale-95 shrink-0"
               aria-label="Emoji">
 
-                        <Smile className="w-6 h-6" />
+                        <Smile className="w-5 h-5 sm:w-6 sm:h-6" />
                       </button>
                     </div>
 
-                    <div className="flex items-center gap-2 pr-1 shrink-0">
+                    <div className="flex items-center gap-1.5 sm:gap-2 pr-0.5 sm:pr-1 shrink-0">
                       <button
               onClick={() => setActiveOverlay("privacy")}
-              className="h-11 px-3 bg-background hover rounded-full text-text-primary flex items-center justify-center gap-1.5 transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
+              className="h-9 sm:h-11 px-2.5 sm:px-3 bg-background hover rounded-full text-text-primary flex items-center justify-center gap-1 sm:gap-1.5 transition-all hover:scale-105 active:scale-95 shadow-sm shrink-0"
               aria-label="Audience">
 
-                        <Users className="w-5 h-5" />
-                        <span className="text-sm font-bold">Audience</span>
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5" />
+                        <span className="text-xs sm:text-sm font-bold hidden xs:inline sm:inline">Audience</span>
                       </button>
                       <button
               onClick={handlePublish}
               disabled={isSubmitting}
-              className="bg-gradient-to-r from-brand-600 to-brand-600 text-white w-12 h-12 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 shrink-0">
+              className="bg-gradient-to-r from-brand-600 to-brand-600 text-white w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-lg disabled:opacity-50 shrink-0">
 
                         {isSubmitting ?
-                <Loader2 className="w-5 h-5 animate-spin" /> :
+                <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" /> :
 
-                <Send className="w-5 h-5 ml-0.5" />}
+                <Send className="w-4 h-4 sm:w-5 sm:h-5 ml-0.5" />}
 
                       </button>
                     </div>

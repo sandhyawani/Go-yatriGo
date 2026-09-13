@@ -284,8 +284,8 @@ const JourneyGalleryView = ({ journeyId }) => {
       </div>
 
       {isModalOpen &&
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden transform transition-all max-h-[90vh] flex flex-col">
+      <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden transform transition-all max-h-[88dvh] flex flex-col">
             <div className="relative bg-brand-50 p-5 border-b border-brand-100 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-3.5">
                 <div className="w-10 h-10 rounded-2xl bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/30">

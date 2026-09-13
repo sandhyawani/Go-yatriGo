@@ -138,9 +138,9 @@ const SafeCheckInModal = ({ journey, isOpen, onClose, onSuccess, onCheckedIn, in
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col">
-        <div className="bg-white p-5 border-b border-slate-100 text-text-primary relative">
+    <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden max-h-[88dvh] flex flex-col">
+        <div className="bg-white p-4 sm:p-5 border-b border-slate-100 text-text-primary relative shrink-0">
           <button
             onClick={onClose}
             className="absolute top-5 right-5 p-1.5 rounded-full hover:bg-background text-text-muted hover:text-text-primary transition-colors"

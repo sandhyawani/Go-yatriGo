@@ -13,7 +13,7 @@ const SosConfirmModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
+      className="fixed inset-0 z-[1200] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-xs animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget && !loading) onClose();
       }}
@@ -21,7 +21,7 @@ const SosConfirmModal = ({
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden relative animate-scale-up"
+        className="w-full max-w-md max-h-[88dvh] overflow-y-auto overscroll-contain bg-white rounded-3xl shadow-2xl border border-slate-200 relative animate-scale-up"
       >
         <div className="flex items-center justify-between p-6 pb-0">
           <div className="flex items-center gap-3">

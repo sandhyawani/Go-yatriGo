@@ -145,7 +145,7 @@ export const ChangeCoverModal = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0, y: 12 }}
           transition={{ duration: 0.2, ease: "easeOut" }}
-          className="relative w-full max-w-md rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl z-10 text-text-primary overflow-hidden"
+          className="relative w-full max-w-md max-h-[88dvh] overflow-y-auto overscroll-contain rounded-2xl sm:rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-2xl z-10 text-text-primary"
           onClick={(e) => e.stopPropagation()}
         >
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">

@@ -30,7 +30,7 @@ const TrustedContactsQuickModal = ({ isOpen, onClose }) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
+      className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
@@ -38,7 +38,7 @@ const TrustedContactsQuickModal = ({ isOpen, onClose }) => {
       <div
         role="dialog"
         aria-modal="true"
-        className="w-full sm:max-w-md bg-surface rounded-t-[20px] sm:rounded-[20px] shadow-lg border border-border-default overflow-hidden flex flex-col max-h-[85vh] animate-scale-up"
+        className="w-full sm:max-w-md bg-surface rounded-t-[20px] sm:rounded-[20px] shadow-lg border border-border-default overflow-hidden flex flex-col max-h-[88dvh] animate-scale-up"
       >
         <div className="p-5 sm:p-6 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-3">

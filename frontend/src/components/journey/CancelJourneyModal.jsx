@@ -17,8 +17,8 @@ const CancelJourneyModal = ({ isOpen, onClose, onConfirm, journeyTitle }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col transform transition-all animate-scale-in">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-md max-h-[90dvh] bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-y-auto flex flex-col transform transition-all animate-scale-in">
         <div className="absolute top-4 right-4">
           <button
             onClick={onClose}

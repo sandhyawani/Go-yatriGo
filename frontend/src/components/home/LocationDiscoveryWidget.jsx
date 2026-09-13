@@ -285,11 +285,11 @@ export const LocationDiscoveryWidget = ({ user }) => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 self-stretch sm:self-center justify-end shrink-0 pt-1 sm:pt-0">
           <button
             onClick={handleUseCurrentLocation}
             disabled={isLocating}
-            className="px-3 py-1.5 text-xs font-bold bg-brand hover:bg-brand-dark text-white rounded-xl shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
+            className="px-2.5 sm:px-3 py-1.5 text-[11px] sm:text-xs font-bold bg-brand hover:bg-brand-dark text-white rounded-xl shadow-2xs transition-all flex items-center gap-1.5 active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             {isLocating ? (
               <>

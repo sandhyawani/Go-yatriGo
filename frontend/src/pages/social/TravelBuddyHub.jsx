@@ -518,7 +518,7 @@ const TravelBuddyHub = () => {
           </div>
         </div>
 
-        <div className="sticky top-12 sm:top-16 z-30 bg-background/95 backdrop-blur-xl pb-2 pt-1 -mx-4 px-4 sm:mx-0 sm:px-0 flex items-center justify-between gap-2 sm:gap-3 select-none">
+        <div className="sticky top-12 sm:top-16 z-30 bg-background/95 backdrop-blur-xl pb-2 pt-1 flex items-center justify-between gap-2 sm:gap-3 select-none">
           {renderFilterChips()}
         </div>
 
@@ -562,20 +562,20 @@ const TravelBuddyHub = () => {
             )}
           </div>
 
-          <div className="grid grid-cols-3 lg:flex lg:items-center gap-2 w-full lg:w-auto">
+          <div className="grid grid-cols-3 sm:flex sm:items-center gap-1.5 sm:gap-2 w-full lg:w-auto">
             <div className="relative z-45" ref={locationFilterRef}>
               <button
                 onClick={() => {
                   setShowLocationDropdown(!showLocationDropdown);
                   setIsCustomSelecting(false);
                 }}
-                className="w-full text-xs font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-1.5 hover:text-brand transition-colors bg-slate-50 hover:bg-slate-100/80 px-2.5 sm:px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs hover:border-brand-300 duration-150 h-[38px]"
+                className="w-full text-[11px] sm:text-xs font-bold text-slate-800 flex items-center justify-center sm:justify-start gap-1 sm:gap-1.5 hover:text-brand transition-colors bg-slate-50 hover:bg-slate-100/80 px-1.5 sm:px-3.5 py-2 rounded-xl border border-slate-200/80 shadow-2xs hover:border-brand-300 duration-150 h-[38px]"
               >
-                <MapPin className="w-3.5 h-3.5 text-brand shrink-0" />
+                <MapPin className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-brand shrink-0" />
                 <span className="hidden sm:inline truncate">
                   {isEverywhere ? "Explore Everywhere" : currentLocationLabel}
                 </span>
-                <span className="sm:hidden truncate">
+                <span className="sm:hidden truncate text-[11px]">
                   {isEverywhere ? "Everywhere" : (urlExploreCity || user?.city || "Everywhere")}
                 </span>
                 <ChevronDown

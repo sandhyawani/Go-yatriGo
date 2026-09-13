@@ -50,9 +50,9 @@ const InviteBuddyModal = ({ journey, isOpen, onClose, onInvited }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-brand/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full sm:max-w-lg bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88dvh] sm:max-h-[88vh]">
-        <div className="bg-white p-5 border-b border-slate-100 text-text-primary flex items-center justify-between">
+    <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full sm:max-w-lg bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[88dvh]">
+        <div className="bg-white p-4 sm:p-5 border-b border-slate-100 text-text-primary flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-brand rounded-2xl shadow-md shadow-brand/20">
               <UserPlus className="w-6 h-6 text-white" />

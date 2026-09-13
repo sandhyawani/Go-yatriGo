@@ -29,8 +29,8 @@ const DeleteAccountModal = ({ isOpen, onClose, onConfirm }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-sm">
-      <div className="bg-surface rounded-[var(--radius-card)] p-6 max-w-md w-full shadow-2xl relative">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm">
+      <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 max-w-md w-full max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl relative">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 text-text-muted hover:text-text-secondary rounded-full hover:bg-background transition-colors">
           <X className="w-5 h-5" />
         </button>
@@ -79,8 +79,8 @@ const DeactivateAccountModal = ({ isOpen, onClose, onConfirm }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-sm">
-      <div className="bg-surface rounded-[var(--radius-card)] p-6 max-w-md w-full shadow-2xl relative">
+    <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm">
+      <div className="bg-surface rounded-[var(--radius-card)] p-5 sm:p-6 max-w-md w-full max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl relative">
         <button onClick={onClose} className="absolute top-4 right-4 p-2 text-text-muted hover:text-text-secondary rounded-full hover:bg-background transition-colors">
           <X className="w-5 h-5" />
         </button>

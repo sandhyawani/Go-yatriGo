@@ -151,8 +151,8 @@ const JourneyStatistics = ({ userId }) => {
       </div>
       
       {showInfoModal && (
-        <div className="fixed inset-0 bg-brand/40 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowInfoModal(false)}>
-          <div className="bg-white rounded-3xl max-w-md w-full shadow-2xl overflow-hidden border border-slate-200" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4" onClick={() => setShowInfoModal(false)}>
+          <div className="bg-white rounded-3xl max-w-md w-full max-h-[88dvh] flex flex-col shadow-2xl overflow-hidden border border-slate-200" onClick={e => e.stopPropagation()}>
             <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-brand-100 text-brand rounded-xl">

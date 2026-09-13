@@ -34,14 +34,14 @@ const TripOverlapConflictModal = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto"
+      className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/70 backdrop-blur-sm animate-fade-in overflow-y-auto overscroll-contain"
       role="dialog"
       aria-modal="true"
       aria-labelledby="overlap-conflict-title"
       onClick={onClose}
     >
       <div
-        className="relative w-full w-[calc(100%-1.5rem)] sm:w-full max-w-md max-h-[90vh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-amber-200 p-5 sm:p-6 flex flex-col items-center text-center my-auto transition-all animate-scale-in"
+        className="relative w-full max-w-md max-h-[88dvh] overflow-y-auto bg-white rounded-3xl shadow-2xl border border-amber-200 p-5 sm:p-6 flex flex-col items-center text-center my-auto transition-all animate-scale-in"
         onClick={(e) => e.stopPropagation()}
       >
         <button

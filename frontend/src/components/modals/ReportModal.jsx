@@ -56,14 +56,14 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-end lg:items-center justify-center bg-black/40 backdrop-blur-sm p-0 lg:p-4">
+    <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center bg-slate-950/60 backdrop-blur-sm p-0 sm:p-4">
       <div
-        className="w-full max-w-lg bg-white rounded-t-[2rem] lg:rounded-2xl shadow-2xl max-h-[90dvh] flex flex-col border border-gray-100"
+        className="w-full max-w-lg bg-white rounded-t-[2rem] sm:rounded-2xl shadow-2xl max-h-[88dvh] flex flex-col border border-gray-100 overflow-hidden"
         role="dialog"
         aria-modal="true"
         aria-labelledby="report-modal-title"
       >
-        <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100">
+        <div className="flex items-start justify-between px-5 py-4 border-b border-gray-100 shrink-0">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center flex-shrink-0">
               <span className="text-base leading-none">🚩</span>
@@ -88,9 +88,9 @@ const ReportModal = ({ isOpen, onClose, targetId, targetType, reportedUserId }) 
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
-          <div className="p-4 overflow-y-auto custom-scrollbar">
-            <div className="grid grid-cols-2 gap-2.5">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0 overflow-hidden">
+          <div className="p-4 overflow-y-auto overscroll-contain flex-1">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-2.5">
               {REPORT_REASONS.map((r) => {
                 const isSelected = reason === r.id;
                 const Icon = r.icon;

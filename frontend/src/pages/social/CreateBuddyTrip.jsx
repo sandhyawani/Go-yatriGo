@@ -647,6 +647,30 @@ const CreateBuddyTrip = () => {
                 </div>
               </div>
             </section>
+
+            {/* Mobile Bottom Submit Bar */}
+            <div className="lg:hidden sticky bottom-0 z-30 -mx-4 px-4 py-3 bg-white/95 backdrop-blur-md border-t border-slate-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-text-primary truncate">
+                  {formData.title?.trim() || "New Trip"}
+                </p>
+                <p className="text-[10px] text-text-muted truncate">
+                  {formData.destination?.trim() ? `📍 ${formData.destination}` : "Fill required fields"}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={!isFormValid || isSubmitting}
+                onClick={handleSubmit}
+                className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 shrink-0 ${
+                  isFormValid && !isSubmitting
+                    ? "bg-primary-600 hover:bg-primary-700 text-white shadow-md shadow-primary-600/20 active:scale-95"
+                    : "bg-slate-100 text-text-muted cursor-not-allowed"
+                }`}
+              >
+                {isSubmitting ? "Launching..." : "Launch Trip →"}
+              </button>
+            </div>
           </div>
 
           <div className="lg:col-span-4 lg:sticky lg:top-[100px] order-last">

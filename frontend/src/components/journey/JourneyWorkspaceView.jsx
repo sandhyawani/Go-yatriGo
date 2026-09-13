@@ -500,7 +500,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
 
       {isModalOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/60 backdrop-blur-xs animate-fade-in"
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs animate-fade-in"
           onClick={(e) => {
             if (e.target === e.currentTarget && !loading) {
               resetForm();
@@ -511,7 +511,7 @@ const JourneyWorkspaceView = ({ journeyId }) => {
           <div
             role="dialog"
             aria-modal="true"
-            className="w-full max-w-md bg-white rounded-3xl p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto relative animate-scale-up"
+            className="w-full max-w-md bg-white rounded-3xl p-5 sm:p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain relative animate-scale-up"
           >
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-black text-text-primary flex items-center gap-2 m-0 tracking-tight">

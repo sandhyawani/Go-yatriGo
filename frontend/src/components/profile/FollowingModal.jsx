@@ -379,13 +379,13 @@ const FollowingModal = ({
     <>
       <AnimatePresence>
         {showRelationsModal && relationsModalType === "following" && (
-          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 select-none">
+          <div className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 select-none">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-brand/50 backdrop-blur-[2px]"
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-[2px]"
               onClick={closeModal}
             />
 
@@ -394,7 +394,7 @@ const FollowingModal = ({
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 30 }}
               transition={{ type: "spring", damping: 28, stiffness: 380 }}
-              className="bg-white rounded-t-[20px] sm:rounded-2xl w-full sm:max-w-[520px] shadow-2xl relative z-10 flex flex-col h-[460px] max-h-[88vh] overflow-hidden"
+              className="bg-white rounded-t-[20px] sm:rounded-2xl w-full sm:max-w-[520px] shadow-2xl relative z-10 flex flex-col h-[85dvh] sm:h-[480px] max-h-[88dvh] overflow-hidden"
             >
               <div className="flex justify-between items-start px-5 sm:px-6 py-4 sm:py-5 border-b border-slate-100 bg-white shrink-0">
                 <div>

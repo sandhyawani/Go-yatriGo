@@ -1550,11 +1550,11 @@ const TravelBuddyDetails = () => {
       </div>
 
       {showMembersModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-lg shadow-xl border border-slate-150 space-y-4 max-h-[85vh] flex flex-col"
+            className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-lg shadow-xl border border-slate-150 space-y-4 max-h-[88dvh] flex flex-col overflow-hidden"
           >
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
@@ -1650,11 +1650,11 @@ const TravelBuddyDetails = () => {
       )}
 
       {manageAction && manageAction.type !== "warn" && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4"
+            className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain"
           >
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
               <AlertTriangle
@@ -1703,11 +1703,11 @@ const TravelBuddyDetails = () => {
       )}
 
       {showLeaveModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4"
+            className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain"
           >
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2 font-heading">
               <AlertTriangle className="w-5 h-5 text-rose-500" />
@@ -1735,11 +1735,11 @@ const TravelBuddyDetails = () => {
       )}
 
       {showCancelModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-md shadow-xl border border-slate-150 space-y-4"
+            className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-md shadow-xl border border-slate-150 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain"
           >
             <h3 className="text-lg font-bold text-slate-900 font-heading">
               Cancel this travel group?
@@ -1772,11 +1772,11 @@ const TravelBuddyDetails = () => {
       )}
 
       {showCancelJoinModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[1100] flex items-center justify-center p-3 sm:p-4">
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4"
+            className="bg-white rounded-3xl p-5 sm:p-6 w-full max-w-sm shadow-xl border border-slate-150 space-y-4 max-h-[88dvh] overflow-y-auto overscroll-contain"
           >
             <h3 className="text-base font-bold text-slate-900 font-heading">
               Withdraw Join Request?

@@ -41,13 +41,13 @@ export const ActionModals = ({
     <>
       <AnimatePresence>
         {showBlockModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowBlockModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10 text-center"
             >
               <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
                 <Ban className="w-6 h-6" />
@@ -86,57 +86,58 @@ export const ActionModals = ({
 
       <AnimatePresence>
         {showRateModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowRateModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface border border-border p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl relative z-10 text-center"
+              className="bg-surface border border-border p-6 sm:p-7 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl relative z-10 text-center"
             >
               <h3 className="text-xs font-black text-dark flex items-center justify-center gap-2 mb-2 uppercase tracking-widest">
                 <Star className="w-4 h-4 text-warning fill-warning" /> Rate Companion
               </h3>
               <p className="text-[11px] text-muted mb-6 leading-relaxed font-medium">
-                Provide travel feedback based on shared route planning, expenses sharing, and reliability.
+                How was your journey experience traveling with{" "}
+                <span className="font-bold text-dark">{profileUser?.name}</span>?
               </p>
 
-              <div className="flex items-center justify-center gap-2 mb-6">
+              <div className="flex justify-center gap-2 mb-6">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
                     type="button"
                     onClick={() => setRatingVal(star)}
-                    className="transition-transform active:scale-90"
-                    aria-label={`Rate ${star} stars`}
+                    className="p-1.5 focus:outline-none transition-transform hover:scale-125"
                   >
                     <Star
-                      className={`w-8 h-8 ${
+                      className={`w-7 h-7 ${
                         star <= ratingVal
-                          ? "fill-warning text-warning drop-shadow-sm"
-                          : "text-secondary-200"
+                          ? "text-warning fill-warning"
+                          : "text-secondary-300"
                       }`}
                     />
                   </button>
                 ))}
               </div>
 
-              <div className="flex gap-2.5 justify-center pt-2 border-t border-border">
+              <div className="flex gap-2.5 justify-center">
                 <button
                   type="button"
                   onClick={() => setShowRateModal(false)}
-                  className="px-5 py-2.5 text-muted hover:text-dark rounded-full font-bold text-[10px] uppercase tracking-widest transition-colors"
+                  className="px-5 py-2.5 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-full text-xs font-bold transition-colors"
                 >
                   Cancel
                 </button>
                 <button
+                  type="button"
                   onClick={() => {
                     handleRateUser();
                     setShowRateModal(false);
                   }}
-                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full font-bold text-[10px] uppercase tracking-widest transition-all shadow-md shadow-primary-600/25 active:scale-95"
+                  className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-primary-600/20 active:scale-95"
                 >
-                  Submit Rating
+                  Submit
                 </button>
               </div>
             </motion.div>
@@ -158,13 +159,13 @@ export const ActionModals = ({
 
       <AnimatePresence>
         {showEditPostModal && editPostData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditPostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10"
+              className="bg-surface p-6 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10"
             >
               <h3 className="text-sm font-bold text-dark mb-4 flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-primary-600" /> Edit Travel Memory
@@ -218,13 +219,13 @@ export const ActionModals = ({
 
       <AnimatePresence>
         {showDeletePostModal && postToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeletePostModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10 text-center"
             >
               <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
                 <Trash2 className="w-6 h-6" />
@@ -259,54 +260,41 @@ export const ActionModals = ({
 
       <AnimatePresence>
         {showEditStoryModal && editStoryData && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowEditStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10"
+              className="bg-surface p-6 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10"
             >
-              <h3 className="text-sm font-bold text-dark mb-4">Edit Dispatch</h3>
-              <form onSubmit={handleEditStory} className="space-y-3">
+              <h3 className="text-sm font-bold text-dark mb-4 flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-primary-600" /> Edit Dispatch
+              </h3>
+              <form onSubmit={handleEditStory} className="space-y-4">
                 <textarea
-                  placeholder="Caption"
-                  value={editStoryData.caption || ""}
+                  placeholder="Dispatch text..."
+                  value={editStoryData.content || ""}
                   onChange={(e) =>
                     setEditStoryData({
                       ...editStoryData,
-                      caption: e.target.value,
+                      content: e.target.value,
                     })
                   }
-                  rows="2"
-                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
+                  rows="4"
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none font-medium leading-relaxed"
                 />
                 <CustomSelect
-                  value={editStoryData.captionPosition || "center"}
-                  onChange={(e) =>
+                  value={editStoryData.backgroundColor || "brand"}
+                  onChange={(val) =>
                     setEditStoryData({
                       ...editStoryData,
-                      captionPosition: e.target.value,
+                      backgroundColor: val,
                     })
                   }
-                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
+                  label="Vibe Theme"
                   options={[
-                    { label: "Top", value: "top" },
-                    { label: "Center", value: "center" },
-                    { label: "Bottom", value: "bottom" },
-                  ]}
-                />
-                <CustomSelect
-                  value={editStoryData.captionColor || "white"}
-                  onChange={(e) =>
-                    setEditStoryData({
-                      ...editStoryData,
-                      captionColor: e.target.value,
-                    })
-                  }
-                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
-                  options={[
-                    { label: "Pure White", value: "white" },
+                    { label: "Classic Brand (Deep Blue)", value: "brand" },
                     { label: "Deep Charcoal", value: "black" },
                     { label: "Sky Blue (Brand Pop)", value: "sky" },
                     { label: "Ruby Coral Pop", value: "ruby" },
@@ -339,13 +327,13 @@ export const ActionModals = ({
 
       <AnimatePresence>
         {showDeleteStoryModal && storyToDelete && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-brand/50 backdrop-blur-xs select-none">
+          <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
             <div className="fixed inset-0" onClick={() => setShowDeleteStoryModal(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm shadow-2xl border border-border relative z-10 text-center"
+              className="bg-surface p-6 sm:p-7 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10 text-center"
             >
               <div className="w-12 h-12 bg-red-50 text-danger rounded-full flex items-center justify-center mx-auto mb-3">
                 <Trash2 className="w-6 h-6" />

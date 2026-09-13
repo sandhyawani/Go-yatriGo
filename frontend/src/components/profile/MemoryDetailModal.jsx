@@ -182,7 +182,7 @@ export const MemoryDetailModal = ({
     <>
       <AnimatePresence>
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 md:p-6 bg-slate-950/65 backdrop-blur-sm select-none"
+          className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-0 sm:p-4 md:p-6 bg-slate-950/65 backdrop-blur-sm select-none"
           onClick={() => setSelectedMemory(null)}
         >
           <motion.div
@@ -190,7 +190,7 @@ export const MemoryDetailModal = ({
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.96, opacity: 0, y: 12 }}
             transition={{ duration: 0.2 }}
-            className="relative w-full max-w-[620px] max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-200 bg-white shadow-2xl text-text-primary flex flex-col"
+            className="relative w-full max-w-[620px] max-h-[88dvh] overflow-y-auto overscroll-contain rounded-t-3xl sm:rounded-3xl border border-slate-200 bg-white shadow-2xl text-text-primary flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 z-40 flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 bg-white/95 backdrop-blur-md border-b border-slate-100 min-h-[58px]">

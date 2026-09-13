@@ -54,7 +54,7 @@ const SidebarLayout = ({ children }) => {
   }, [isHomePage]);
 
   return (
-    <div className="flex flex-col lg:flex-row h-screen max-h-screen lg:overflow-hidden bg-slate-100 selection:bg-brand/30">
+    <div className="flex flex-col lg:flex-row h-[100dvh] max-h-[100dvh] lg:overflow-hidden bg-slate-100 selection:bg-brand/30">
       <DesktopSidebar />
       <MobileTopHeader />
 
