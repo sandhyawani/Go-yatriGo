@@ -405,37 +405,7 @@ const Login = () => {
               <img
               src={stickerPack}
               alt="Travel Hero"
-              className="w-full max-h-[80vh] h-full object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700 opacity-80" />
-
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-8 bg-black/20">
-                <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5, duration: 0.8 }}
-                className="flex items-center gap-2 mb-4 px-4 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/20">
-
-                  <Sparkles className="w-3.5 h-3.5 text-brand-400" />
-                  <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white">
-                    Explore the Soul of India
-                  </span>
-                </motion.div>
-                <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7, duration: 0.8 }}
-                className="text-5xl sm:text-6xl font-black tracking-tighter leading-none italic text-white drop-shadow-2xl">
-
-                  Incredible <br />
-                  <span className="text-brand-400">Subcontinent.</span>
-                </motion.h2>
-                <div className="mt-8 flex items-center gap-4 text-white/30">
-                  <div className="h-[1px] w-8 bg-white/20" />
-                  <p className="text-[10px] font-black uppercase tracking-[0.4em]">
-                    Go YatriGo Elite Experience
-                  </p>
-                  <div className="h-[1px] w-8 bg-white/20" />
-                </div>
-              </div>
+              className="w-full max-h-[80vh] h-full object-cover rounded-[2rem] transform group-hover:scale-[1.02] transition-transform duration-700" />
             </div>
           </motion.div>
         </div>
