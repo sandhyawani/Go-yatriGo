@@ -23,7 +23,6 @@ import {
 
 import Spinner from "../components/spinner/LoadingSpinner";
 import stickerPack from "../assets/images/login.jpg";
-import travelBg from "../assets/images/bg.jpg";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({
@@ -33,6 +32,7 @@ const Login = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [capsLockOn, setCapsLockOn] = useState(false);
+
   const [errors, setErrors] = useState({
     email: "",
     password: "",
@@ -470,15 +470,9 @@ const Login = () => {
 
   return (
     <div className="min-h-[calc(100vh-40px)] bg-slate-50 flex font-sans overflow-hidden relative">
-      {/* Background */}
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center opacity-10 scale-105"
-        style={{
-          backgroundImage: `url(${travelBg})`,
-        }}
-      />
+      {/* Clean background without watermark/image */}
 
-      <div className="absolute inset-0 z-10 bg-gradient-to-br from-white/60 via-white/80 to-slate-50" />
+      <div className="absolute inset-0 z-10 bg-gradient-to-br from-white via-white to-slate-50" />
 
       <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-brand/10 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none" />
 
