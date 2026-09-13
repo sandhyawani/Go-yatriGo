@@ -286,6 +286,7 @@ export const ActionModals = ({
                 />
                 <CustomSelect
                   value={editStoryData.backgroundColor || "brand"}
+                  onChangeMode="value"
                   onChange={(val) =>
                     setEditStoryData({
                       ...editStoryData,

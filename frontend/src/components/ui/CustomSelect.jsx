@@ -21,7 +21,8 @@ const CustomSelect = ({
   className = "",
   dropdownClassName = "",
   optionRenderer = null,
-  placement = "auto"
+  placement = "auto",
+  onChangeMode = "event" // "event" | "value"
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -209,33 +210,61 @@ const CustomSelect = ({
     }
   };
 
-  const getOptionValue = (opt) => typeof opt === 'object' && opt !== null ? (opt.value !== undefined ? opt.value : opt.label) : opt;
-  const getOptionLabel = (opt) => typeof opt === 'object' && opt !== null ? (opt.label !== undefined ? opt.label : opt.value) : opt;
+  const getOptionValue = useCallback((opt) => {
+    if (typeof opt === 'object' && opt !== null) {
+      if (opt.value !== undefined) return opt.value;
+      if (opt.id !== undefined) return opt.id;
+      if (opt.label !== undefined) return opt.label;
+      if (opt.name !== undefined) return opt.name;
+    }
+    return opt;
+  }, []);
+
+  const getOptionLabel = useCallback((opt) => {
+    if (typeof opt === 'object' && opt !== null) {
+      if (opt.label !== undefined) return opt.label;
+      if (opt.name !== undefined) return opt.name;
+      if (opt.value !== undefined) return opt.value;
+      if (opt.id !== undefined) return opt.id;
+    }
+    return opt;
+  }, []);
 
   const handleSelect = (opt) => {
     if (opt.disabled) return;
     const optVal = getOptionValue(opt);
 
     if (typeof onChange === 'function') {
-      const syntheticEvent = { target: { id, name: name || id, value: optVal } };
-      onChange(syntheticEvent, opt);
+      if (onChangeMode === "value") {
+        onChange(optVal, opt);
+      } else {
+        onChange({ target: { id, name: name || id, value: optVal } }, opt);
+      }
     }
 
     setIsOpen(false);
+    setSearchQuery("");
     buttonRef.current?.focus();
   };
 
   const handleClear = (e) => {
     e.stopPropagation();
     if (typeof onChange === 'function') {
-      onChange({ target: { id, name: name || id, value: "" } });
+      if (onChangeMode === "value") {
+        onChange("", null);
+      } else {
+        onChange({ target: { id, name: name || id, value: "" } });
+      }
     }
+    setSearchQuery("");
     buttonRef.current?.focus();
   };
 
   const selectedOption = useMemo(() => {
-    return flatOptions.find(opt => getOptionValue(opt) === value) || value;
-  }, [value, flatOptions]);
+    return flatOptions.find(
+      opt => String(getOptionValue(opt)) === String(value)
+    ) || value;
+  }, [value, flatOptions, getOptionValue]);
   
   const displayLabel = value !== "" && value !== undefined && value !== null && selectedOption 
     ? getOptionLabel(selectedOption) 
@@ -246,13 +275,13 @@ const CustomSelect = ({
   const renderOptionItem = (opt, index = -1, isGroup = false) => {
     if (isGroup) {
       return (
-        <div key={`group-${opt.label}`} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-text-muted bg-slate-50/50">
-          {opt.label}
+        <div key={`group-${opt.label || opt.name}`} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-text-muted bg-slate-50/50">
+          {opt.label || opt.name}
         </div>
       );
     }
     
-    const isSelected = getOptionValue(opt) === value;
+    const isSelected = String(getOptionValue(opt)) === String(value);
     const isHighlighted = flatOptions.indexOf(opt) === highlightedIndex;
     
     return (

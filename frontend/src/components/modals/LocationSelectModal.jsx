@@ -147,8 +147,11 @@ export const LocationSelectModal = ({
                   label="Select State"
                   value={selectedState}
                   onChange={(e) => {
-                    setSelectedState(e.target.value);
-                    setSelectedCity("");
+                    const nextState = e.target.value;
+                    if (nextState !== selectedState) {
+                      setSelectedState(nextState);
+                      setSelectedCity("");
+                    }
                     if (error) setError("");
                   }}
                   searchable={true}
