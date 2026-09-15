@@ -17,6 +17,7 @@ const TravelGroup = require("../models/TravelGroup");
 const imageService = require("../utils/imageService");
 const { isValidObjectId } = require("../utils/validateObjectId");
 const { toHttps, normalizeUserUrls, normalizeJourneyUrls } = require("../utils/toHttps");
+const { isActuallyVerified } = require("../utils/verificationHelper");
 
 exports.getAutoCoverPreview = async (req, res) => {
   try {
@@ -437,7 +438,11 @@ exports.getJourneyById = async (req, res) => {
       });
     }
 
-    journey = await syncJourneyStatus(journey);
+    try {
+      journey = await syncJourneyStatus(journey);
+    } catch (syncErr) {
+      console.error("Non-fatal: syncJourneyStatus failed for journey", id, syncErr?.message || syncErr);
+    }
 
     journey = await Journey.findById(id).
     populate("creator", "name username profilePic pic img avatar bio isVerified").
