@@ -114,26 +114,33 @@ const JourneyStatusWidget = ({ journey, user }) => {
       try {
         const apiKey = process.env.REACT_APP_WEATHER_API_KEY;
         if (apiKey) {
-          const res = await fetch(
-            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-              destName
-            )}&appid=${apiKey}&units=metric`
-          );
-          if (res.ok) {
-            const data = await res.json();
-            if (data?.main && isMounted) {
-              setWeather({
-                temp: Math.round(data.main.temp),
-                desc: data.weather?.[0]?.description || "Overcast clouds"
-              });
-              return;
-            }
+          const queriesToTry = [destName];
+          if (!destName.toLowerCase().includes(",in") && !destName.toLowerCase().includes(", india")) {
+            queriesToTry.push(`${destName},IN`);
+          }
+          for (const q of queriesToTry) {
+            try {
+              const res = await fetch(
+                `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
+                  q
+                )}&appid=${apiKey}&units=metric`
+              );
+              if (res.ok) {
+                const data = await res.json();
+                if (data?.main && isMounted) {
+                  setWeather({
+                    temp: Math.round(data.main.temp),
+                    desc: data.weather?.[0]?.description || "Clear sky"
+                  });
+                  return;
+                }
+              }
+            } catch (e) {}
           }
         }
-      } catch (err) {
-      }
+      } catch (err) {}
       if (isMounted) {
-        setWeather({ temp: 32, desc: "Overcast clouds" });
+        setWeather({ temp: 28, desc: "Clear sky" });
       }
     };
     fetchWeather();

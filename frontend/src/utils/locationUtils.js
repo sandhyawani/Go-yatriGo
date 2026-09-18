@@ -6,6 +6,18 @@ export const formatLocation = (location) => {
 };
 
 export const WEATHER_LOCATION_ALIASES = {
+  malwan: "Malvan",
+  malvan: "Malvan",
+  tarkarli: "Malvan",
+  sindhudurg: "Malvan",
+  devgad: "Devgad",
+  vengurla: "Vengurla",
+  sawantwadi: "Sawantwadi",
+  ganpatipule: "Ratnagiri",
+  matheran: "Matheran",
+  mahabaleshwar: "Mahabaleshwar",
+  panchgani: "Panchgani",
+  bhandardara: "Igatpuri",
   rajgad: "Pune",
   sinhagad: "Pune",
   torna: "Pune",
@@ -28,7 +40,29 @@ export const WEATHER_LOCATION_ALIASES = {
   "prati shirdi": "Pune",
   kaas: "Satara",
   kokan: "Ratnagiri",
-  konkan: "Ratnagiri"
+  konkan: "Ratnagiri",
+  pondicherry: "Puducherry",
+  calicut: "Kozhikode",
+  trivandrum: "Thiruvananthapuram",
+  cochin: "Kochi",
+  bangalore: "Bengaluru",
+  baroda: "Vadodara",
+  banaras: "Varanasi",
+  kashi: "Varanasi",
+  gurgaon: "Gurugram",
+  bombay: "Mumbai",
+  madras: "Chennai",
+  calcutta: "Kolkata",
+  mysore: "Mysuru",
+  ooty: "Udhagamandalam",
+  dharamsala: "Dharamshala",
+  kasol: "Kullu",
+  spiti: "Kaza",
+  nubra: "Leh",
+  pangong: "Leh",
+  gulmarg: "Srinagar",
+  pahalgam: "Anantnag",
+  sonamarg: "Ganderbal"
 };
 
 export const resolveWeatherQuery = (destination) => {
