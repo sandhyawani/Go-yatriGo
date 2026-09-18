@@ -12,7 +12,7 @@ const LikeButton = ({ post, hasFelt, feltLoadingMap = {}, handleFelt }) => {
       onClick={() => postId && handleFelt && handleFelt(postId)}
       disabled={isLoading}
       aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
-      className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition-all duration-200 active:scale-95 hover:scale-[1.02] sm:px-3
+      className={`flex items-center gap-1 sm:gap-1.5 rounded-xl px-2 py-1.5 text-[11px] sm:text-xs font-bold transition-all duration-200 active:scale-95 hover:scale-[1.02] sm:px-3 whitespace-nowrap shrink-0
         ${
           hasFelt
             ? "bg-amber-100/90 text-amber-900 border border-amber-300/80 shadow-2xs"
@@ -22,10 +22,10 @@ const LikeButton = ({ post, hasFelt, feltLoadingMap = {}, handleFelt }) => {
       `}
     >
       {isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-amber-600" />
+        <Loader2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin text-amber-600 shrink-0" />
       ) : (
         <Sparkles
-          className={`h-4 w-4 transition-transform duration-300 ${
+          className={`h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0 transition-transform duration-300 ${
             hasFelt ? "fill-amber-500 text-amber-500 scale-110" : "text-slate-400"
           }`}
         />
@@ -33,7 +33,7 @@ const LikeButton = ({ post, hasFelt, feltLoadingMap = {}, handleFelt }) => {
       <span>Felt</span>
       {likesCount > 0 && (
         <span
-          className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[10px] font-extrabold ${
+          className={`ml-0.5 rounded-full px-1.5 py-0.2 text-[9.5px] sm:text-[10px] font-extrabold ${
             hasFelt ? "bg-amber-200/80 text-amber-950" : "bg-slate-200/70 text-slate-700"
           }`}
         >

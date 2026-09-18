@@ -8,6 +8,7 @@ import { Search } from "lucide-react";
 import { useAuth } from "../../context/authContext";
 
 import AudioManager from "../../utils/AudioManager";
+import { toHttps } from "../../utils/toHttps";
 import StorySticker from "../story/StorySticker";
 import Avatar from "../common/Avatar";
 

@@ -17,8 +17,8 @@ const FeedInteractions = ({
   handleSaveToggle,
 }) => {
   return (
-    <div className="flex w-full items-center justify-between rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/40 via-white to-slate-50/60 px-2 sm:px-3 py-1.5 my-2 shadow-2xs">
-      <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
+    <div className="flex w-full items-center justify-between rounded-2xl border border-amber-200/60 bg-gradient-to-r from-amber-50/40 via-white to-slate-50/60 px-1.5 sm:px-3 py-1.5 my-2 shadow-2xs">
+      <div className="flex items-center gap-0.5 sm:gap-1.5 min-w-0">
         <LikeButton
           post={post}
           hasFelt={hasFelt}

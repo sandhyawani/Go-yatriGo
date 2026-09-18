@@ -9,6 +9,7 @@ import getCroppedImg from "../../utils/cropImage";
 import EmojiPicker from "emoji-picker-react";
 
 import AudioManager from "../../utils/AudioManager";
+import { toHttps } from "../../utils/toHttps";
 
 const MAX_IMAGE_SIZE = 10 * 1024 * 1024;
 const MAX_VIDEO_SIZE = 25 * 1024 * 1024;
@@ -1455,8 +1456,7 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                           setTimeout(() => {
                             if (audioRef.current) {
                               AudioManager.stopAll();
-                              audioRef.current.src =
-                              song.previewUrl;
+                              audioRef.current.src = toHttps(song.previewUrl);
                               audioRef.current
                               .play()
                               .catch((e) => console.warn(e));
