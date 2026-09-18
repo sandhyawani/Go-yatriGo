@@ -35,8 +35,9 @@ Experience Go YatriGo live in action:
 ## ✨ Key Features
 
 - 🎒 **Journey Hub & Group Squads**: Create, discover, and organize trips with custom dates, destinations, companion limits, approval workflows, and host management.
+- 📱 **Mobile-Optimized Experience**: Ultra-compact, clean, and modern responsive UI designed for 320px–430px+ screens with bottom-safe action bars and simplified multi-step trip creation.
 - 💬 **Real-Time Interactive Chat**: 1-on-1 private messaging and journey group rooms with live online presence, typing indicators, read receipts, and media attachments.
-- 📸 **Travel Memories & Dispatches**: Share photos, ephemeral stories with background music & stickers, and react with likes (*"Felt vibes"*) and comments.
+- 📸 **Travel Memories & Dispatches**: Share photos, stories with background music & stickers, and react with likes (*"Felt vibes"*) and comments.
 - 🛡️ **Safety SOS & Journey Timeline**: Real-time milestone check-ins, automated conflict alerts for overlapping trips, and instant SOS emergency broadcasting.
 - 👥 **Social Network & Community**: User profiles, follow/unfollow mechanisms, verification badges, private account requests, and safety blocking.
 - 🗺️ **Location Exploration**: Discover active journeys and travelers filtered by city, state, or nationwide radius.

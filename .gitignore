@@ -35,10 +35,11 @@ e2e-tests/.env
 !backend/.env.example
 !frontend/.env.example
 
-# Temporary uploads and archives
+# Temporary uploads, scratch, and archives
 uploads/
 backend/uploads/
 frontend/uploads/
+scratch/
 *.zip
 *.tar.gz
 *.tgz
@@ -56,11 +57,14 @@ yarn-error.log*
 coverage/
 .cache/
 .eslintcache
+.turbo/
+*.tsbuildinfo
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# Editor directories
+# Editor and AI directories
 .vscode/
 .idea/
+.gemini/
