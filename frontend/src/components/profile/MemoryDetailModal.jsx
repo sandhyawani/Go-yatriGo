@@ -8,12 +8,15 @@ import { toHttps } from "../../utils/toHttps";
 import { renderClickableText } from "../home/feed/utils/feedHelpers";
 import ChangeCoverModal from "../modals/ChangeCoverModal";
 import { isActuallyVerified } from "../../utils/verification";
+import AudioManager from "../../utils/AudioManager";
+import { showToast } from "../../utils/showToast";
 
 export const MemoryDetailModal = ({
   selectedMemory,
   setSelectedMemory,
   currentUser,
   profileUser,
+  savedMemoryIds,
   savedPostIds,
   saveLoadingMap = {},
   feltLoadingMap = {},
@@ -21,10 +24,12 @@ export const MemoryDetailModal = ({
   isSubmittingComment = {},
   commentText = {},
   setCommentText,
+  activeCommentMemoryId,
   activeCommentPost,
   playingAudioId,
   journeyLikeAnim,
   handleFelt,
+  handleMemoryTap,
   handlePostTap,
   handleOpenComments,
   handleDispatch,
@@ -33,8 +38,11 @@ export const MemoryDetailModal = ({
   handleCommentSubmit,
   toggleAudio,
   setReportModal,
+  setEditMemoryData,
   setEditPostData,
+  setShowEditMemoryModal,
   setShowEditPostModal,
+  handleDeleteMemory,
   handleDeletePost,
   handleAvatarError,
   audioRefs,
@@ -44,6 +52,15 @@ export const MemoryDetailModal = ({
   const [showChangeCoverModal, setShowChangeCoverModal] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const menuRef = useRef(null);
+  const modalAudioRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (modalAudioRef.current && AudioManager.getCurrentAudioNode() === modalAudioRef.current) {
+        AudioManager.stopAll();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (selectedMemory) {
@@ -57,12 +74,13 @@ export const MemoryDetailModal = ({
 
   useEffect(() => {
     if (selectedMemory) {
-      const postId = selectedMemory._id || selectedMemory.id;
-      if (postId && handleOpenComments && activeCommentPost !== postId) {
-        handleOpenComments(postId);
+      const currentMemId = selectedMemory._id || selectedMemory.id;
+      const activeCommentId = activeCommentMemoryId || activeCommentPost;
+      if (currentMemId && handleOpenComments && activeCommentId !== currentMemId) {
+        handleOpenComments(currentMemId);
       }
     }
-  }, [selectedMemory, handleOpenComments, activeCommentPost]);
+  }, [selectedMemory, handleOpenComments, activeCommentMemoryId, activeCommentPost]);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -80,7 +98,7 @@ export const MemoryDetailModal = ({
 
   if (!selectedMemory) return null;
 
-  const postId = (selectedMemory._id || selectedMemory.id)?.toString();
+  const memoryId = (selectedMemory._id || selectedMemory.id)?.toString();
   const myUserId = (currentUser?._id || currentUser?.id)?.toString();
   const memoryAuthorId = (
     selectedMemory.userId?._id ||
@@ -99,7 +117,8 @@ export const MemoryDetailModal = ({
       )
     : false;
 
-  const isSaved = savedPostIds ? savedPostIds.has(postId) : false;
+  const activeSavedSet = savedMemoryIds || savedPostIds;
+  const isSaved = activeSavedSet ? activeSavedSet.has(memoryId) : false;
 
   const authorName =
     selectedMemory.userName ||
@@ -165,7 +184,7 @@ export const MemoryDetailModal = ({
       ? selectedMemory.song?.artist
       : null);
 
-  const isAudioPlaying = playingAudioId === postId;
+  const isAudioPlaying = playingAudioId === memoryId;
 
   const handleCoverUpdated = (updatedMemory) => {
     setSelectedMemory((prev) => ({
@@ -276,10 +295,14 @@ export const MemoryDetailModal = ({
                               type="button"
                               onClick={() => {
                                 setShowMenu(false);
-                                if (setEditPostData) {
+                                if (setEditMemoryData) {
+                                  setEditMemoryData(selectedMemory);
+                                } else if (setEditPostData) {
                                   setEditPostData(selectedMemory);
                                 }
-                                if (setShowEditPostModal) {
+                                if (setShowEditMemoryModal) {
+                                  setShowEditMemoryModal(true);
+                                } else if (setShowEditPostModal) {
                                   setShowEditPostModal(true);
                                 }
                               }}
@@ -305,7 +328,9 @@ export const MemoryDetailModal = ({
                               type="button"
                               onClick={() => {
                                 setShowMenu(false);
-                                if (handleDeletePost) {
+                                if (handleDeleteMemory) {
+                                  handleDeleteMemory(selectedMemory);
+                                } else if (handleDeletePost) {
                                   handleDeletePost(selectedMemory);
                                 }
                               }}
@@ -323,7 +348,7 @@ export const MemoryDetailModal = ({
                               if (setReportModal) {
                                 setReportModal({
                                   isOpen: true,
-                                  targetId: postId,
+                                  targetId: memoryId,
                                   targetType: "post",
                                   reportedUserId:
                                     selectedMemory.userId?._id ||
@@ -375,8 +400,18 @@ export const MemoryDetailModal = ({
                   <button
                     type="button"
                     aria-label={isAudioPlaying ? "Pause music" : "Play music"}
-                    onClick={() => {
-                      if (toggleAudio) toggleAudio(postId);
+                    onClick={async () => {
+                      if (!memoryId || !modalAudioRef.current) return;
+                      if (AudioManager.isLocked()) return;
+                      if (isAudioPlaying || AudioManager.isPlaying(memoryId)) {
+                        AudioManager.pause(memoryId);
+                      } else {
+                        try {
+                          await AudioManager.play(memoryId, modalAudioRef.current, { source: "modal" });
+                        } catch (err) {
+                          showToast.error("Could not play this song");
+                        }
+                      }
                     }}
                     className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary-600 text-white shadow-xs hover:bg-primary-700 active:scale-95 transition-transform ml-2"
                   >
@@ -389,13 +424,18 @@ export const MemoryDetailModal = ({
 
                   {audioSrc && (
                     <audio
-                      ref={(el) => {
-                        if (audioRefs && audioRefs.current) {
-                          audioRefs.current[postId] = el;
-                        }
-                      }}
+                      ref={modalAudioRef}
                       src={audioSrc}
                       preload="none"
+                      onEnded={() => {
+                        AudioManager.stop(memoryId);
+                      }}
+                      onError={(e) => {
+                        AudioManager.stop(memoryId);
+                        if (process.env.NODE_ENV === "development") {
+                          console.warn("MemoryDetailModal audio element error:", audioSrc, e);
+                        }
+                      }}
                     />
                   )}
                 </div>
@@ -403,7 +443,7 @@ export const MemoryDetailModal = ({
             )}
 
             <div className="px-4 sm:px-5 pt-2.5 select-none">
-              <div className="group/cover relative w-full aspect-[16/9] max-h-[340px] overflow-hidden rounded-2xl bg-background border border-slate-200">
+              <div className="group/cover relative w-full aspect-[4/3] max-h-[420px] overflow-hidden rounded-2xl bg-slate-950 border border-slate-200">
                 {mediaList.length === 0 ? (
                   <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-primary-50/40 via-white to-primary-50/20">
                     <MapPin className="w-8 h-8 text-primary-400 mb-2" />
@@ -419,14 +459,22 @@ export const MemoryDetailModal = ({
                       controls
                       playsInline
                       preload="metadata"
-                      className="w-full h-full object-cover bg-black"
+                      className="w-full h-full object-contain relative z-10 bg-black"
                     />
                   ) : (
-                    <img
-                      src={mediaList[0]}
-                      alt={selectedMemory.caption || "Travel memory"}
-                      className="w-full h-full object-cover"
-                    />
+                    <>
+                      <img
+                        src={mediaList[0]}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-50"
+                      />
+                      <img
+                        src={mediaList[0]}
+                        alt={selectedMemory.caption || "Travel memory"}
+                        className="w-full h-full object-contain relative z-10"
+                      />
+                    </>
                   )
                 ) : (
                   <div className="relative w-full h-full">
@@ -435,14 +483,22 @@ export const MemoryDetailModal = ({
                         src={`${mediaList[activeMediaIndex]}#t=0.1`}
                         controls
                         playsInline
-                        className="w-full h-full object-cover bg-black"
+                        className="w-full h-full object-contain relative z-10 bg-black"
                       />
                     ) : (
-                      <img
-                        src={mediaList[activeMediaIndex] || mediaList[0]}
-                        alt={`Photo ${activeMediaIndex + 1}`}
-                        className="w-full h-full object-cover"
-                      />
+                      <>
+                        <img
+                          src={mediaList[activeMediaIndex] || mediaList[0]}
+                          alt=""
+                          aria-hidden="true"
+                          className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-50"
+                        />
+                        <img
+                          src={mediaList[activeMediaIndex] || mediaList[0]}
+                          alt={`Photo ${activeMediaIndex + 1}`}
+                          className="w-full h-full object-contain relative z-10"
+                        />
+                      </>
                     )}
 
                     <button
@@ -453,7 +509,7 @@ export const MemoryDetailModal = ({
                           prev === 0 ? mediaList.length - 1 : prev - 1
                         );
                       }}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-colors"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-colors z-20"
                     >
                       <ChevronLeft className="w-4 h-4" />
                     </button>
@@ -466,12 +522,12 @@ export const MemoryDetailModal = ({
                           (prev) => (prev + 1) % mediaList.length
                         );
                       }}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-colors"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur-sm hover:bg-black/70 transition-colors z-20"
                     >
                       <ChevronRight className="w-4 h-4" />
                     </button>
 
-                    <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm">
+                    <div className="absolute bottom-2.5 right-2.5 rounded-full bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-sm z-20">
                       {activeMediaIndex + 1} / {mediaList.length}
                     </div>
                   </div>
@@ -484,14 +540,14 @@ export const MemoryDetailModal = ({
                       e.stopPropagation();
                       setShowChangeCoverModal(true);
                     }}
-                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/85 text-white text-[11px] font-bold backdrop-blur-md shadow-md opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95"
+                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/85 text-white text-[11px] font-bold backdrop-blur-md shadow-md opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95 z-20"
                   >
                     <Camera className="w-3.5 h-3.5 text-primary-300" />
                     <span>Change Cover</span>
                   </button>
                 )}
 
-                {journeyLikeAnim?.postId === postId && (
+                {journeyLikeAnim?.postId === memoryId && (
                   <motion.div
                     initial={{ scale: 0, opacity: 0 }}
                     animate={{ scale: [0.8, 1.3, 1], opacity: [0, 1, 0] }}
@@ -560,9 +616,9 @@ export const MemoryDetailModal = ({
               <div className="flex items-center gap-5 sm:gap-6">
                 <button
                   type="button"
-                  disabled={feltLoadingMap[postId]}
+                  disabled={feltLoadingMap[memoryId]}
                   onClick={() => {
-                    if (handleFelt) handleFelt(postId);
+                    if (handleFelt) handleFelt(memoryId);
                   }}
                   className={`inline-flex items-center gap-1.5 text-xs font-bold transition-transform active:scale-95 ${
                     hasFelt
@@ -588,7 +644,7 @@ export const MemoryDetailModal = ({
                 <button
                   type="button"
                   onClick={() => {
-                    if (handleDispatch) handleDispatch(postId);
+                    if (handleDispatch) handleDispatch(memoryId);
                   }}
                   className="inline-flex items-center gap-1.5 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-95"
                 >
@@ -599,9 +655,9 @@ export const MemoryDetailModal = ({
 
               <button
                 type="button"
-                disabled={saveLoadingMap[postId]}
+                disabled={saveLoadingMap[memoryId]}
                 onClick={() => {
-                  if (handleSaveToggle) handleSaveToggle(postId);
+                  if (handleSaveToggle) handleSaveToggle(memoryId);
                 }}
                 className={`inline-flex items-center gap-1.5 text-xs font-bold transition-transform active:scale-95 ${
                   isSaved
@@ -625,7 +681,7 @@ export const MemoryDetailModal = ({
                 Thoughts & Comments ({comments.length})
               </h4>
 
-              {commentsLoadingMap[postId] && comments.length === 0 ? (
+              {commentsLoadingMap[memoryId] && comments.length === 0 ? (
                 <div className="py-6 flex items-center justify-center gap-2 text-xs font-semibold text-text-muted">
                   <Loader2 className="w-4 h-4 animate-spin text-primary-600" />
                   <span>Loading thoughts...</span>
@@ -743,7 +799,7 @@ export const MemoryDetailModal = ({
                             aria-label="Delete comment"
                             onClick={() => {
                               if (handleDeleteComment) {
-                                handleDeleteComment(postId, commentId);
+                                handleDeleteComment(memoryId, commentId);
                               }
                             }}
                             className="absolute right-2 top-2 p-1 text-text-muted hover:text-rose-500 opacity-0 group-hover/comment:opacity-100 transition-opacity"
@@ -759,7 +815,7 @@ export const MemoryDetailModal = ({
 
               <form
                 onSubmit={(e) => {
-                  if (handleCommentSubmit) handleCommentSubmit(e, postId);
+                  if (handleCommentSubmit) handleCommentSubmit(e, memoryId);
                 }}
                 className="mt-3 flex items-center gap-2 pt-2 border-t border-slate-100"
               >
@@ -782,12 +838,12 @@ export const MemoryDetailModal = ({
                 <div className="relative flex flex-1 items-center">
                   <input
                     type="text"
-                    value={commentText[postId] || ""}
+                    value={commentText[memoryId] || ""}
                     onChange={(e) => {
                       if (setCommentText) {
                         setCommentText((prev) => ({
                           ...prev,
-                          [postId]: e.target.value,
+                          [memoryId]: e.target.value,
                         }));
                       }
                     }}
@@ -799,13 +855,13 @@ export const MemoryDetailModal = ({
                   <button
                     type="submit"
                     disabled={
-                      isSubmittingComment[postId] ||
-                      !commentText[postId]?.trim()
+                      isSubmittingComment[memoryId] ||
+                      !commentText[memoryId]?.trim()
                     }
                     aria-label="Share thought"
                     className="absolute right-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary-600 text-white shadow-xs transition-all hover:bg-primary-700 active:scale-90 disabled:opacity-0 disabled:pointer-events-none"
                   >
-                    {isSubmittingComment[postId] ? (
+                    {isSubmittingComment[memoryId] ? (
                       <Loader2 className="h-3 w-3 animate-spin" />
                     ) : (
                       <Send className="h-3 w-3" />

@@ -50,6 +50,7 @@ const FeedCard = React.forwardRef(
       handleDeletePost,
       handleAvatarError,
       audioRefCallback,
+      audioRefs,
     },
     ref
   ) => {
@@ -62,6 +63,14 @@ const FeedCard = React.forwardRef(
     const isThoughtsOpen = activeCommentPost === postId;
     const displayedComments =
       isThoughtsOpen ? visibleComments : previewComments;
+
+    const resolvedAudioRefCallback =
+      audioRefCallback ||
+      ((element) => {
+        if (audioRefs && audioRefs.current && element) {
+          audioRefs.current[postId] = element;
+        }
+      });
 
     return (
       <motion.article
@@ -110,7 +119,7 @@ const FeedCard = React.forwardRef(
           journeyLikeAnim={journeyLikeAnim}
           toggleAudio={toggleAudio}
           handlePostTap={handlePostTap}
-          audioRefCallback={audioRefCallback}
+          audioRefCallback={resolvedAudioRefCallback}
         />
 
         <div className="px-4 pb-3 pt-2 sm:px-5">

@@ -2,20 +2,25 @@ export const toHttps = (url) => {
   if (!url || typeof url !== "string") return url;
   const trimmed = url.trim();
 
+  if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
+    return trimmed;
+  }
+
   if (/^\/\//.test(trimmed)) {
     return "https:" + trimmed;
   }
 
-  if (/^http:\/\/[^/]*cloudinary\.com/i.test(trimmed)) {
+  // Preserve localhost / 127.0.0.1 for local development
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^http:\/\//i.test(trimmed)) {
     return trimmed.replace(/^http:\/\//i, "https://");
   }
 
   if (/http:\/\/[^/]*cloudinary\.com/i.test(trimmed)) {
     return trimmed.replace(/http:\/\/([^/]*cloudinary\.com)/gi, "https://$1");
-  }
-
-  if (/^http:\/\/(images\.unsplash\.com|ui-avatars\.com)/i.test(trimmed)) {
-    return trimmed.replace(/^http:\/\//i, "https://");
   }
 
   return trimmed;

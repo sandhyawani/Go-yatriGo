@@ -548,21 +548,17 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
       return newStickers;
     });
 
-    if (track.previewUrl) {
-      setTimeout(() => {
+    const previewUrl = toHttps(track.previewUrl || track.preview);
+    if (previewUrl) {
+      setTimeout(async () => {
         if (audioRef.current) {
-          AudioManager.stopAll();
-          audioRef.current.src = track.previewUrl;
-          const playPromise = AudioManager.play("story-preview", audioRef.current, {
-            source: "story"
-          });
-          if (playPromise !== undefined) {
-            playPromise.then(() => setIsPlaying(true)).catch(() => {
-              setIsPlaying(false);
-              showToast.error("Could not play this song");
-            });
-          } else {
+          audioRef.current.src = previewUrl;
+          try {
+            await AudioManager.play("story-preview", audioRef.current, { source: "story" });
             setIsPlaying(true);
+          } catch (err) {
+            setIsPlaying(false);
+            showToast.error("Could not play this song");
           }
         }
       }, 100);
@@ -573,45 +569,35 @@ const CreateDispatchModal = ({ isOpen, onClose, onSuccess }) => {
     setActiveOverlay(null);
   };
 
-  const handlePreviewToggle = (track, e) => {
+  const handlePreviewToggle = async (track, e) => {
     e.stopPropagation();
     if (previewTrackId === track.id) {
       if (isPlaying) {
-        audioRef.current?.pause();
+        AudioManager.pause("story-preview");
         setIsPlaying(false);
       } else {
-        const playPromise = AudioManager.play("story-preview", audioRef.current, {
-          source: "story"
-        });
-        if (playPromise !== undefined) {
-          playPromise.then(() => setIsPlaying(true)).catch(() => {
-            setIsPlaying(false);
-            showToast.error("Could not play this song");
-          });
-        } else {
+        try {
+          await AudioManager.play("story-preview", audioRef.current, { source: "story" });
           setIsPlaying(true);
+        } catch (err) {
+          setIsPlaying(false);
+          showToast.error("Could not play this song");
         }
       }
     } else {
       setPreviewTrackId(track.id);
-      if (track.previewUrl) {
-        if (audioRef.current) {
-          AudioManager.stopAll();
-          audioRef.current.src = track.previewUrl;
-          const playPromise = AudioManager.play("story-preview", audioRef.current, {
-            source: "story"
-          });
-          if (playPromise !== undefined) {
-            playPromise.then(() => setIsPlaying(true)).catch(() => {
-              setIsPlaying(false);
-              showToast.error("Could not play this song");
-            });
-          } else {
-            setIsPlaying(true);
-          }
+      const previewUrl = toHttps(track.previewUrl || track.preview);
+      if (previewUrl && audioRef.current) {
+        try {
+          audioRef.current.src = previewUrl;
+          await AudioManager.play("story-preview", audioRef.current, { source: "story" });
+          setIsPlaying(true);
+        } catch (err) {
+          setIsPlaying(false);
+          showToast.error("Could not play this song");
         }
       } else {
-        audioRef.current?.pause();
+        AudioManager.stop("story-preview");
         setIsPlaying(false);
       }
     }

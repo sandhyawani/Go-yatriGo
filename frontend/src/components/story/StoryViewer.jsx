@@ -19,6 +19,7 @@ import {
 import moment from "moment";
 import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
+import { toHttps } from "../../utils/toHttps";
 import AudioManager from "../../utils/AudioManager";
 import Swal from "sweetalert2";
 import StorySticker from "./StorySticker";
@@ -180,16 +181,14 @@ const StoryViewer = ({
     setStoryMediaLoaded(false);
     if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
 
-    const currentStory = activeStoryGroup?.stories?.[activeStoryIndex];
-    const isVideo = currentStory?.mediaType === "video";
-
-    if (!isVideo && currentStory?.song?.audioUrl) {
+    const songUrl = toHttps(currentStory?.song?.audioUrl);
+    if (!isVideo && songUrl) {
       AudioManager.stopAll();
-      const audio = new Audio(currentStory.song.audioUrl);
+      const audio = new Audio(songUrl);
       audio.loop = true;
       audio.currentTime = 0;
       audio.muted = isStoryMuted;
-      AudioManager.play("story-preview", audio, { source: "story" });
+      AudioManager.play("story-preview", audio, { source: "story" }).catch(() => {});
       audioRef.current = audio;
     }
 

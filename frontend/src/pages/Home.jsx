@@ -165,7 +165,15 @@ const Home = () => {
   }, [location.pathname]);
 
   useEffect(() => {
+    const unsubscribe = AudioManager.subscribe((event, data) => {
+      if (event === "play") {
+        setPlayingAudioId(data.audioId);
+      } else if (event === "pause" || event === "stop" || event === "ended" || event === "error") {
+        setPlayingAudioId((prev) => (prev === data.audioId ? null : prev));
+      }
+    });
     return () => {
+      unsubscribe();
       AudioManager.stopAll();
     };
   }, []);
@@ -328,17 +336,22 @@ const Home = () => {
     };
   }, [memories]);
 
-  const toggleAudio = (postId) => {
+  const toggleAudio = async (postId) => {
     if (AudioManager.isLocked()) return;
     const audio = audioRefs.current[postId];
     if (!audio) return;
 
-    if (playingAudioId === postId) {
+    if (playingAudioId === postId || AudioManager.isPlaying(postId)) {
       AudioManager.pause(postId);
       setPlayingAudioId(null);
     } else {
-      AudioManager.play(postId, audio);
-      setPlayingAudioId(postId);
+      try {
+        await AudioManager.play(postId, audio);
+        setPlayingAudioId(postId);
+      } catch (err) {
+        setPlayingAudioId(null);
+        showToast.error("Could not play this song");
+      }
     }
   };
 

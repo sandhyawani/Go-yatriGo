@@ -2,19 +2,19 @@ const toHttps = (url) => {
   if (!url || typeof url !== "string") return url;
   const trimmed = url.trim();
 
+  if (trimmed.startsWith("data:") || trimmed.startsWith("blob:")) {
+    return trimmed;
+  }
+
   if (/^\/\//.test(trimmed)) {
     return "https:" + trimmed;
   }
 
-  if (/^http:\/\/[^/]*cloudinary\.com/i.test(trimmed)) {
-    return trimmed.replace(/^http:\/\//i, "https://");
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?/i.test(trimmed)) {
+    return trimmed;
   }
 
-  if (/http:\/\/[^/]*cloudinary\.com/i.test(trimmed)) {
-    return trimmed.replace(/http:\/\/([^/]*cloudinary\.com)/gi, "https://$1");
-  }
-
-  if (/^http:\/\/(images\.unsplash\.com|ui-avatars\.com)/i.test(trimmed)) {
+  if (/^http:\/\//i.test(trimmed)) {
     return trimmed.replace(/^http:\/\//i, "https://");
   }
 
@@ -92,6 +92,13 @@ const normalizePostUrls = (post) => {
     target.mediaUrls = target.mediaUrls.map((u) => toHttps(u));
   }
   if (target.userPic) target.userPic = toHttps(target.userPic);
+
+  if (target.music && typeof target.music === "object") {
+    const m = typeof target.music.toObject === "function" ? target.music.toObject() : { ...target.music };
+    if (m.preview) m.preview = toHttps(m.preview);
+    if (m.cover) m.cover = toHttps(m.cover);
+    target.music = m;
+  }
 
   if (target.userId && typeof target.userId === "object") {
     target.userId = normalizeUserUrls(target.userId);

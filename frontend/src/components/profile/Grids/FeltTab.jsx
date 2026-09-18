@@ -3,12 +3,15 @@ import { Star, MapPin, Clapperboard, Users, FileText, User, Video, MessageCircle
 import { toHttps } from "../../../utils/toHttps";
 
 export const FeltTab = ({
+  feltMemories,
   feltPosts,
   setSelectedMemory,
   navigate,
   feltLoading,
 }) => {
-  if (feltLoading && feltPosts.length === 0) {
+  const memories = feltMemories || feltPosts || [];
+
+  if (feltLoading && memories.length === 0) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
         {[1, 2, 3, 4].map((i) => (
@@ -21,7 +24,7 @@ export const FeltTab = ({
     );
   }
 
-  if (feltPosts.length === 0) {
+  if (memories.length === 0) {
     return (
       <div className="bg-surface/50 border border-border rounded-3xl p-16 text-center select-none shadow-sm">
         <div className="w-24 h-24 bg-surface rounded-full flex items-center justify-center mx-auto mb-6 relative shadow-sm border border-border">
@@ -41,53 +44,53 @@ export const FeltTab = ({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {feltPosts.slice(0, 4).map((post) => {
+        {memories.slice(0, 4).map((memory) => {
           let badgeInfo = {
             icon: <MapPin className="w-3 h-3" />,
             label: "Travel Memory",
             bg: "text-danger",
           };
-          if (post.postType === "story")
+          if (memory.postType === "story")
             badgeInfo = {
               icon: <Clapperboard className="w-3 h-3" />,
               label: "Dispatch",
               bg: "text-primary-600",
             };
-          else if (post.postType === "group")
+          else if (memory.postType === "group")
             badgeInfo = {
               icon: <Users className="w-3 h-3" />,
               label: "Travel Group",
               bg: "text-info",
             };
-          else if (post.postType === "document")
+          else if (memory.postType === "document")
             badgeInfo = {
               icon: <FileText className="w-3 h-3" />,
               label: "Document",
               bg: "text-warning",
             };
-          else if (post.postType === "profile_update")
+          else if (memory.postType === "profile_update")
             badgeInfo = {
               icon: <User className="w-3 h-3" />,
               label: "Profile Update",
               bg: "text-success",
             };
-          else if (post.postType === "travel_video")
+          else if (memory.postType === "travel_video")
             badgeInfo = {
               icon: <Video className="w-3 h-3" />,
               label: "Travel Video",
               bg: "text-primary-600",
             };
 
-          const rawMediaUrl = post.image || post.mediaUrl || post.mediaUrls?.[0] || "";
+          const rawMediaUrl = memory.image || memory.mediaUrl || memory.mediaUrls?.[0] || "";
           const mediaUrl = toHttps(rawMediaUrl);
 
           return (
             <div
-              key={post._id}
-              onClick={() => setSelectedMemory(post)}
+              key={memory._id}
+              onClick={() => setSelectedMemory(memory)}
               className="aspect-square bg-surface/80 backdrop-blur-xl rounded-2xl border border-border overflow-hidden relative cursor-pointer group shadow-[0_4px_20px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_rgba(2,132,199,0.12)] hover:-translate-y-1 transition-all duration-300"
             >
-              {post.mediaType === "video" ||
+              {memory.mediaType === "video" ||
               rawMediaUrl.match(/\.(mp4|webm|mov)$/i) ? (
                 <video
                   src={`${mediaUrl}#t=0.1`}
@@ -100,7 +103,7 @@ export const FeltTab = ({
               ) : (
                 <img
                   src={mediaUrl}
-                  alt={post.title}
+                  alt={memory.title}
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
               )}
@@ -119,11 +122,11 @@ export const FeltTab = ({
                   <div className="flex items-center gap-3 text-white/90 text-xs font-semibold">
                     <div className="flex items-center gap-1">
                       <span className="text-xs leading-none">✨</span>{" "}
-                      {post.likes?.length || post.likesCount || 0}
+                      {memory.likes?.length || memory.likesCount || 0}
                     </div>
                     <div className="flex items-center gap-1">
                       <MessageCircle className="w-3 h-3" />{" "}
-                      {post.comments?.length || post.commentsCount || 0}
+                      {memory.comments?.length || memory.commentsCount || 0}
                     </div>
                   </div>
                 </div>
@@ -132,7 +135,7 @@ export const FeltTab = ({
           );
         })}
       </div>
-      {feltPosts.length > 4 && (
+      {memories.length > 4 && (
         <button
           onClick={() => navigate("/felt-vibes")}
           className="w-full py-3 bg-surface border border-border hover:bg-secondary-50 text-primary-600 font-bold rounded-2xl transition-all duration-300 shadow-sm flex items-center justify-center gap-2 group"

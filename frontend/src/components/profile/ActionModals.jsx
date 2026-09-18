@@ -17,6 +17,15 @@ export const ActionModals = ({
   showReportModal,
   setShowReportModal,
   profileUser,
+  showEditMemoryModal,
+  setShowEditMemoryModal,
+  editMemoryData,
+  setEditMemoryData,
+  handleEditMemory,
+  showDeleteMemoryModal,
+  setShowDeleteMemoryModal,
+  memoryToDelete,
+  handleDeleteMemory,
   showEditPostModal,
   setShowEditPostModal,
   editPostData,
@@ -37,6 +46,16 @@ export const ActionModals = ({
   handleDeleteStory,
   isSaving,
 }) => {
+  const isEditMemOpen = showEditMemoryModal ?? showEditPostModal;
+  const setEditMemOpen = setShowEditMemoryModal || setShowEditPostModal;
+  const currentEditData = editMemoryData || editPostData;
+  const setCurrentEditData = setEditMemoryData || setEditPostData;
+  const onEditMemory = handleEditMemory || handleEditPost;
+
+  const isDeleteMemOpen = showDeleteMemoryModal ?? showDeletePostModal;
+  const setDeleteMemOpen = setShowDeleteMemoryModal || setShowDeletePostModal;
+  const currentMemToDelete = memoryToDelete || postToDelete;
+  const onDeleteMemory = handleDeleteMemory || handleDeletePost;
   return (
     <>
       <AnimatePresence>
@@ -158,9 +177,9 @@ export const ActionModals = ({
       </AnimatePresence>
 
       <AnimatePresence>
-        {showEditPostModal && editPostData && (
+        {isEditMemOpen && currentEditData && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
-            <div className="fixed inset-0" onClick={() => setShowEditPostModal(false)} />
+            <div className="fixed inset-0" onClick={() => setEditMemOpen?.(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -170,14 +189,14 @@ export const ActionModals = ({
               <h3 className="text-sm font-bold text-dark mb-4 flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-primary-600" /> Edit Travel Memory
               </h3>
-              <form onSubmit={handleEditPost} className="space-y-3">
+              <form onSubmit={onEditMemory} className="space-y-3">
                 <input
                   type="text"
                   placeholder="Location"
-                  value={editPostData.location || ""}
+                  value={currentEditData.location || ""}
                   onChange={(e) =>
-                    setEditPostData({
-                      ...editPostData,
+                    setCurrentEditData?.({
+                      ...currentEditData,
                       location: e.target.value,
                     })
                   }
@@ -185,10 +204,10 @@ export const ActionModals = ({
                 />
                 <textarea
                   placeholder="Caption"
-                  value={editPostData.caption || ""}
+                  value={currentEditData.caption || ""}
                   onChange={(e) =>
-                    setEditPostData({
-                      ...editPostData,
+                    setCurrentEditData?.({
+                      ...currentEditData,
                       caption: e.target.value,
                     })
                   }
@@ -198,7 +217,7 @@ export const ActionModals = ({
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowEditPostModal(false)}
+                    onClick={() => setEditMemOpen?.(false)}
                     className="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 rounded-full text-xs font-bold text-muted"
                   >
                     Cancel
@@ -218,9 +237,9 @@ export const ActionModals = ({
       </AnimatePresence>
 
       <AnimatePresence>
-        {showDeletePostModal && postToDelete && (
+        {isDeleteMemOpen && currentMemToDelete && (
           <div className="fixed inset-0 z-[1100] flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-xs select-none">
-            <div className="fixed inset-0" onClick={() => setShowDeletePostModal(false)} />
+            <div className="fixed inset-0" onClick={() => setDeleteMemOpen?.(false)} />
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -239,14 +258,14 @@ export const ActionModals = ({
               <div className="flex gap-2.5 justify-center">
                 <button
                   type="button"
-                  onClick={() => setShowDeletePostModal(false)}
+                  onClick={() => setDeleteMemOpen?.(false)}
                   className="px-5 py-2.5 bg-secondary-100 hover:bg-secondary-200 text-secondary-700 rounded-full text-xs font-bold"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
-                  onClick={handleDeletePost}
+                  onClick={onDeleteMemory}
                   disabled={isSaving}
                   className="px-6 py-2.5 bg-danger hover:bg-red-700 text-white rounded-full text-xs font-bold transition-all shadow-md shadow-danger/20 active:scale-95"
                 >

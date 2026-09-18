@@ -21,7 +21,7 @@ import FollowersModal from "../components/profile/FollowersModal";
 import FollowingModal from "../components/profile/FollowingModal";
 import ActionModals from "../components/profile/ActionModals";
 import MemoryDetailModal from "../components/profile/MemoryDetailModal";
-import PostsTab from "../components/profile/Grids/PostsTab";
+import MemoriesTab from "../components/profile/Grids/MemoriesTab";
 import TripsTab from "../components/profile/Grids/TripsTab";
 import StoriesTab from "../components/profile/Grids/StoriesTab";
 import SavedTab from "../components/profile/Grids/SavedTab";
@@ -114,25 +114,25 @@ const Profile = () => {
   const [userStories, setUserStories] = useState([]);
   const [reviewCandidateJourneys, setReviewCandidateJourneys] = useState([]);
   const [journeyStats, setJourneyStats] = useState(null);
-  const [savedPosts, setSavedPosts] = useState([]);
-  const [feltPosts, setFeltPosts] = useState([]);
+  const [savedMemories, setSavedMemories] = useState([]);
+  const [feltMemories, setFeltMemories] = useState([]);
   const [groupFilter, setGroupFilter] = useState("hosted");
-  const [postsLoading, setPostsLoading] = useState(false);
-  const [postsError, setPostsError] = useState("");
+  const [memoriesLoading, setMemoriesLoading] = useState(false);
+  const [memoriesError, setMemoriesError] = useState("");
   const [tripsLoading, setTripsLoading] = useState(false);
   const [storiesLoading, setStoriesLoading] = useState(false);
   const [savedLoading, setSavedLoading] = useState(false);
   const [feltLoading, setFeltLoading] = useState(false);
-  const [postsPage, setPostsPage] = useState(1);
-  const [hasMorePosts, setHasMorePosts] = useState(true);
+  const [memoriesPage, setMemoriesPage] = useState(1);
+  const [hasMoreMemories, setHasMoreMemories] = useState(true);
   const [fetchedTabs, setFetchedTabs] = useState({});
-  const [savedPostIds, setSavedPostIds] = useState(new Set());
+  const [savedMemoryIds, setSavedMemoryIds] = useState(new Set());
   const [saveLoadingMap, setSaveLoadingMap] = useState({});
   const [feltLoadingMap, setFeltLoadingMap] = useState({});
   const [commentsLoadingMap, setCommentsLoadingMap] = useState({});
   const [isSubmittingComment, setIsSubmittingComment] = useState({});
   const [commentText, setCommentText] = useState({});
-  const [activeCommentPost, setActiveCommentPost] = useState(null);
+  const [activeCommentMemoryId, setActiveCommentMemoryId] = useState(null);
   const [journeyLikeAnim, setJourneyLikeAnim] = useState(null);
   const [playingAudioId, setPlayingAudioId] = useState(null);
   const [reportModal, setReportModal] = useState({
@@ -143,16 +143,16 @@ const Profile = () => {
   });
   const audioRefs = useRef({});
   const lastTapTime = useRef({});
-  const [showEditPostModal, setShowEditPostModal] = useState(false);
-  const [editPostData, setEditPostData] = useState(null);
-  const [showDeletePostModal, setShowDeletePostModal] = useState(false);
-  const [postToDelete, setPostToDelete] = useState(null);
+  const [showEditMemoryModal, setShowEditMemoryModal] = useState(false);
+  const [editMemoryData, setEditMemoryData] = useState(null);
+  const [showDeleteMemoryModal, setShowDeleteMemoryModal] = useState(false);
+  const [memoryToDelete, setMemoryToDelete] = useState(null);
   const [showEditStoryModal, setShowEditStoryModal] = useState(false);
   const [editStoryData, setEditStoryData] = useState(null);
   const [showDeleteStoryModal, setShowDeleteStoryModal] = useState(false);
   const [storyToDelete, setStoryToDelete] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [showCreatePostModal, setShowCreatePostModal] = useState(false);
+  const [showCreateMemoryModal, setShowCreateMemoryModal] = useState(false);
   const [showCreateStoryModal, setShowCreateStoryModal] = useState(false);
   const [activeStoryGroup, setActiveStoryGroup] = useState(null);
   const [activeStoryIndex, setActiveStoryIndex] = useState(0);
@@ -196,6 +196,20 @@ const Profile = () => {
   const abortControllerRef = useRef(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
+  useEffect(() => {
+    const unsubscribe = AudioManager.subscribe((event, data) => {
+      if (event === "play") {
+        setPlayingAudioId(data.audioId);
+      } else if (event === "pause" || event === "stop" || event === "ended" || event === "error") {
+        setPlayingAudioId((prev) => (prev === data.audioId ? null : prev));
+      }
+    });
+    return () => {
+      unsubscribe();
+      AudioManager.stopAll();
+    };
+  }, []);
+
   const handleAvatarError = useCallback((e, name) => {
     e.target.onerror = null;
     e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(
@@ -204,80 +218,85 @@ const Profile = () => {
   }, []);
 
   const toggleAudio = useCallback(
-    (postId) => {
+    async (memoryId) => {
       if (AudioManager.isLocked()) return;
-      const audio = audioRefs.current[postId];
+      const audio = audioRefs.current[memoryId];
       if (!audio) return;
 
-      if (playingAudioId === postId) {
-        AudioManager.pause(postId);
+      if (playingAudioId === memoryId || AudioManager.isPlaying(memoryId)) {
+        AudioManager.pause(memoryId);
         setPlayingAudioId(null);
       } else {
-        AudioManager.play(postId, audio, { source: "profile" });
-        setPlayingAudioId(postId);
+        try {
+          await AudioManager.play(memoryId, audio, { source: "profile" });
+          setPlayingAudioId(memoryId);
+        } catch (err) {
+          setPlayingAudioId(null);
+          showToast.error("Could not play this song");
+        }
       }
     },
     [playingAudioId]
   );
 
   const handleFelt = useCallback(
-    async (postId) => {
-      const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
-      if (!cleanPostId) return;
-      if (feltLoadingMap[cleanPostId] || lastTapTime.current[`like_${cleanPostId}`]) return;
-      lastTapTime.current[`like_${cleanPostId}`] = true;
+    async (memoryId) => {
+      const cleanMemoryId = (memoryId?._id || memoryId?.id || memoryId)?.toString();
+      if (!cleanMemoryId) return;
+      if (feltLoadingMap[cleanMemoryId] || lastTapTime.current[`like_${cleanMemoryId}`]) return;
+      lastTapTime.current[`like_${cleanMemoryId}`] = true;
 
-      setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: true }));
+      setFeltLoadingMap((prev) => ({ ...prev, [cleanMemoryId]: true }));
 
       let prevUserMemoriesSnapshot = [];
       let prevSelectedMemorySnapshot = null;
-      let prevFeltPostsSnapshot = [];
-      let prevSavedPostsSnapshot = [];
+      let prevFeltMemoriesSnapshot = [];
+      let prevSavedMemoriesSnapshot = [];
 
-      const toggleLikesForPost = (postItem) => {
-        if (!postItem) return postItem;
-        const mId = (postItem._id || postItem.id)?.toString();
-        if (mId === cleanPostId) {
-          const hasFelt = postItem.likes?.some(
+      const toggleLikesForMemory = (memoryItem) => {
+        if (!memoryItem) return memoryItem;
+        const mId = (memoryItem._id || memoryItem.id)?.toString();
+        if (mId === cleanMemoryId) {
+          const hasFelt = memoryItem.likes?.some(
             (id) => (id?._id || id)?.toString() === myUserId?.toString()
           );
           const newLikes = hasFelt
-            ? (postItem.likes || []).filter(
+            ? (memoryItem.likes || []).filter(
                 (id) => (id?._id || id)?.toString() !== myUserId?.toString()
               )
-            : [...(postItem.likes || []), myUserId];
-          return { ...postItem, likes: newLikes, likesCount: newLikes.length };
+            : [...(memoryItem.likes || []), myUserId];
+          return { ...memoryItem, likes: newLikes, likesCount: newLikes.length };
         }
-        return postItem;
+        return memoryItem;
       };
 
       setUserMemories((prev) => {
         prevUserMemoriesSnapshot = prev;
-        return prev.map(toggleLikesForPost);
+        return prev.map(toggleLikesForMemory);
       });
 
       setSelectedMemory((prev) => {
         prevSelectedMemorySnapshot = prev;
         const selId = (prev?._id || prev?.id)?.toString();
-        if (selId === cleanPostId) {
-          return toggleLikesForPost(prev);
+        if (selId === cleanMemoryId) {
+          return toggleLikesForMemory(prev);
         }
         return prev;
       });
 
-      setFeltPosts((prev) => {
-        prevFeltPostsSnapshot = prev;
-        return prev.map(toggleLikesForPost);
+      setFeltMemories((prev) => {
+        prevFeltMemoriesSnapshot = prev;
+        return prev.map(toggleLikesForMemory);
       });
 
-      setSavedPosts((prev) => {
-        prevSavedPostsSnapshot = prev;
-        return prev.map(toggleLikesForPost);
+      setSavedMemories((prev) => {
+        prevSavedMemoriesSnapshot = prev;
+        return prev.map(toggleLikesForMemory);
       });
 
       try {
         const res = await axios.post(
-          `/social/memory/like/${cleanPostId}`,
+          `/social/memory/like/${cleanMemoryId}`,
           {},
           { withCredentials: true }
         );
@@ -286,51 +305,51 @@ const Profile = () => {
           const updatedLikes =
             res.data.likes || res.data.memory?.likes || res.data.post?.likes;
           if (Array.isArray(updatedLikes)) {
-            const applyServerLikes = (postItem) => {
-              if (!postItem) return postItem;
-              const mId = (postItem._id || postItem.id)?.toString();
-              if (mId === cleanPostId) {
+            const applyServerLikes = (memoryItem) => {
+              if (!memoryItem) return memoryItem;
+              const mId = (memoryItem._id || memoryItem.id)?.toString();
+              if (mId === cleanMemoryId) {
                 return {
-                  ...postItem,
+                  ...memoryItem,
                   likes: updatedLikes,
                   likesCount: updatedLikes.length,
                 };
               }
-              return postItem;
+              return memoryItem;
             };
 
             setUserMemories((prev) => prev.map(applyServerLikes));
             setSelectedMemory((prev) => {
               const selId = (prev?._id || prev?.id)?.toString();
-              return selId === cleanPostId ? applyServerLikes(prev) : prev;
+              return selId === cleanMemoryId ? applyServerLikes(prev) : prev;
             });
-            setFeltPosts((prev) => prev.map(applyServerLikes));
-            setSavedPosts((prev) => prev.map(applyServerLikes));
+            setFeltMemories((prev) => prev.map(applyServerLikes));
+            setSavedMemories((prev) => prev.map(applyServerLikes));
           }
         }
       } catch (err) {
         setUserMemories(prevUserMemoriesSnapshot);
         setSelectedMemory(prevSelectedMemorySnapshot);
-        setFeltPosts(prevFeltPostsSnapshot);
-        setSavedPosts(prevSavedPostsSnapshot);
+        setFeltMemories(prevFeltMemoriesSnapshot);
+        setSavedMemories(prevSavedMemoriesSnapshot);
         showToast.error(err.response?.data?.message || "Failed to update reaction");
       } finally {
-        setFeltLoadingMap((prev) => ({ ...prev, [cleanPostId]: false }));
-        lastTapTime.current[`like_${cleanPostId}`] = false;
+        setFeltLoadingMap((prev) => ({ ...prev, [cleanMemoryId]: false }));
+        lastTapTime.current[`like_${cleanMemoryId}`] = false;
       }
     },
     [myUserId, feltLoadingMap]
   );
 
   const handleDoubleTapLike = useCallback(
-    (postId, likes, tapPoint) => {
-      const cleanPostId = (postId?._id || postId?.id || postId)?.toString();
-      if (!cleanPostId) return;
+    (memoryId, likes, tapPoint) => {
+      const cleanMemoryId = (memoryId?._id || memoryId?.id || memoryId)?.toString();
+      if (!cleanMemoryId) return;
 
-      handleFelt(cleanPostId);
+      handleFelt(cleanMemoryId);
 
       setJourneyLikeAnim({
-        postId: cleanPostId,
+        postId: cleanMemoryId,
         x: tapPoint?.x ?? 50,
         y: tapPoint?.y ?? 50,
         key: Date.now(),
@@ -341,10 +360,10 @@ const Profile = () => {
     [handleFelt]
   );
 
-  const handlePostTap = useCallback(
-    (e, postId, likes) => {
+  const handleMemoryTap = useCallback(
+    (e, memoryId, likes) => {
       const now = Date.now();
-      const lastTap = lastTapTime.current[postId] || 0;
+      const lastTap = lastTapTime.current[memoryId] || 0;
 
       if (now - lastTap < 300) {
         const rect = e.currentTarget.getBoundingClientRect();
@@ -352,38 +371,38 @@ const Profile = () => {
           x: ((e.clientX - rect.left) / rect.width) * 100,
           y: ((e.clientY - rect.top) / rect.height) * 100,
         };
-        handleDoubleTapLike(postId, likes, tapPoint);
-        lastTapTime.current[postId] = 0;
+        handleDoubleTapLike(memoryId, likes, tapPoint);
+        lastTapTime.current[memoryId] = 0;
       } else {
-        lastTapTime.current[postId] = now;
+        lastTapTime.current[memoryId] = now;
       }
     },
     [handleDoubleTapLike]
   );
 
   const handleOpenComments = useCallback(
-    async (postId) => {
-      if (!postId) return;
+    async (memoryId) => {
+      if (!memoryId) return;
 
-      if (activeCommentPost === postId) {
-        setActiveCommentPost(null);
+      if (activeCommentMemoryId === memoryId) {
+        setActiveCommentMemoryId(null);
         return;
       }
 
-      setActiveCommentPost(postId);
+      setActiveCommentMemoryId(memoryId);
 
-      const post =
-        userMemories.find((m) => (m._id || m.id) === postId) ||
-        ((selectedMemory?._id || selectedMemory?.id) === postId
+      const memory =
+        userMemories.find((m) => (m._id || m.id) === memoryId) ||
+        ((selectedMemory?._id || selectedMemory?.id) === memoryId
           ? selectedMemory
           : null);
 
-      if (!post) return;
+      if (!memory) return;
 
       const hasPopulatedComments =
-        Array.isArray(post.comments) &&
-        post.comments.length > 0 &&
-        post.comments.every(
+        Array.isArray(memory.comments) &&
+        memory.comments.length > 0 &&
+        memory.comments.every(
           (c) =>
             typeof c === "object" &&
             c !== null &&
@@ -395,15 +414,15 @@ const Profile = () => {
       }
 
       if (
-        post.commentsCount === 0 &&
-        (!Array.isArray(post.comments) || post.comments.length === 0)
+        memory.commentsCount === 0 &&
+        (!Array.isArray(memory.comments) || memory.comments.length === 0)
       ) {
         return;
       }
 
-      setCommentsLoadingMap((prev) => ({ ...prev, [postId]: true }));
+      setCommentsLoadingMap((prev) => ({ ...prev, [memoryId]: true }));
       try {
-        const res = await axios.get(`/social/memory/${postId}/comments`, {
+        const res = await axios.get(`/social/memory/${memoryId}/comments`, {
           withCredentials: true,
         });
 
@@ -412,7 +431,7 @@ const Profile = () => {
 
           setUserMemories((prev) =>
             prev.map((m) =>
-              (m._id || m.id) === postId
+              (m._id || m.id) === memoryId
                 ? {
                     ...m,
                     comments: fetchedComments,
@@ -424,7 +443,7 @@ const Profile = () => {
 
           if (
             selectedMemory &&
-            (selectedMemory._id || selectedMemory.id) === postId
+            (selectedMemory._id || selectedMemory.id) === memoryId
           ) {
             setSelectedMemory((prev) =>
               prev
@@ -440,36 +459,36 @@ const Profile = () => {
       } catch (err) {
         showToast.error("Failed to load comments");
       } finally {
-        setCommentsLoadingMap((prev) => ({ ...prev, [postId]: false }));
+        setCommentsLoadingMap((prev) => ({ ...prev, [memoryId]: false }));
       }
     },
-    [activeCommentPost, userMemories, selectedMemory]
+    [activeCommentMemoryId, userMemories, selectedMemory]
   );
 
   const handleCommentSubmit = useCallback(
-    async (e, postId) => {
+    async (e, memoryId) => {
       e.preventDefault();
-      if (!postId || isSubmittingComment[postId]) return;
-      const text = commentText[postId];
+      if (!memoryId || isSubmittingComment[memoryId]) return;
+      const text = commentText[memoryId];
       if (!text?.trim()) return;
 
-      setIsSubmittingComment((prev) => ({ ...prev, [postId]: true }));
+      setIsSubmittingComment((prev) => ({ ...prev, [memoryId]: true }));
       try {
         const res = await axios.post(
-          `/social/memory/comment/${postId}`,
+          `/social/memory/comment/${memoryId}`,
           { text: text.trim() },
           { withCredentials: true }
         );
 
         if (res.data?.success) {
-          setCommentText((prev) => ({ ...prev, [postId]: "" }));
-          setActiveCommentPost(postId);
+          setCommentText((prev) => ({ ...prev, [memoryId]: "" }));
+          setActiveCommentMemoryId(memoryId);
 
           const newComment = res.data.comment;
 
           setUserMemories((prev) =>
             prev.map((m) => {
-              if ((m._id || m.id) !== postId) return m;
+              if ((m._id || m.id) !== memoryId) return m;
 
               if (res.data.memory?.comments) {
                 return {
@@ -510,7 +529,7 @@ const Profile = () => {
 
           if (
             selectedMemory &&
-            (selectedMemory._id || selectedMemory.id) === postId
+            (selectedMemory._id || selectedMemory.id) === memoryId
           ) {
             setSelectedMemory((prev) => {
               if (!prev) return prev;
@@ -555,17 +574,17 @@ const Profile = () => {
       } catch {
         showToast.error("Failed to add comment");
       } finally {
-        setIsSubmittingComment((prev) => ({ ...prev, [postId]: false }));
+        setIsSubmittingComment((prev) => ({ ...prev, [memoryId]: false }));
       }
     },
     [commentText, isSubmittingComment, selectedMemory]
   );
 
   const handleDeleteComment = useCallback(
-    async (postId, commentId) => {
+    async (memoryId, commentId) => {
       try {
         const res = await axios.delete(
-          `/social/memory/${postId}/comment/${commentId}`,
+          `/social/memory/${memoryId}/comment/${commentId}`,
           { withCredentials: true }
         );
 
@@ -574,7 +593,7 @@ const Profile = () => {
 
           setUserMemories((prev) =>
             prev.map((m) => {
-              if ((m._id || m.id) !== postId) return m;
+              if ((m._id || m.id) !== memoryId) return m;
 
               const currentComments = Array.isArray(m.comments)
                 ? m.comments.filter(
@@ -595,7 +614,7 @@ const Profile = () => {
 
           if (
             selectedMemory &&
-            (selectedMemory._id || selectedMemory.id) === postId
+            (selectedMemory._id || selectedMemory.id) === memoryId
           ) {
             setSelectedMemory((prev) => {
               if (!prev) return prev;
@@ -625,32 +644,32 @@ const Profile = () => {
   );
 
   const handleSaveToggle = useCallback(
-    async (postId) => {
-      const postIdStr = postId?.toString();
-      if (!postIdStr || saveLoadingMap[postIdStr]) return;
+    async (memoryId) => {
+      const memoryIdStr = memoryId?.toString();
+      if (!memoryIdStr || saveLoadingMap[memoryIdStr]) return;
 
-      setSaveLoadingMap((prev) => ({ ...prev, [postIdStr]: true }));
-      const isSaved = savedPostIds.has(postIdStr);
+      setSaveLoadingMap((prev) => ({ ...prev, [memoryIdStr]: true }));
+      const isSaved = savedMemoryIds.has(memoryIdStr);
 
       try {
         const res = isSaved
-          ? await axios.delete(`/social/memory/save/${postIdStr}`, {
+          ? await axios.delete(`/social/memory/save/${memoryIdStr}`, {
             withCredentials: true,
           })
           : await axios.post(
-            `/social/memory/save/${postIdStr}`,
+            `/social/memory/save/${memoryIdStr}`,
             {},
             { withCredentials: true }
           );
 
         if (res.data.success) {
-          setSavedPostIds((prev) => {
+          setSavedMemoryIds((prev) => {
             const next = new Set(prev);
             if (!isSaved) {
-              next.add(postIdStr);
+              next.add(memoryIdStr);
               showToast.success("Travel Memory saved!");
             } else {
-              next.delete(postIdStr);
+              next.delete(memoryIdStr);
               showToast.success("Removed from saved");
             }
             return next;
@@ -659,14 +678,14 @@ const Profile = () => {
       } catch {
         showToast.error("Failed to save Travel Memory.");
       } finally {
-        setSaveLoadingMap((prev) => ({ ...prev, [postIdStr]: false }));
+        setSaveLoadingMap((prev) => ({ ...prev, [memoryIdStr]: false }));
       }
     },
-    [saveLoadingMap, savedPostIds]
+    [saveLoadingMap, savedMemoryIds]
   );
 
-  const handleDispatch = useCallback(async (postId) => {
-    const url = `${window.location.origin}/post/${postId}`;
+  const handleDispatch = useCallback(async (memoryId) => {
+    const url = `${window.location.origin}/post/${memoryId}`;
     try {
       if (navigator.share) {
         await navigator.share({
@@ -728,14 +747,14 @@ const Profile = () => {
     setFetchedTabs({});
     setUserMemories([]);
     setUserMemoriesTotal(0);
-    setPostsPage(1);
-    setHasMorePosts(true);
-    setPostsError("");
+    setMemoriesPage(1);
+    setHasMoreMemories(true);
+    setMemoriesError("");
     setUserTrips([]);
     setJoinedTrips([]);
     setUserStories([]);
-    setSavedPosts([]);
-    setFeltPosts([]);
+    setSavedMemories([]);
+    setFeltMemories([]);
 
     setLoading(true);
 
@@ -865,8 +884,8 @@ const Profile = () => {
 
         const matched =
           userMemories.find((m) => m._id === postId) ||
-          savedPosts.find((m) => m._id === postId) ||
-          feltPosts.find((m) => m._id === postId);
+          savedMemories.find((m) => m._id === postId) ||
+          feltMemories.find((m) => m._id === postId);
 
         if (matched) {
           setSelectedMemory(matched);
@@ -897,8 +916,8 @@ const Profile = () => {
     location.state,
     location.search,
     userMemories,
-    savedPosts,
-    feltPosts,
+    savedMemories,
+    feltMemories,
     navigate,
   ]);
 
@@ -1020,8 +1039,8 @@ const Profile = () => {
 
     try {
       if (tab === "posts") {
-        setPostsLoading(true);
-        setPostsError("");
+        setMemoriesLoading(true);
+        setMemoriesError("");
 
         const memRes = await axios.get(
           `/social/memory?userId=${targetId}&limit=12&page=1`,
@@ -1043,15 +1062,15 @@ const Profile = () => {
               ? memRes.data.totalMemories
               : (memRes.data.pagination?.total ?? memories.length)
           );
-          setHasMorePosts(
+          setHasMoreMemories(
             typeof memRes.data.hasMore === "boolean"
               ? memRes.data.hasMore
               : (memRes.data.pagination?.hasMore ?? memories.length === 12)
           );
-          setPostsPage(1);
+          setMemoriesPage(1);
           setFetchedTabs((prev) => ({ ...prev, posts: true }));
         } else {
-          setPostsError(
+          setMemoriesError(
             memRes.data?.message || "Failed to load travel memories."
           );
         }
@@ -1145,7 +1164,7 @@ const Profile = () => {
         if (tabFetchRequestRef.current !== currentRequestId) return;
 
         if (savedRes.data?.success) {
-          setSavedPosts(savedRes.data.posts || []);
+          setSavedMemories(savedRes.data.posts || savedRes.data.memories || []);
           setFetchedTabs((prev) => ({ ...prev, saved: true }));
         }
       } else if (tab === "felt") {
@@ -1164,7 +1183,7 @@ const Profile = () => {
 
         if (feltRes.data?.success) {
           const posts = feltRes.data.posts || feltRes.data.memories || [];
-          setFeltPosts(posts);
+          setFeltMemories(posts);
           setFetchedTabs((prev) => ({ ...prev, felt: true }));
         }
       }
@@ -1174,7 +1193,7 @@ const Profile = () => {
       }
       console.error(`Error loading tab ${tab}:`, err);
       if (tab === "posts") {
-        setPostsError(
+        setMemoriesError(
           err.response?.status === 401
             ? "Your session has expired. Please sign in again."
             : err.response?.data?.message ||
@@ -1183,7 +1202,7 @@ const Profile = () => {
       }
     } finally {
       if (tabFetchRequestRef.current === currentRequestId) {
-        if (tab === "posts") setPostsLoading(false);
+        if (tab === "posts") setMemoriesLoading(false);
         if (tab === "trips") setTripsLoading(false);
         if (tab === "stories") setStoriesLoading(false);
         if (tab === "saved") setSavedLoading(false);
@@ -1192,14 +1211,14 @@ const Profile = () => {
     }
   };
 
-  const loadMorePosts = async () => {
-    if (postsLoading || !hasMorePosts) return;
+  const loadMoreMemories = async () => {
+    if (memoriesLoading || !hasMoreMemories) return;
 
-    setPostsLoading(true);
+    setMemoriesLoading(true);
 
     try {
       const targetId = id || currentUser?._id || currentUser?.id;
-      const nextPage = postsPage + 1;
+      const nextPage = memoriesPage + 1;
 
       const memRes = await axios.get(
         `/social/memory?userId=${targetId}&limit=12&page=${nextPage}`,
@@ -1230,25 +1249,25 @@ const Profile = () => {
           setUserMemoriesTotal(memRes.data.pagination.total);
         }
 
-        setHasMorePosts(
+        setHasMoreMemories(
           typeof memRes.data.hasMore === "boolean"
             ? memRes.data.hasMore
             : (memRes.data.pagination?.hasMore ?? newMemories.length === 12)
         );
 
-        setPostsPage(nextPage);
+        setMemoriesPage(nextPage);
       } else {
         showToast.error(
           memRes.data?.message || "Failed to load more memories"
         );
       }
     } catch (err) {
-      console.error("Failed to load more posts:", err);
+      console.error("Failed to load more memories:", err);
       showToast.error(
         err.response?.data?.message || "Failed to load more memories"
       );
     } finally {
-      setPostsLoading(false);
+      setMemoriesLoading(false);
     }
   };
   const handleFollowToggle = async () => {
@@ -1747,17 +1766,17 @@ const Profile = () => {
     }
   };
 
-  const handleEditPost = async (e) => {
+  const handleEditMemory = async (e) => {
     e.preventDefault();
     setIsSaving(true);
 
     try {
       const res = await axios.put(
-        `/social/memory/${editPostData._id}`,
+        `/social/memory/${editMemoryData._id}`,
         {
-          caption: editPostData.caption,
-          location: editPostData.location,
-          tags: editPostData.tags,
+          caption: editMemoryData.caption,
+          location: editMemoryData.location,
+          tags: editMemoryData.tags,
         },
         { withCredentials: true }
       );
@@ -1768,19 +1787,19 @@ const Profile = () => {
 
         setUserMemories((prev) =>
           prev.map((p) =>
-            p._id === editPostData._id
+            p._id === editMemoryData._id
               ? { ...p, ...updatedMemory }
               : p
           )
         );
 
         setSelectedMemory((prev) =>
-          prev && prev._id === editPostData._id
+          prev && prev._id === editMemoryData._id
             ? { ...prev, ...updatedMemory }
             : prev
         );
 
-        setShowEditPostModal(false);
+        setShowEditMemoryModal(false);
       }
     } catch (err) {
       showToast.error("Failed to update Travel Memory.");
@@ -1789,12 +1808,12 @@ const Profile = () => {
     }
   };
 
-  const handleDeletePost = async () => {
+  const handleDeleteMemory = async () => {
     setIsSaving(true);
 
     try {
       const res = await axios.delete(
-        `/social/memory/${postToDelete._id}`,
+        `/social/memory/${memoryToDelete._id}`,
         { withCredentials: true }
       );
 
@@ -1803,7 +1822,7 @@ const Profile = () => {
 
         setUserMemories((prev) =>
           prev.filter(
-            (p) => p._id !== postToDelete._id
+            (p) => p._id !== memoryToDelete._id
           )
         );
 
@@ -1811,7 +1830,7 @@ const Profile = () => {
           Math.max(0, prev - 1)
         );
 
-        setShowDeletePostModal(false);
+        setShowDeleteMemoryModal(false);
       }
     } catch (err) {
       showToast.error("Failed to delete Travel Memory.");
@@ -2178,11 +2197,11 @@ const Profile = () => {
                       {userMemories?.length === 0 && (
                         <button
                           onClick={() =>
-                            setShowCreatePostModal(true)
+                            setShowCreateMemoryModal(true)
                           }
                           className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-[10px] font-semibold"
                         >
-                          Post
+                          Share
                         </button>
                       )}
                     </div>
@@ -2272,7 +2291,7 @@ const Profile = () => {
               isOwnProfile={isOwnProfile}
               memoriesCount={userMemoriesTotal || userMemories?.length || 0}
               tripsCount={userTrips?.length || 0}
-              savedCount={savedPosts?.length || 0}
+              savedCount={savedMemories?.length || 0}
             />
 
             <div>
@@ -2283,35 +2302,35 @@ const Profile = () => {
                 transition={{ duration: 0.2 }}
               >
                 {activeTab === "posts" && (
-                  <PostsTab
-                    postsLoading={postsLoading}
-                    postsError={postsError}
+                  <MemoriesTab
+                    memoriesLoading={memoriesLoading}
+                    memoriesError={memoriesError}
                     userMemories={userMemories}
                     setSelectedMemory={setSelectedMemory}
                     isOwnProfile={isOwnProfile}
-                    setShowCreatePostModal={setShowCreatePostModal}
-                    setEditPostData={setEditPostData}
-                    setShowEditPostModal={setShowEditPostModal}
-                    setPostToDelete={setPostToDelete}
-                    setShowDeletePostModal={setShowDeletePostModal}
-                    hasMorePosts={hasMorePosts}
-                    loadMorePosts={loadMorePosts}
-                    retryPosts={() => fetchTabData("posts", targetId, true)}
+                    setShowCreateMemoryModal={setShowCreateMemoryModal}
+                    setEditMemoryData={setEditMemoryData}
+                    setShowEditMemoryModal={setShowEditMemoryModal}
+                    setMemoryToDelete={setMemoryToDelete}
+                    setShowDeleteMemoryModal={setShowDeleteMemoryModal}
+                    hasMoreMemories={hasMoreMemories}
+                    loadMoreMemories={loadMoreMemories}
+                    retryMemories={() => fetchTabData("posts", targetId, true)}
                     currentUser={currentUser}
                     profileUser={profileUser}
                     handleFelt={handleFelt}
                     handleLikeMemory={handleFelt}
-                    savedPostIds={savedPostIds}
+                    savedMemoryIds={savedMemoryIds}
                     saveLoadingMap={saveLoadingMap}
                     feltLoadingMap={feltLoadingMap}
                     commentsLoadingMap={commentsLoadingMap}
                     isSubmittingComment={isSubmittingComment}
                     commentText={commentText}
                     setCommentText={setCommentText}
-                    activeCommentPost={activeCommentPost}
+                    activeCommentMemoryId={activeCommentMemoryId}
                     playingAudioId={playingAudioId}
                     journeyLikeAnim={journeyLikeAnim}
-                    handlePostTap={handlePostTap}
+                    handleMemoryTap={handleMemoryTap}
                     handleOpenComments={handleOpenComments}
                     handleDispatch={handleDispatch}
                     handleSaveToggle={handleSaveToggle}
@@ -2319,9 +2338,9 @@ const Profile = () => {
                     handleCommentSubmit={handleCommentSubmit}
                     toggleAudio={toggleAudio}
                     setReportModal={setReportModal}
-                    handleDeletePost={(post) => {
-                      setPostToDelete(post);
-                      setShowDeletePostModal(true);
+                    handleDeleteMemory={(memory) => {
+                      setMemoryToDelete(memory);
+                      setShowDeleteMemoryModal(true);
                     }}
                     handleAvatarError={handleAvatarError}
                     audioRefs={audioRefs}
@@ -2360,7 +2379,7 @@ const Profile = () => {
                 {activeTab === "saved" &&
                   isOwnProfile && (
                     <SavedTab
-                      savedPosts={savedPosts}
+                      savedMemories={savedMemories}
                       savedLoading={savedLoading}
                       setSelectedMemory={setSelectedMemory}
                     />
@@ -2368,7 +2387,7 @@ const Profile = () => {
 
                 {activeTab === "felt" && (
                   <FeltTab
-                    feltPosts={feltPosts}
+                    feltMemories={feltMemories}
                     setSelectedMemory={setSelectedMemory}
                     navigate={navigate}
                     feltLoading={feltLoading}
@@ -2392,17 +2411,17 @@ const Profile = () => {
           showReportModal={showReportModal}
           setShowReportModal={setShowReportModal}
           profileUser={profileUser}
-          showEditPostModal={showEditPostModal}
-          setShowEditPostModal={setShowEditPostModal}
-          editPostData={editPostData}
-          setEditPostData={setEditPostData}
-          handleEditPost={handleEditPost}
-          showDeletePostModal={showDeletePostModal}
-          setShowDeletePostModal={
-            setShowDeletePostModal
+          showEditMemoryModal={showEditMemoryModal}
+          setShowEditMemoryModal={setShowEditMemoryModal}
+          editMemoryData={editMemoryData}
+          setEditMemoryData={setEditMemoryData}
+          handleEditMemory={handleEditMemory}
+          showDeleteMemoryModal={showDeleteMemoryModal}
+          setShowDeleteMemoryModal={
+            setShowDeleteMemoryModal
           }
-          postToDelete={postToDelete}
-          handleDeletePost={handleDeletePost}
+          memoryToDelete={memoryToDelete}
+          handleDeleteMemory={handleDeleteMemory}
           showEditStoryModal={showEditStoryModal}
           setShowEditStoryModal={
             setShowEditStoryModal
@@ -2426,18 +2445,18 @@ const Profile = () => {
           setSelectedMemory={setSelectedMemory}
           currentUser={currentUser}
           profileUser={profileUser}
-          savedPostIds={savedPostIds}
+          savedMemoryIds={savedMemoryIds}
           saveLoadingMap={saveLoadingMap}
           feltLoadingMap={feltLoadingMap}
           commentsLoadingMap={commentsLoadingMap}
           isSubmittingComment={isSubmittingComment}
           commentText={commentText}
           setCommentText={setCommentText}
-          activeCommentPost={activeCommentPost}
+          activeCommentMemoryId={activeCommentMemoryId}
           playingAudioId={playingAudioId}
           journeyLikeAnim={journeyLikeAnim}
           handleFelt={handleFelt}
-          handlePostTap={handlePostTap}
+          handleMemoryTap={handleMemoryTap}
           handleOpenComments={handleOpenComments}
           handleDispatch={handleDispatch}
           handleSaveToggle={handleSaveToggle}
@@ -2445,11 +2464,11 @@ const Profile = () => {
           handleCommentSubmit={handleCommentSubmit}
           toggleAudio={toggleAudio}
           setReportModal={setReportModal}
-          setEditPostData={setEditPostData}
-          setShowEditPostModal={setShowEditPostModal}
-          handleDeletePost={(post) => {
-            setPostToDelete(post || selectedMemory);
-            setShowDeletePostModal(true);
+          setEditMemoryData={setEditMemoryData}
+          setShowEditMemoryModal={setShowEditMemoryModal}
+          handleDeleteMemory={(memory) => {
+            setMemoryToDelete(memory || selectedMemory);
+            setShowDeleteMemoryModal(true);
           }}
           handleAvatarError={handleAvatarError}
           audioRefs={audioRefs}
@@ -2578,12 +2597,12 @@ const Profile = () => {
         </AnimatePresence>
 
         <CreateTravelMemoryModal
-          isOpen={showCreatePostModal}
+          isOpen={showCreateMemoryModal}
           onClose={() =>
-            setShowCreatePostModal(false)
+            setShowCreateMemoryModal(false)
           }
           onSuccess={() => {
-            setShowCreatePostModal(false);
+            setShowCreateMemoryModal(false);
             fetchProfile();
           }}
           user={currentUser}

@@ -8,8 +8,10 @@ build/
 dist/
 frontend/build/
 frontend/dist/
+.pnp
+.pnp.js
 
-# Environment files
+# Environment files and credentials
 .env
 .env.*
 .env.local
@@ -21,11 +23,22 @@ backend/.env.*
 frontend/.env
 frontend/.env.*
 e2e-tests/.env
+*.pem
+*.key
+*.cert
+*.crt
+*.pfx
+*.p12
+
+# Explicitly allow safe example environment files
 !.env.example
 !backend/.env.example
 !frontend/.env.example
 
-# Temporary archives and backups
+# Temporary uploads and archives
+uploads/
+backend/uploads/
+frontend/uploads/
 *.zip
 *.tar.gz
 *.tgz

@@ -21,9 +21,11 @@ import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../../utils/avatar";
 import { toHttps } from "../../../utils/toHttps";
+import AudioManager from "../../../utils/AudioManager";
 import ChangeCoverModal from "../../modals/ChangeCoverModal";
 
 export const ProfileMemoryCard = ({
+  memory,
   post,
   user,
   myUserId,
@@ -36,52 +38,58 @@ export const ProfileMemoryCard = ({
   playingAudioId,
   journeyLikeAnim,
   handleFelt,
+  handleMemoryTap,
   handlePostTap,
   handleOpenComments,
   handleDispatch,
   handleSaveToggle,
   toggleAudio,
   setReportModal,
+  setEditMemoryData,
   setEditPostData,
+  setShowEditMemoryModal,
   setShowEditPostModal,
+  handleDeleteMemory,
   handleDeletePost,
   handleAvatarError,
   audioRefCallback,
   onCardClick,
+  onMemoryUpdated,
   onPostUpdated,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showChangeCoverModal, setShowChangeCoverModal] = useState(false);
-  const [localPost, setLocalPost] = useState(post);
+  const initialMemory = memory || post;
+  const [localMemory, setLocalMemory] = useState(initialMemory);
   const menuRef = useRef(null);
 
   useEffect(() => {
-    setLocalPost(post);
-  }, [post]);
+    setLocalMemory(memory || post);
+  }, [memory, post]);
 
-  const currentPost = localPost || post;
-  const postId = (currentPost._id || currentPost.id)?.toString();
-  const isAudioPlaying = Boolean(postId && playingAudioId === postId);
+  const currentMemory = localMemory || initialMemory;
+  const memoryId = (currentMemory?._id || currentMemory?.id)?.toString();
+  const isAudioPlaying = Boolean(memoryId && playingAudioId === memoryId);
 
   const coverUrl = toHttps(
-    currentPost.image ||
-    currentPost.mediaUrl ||
-    currentPost.img ||
-    (Array.isArray(currentPost.mediaUrls) && currentPost.mediaUrls[0]) ||
+    currentMemory.image ||
+    currentMemory.mediaUrl ||
+    currentMemory.img ||
+    (Array.isArray(currentMemory.mediaUrls) && currentMemory.mediaUrls[0]) ||
     ""
   );
 
-  const likesCount = Array.isArray(currentPost.likes)
-    ? currentPost.likes.length
-    : typeof currentPost.likesCount === "number"
-    ? currentPost.likesCount
+  const likesCount = Array.isArray(currentMemory.likes)
+    ? currentMemory.likes.length
+    : typeof currentMemory.likesCount === "number"
+    ? currentMemory.likesCount
     : 0;
 
   const commentsCount =
-    typeof currentPost.commentsCount === "number"
-      ? currentPost.commentsCount
-      : Array.isArray(currentPost.comments)
-      ? currentPost.comments.length
+    typeof currentMemory.commentsCount === "number"
+      ? currentMemory.commentsCount
+      : Array.isArray(currentMemory.comments)
+      ? currentMemory.comments.length
       : totalCommentsCount || 0;
 
   useEffect(() => {
@@ -99,51 +107,53 @@ export const ProfileMemoryCard = ({
   }, [showMenu]);
 
   const authorName =
-    currentPost.userName ||
-    currentPost.userId?.name ||
-    currentPost.userId?.username ||
+    currentMemory.userName ||
+    currentMemory.userId?.name ||
+    currentMemory.userId?.username ||
     "Traveler";
 
   const authorAvatar = toHttps(
-    currentPost.userPic ||
-    currentPost.userId?.pic ||
-    currentPost.userId?.avatar ||
-    getAvatarUrl(currentPost.userId || currentPost)
+    currentMemory.userPic ||
+    currentMemory.userId?.pic ||
+    currentMemory.userId?.avatar ||
+    getAvatarUrl(currentMemory.userId || currentMemory)
   );
 
   const audioSrc = toHttps(
-    currentPost.music?.preview ||
-    currentPost.audio ||
-    currentPost.audioUrl ||
-    currentPost.songUrl
+    currentMemory.music?.preview ||
+    currentMemory.audio ||
+    currentMemory.audioUrl ||
+    currentMemory.songUrl
   );
 
   const songTitle =
-    currentPost.music?.title ||
-    (typeof currentPost.song === "object"
-      ? currentPost.song?.title || currentPost.song?.name
-      : typeof currentPost.song === "string"
-      ? currentPost.song
+    currentMemory.music?.title ||
+    (typeof currentMemory.song === "object"
+      ? currentMemory.song?.title || currentMemory.song?.name
+      : typeof currentMemory.song === "string"
+      ? currentMemory.song
       : null);
 
   const artistName =
-    currentPost.music?.artist ||
-    (typeof currentPost.song === "object"
-      ? currentPost.song?.artist
+    currentMemory.music?.artist ||
+    (typeof currentMemory.song === "object"
+      ? currentMemory.song?.artist
       : null);
 
   const handleCoverUpdated = (updatedMemory) => {
-    setLocalPost((prev) => ({
+    setLocalMemory((prev) => ({
       ...prev,
       ...updatedMemory,
     }));
-    if (onPostUpdated) {
+    if (onMemoryUpdated) {
+      onMemoryUpdated(updatedMemory);
+    } else if (onPostUpdated) {
       onPostUpdated(updatedMemory);
     }
   };
 
-  const travelDateFormatted = currentPost.createdAt
-    ? moment(currentPost.createdAt).format("MMM D, YYYY")
+  const travelDateFormatted = currentMemory.createdAt
+    ? moment(currentMemory.createdAt).format("MMM D, YYYY")
     : null;
 
   const cardRef = useRef(null);
@@ -166,7 +176,7 @@ export const ProfileMemoryCard = ({
   const triggerFeltAction = (tapPoint) => {
     const now = Date.now();
     if (now - lastFeltTriggerTimeRef.current < 350) return;
-    if (postId && feltLoadingMap?.[postId]) return;
+    if (memoryId && feltLoadingMap?.[memoryId]) return;
     lastFeltTriggerTimeRef.current = now;
 
     const safePoint = {
@@ -184,8 +194,8 @@ export const ProfileMemoryCard = ({
       setHeartAnim((prev) => (prev?.key === now ? null : prev));
     }, 750);
 
-    if (handleFelt && postId) {
-      handleFelt(postId);
+    if (handleFelt && memoryId) {
+      handleFelt(memoryId);
     }
   };
 
@@ -336,9 +346,9 @@ export const ProfileMemoryCard = ({
         className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-text-primary select-none"
       >
         <AnimatePresence>
-          {(heartAnim || (journeyLikeAnim?.postId === postId && journeyLikeAnim)) && (
+          {(heartAnim || (journeyLikeAnim?.postId === memoryId && journeyLikeAnim)) && (
             <motion.div
-              key={heartAnim?.key || journeyLikeAnim?.key || postId}
+              key={heartAnim?.key || journeyLikeAnim?.key || memoryId}
               initial={{ scale: 0.2, opacity: 0, y: 10 }}
               animate={{
                 scale: [0.2, 1.25, 1],
@@ -401,15 +411,15 @@ export const ProfileMemoryCard = ({
               </div>
 
               <div className="flex items-center gap-1.5 text-[10px] text-text-muted font-medium truncate mt-0.5 font-sans">
-                {currentPost.location && (
+                {currentMemory.location && (
                   <span className="flex items-center gap-0.5 text-text-secondary truncate max-w-[130px]">
                     <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
-                    <span className="truncate">{currentPost.location}</span>
+                    <span className="truncate">{currentMemory.location}</span>
                   </span>
                 )}
-                {currentPost.location && <span>•</span>}
+                {currentMemory.location && <span>•</span>}
                 <span className="shrink-0">
-                  {moment(currentPost.createdAt).fromNow(true)}
+                  {moment(currentMemory.createdAt).fromNow(true)}
                 </span>
               </div>
             </div>
@@ -444,8 +454,10 @@ export const ProfileMemoryCard = ({
                         type="button"
                         onClick={() => {
                           setShowMenu(false);
-                          if (setEditPostData) setEditPostData(currentPost);
-                          if (setShowEditPostModal) setShowEditPostModal(true);
+                          if (setEditMemoryData) setEditMemoryData(currentMemory);
+                          else if (setEditPostData) setEditPostData(currentMemory);
+                          if (setShowEditMemoryModal) setShowEditMemoryModal(true);
+                          else if (setShowEditPostModal) setShowEditPostModal(true);
                         }}
                         className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
@@ -469,7 +481,8 @@ export const ProfileMemoryCard = ({
                         type="button"
                         onClick={() => {
                           setShowMenu(false);
-                          if (handleDeletePost) handleDeletePost(currentPost);
+                          if (handleDeleteMemory) handleDeleteMemory(currentMemory);
+                          else if (handleDeletePost) handleDeletePost(currentMemory);
                         }}
                         className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5 whitespace-nowrap"
                       >
@@ -485,10 +498,10 @@ export const ProfileMemoryCard = ({
                         if (setReportModal) {
                           setReportModal({
                             isOpen: true,
-                            targetId: postId,
+                            targetId: memoryId,
                             targetType: "post",
                             reportedUserId:
-                              currentPost.userId?._id || currentPost.userId,
+                              currentMemory.userId?._id || currentMemory.userId,
                           });
                         }
                       }}
@@ -525,7 +538,7 @@ export const ProfileMemoryCard = ({
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
-                  if (toggleAudio) toggleAudio(postId);
+                  if (toggleAudio) toggleAudio(memoryId);
                 }}
                 className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-600 text-white shadow-xs hover:bg-primary-700 transition-transform active:scale-95 ml-1.5 shrink-0"
               >
@@ -543,6 +556,15 @@ export const ProfileMemoryCard = ({
                   }}
                   src={audioSrc}
                   preload="none"
+                  onEnded={() => {
+                    AudioManager.stop(memoryId);
+                  }}
+                  onError={(e) => {
+                    AudioManager.stop(memoryId);
+                    if (process.env.NODE_ENV === "development") {
+                      console.warn("ProfileMemoryCard audio element error:", audioSrc, e);
+                    }
+                  }}
                 />
               )}
             </div>
@@ -550,30 +572,38 @@ export const ProfileMemoryCard = ({
         )}
 
         <div className="p-3 pt-2 select-none">
-          <div className="group/cover relative w-full aspect-[16/9] bg-background rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80">
+          <div className="group/cover relative w-full aspect-[4/3] bg-slate-950 rounded-xl sm:rounded-2xl overflow-hidden border border-slate-200/80">
             {coverUrl ? (
-              currentPost.mediaType === "video" ||
+              currentMemory.mediaType === "video" ||
               coverUrl.match(/\.(mp4|webm|mov)$/i) ? (
                 <video
                   src={`${coverUrl}#t=0.1`}
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-105"
                   muted
                   playsInline
                   preload="metadata"
                 />
               ) : (
-                <img
-                  src={coverUrl}
-                  alt={currentPost.caption || currentPost.title || "Travel photo"}
-                  loading="lazy"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                />
+                <>
+                  <img
+                    src={coverUrl}
+                    alt=""
+                    aria-hidden="true"
+                    className="absolute inset-0 w-full h-full object-cover blur-2xl scale-110 opacity-50"
+                  />
+                  <img
+                    src={coverUrl}
+                    alt={currentMemory.caption || currentMemory.title || "Travel photo"}
+                    loading="lazy"
+                    className="w-full h-full object-contain relative z-10 transition-transform duration-500 group-hover:scale-105"
+                  />
+                </>
               )
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-primary-50/40 via-white to-primary-50/20">
                 <MapPin className="w-6 h-6 text-primary-400 mb-1" />
                 <p className="text-[11px] font-bold text-text-primary line-clamp-2 px-2">
-                  {currentPost.caption || currentPost.title || "Travel Memory"}
+                  {currentMemory.caption || currentMemory.title || "Travel Memory"}
                 </p>
               </div>
             )}
@@ -585,7 +615,7 @@ export const ProfileMemoryCard = ({
                   e.stopPropagation();
                   setShowChangeCoverModal(true);
                 }}
-                className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold backdrop-blur-md shadow-sm opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95"
+                className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold backdrop-blur-md shadow-sm opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95 z-20"
               >
                 <Camera className="w-3 h-3 text-primary-300" />
                 <span>Change Cover</span>
@@ -595,23 +625,23 @@ export const ProfileMemoryCard = ({
         </div>
 
         <div className="px-3.5 pb-2 text-left space-y-1.5 font-sans">
-          {currentPost.title && (
+          {currentMemory.title && (
             <h3 className="text-xs sm:text-sm font-bold text-text-primary line-clamp-1 font-heading leading-tight">
-              {currentPost.title}
+              {currentMemory.title}
             </h3>
           )}
 
-          {currentPost.caption && (
+          {currentMemory.caption && (
             <p className="text-xs text-text-secondary font-normal line-clamp-2 leading-relaxed break-words font-sans">
-              {currentPost.caption}
+              {currentMemory.caption}
             </p>
           )}
 
           <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-text-muted">
-            {currentPost.location && (
+            {currentMemory.location && (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-primary truncate max-w-[140px]">
                 <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
-                <span className="truncate">{currentPost.location}</span>
+                <span className="truncate">{currentMemory.location}</span>
               </span>
             )}
             {travelDateFormatted && (
@@ -620,7 +650,7 @@ export const ProfileMemoryCard = ({
                 <span>{travelDateFormatted}</span>
               </span>
             )}
-            {currentPost.journeyId && (
+            {currentMemory.journeyId && (
               <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 border border-primary-100/60">
                 <Compass className="w-2.5 h-2.5 text-primary-600 shrink-0" />
                 <span>Trip</span>
@@ -633,16 +663,16 @@ export const ProfileMemoryCard = ({
           <div className="flex items-center gap-4">
             <button
               type="button"
-              disabled={Boolean(postId && feltLoadingMap?.[postId])}
+              disabled={Boolean(memoryId && feltLoadingMap?.[memoryId])}
               onClick={(e) => {
                 e.stopPropagation();
-                if (handleFelt && postId) handleFelt(postId);
+                if (handleFelt && memoryId) handleFelt(memoryId);
               }}
               className={`inline-flex items-center gap-1 text-xs font-bold transition-transform active:scale-90 ${
                 hasFelt
                   ? "text-brand"
                   : "text-text-secondary hover:text-brand"
-              } ${postId && feltLoadingMap?.[postId] ? "opacity-50 cursor-not-allowed" : ""}`}
+              } ${memoryId && feltLoadingMap?.[memoryId] ? "opacity-50 cursor-not-allowed" : ""}`}
               title="Felt this travel memory"
               aria-label={hasFelt ? "Remove Felt" : "Felt this travel memory"}
             >
@@ -661,7 +691,7 @@ export const ProfileMemoryCard = ({
                 if (onCardClick) {
                   onCardClick();
                 } else if (handleOpenComments) {
-                  handleOpenComments(postId);
+                  handleOpenComments(memoryId);
                 }
               }}
               className="inline-flex items-center gap-1 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-90"
@@ -675,7 +705,7 @@ export const ProfileMemoryCard = ({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (handleDispatch) handleDispatch(postId);
+                if (handleDispatch) handleDispatch(memoryId);
               }}
               className="inline-flex items-center gap-1 text-xs font-bold text-text-secondary hover:text-primary-600 transition-transform active:scale-90"
               title="Share"
@@ -686,10 +716,10 @@ export const ProfileMemoryCard = ({
 
           <button
             type="button"
-            disabled={saveLoadingMap[postId]}
+            disabled={saveLoadingMap[memoryId]}
             onClick={(e) => {
               e.stopPropagation();
-              if (handleSaveToggle) handleSaveToggle(postId);
+              if (handleSaveToggle) handleSaveToggle(memoryId);
             }}
             className={`text-xs font-bold transition-transform active:scale-90 ${
               isSaved
@@ -711,7 +741,7 @@ export const ProfileMemoryCard = ({
         <ChangeCoverModal
           isOpen={showChangeCoverModal}
           onClose={() => setShowChangeCoverModal(false)}
-          memory={currentPost}
+          memory={currentMemory}
           onCoverUpdated={handleCoverUpdated}
         />
       )}

@@ -67,6 +67,11 @@ export const FeedList = ({
             playingAudioId={playingAudioId}
             toggleAudio={toggleAudio}
             audioRefs={audioRefs}
+            audioRefCallback={(el) => {
+              if (audioRefs && audioRefs.current && el) {
+                audioRefs.current[post._id] = el;
+              }
+            }}
             postRefs={postRefs}
             setReportModal={setReportModal}
             setEditPostData={setEditPostData}

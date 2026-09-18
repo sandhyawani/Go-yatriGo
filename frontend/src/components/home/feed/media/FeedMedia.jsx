@@ -3,6 +3,8 @@ import { Music2, Pause, Play, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import LazyImage from "../../../common/LazyImage";
 import { getTravelTag } from "../utils/feedHelpers";
+import { toHttps } from "../../../../utils/toHttps";
+import AudioManager from "../../../../utils/AudioManager";
 
 const FeedMedia = ({
   post,
@@ -13,6 +15,13 @@ const FeedMedia = ({
   audioRefCallback,
 }) => {
   const travelTag = getTravelTag(post);
+  const audioSrc = toHttps(
+    post.music?.preview ||
+    post.audio ||
+    post.audioUrl ||
+    post.songUrl ||
+    ""
+  );
 
   return (
     <>
@@ -43,7 +52,7 @@ const FeedMedia = ({
               </div>
             </div>
 
-            {post.music.preview && (
+            {audioSrc && (
               <button
                 type="button"
                 aria-label={playingAudioId === post._id ? "Pause music" : "Play music"}
@@ -61,11 +70,20 @@ const FeedMedia = ({
               </button>
             )}
 
-            {post.music.preview && (
+            {audioSrc && (
               <audio
                 ref={(element) => audioRefCallback && audioRefCallback(element)}
-                src={post.music.preview}
-                onEnded={() => toggleAudio(post._id)}
+                src={audioSrc}
+                preload="none"
+                onEnded={() => {
+                  AudioManager.stop(post._id);
+                }}
+                onError={(e) => {
+                  AudioManager.stop(post._id);
+                  if (process.env.NODE_ENV === "development") {
+                    console.warn("Audio element error in FeedMedia for:", audioSrc, e);
+                  }
+                }}
               />
             )}
           </div>
@@ -96,13 +114,14 @@ const FeedMedia = ({
                 playsInline
                 muted
                 preload="metadata"
-                className="max-h-[460px] w-full bg-black object-cover"
+                className="max-h-[460px] w-full bg-black object-contain"
               />
             ) : (
               <LazyImage
                 src={post.mediaUrl || post.image}
                 alt={post.location || post.caption || "Travel memory"}
-                className="max-h-[460px] w-full object-cover transition-transform duration-700 group-hover:scale-[1.015]"
+                objectFit="contain"
+                className="max-h-[460px] w-full transition-transform duration-700 group-hover:scale-[1.015]"
               />
             )}
 

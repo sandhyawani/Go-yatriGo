@@ -21,6 +21,7 @@ MoreVertical } from
 import moment from "moment";
 import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
+import { toHttps } from "../../utils/toHttps";
 import AudioManager from "../../utils/AudioManager";
 import StorySticker from "./StorySticker";
 import { SocketContext } from "../../context/SocketContext";
@@ -256,15 +257,16 @@ const DispatchViewer = ({
 
     const currentStory = activeStoryGroup?.stories?.[activeStoryIndex];
     const isVideo = currentStory?.mediaType === "video";
+    const songUrl = toHttps(currentStory?.song?.audioUrl);
 
-    if (!isVideo && currentStory?.song?.audioUrl) {
+    if (!isVideo && songUrl) {
       AudioManager.stopAll();
-      const audio = new Audio(currentStory.song.audioUrl);
+      const audio = new Audio(songUrl);
       audio.loop = true;
       audio.currentTime = 0;
 
       audio.muted = isStoryMuted;
-      AudioManager.play("story-preview", audio, { source: "story" });
+      AudioManager.play("story-preview", audio, { source: "story" }).catch(() => {});
       audioRef.current = audio;
     }
 

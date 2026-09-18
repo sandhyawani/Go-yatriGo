@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ImageIcon } from 'lucide-react';
 
-const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ...props }) => {
+const LazyImage = ({ src, alt, className, objectFit = 'cover', fallbackIcon: Fallback = ImageIcon, ...props }) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [hasError, setHasError] = useState(false);
 
@@ -13,6 +13,8 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
       setHasError(true);
     }
   }, [src]);
+
+  const imgFitClass = objectFit === 'contain' ? 'object-contain' : 'object-cover';
 
   return (
     <div className={`relative overflow-hidden bg-background ${className}`} {...props}>
@@ -44,7 +46,7 @@ const LazyImage = ({ src, alt, className, fallbackIcon: Fallback = ImageIcon, ..
       onLoad={() => setIsLoaded(true)}
       onError={() => setHasError(true)}
       loading="lazy"
-      className="w-full h-full object-cover" />}
+      className={`w-full h-full ${imgFitClass}`} />}
 
     </div>);
 

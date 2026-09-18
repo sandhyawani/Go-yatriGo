@@ -131,68 +131,55 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
     return () => clearTimeout(timeout);
   }, [musicQuery, showMusicPicker, selectedMusicLang]);
 
-  const toggleMusicPreview = (e) => {
+  const toggleMusicPreview = async (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (!audioRef.current) return;
 
     if (isPlayingMusic) {
-      audioRef.current.pause();
+      AudioManager.pause("post-preview");
       setIsPlayingMusic(false);
     } else {
-      AudioManager.stopAll();
-      audioRef.current.currentTime = 0;
-      const playPromise = AudioManager.play("post-preview", audioRef.current, { source: "story" });
-      if (playPromise !== undefined) {
-        playPromise.then(() => setIsPlayingMusic(true)).catch(() => {
-          setIsPlayingMusic(false);
-          showToast.error("Could not play this song");
-        });
-      } else {
+      try {
+        audioRef.current.currentTime = 0;
+        await AudioManager.play("post-preview", audioRef.current, { source: "modal" });
         setIsPlayingMusic(true);
+      } catch (err) {
+        setIsPlayingMusic(false);
+        showToast.error("Could not play this song");
       }
     }
   };
 
-  const handlePreviewToggle = (track, e) => {
+  const handlePreviewToggle = async (track, e) => {
     e.stopPropagation();
     if (previewTrackId === track.id) {
       if (isPlayingMusic) {
-        audioRef.current?.pause();
+        AudioManager.pause("post-preview");
         setIsPlayingMusic(false);
       } else {
-        const playPromise = AudioManager.play("post-preview", audioRef.current, {
-          source: "story"
-        });
-        if (playPromise !== undefined) {
-          playPromise.then(() => setIsPlayingMusic(true)).catch(() => {
-            setIsPlayingMusic(false);
-            showToast.error("Could not play this song");
-          });
-        } else {
+        try {
+          await AudioManager.play("post-preview", audioRef.current, { source: "modal" });
           setIsPlayingMusic(true);
+        } catch (err) {
+          setIsPlayingMusic(false);
+          showToast.error("Could not play this song");
         }
       }
     } else {
       setPreviewTrackId(track.id);
-      if (track.previewUrl || track.preview) {
-        if (audioRef.current) {
-          AudioManager.stopAll();
-          audioRef.current.src = track.previewUrl || track.preview;
-          const playPromise = AudioManager.play("post-preview", audioRef.current, {
-            source: "story"
-          });
-          if (playPromise !== undefined) {
-            playPromise.then(() => setIsPlayingMusic(true)).catch(() => {
-              setIsPlayingMusic(false);
-              showToast.error("Could not play this song");
-            });
-          } else {
-            setIsPlayingMusic(true);
-          }
+      const url = toHttps(track.previewUrl || track.preview);
+      if (url && audioRef.current) {
+        try {
+          audioRef.current.src = url;
+          await AudioManager.play("post-preview", audioRef.current, { source: "modal" });
+          setIsPlayingMusic(true);
+        } catch (err) {
+          setIsPlayingMusic(false);
+          showToast.error("Could not play this song");
         }
       } else {
-        audioRef.current?.pause();
+        AudioManager.stop("post-preview");
         setIsPlayingMusic(false);
       }
     }
@@ -241,14 +228,17 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
   useEffect(() => {
     if (isOpen) {
       AudioManager.stopAll();
-      AudioManager.lock();
     } else {
       AudioManager.stopAll();
       AudioManager.unlock();
+      setIsPlayingMusic(false);
+      setPreviewTrackId(null);
     }
     return () => {
       AudioManager.stopAll();
       AudioManager.unlock();
+      setIsPlayingMusic(false);
+      setPreviewTrackId(null);
     };
   }, [isOpen]);
 
@@ -697,17 +687,6 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
     }
   };
 
-  useEffect(() => {
-    if (isOpen) {
-      AudioManager.stopAll();
-    } else {
-      AudioManager.stopAll();
-    }
-    return () => {
-      AudioManager.stopAll();
-    };
-  }, [isOpen]);
-
   const avatar =
   currentUser?.profilePic ||
   currentUser?.img ||
@@ -860,9 +839,9 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
         onDrop={handleDrop}>
 
               {step === "upload" &&
-          <div className="flex flex-1 items-center justify-center p-6 sm:p-10">
+          <div className="flex flex-1 items-center justify-center p-4 sm:p-6 md:p-10">
                   <div
-            className={`flex min-h-[420px] w-full flex-col items-center justify-center rounded-[28px] border-2 border-dashed p-8 text-center transition-all ${
+            className={`flex min-h-[420px] w-full flex-col items-center justify-center rounded-[28px] border-2 border-dashed p-4 sm:p-8 text-center transition-all ${
             isDragging ?
             "border-brand-500 bg-brand-50 shadow-[0_18px_45px_rgba(139,92,246,0.18)]" :
             "border-brand-200 bg-gradient-to-br from-brand-50 via-white to-rose-50"
@@ -886,24 +865,24 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                       inspire other travelers on Go YatriGo.
                     </p>
 
-                    <div className="mt-7 sm:hidden flex gap-3 w-full">
+                    <div className="mt-7 sm:hidden flex w-full gap-3 justify-center items-center">
                       <button
-                onClick={() => cameraInputRef.current?.click()}
-                className="btn-primary">
-
+                        type="button"
+                        onClick={() => cameraInputRef.current?.click()}
+                        className="btn-primary flex-1 min-w-0 justify-center items-center whitespace-nowrap px-3 sm:px-5 py-2.5 text-xs sm:text-sm">
                         📷 Camera
                       </button>
                       <button
-                onClick={() => fileInputRef.current?.click()}
-                className="btn-primary">
-
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="btn-primary flex-1 min-w-0 justify-center items-center whitespace-nowrap px-3 sm:px-5 py-2.5 text-xs sm:text-sm">
                         🖼️ Gallery
                       </button>
                     </div>
                     <button
-              onClick={() => fileInputRef.current?.click()}
-              className="btn-primary">
-
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="mt-7 hidden sm:inline-flex btn-primary justify-center items-center whitespace-nowrap">
                       Select Media
                     </button>
 
