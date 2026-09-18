@@ -271,16 +271,16 @@ export const LocationDiscoveryWidget = ({ user }) => {
   return (
     <>
       <div className="rounded-2xl border border-brand-200/80 bg-gradient-to-r from-brand-50/70 via-white to-white p-3.5 sm:p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition-all">
-        <div className="flex items-start gap-3 min-w-0">
-          <div className="w-9 h-9 rounded-xl bg-brand-100 text-brand flex items-center justify-center shrink-0 mt-0.5">
-            <MapPin className="w-4.5 h-4.5" />
+        <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-brand-100 text-brand flex items-center justify-center shrink-0 mt-0.5">
+            <MapPin className="w-4 h-4 text-brand" />
           </div>
           <div className="min-w-0">
-            <h4 className="text-xs sm:text-sm font-bold text-text-primary font-heading leading-snug">
-              Discover travelers & trips near you
+            <h4 className="text-xs sm:text-sm font-bold text-text-primary font-heading leading-tight">
+              Discover Trips Near You
             </h4>
-            <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-relaxed">
-              Use your location to find nearby trips, travel groups, and companions. (Optional)
+            <p className="text-[11px] text-text-muted font-medium mt-0.5 leading-snug">
+              Find travel groups and companions in your area.
             </p>
           </div>
         </div>

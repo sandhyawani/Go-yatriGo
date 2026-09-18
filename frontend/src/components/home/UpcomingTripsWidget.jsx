@@ -142,7 +142,7 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
           const countdown = getCountdownBadge(trip.startDate);
           const isBuddy = trip.isBuddyTrip || trip.sourceType === "explore";
           const destinationName = (trip.destination || "TBD").split(",")[0].trim();
-          const fromName = trip.from ? trip.from.split(",")[0].trim() : "";
+          const fromName = trip.from ? trip.from.split(",")[0].trim() : "Pune";
           const startDateFormatted = trip.startDate ? moment(trip.startDate).format("MMM DD") : "TBD";
           const endDateFormatted = trip.endDate ? moment(trip.endDate).format("MMM DD, YYYY") : "";
           const dateRangeStr = endDateFormatted ? `${startDateFormatted} – ${endDateFormatted}` : startDateFormatted;
@@ -177,13 +177,14 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                 padding="none"
                 interactive
                 onClick={handleCardClick}
-                className="overflow-hidden group border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-300 flex flex-col justify-between rounded-3xl bg-white cursor-pointer"
+                className="overflow-hidden group border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-300 relative bg-white rounded-2xl sm:rounded-3xl cursor-pointer"
               >
-                <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-950">
+                {/* Card Image Area */}
+                <div className="relative h-44 sm:h-50 w-full overflow-hidden bg-slate-950">
                   <img
                     src={tripCover}
                     alt={trip.title || "Upcoming Trip"}
-                    className="w-full h-full object-cover group-hover:scale-[1.05] transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
                     onError={(e) => {
                       e.target.onerror = null;
                       e.target.src =
@@ -191,105 +192,107 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                     }}
                   />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/40 to-black/25 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-black/25 pointer-events-none" />
 
-                  <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-10 gap-2">
-                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold text-white bg-black/45 backdrop-blur-md border border-white/20 shadow-xs">
-                      {getTransportIcon(trip.transportation)}
-                      <span className="capitalize">
-                        {trip.journeyType || (isBuddy ? "Group Trip" : "Expedition")}
-                      </span>
-                    </div>
-
-                    {countdown && (
-                      <div
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold backdrop-blur-md border shadow-xs ${countdown.style}`}
+                  {/* Card Header Overlay */}
+                  <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 gap-2">
+                    {countdown ? (
+                      <span
+                        className={`px-2.5 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md shadow-xs ${countdown.style}`}
                       >
                         <Clock className="w-3 h-3 shrink-0" />
                         <span>{countdown.label}</span>
                         {countdown.pulse && (
                           <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                         )}
-                      </div>
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md shadow-xs bg-amber-500/90 text-white border-amber-400/40">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        <span>UPCOMING TRIP</span>
+                      </span>
                     )}
+
+                    <div className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-black/40 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 shadow-xs">
+                      {getTransportIcon(trip.transportation)}
+                      <span className="capitalize">
+                        {trip.journeyType || (isBuddy ? "Group" : "Trip")}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5 z-10 text-white space-y-1.5">
-                    <div className="space-y-0.5">
-                      <div className="inline-flex items-center gap-1 text-sky-200 text-xs font-semibold tracking-wide">
-                        <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
-                        <span className="truncate">
-                          {fromName ? `${fromName} → ` : ""}{destinationName}
-                        </span>
-                      </div>
+                  {/* Route & Title Overlay */}
+                  <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5 z-10 text-white space-y-1">
+                    <div className="inline-flex items-center gap-1 text-sky-200 text-xs font-semibold tracking-wide">
+                      <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                      <span className="truncate">
+                        {fromName} → {destinationName}
+                      </span>
+                    </div>
 
+                    <div className="flex items-center justify-between gap-2">
                       <h4
-                        className="text-base sm:text-lg font-black text-white group-hover:text-sky-100 transition-colors font-heading leading-tight truncate drop-shadow-md"
+                        className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight truncate drop-shadow-sm font-heading group-hover:text-sky-100 transition-colors"
                         title={trip.title}
                       >
                         {trip.title || "Rajgad Fort Expedition"}
                       </h4>
-                    </div>
 
-                    <div className="flex items-center gap-2 text-xs flex-wrap">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-white bg-black/50 backdrop-blur-md border border-white/20 shadow-xs">
-                        <Calendar className="w-3 h-3 text-sky-300 shrink-0" />
-                        <span>{dateRangeStr}</span>
-                      </span>
-
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold text-emerald-300 bg-emerald-950/60 backdrop-blur-md border border-emerald-400/30 shadow-xs">
+                      <div className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/45 backdrop-blur-md border border-white/15 text-[11px] font-semibold text-emerald-300 shrink-0">
                         <Clock className="w-3 h-3 shrink-0" />
                         <span>{durationDays} {durationDays === 1 ? "Day" : "Days"}</span>
-                      </span>
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                <div className="px-4 py-3 sm:px-4.5 sm:py-3.5 flex items-center justify-between gap-2 bg-white">
-                  <div
-                    className="flex items-center gap-2 group/travelers"
-                    title={`${memberCount} companions traveling`}
-                  >
-                    <div className="flex -space-x-1.5 overflow-hidden items-center py-0.5">
-                      {membersList.length > 0 ? (
-                        membersList.slice(0, 3).map((m, idx) => (
-                          <img
-                            key={idx}
-                            src={getAvatarUrl(m.user?.pic, m.user?.img, m.user?.name || m.name)}
-                            alt="Companion"
-                            className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover transition-transform group-hover/travelers:scale-105"
-                          />
-                        ))
-                      ) : (
-                        <>
-                          <img
-                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                            alt="Traveler 1"
-                            className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                            alt="Traveler 2"
-                            className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                          />
-                          <img
-                            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                            alt="Traveler 3"
-                            className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                          />
-                        </>
-                      )}
-                    </div>
-                    <span className="text-xs font-semibold text-slate-700">
-                      {memberCount} {memberCount === 1 ? "Traveler" : "Travelers"}
-                    </span>
-                  </div>
+                {/* Card Body Area */}
+                <div className="p-3.5 sm:p-4 flex flex-col gap-3 bg-white">
+                  
+                  {/* Consistent Metadata & Actions Row */}
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+                    
+                    {/* Metadata Row */}
+                    <div className="flex items-center gap-3 text-xs text-slate-600 min-w-0">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                        <span className="text-xs font-semibold text-slate-700 truncate">
+                          {dateRangeStr}
+                        </span>
+                      </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-slate-300 shrink-0">·</span>
+
+                      <div
+                        className="flex items-center gap-1.5 shrink-0"
+                        title={`${memberCount} companions traveling`}
+                      >
+                        <div className="flex -space-x-1.5 overflow-hidden items-center py-0.5">
+                          {membersList.length > 0 ? (
+                            membersList.slice(0, 3).map((m, idx) => (
+                              <img
+                                key={idx}
+                                src={getAvatarUrl(m.user?.pic, m.user?.img, m.user?.name || m.name)}
+                                alt="Companion"
+                                className="inline-block w-5 h-5 rounded-full ring-2 ring-white object-cover"
+                              />
+                            ))
+                          ) : (
+                            <Users className="w-3.5 h-3.5 text-slate-400" />
+                          )}
+                        </div>
+                        <span className="text-xs font-semibold text-slate-700">
+                          {memberCount} {memberCount === 1 ? "Traveler" : "Travelers"}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Actions Row */}
+                    <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
                       <button
                         type="button"
                         onClick={(e) => handleShare(e, trip, isBuddy, tripId)}
-                        className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 border border-slate-200/70 transition-all cursor-pointer"
+                        className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer"
                         title="Share trip"
                       >
                         {copiedId === tripId ? (
@@ -305,15 +308,18 @@ const UpcomingTripsWidget = ({ upcomingTrips = [], title = "Upcoming Trip" }) =>
                           e.stopPropagation();
                           handleCardClick();
                         }}
-                        className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-brand text-white font-semibold text-xs transition-colors shadow-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        className="h-8 px-3.5 rounded-xl bg-slate-900 hover:bg-brand text-white font-semibold text-xs transition-colors shadow-2xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                        title="Trip Details"
                       >
-                        <span>{isBuddy && !trip.sourceId ? "View Group" : "Workspace"}</span>
+                        <span>Trip Details</span>
                         <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
+
                   </div>
-                </Card>
-              </motion.div>
+                </div>
+              </Card>
+            </motion.div>
           );
         })}
       </div>

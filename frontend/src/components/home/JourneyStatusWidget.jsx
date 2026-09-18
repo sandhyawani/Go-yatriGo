@@ -295,24 +295,26 @@ const JourneyStatusWidget = ({ journey, user }) => {
         padding="none"
         interactive
         onClick={handleNavigateWorkspace}
-        className={`overflow-hidden group border border-slate-200/80 shadow-xs hover:shadow-md ${statusConfig.borderHover} transition-all duration-300 relative bg-white rounded-3xl cursor-pointer`}
+        className={`overflow-hidden group border border-slate-200/80 shadow-xs hover:shadow-md ${statusConfig.borderHover} transition-all duration-300 relative bg-white rounded-2xl sm:rounded-3xl cursor-pointer`}
       >
-        <div className="relative h-60 sm:h-68 w-full overflow-hidden bg-slate-950">
+        {/* Card Image Area */}
+        <div className="relative h-44 sm:h-50 w-full overflow-hidden bg-slate-950">
           <img
             src={tripImage}
             alt={journey.title || "Journey"}
-            className="w-full h-full object-cover group-hover:scale-[1.04] transition-transform duration-700 ease-out"
+            className="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-500 ease-out"
             onError={(e) => {
               e.target.onerror = null;
               e.target.src = DEFAULT_TRIP_COVER;
             }}
           />
 
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/95 via-slate-950/45 to-black/30 pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-black/25 pointer-events-none" />
 
-          <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between z-10 gap-2">
+          {/* Card Header Overlay */}
+          <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10 gap-2">
             <span
-              className={`px-3 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md shadow-xs transition-transform duration-200 group-hover:scale-102 ${statusConfig.badge}`}
+              className={`px-2.5 py-1 rounded-full border text-[11px] font-bold flex items-center gap-1.5 backdrop-blur-md shadow-xs ${statusConfig.badge}`}
             >
               <span className="relative flex h-2 w-2 items-center justify-center">
                 {isOngoing && (
@@ -325,121 +327,76 @@ const JourneyStatusWidget = ({ journey, user }) => {
               <span>{statusConfig.label}</span>
             </span>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 type="button"
                 onClick={handleOpenChat}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-black/40 hover:bg-brand/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/20 transition-all duration-200 shadow-xs hover:border-brand active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-black/40 hover:bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20 transition-all duration-200 shadow-xs cursor-pointer active:scale-95"
                 title="Open Group Chat"
               >
-                <MessageSquare className="w-3.5 h-3.5 text-sky-300" />
-                <span className="hidden sm:inline">Chat</span>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-              </button>
-
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/social/buddy");
-                }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-black/40 hover:bg-brand/95 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 hover:border-white/40 transition-all duration-200 shadow-xs active:scale-95 cursor-pointer"
-                title="Explore all travel buddy trips and destinations"
-              >
-                <Compass className="w-3.5 h-3.5 text-sky-300 shrink-0" />
-                <span>Explore All Trips</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <MessageSquare className="w-3 h-3 text-sky-300" />
+                <span>Chat</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               </button>
             </div>
           </div>
 
-          <div className="absolute bottom-3.5 left-3.5 right-3.5 sm:bottom-4 sm:left-4 sm:right-4 z-10 text-white space-y-2">
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/35 backdrop-blur-md border border-white/15 text-sky-200 text-xs font-semibold">
+          {/* Route & Title Overlay */}
+          <div className="absolute bottom-3 left-3 right-3 sm:bottom-3.5 sm:left-3.5 sm:right-3.5 z-10 text-white space-y-1">
+            <div className="inline-flex items-center gap-1 text-sky-200 text-xs font-semibold tracking-wide">
               <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
               <span className="truncate">
                 {routeParts.from} → {routeParts.to}
               </span>
             </div>
 
-            <h3 className="text-xl sm:text-2xl font-black text-white tracking-tight leading-tight truncate drop-shadow-md font-heading group-hover:text-sky-100 transition-colors">
-              {journey.title || "Weekend Escape to Manali"}
-            </h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-lg sm:text-xl font-bold text-white tracking-tight leading-tight truncate drop-shadow-sm font-heading group-hover:text-sky-100 transition-colors">
+                {journey.title || "Weekend Escape to Manali"}
+              </h3>
 
-            <div className="flex items-center justify-between pt-0.5 gap-2 flex-wrap">
-              <div
-                className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-2xl bg-slate-950/70 backdrop-blur-xl border border-white/20 shadow-lg shadow-black/25 text-white group/cloud hover:bg-slate-950/85 transition-all duration-300"
-                title={`Live weather forecast for ${routeParts.to}`}
-              >
-                <div className="w-6 h-6 rounded-xl bg-sky-500/20 border border-sky-400/30 flex items-center justify-center shrink-0 shadow-inner">
+              {weather && (
+                <div
+                  className="hidden sm:inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-black/45 backdrop-blur-md border border-white/15 text-[11px] font-semibold text-white shrink-0"
+                  title={`Weather in ${routeParts.to}`}
+                >
                   {getWeatherIcon(weather?.desc)}
+                  <span>{weather.temp}°C</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs">
-                  <span className="font-extrabold text-white text-xs tracking-tight">
-                    {weather?.temp ?? 32}°C
-                  </span>
-                  <span className="w-1 h-1 rounded-full bg-white/40" />
-                  <span className="font-medium text-slate-200 text-[11px] capitalize tracking-wide truncate max-w-[150px]">
-                    {weather?.desc || "Overcast Clouds"}
-                  </span>
-                </div>
-                <div className="hidden sm:flex items-center gap-1 pl-1.5 border-l border-white/20 text-[10px] text-sky-300 font-semibold uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                  <span>Live Sky</span>
-                </div>
-              </div>
-
-              <div className="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-black/40 backdrop-blur-md border border-white/15 text-[11px] font-medium text-white/90">
-                <Compass className="w-3 h-3 text-sky-400" />
-                <span>{routeParts.to} Climate</span>
-              </div>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="p-4 sm:p-5 flex flex-col gap-4 bg-white">
+        {/* Card Body Area */}
+        <div className="p-3.5 sm:p-4 flex flex-col gap-3 bg-white">
           
-          {durationInfo && (
-            <div className="space-y-1.5">
+          {/* Progress Bar (if active/scheduled) */}
+          {durationInfo && isOngoing && (
+            <div className="space-y-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <span
-                    className={`w-2 h-2 rounded-full ${statusConfig.pulseDot} inline-block animate-pulse`}
-                  />
+                <span className="text-[11px] font-bold text-slate-800 flex items-center gap-1">
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusConfig.pulseDot} animate-pulse`} />
                   <span>{durationInfo.text}</span>
                 </span>
-                <span className={`text-xs font-black ${statusConfig.progressText} font-heading`}>
+                <span className={`text-[11px] font-bold ${statusConfig.progressText}`}>
                   {Math.round(durationInfo.progressPercentage)}% Completed
                 </span>
               </div>
-
-              <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-0.5 shadow-inner">
+              <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
                 <div
-                  className={`h-full bg-gradient-to-r ${statusConfig.progressGradient} rounded-full transition-all duration-700 ease-out shadow-xs`}
-                  style={{
-                    width: `${Math.max(4, Math.min(100, durationInfo.progressPercentage))}%`
-                  }}
+                  className={`h-full bg-gradient-to-r ${statusConfig.progressGradient} rounded-full transition-all duration-500`}
+                  style={{ width: `${Math.max(5, Math.min(100, durationInfo.progressPercentage))}%` }}
                 />
-              </div>
-
-              <div className="flex items-center justify-between pt-1 text-[11px] text-slate-500 font-medium">
-                <span className="inline-flex items-center gap-1 text-slate-600">
-                  <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
-                  <span className="truncate">
-                    {isOngoing
-                      ? "Today: Solang Valley Pass & Mountain Cafe Meetup"
-                      : "Checkpoint: Route coordination & packing checklist"}
-                  </span>
-                </span>
-                <span className="text-[10px] text-brand font-bold uppercase tracking-wider shrink-0 pl-2">
-                  Active Sync
-                </span>
               </div>
             </div>
           )}
 
-          <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-slate-600">
+          {/* Consistent Metadata & Actions Row */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
             
-            <div className="flex items-center gap-4 flex-wrap">
+            {/* Metadata Row */}
+            <div className="flex items-center gap-3 text-xs text-slate-600 min-w-0">
               <div className="flex items-center gap-1.5 min-w-0">
                 <Calendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                 <span className="text-xs font-semibold text-slate-700 truncate">
@@ -447,56 +404,43 @@ const JourneyStatusWidget = ({ journey, user }) => {
                 </span>
               </div>
 
+              <span className="text-slate-300 shrink-0">·</span>
+
               <div
-                className="flex items-center gap-2 group/travelers"
-                title={`${travelerCount} confirmed companions on this journey`}
+                className="flex items-center gap-1.5 shrink-0"
+                title={`${travelerCount} confirmed travelers`}
               >
-                <div className="flex -space-x-2 overflow-hidden items-center py-0.5">
+                <div className="flex -space-x-1.5 overflow-hidden items-center py-0.5">
                   {displayMembers.length > 0 ? (
-                    displayMembers.map((m, idx) => (
+                    displayMembers.slice(0, 3).map((m, idx) => (
                       <img
                         key={idx}
                         src={getAvatarUrl(m.user?.pic, m.user?.img, m.user?.name)}
                         alt={m.user?.name || "Traveler"}
-                        className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover transition-transform group-hover/travelers:scale-105"
+                        className="inline-block w-5 h-5 rounded-full ring-2 ring-white object-cover"
                       />
                     ))
                   ) : (
-                    <>
-                      <img
-                        src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
-                        alt="Traveler 1"
-                        className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                      />
-                      <img
-                        src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80"
-                        alt="Traveler 2"
-                        className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                      />
-                      <img
-                        src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80"
-                        alt="Traveler 3"
-                        className="inline-block w-6 h-6 rounded-full ring-2 ring-white object-cover"
-                      />
-                    </>
+                    <Users className="w-3.5 h-3.5 text-slate-400" />
                   )}
                 </div>
-                <span className="text-xs font-semibold text-slate-800">
+                <span className="text-xs font-semibold text-slate-700">
                   {travelerCount} {travelerCount === 1 ? "Traveler" : "Travelers"}
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 self-end sm:self-auto">
+            {/* Actions Row */}
+            <div className="flex items-center gap-1.5 self-end sm:self-auto shrink-0">
               <button
                 type="button"
                 onClick={handleToggleFelt}
-                className={`p-1.5 rounded-xl border transition-all duration-200 cursor-pointer ${
+                className={`w-8 h-8 rounded-xl border transition-all flex items-center justify-center cursor-pointer ${
                   hasFelt
                     ? "bg-sky-50 border-sky-200 text-brand"
-                    : "bg-slate-50 hover:bg-slate-100 text-slate-500 border-slate-200/70"
+                    : "bg-slate-50 hover:bg-slate-100 text-slate-500 border-slate-200/80"
                 }`}
-                title={hasFelt ? "Saved to journey vibes" : "Bookmark this journey"}
+                title={hasFelt ? "Saved" : "Save trip"}
               >
                 <Bookmark className={`w-3.5 h-3.5 ${hasFelt ? "fill-brand" : ""}`} />
               </button>
@@ -504,8 +448,8 @@ const JourneyStatusWidget = ({ journey, user }) => {
               <button
                 type="button"
                 onClick={handleShare}
-                className="p-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 border border-slate-200/70 transition-all duration-200 cursor-pointer"
-                title="Share journey link"
+                className="w-8 h-8 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-500 hover:text-slate-900 border border-slate-200/80 transition-all flex items-center justify-center cursor-pointer"
+                title="Share trip"
               >
                 {copied ? (
                   <Check className="w-3.5 h-3.5 text-emerald-600" />
@@ -520,8 +464,8 @@ const JourneyStatusWidget = ({ journey, user }) => {
                   e.stopPropagation();
                   handleNavigateWorkspace();
                 }}
-                className="px-3.5 py-1.5 rounded-xl bg-slate-900 hover:bg-brand text-white font-semibold text-xs transition-colors shadow-xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
-                title="View this journey's details and coordination workspace"
+                className="h-8 px-3.5 rounded-xl bg-slate-900 hover:bg-brand text-white font-semibold text-xs transition-colors shadow-2xs inline-flex items-center gap-1.5 cursor-pointer active:scale-95"
+                title="Trip Details"
               >
                 <span>Trip Details</span>
                 <ArrowRight className="w-3.5 h-3.5" />
