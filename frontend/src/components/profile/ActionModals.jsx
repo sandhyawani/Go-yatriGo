@@ -184,48 +184,58 @@ export const ActionModals = ({
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-surface p-6 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10"
+              className="bg-surface p-5 sm:p-6 rounded-3xl w-full max-w-sm max-h-[88dvh] overflow-y-auto overscroll-contain shadow-2xl border border-border relative z-10"
             >
               <h3 className="text-sm font-bold text-dark mb-4 flex items-center gap-2">
                 <Edit3 className="w-4 h-4 text-primary-600" /> Edit Travel Memory
               </h3>
-              <form onSubmit={onEditMemory} className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Location"
-                  value={currentEditData.location || ""}
-                  onChange={(e) =>
-                    setCurrentEditData?.({
-                      ...currentEditData,
-                      location: e.target.value,
-                    })
-                  }
-                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600"
-                />
-                <textarea
-                  placeholder="Caption"
-                  value={currentEditData.caption || ""}
-                  onChange={(e) =>
-                    setCurrentEditData?.({
-                      ...currentEditData,
-                      caption: e.target.value,
-                    })
-                  }
-                  rows="3"
-                  className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none"
-                />
+              <form onSubmit={onEditMemory} className="space-y-3.5">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-text-secondary">
+                    Caption
+                  </label>
+                  <textarea
+                    placeholder="Caption"
+                    value={currentEditData.caption ?? currentEditData.title ?? ""}
+                    onChange={(e) =>
+                      setCurrentEditData?.({
+                        ...currentEditData,
+                        caption: e.target.value,
+                      })
+                    }
+                    rows="3"
+                    className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 resize-none font-medium leading-relaxed text-text-primary"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-text-secondary">
+                    Location
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Location"
+                    value={currentEditData.location || ""}
+                    onChange={(e) =>
+                      setCurrentEditData?.({
+                        ...currentEditData,
+                        location: e.target.value,
+                      })
+                    }
+                    className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs outline-none focus:border-primary-600 font-medium text-text-primary"
+                  />
+                </div>
                 <div className="flex gap-2 justify-end pt-2">
                   <button
                     type="button"
                     onClick={() => setEditMemOpen?.(false)}
-                    className="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 rounded-full text-xs font-bold text-muted"
+                    className="px-4 py-2 bg-secondary-100 hover:bg-secondary-200 text-muted rounded-full text-xs font-bold transition-colors"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-bold shadow-md shadow-primary-600/20 transition-all"
+                    className="px-5 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-full text-xs font-bold shadow-md shadow-primary-600/20 transition-all active:scale-95 disabled:opacity-50"
                   >
                     {isSaving ? "Saving..." : "Save"}
                   </button>

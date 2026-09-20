@@ -39,25 +39,39 @@ const emitRequestStatusUpdate = (req, room, userId) => {
 
 exports.getOrCreateDirectRoom = async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id;
+    const currentUserId = req.user?._id || req.user?.id;
     const targetUserId = req.params.targetUserId;
 
-    if (userId.toString() === targetUserId.toString()) {
+    if (!currentUserId) {
+      return res.status(401).json({ success: false, message: "Authentication required" });
+    }
+
+    if (!targetUserId || !mongoose.Types.ObjectId.isValid(targetUserId)) {
+      return res.status(400).json({ success: false, message: "Invalid target user ID" });
+    }
+
+    const currentStr = currentUserId.toString();
+    const targetStr = targetUserId.toString();
+
+    if (currentStr === targetStr) {
       return res.status(400).json({ success: false, message: "You cannot chat with yourself" });
     }
 
-    const isBlocked = await isBlockedPair(userId, targetUserId);
+    const currentObjId = new mongoose.Types.ObjectId(currentStr);
+    const targetObjId = new mongoose.Types.ObjectId(targetStr);
+
+    const isBlocked = await isBlockedPair(currentObjId, targetObjId);
     if (isBlocked) {
       return res.status(403).json({ success: false, message: "Cannot chat with a blocked user" });
     }
 
     let room = await ChatRoom.findOne({
       type: "direct",
-      members: { $all: [userId, targetUserId] }
+      members: { $all: [currentObjId, targetObjId] }
     });
 
     if (!room) {
-      const targetUser = await User.findById(targetUserId);
+      const targetUser = await User.findById(targetObjId);
       if (!targetUser) {
         return res.status(404).json({ success: false, message: "User not found" });
       }
@@ -68,64 +82,38 @@ exports.getOrCreateDirectRoom = async (req, res) => {
       }
       if (whoCanMsg === "mates_only") {
         const { getValidTripMates } = require("./tripMateController");
-        const validMates = await getValidTripMates(userId);
-        const isMate = validMates.some(m => m._id.toString() === targetUserId.toString());
+        const validMates = await getValidTripMates(currentObjId);
+        const isMate = validMates.some(m => (m._id || m).toString() === targetStr);
         if (!isMate) {
           return res.status(403).json({ success: false, message: "Only approved Trip Mates can message this user." });
         }
       }
 
-      const isSenderFollowingTarget = targetUser.followers.includes(userId);
-      const isTargetFollowingSender = targetUser.following.includes(userId);
-
-      let initialStatus = "pending";
-
-      if (targetUser.privateAccount) {
-        if (!isSenderFollowingTarget) {
-          return res.status(403).json({ success: false, message: "Only approved followers can message this private account." });
-        }
-        initialStatus = "accepted";
-      } else {
-        if (isSenderFollowingTarget || isTargetFollowingSender) {
-          initialStatus = "accepted";
-        } else {
-          initialStatus = "pending";
-          if (!targetUser.messageRequests.includes(userId)) {
-            targetUser.messageRequests.push(userId);
-            await targetUser.save();
-          }
-        }
-      }
-
       room = new ChatRoom({
-        name: `${targetUser.name}`,
+        name: `${targetUser.name || "Direct Chat"}`,
         type: "direct",
-        members: [userId, targetUserId],
-        requestStatus: initialStatus,
-        requestedBy: initialStatus === "pending" ? userId : null
+        members: [currentObjId, targetObjId],
+        requestStatus: "accepted",
+        requestedBy: currentObjId
       });
-      await room.save();
 
-      if (initialStatus === "pending") {
-        const io = req.app.get("io");
-        const senderUser = await User.findById(userId).select("name");
-        await notificationService.createNotification({
-          sender: userId,
-          receiver: targetUserId,
-          type: "message_request",
-          category: "Messages",
-          room: room._id,
-          entityId: room._id,
-          entityType: "ChatRoom",
-          title: "Chat Request",
-          message: `${senderUser?.name || "A traveler"} sent you a chat request.`,
-          link: `/social/chat/${room._id}`
-        }, io).catch(() => {});
+      try {
+        await room.save();
+      } catch (saveErr) {
+        if (saveErr.code === 11000) {
+          room = await ChatRoom.findOne({
+            type: "direct",
+            members: { $all: [currentObjId, targetObjId] }
+          });
+        } else {
+          throw saveErr;
+        }
       }
     }
 
     res.status(200).json({ success: true, room });
   } catch (error) {
+    console.error("[DIRECT CHAT ERROR]:", error.message);
     res.status(500).json({ success: false, message: error.message });
   }
 };

@@ -683,10 +683,6 @@ const ChatRoom = () => {
   };
 
   const handleSelectGlobalUser = async (targetUser) => {
-    if (!isActuallyVerified(user)) {
-      setIsVerificationModalOpen(true);
-      return;
-    }
     try {
       setLoading(true);
       const roomRes = await chatService.getDirectRoom(targetUser._id);
@@ -704,11 +700,6 @@ const ChatRoom = () => {
         selectRoom(existingRoom || newRoom);
       }
     } catch (err) {
-      const errorCode = err.response?.data?.code || err.response?.data?.error?.code;
-      if (errorCode === "VERIFICATION_REQUIRED") {
-        setIsVerificationModalOpen(true);
-        return;
-      }
       showToast.error(err.response?.data?.message || "Failed to start conversation");
     } finally {
       setLoading(false);
@@ -762,10 +753,6 @@ const ChatRoom = () => {
 
   const handleSendMessage = async (e) => {
     if (e) e.preventDefault();
-    if (!isActuallyVerified(user)) {
-      setIsVerificationModalOpen(true);
-      return;
-    }
     if (!inputText.trim() && !selectedFile && !audioBlob) return;
     if (!activeRoom) return;
 
@@ -1852,28 +1839,7 @@ const ChatRoom = () => {
             }
 
             return null;
-          })() :
-
-          !isActuallyVerified(user) ? (
-            <div className="px-5 py-4 border-t border-slate-100 bg-amber-50/80 backdrop-blur-xs flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left shrink-0">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-5 h-5 text-amber-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-amber-950">Identity Verification Required</p>
-                  <p className="text-xs text-amber-700">Verify your Government ID to participate and send messages in travel chats.</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsVerificationModalOpen(true)}
-                className="px-4 py-2 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white text-xs font-bold rounded-xl shadow-xs transition-all whitespace-nowrap cursor-pointer"
-              >
-                Verify Profile
-              </button>
-            </div>
-          ) : (
+          })() : (
 
           <ChatInput
           activeRoom={activeRoom}

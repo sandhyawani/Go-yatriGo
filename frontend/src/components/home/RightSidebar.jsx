@@ -131,19 +131,19 @@ export const QuickCreateCard = () => {
 
   return (
     <div className="bg-gradient-to-br from-brand-50/80 via-surface to-sky-50/50 rounded-2xl border border-brand-200/80 p-4 shadow-xs">
-      <div className="flex items-center gap-2 mb-1.5">
+      <div className="flex items-center gap-2 mb-1">
         <Sparkles className="w-4 h-4 text-brand" />
-        <h4 className="text-xs font-bold text-text-primary font-heading">Planning an Adventure?</h4>
+        <h4 className="text-xs font-bold text-text-primary font-heading">Plan a Trip</h4>
       </div>
       <p className="text-[11px] text-text-muted leading-relaxed mb-3">
-        Host a group trip, set itinerary dates, and connect with matching buddies.
+        Create a group trip and invite matching travel buddies.
       </p>
       <button
         onClick={() => navigate("/social/buddy/new")}
         className="w-full py-2 px-3 rounded-xl bg-brand hover:bg-brand-dark text-white font-bold text-xs shadow-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
       >
         <Plus className="w-3.5 h-3.5" />
-        <span>Create Travel Group</span>
+        <span>Create Trip</span>
       </button>
     </div>
   );

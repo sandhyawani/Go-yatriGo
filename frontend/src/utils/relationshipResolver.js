@@ -66,24 +66,31 @@ export const resolveRelationship = (
 
   const isBlocked = isBlockedByMe || isBlockedByThem;
 
-  const isFollowing = !isBlocked && containsId(
-    currentUser.following,
-    targetId
+  const isFollowing = !isBlocked && Boolean(
+    targetUser.isFollowing === true ||
+    targetUser.relationship?.isFollowing === true ||
+    containsId(currentUser.following, targetId) ||
+    containsId(targetUser.followers, currentId)
   );
 
-  const isFollower = !isBlocked && containsId(
-    currentUser.followers,
-    targetId
+  const isFollower = !isBlocked && Boolean(
+    targetUser.isFollower === true ||
+    targetUser.relationship?.isFollower === true ||
+    containsId(currentUser.followers, targetId) ||
+    containsId(targetUser.following, currentId)
   );
 
-  const requestSent = !isBlocked && containsId(
-    targetUser.followRequests,
-    currentId
+  const requestSent = !isBlocked && !isFollowing && Boolean(
+    targetUser.isRequested === true ||
+    targetUser.requestSent === true ||
+    targetUser.relationship?.requestSent === true ||
+    containsId(targetUser.followRequests, currentId)
   );
 
-  const requestReceived = !isBlocked && containsId(
-    currentUser.followRequests,
-    targetId
+  const requestReceived = !isBlocked && !isFollower && Boolean(
+    targetUser.requestReceived === true ||
+    targetUser.relationship?.requestReceived === true ||
+    containsId(currentUser.followRequests, targetId)
   );
 
   const isPrivate = targetUser.privateAccount === true;

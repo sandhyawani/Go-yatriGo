@@ -315,10 +315,7 @@ const SearchPanel = () => {
                       </div>
                       <div className="min-w-0 flex-1">
                         <h4 className="text-[13px] font-bold text-text-primary truncate group-hover:text-brand transition-colors">
-                          {memory.title ||
-                            (memory.caption
-                              ? memory.caption.substring(0, 30) + "..."
-                              : "Travel Memory")}
+                          {memory.caption || memory.title || "Travel Memory"}
                         </h4>
                         <p className="text-[10px] text-text-muted flex items-center gap-1 mt-0.5">
                           <span>by</span>

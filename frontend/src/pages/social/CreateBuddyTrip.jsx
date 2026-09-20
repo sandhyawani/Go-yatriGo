@@ -333,9 +333,9 @@ const CreateBuddyTrip = () => {
         {/* Multi-step Header */}
         <div className="max-w-[1100px] mx-auto px-3 sm:px-4 h-10 flex items-center gap-1 sm:gap-3 overflow-x-auto no-scrollbar border-t border-slate-100">
           {[
-            { id: "basics", num: "01", label: "Trip Details" },
-            { id: "plan", num: "02", label: "Dates & Description" },
-            { id: "rules", num: "03", label: "Who’s Joining?" }
+            { id: "basics", num: "01", label: "Basics" },
+            { id: "plan", num: "02", label: "Trip Plan" },
+            { id: "rules", num: "03", label: "Crew & Rules" }
           ].map((step, idx, arr) => (
             <div key={step.id} className="flex items-center shrink-0">
               <button
@@ -360,15 +360,12 @@ const CreateBuddyTrip = () => {
           
           <div className="lg:col-span-8 space-y-5 sm:space-y-6">
             
-            {/* Step 1: Trip Details */}
+            {/* Step 1: Basics */}
             <section id="basics" className="scroll-mt-24 space-y-2.5">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-tight font-heading">
-                  Trip Details
+                  Trip details
                 </h2>
-                <p className="text-xs text-text-muted font-medium">
-                  Name your trip and set your departure & destination points.
-                </p>
               </div>
 
               <div className="bg-surface rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 space-y-4">
@@ -376,7 +373,7 @@ const CreateBuddyTrip = () => {
                 {/* Cover Image */}
                 <div className="w-full">
                   <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                    Cover Image <span className="text-[10px] font-normal normal-case text-text-muted">(Optional)</span>
+                    Add cover photo <span className="text-[10px] font-normal normal-case text-text-muted">(Optional)</span>
                   </label>
                   <div 
                     className={`relative w-full aspect-[16/9] sm:aspect-[21/9] rounded-xl sm:rounded-2xl border border-slate-200/80 overflow-hidden group bg-slate-50/50 flex flex-col items-center justify-center transition-all shadow-2xs ${!file && autoCoverOptions.length === 0 ? "border-dashed hover:border-brand/40 hover:bg-brand/5 cursor-pointer" : ""}`}
@@ -421,10 +418,7 @@ const CreateBuddyTrip = () => {
                         <div className="w-10 h-10 rounded-xl bg-white shadow-2xs border border-slate-100 flex items-center justify-center mb-2.5 group-hover:scale-105 transition-transform">
                           <Camera className="w-4.5 h-4.5 text-text-muted group-hover:text-brand" />
                         </div>
-                        <h3 className="text-xs font-bold text-text-primary mb-0.5">Add Trip Cover</h3>
-                        <p className="text-[11px] text-text-muted mb-3">
-                          Upload a photo or we'll choose one for you automatically.
-                        </p>
+                        <h3 className="text-xs font-bold text-text-primary mb-2">Add Cover Photo</h3>
                         <button
                           type="button"
                           onClick={(e) => { e.stopPropagation(); fileInputRef.current?.click(); }}
@@ -503,15 +497,12 @@ const CreateBuddyTrip = () => {
               </div>
             </section>
 
-            {/* Step 2: Dates & Description */}
+            {/* Step 2: Trip Plan */}
             <section id="plan" className="scroll-mt-24 space-y-2.5">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-tight font-heading">
-                  Dates & Description
+                  Trip plan
                 </h2>
-                <p className="text-xs text-text-muted font-medium">
-                  Set your travel dates, trip itinerary, and vibe tags.
-                </p>
               </div>
 
               <div className="bg-surface rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 space-y-4">
@@ -519,7 +510,7 @@ const CreateBuddyTrip = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     <div>
                       <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                        Start Date
+                        Start date
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
@@ -535,7 +526,7 @@ const CreateBuddyTrip = () => {
                     </div>
                     <div>
                       <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                        End Date
+                        End date
                       </label>
                       <div className="relative">
                         <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" />
@@ -559,7 +550,7 @@ const CreateBuddyTrip = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                    Trip Description <span className="text-[10px] font-normal normal-case text-text-muted">(Optional)</span>
+                    Trip description <span className="text-[10px] font-normal normal-case text-text-muted">(Optional)</span>
                   </label>
                   <textarea
                     name="description"
@@ -567,7 +558,7 @@ const CreateBuddyTrip = () => {
                     onChange={handleInputChange}
                     maxLength={500}
                     rows="3"
-                    placeholder="Describe planned activities, places to explore, and ideal travel companions..."
+                    placeholder="Describe planned activities and destinations..."
                     className="input-field resize-none"
                   />
                   <div className="flex justify-end items-center mt-1.5">
@@ -579,7 +570,7 @@ const CreateBuddyTrip = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                    Trip Type <span className="text-[10px] font-normal normal-case text-text-muted">(Optional · Pick up to 8)</span>
+                    Trip type
                   </label>
                   <div className="flex flex-wrap gap-2 pt-0.5">
                     {predefinedTags.map((tag) => {
@@ -605,22 +596,19 @@ const CreateBuddyTrip = () => {
               </div>
             </section>
 
-            {/* Step 3: Who's Joining? */}
+            {/* Step 3: Crew & Rules */}
             <section id="rules" className="scroll-mt-24 space-y-2.5">
               <div>
                 <h2 className="text-base sm:text-lg font-bold text-text-primary tracking-tight font-heading">
-                  Who’s Joining?
+                  Who's joining?
                 </h2>
-                <p className="text-xs text-text-muted font-medium">
-                  Set maximum travelers and privacy permissions.
-                </p>
               </div>
 
               <div className="bg-surface rounded-2xl p-4 sm:p-5 shadow-xs border border-slate-200/80 space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-1.5">
-                      Group Size
+                      Group size
                     </label>
                     <div className="flex items-center gap-3">
                       <button
@@ -659,7 +647,7 @@ const CreateBuddyTrip = () => {
 
                 <div>
                   <label className="block text-[11px] font-bold text-text-muted uppercase tracking-wider mb-2">
-                    Joining Method
+                    Joining method
                   </label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div
@@ -679,7 +667,7 @@ const CreateBuddyTrip = () => {
                           {!formData.isPrivate && <Check className="w-3 h-3 stroke-[3]" />}
                         </div>
                       </div>
-                      <p className="text-xs text-text-muted">Anyone can join before trip starts.</p>
+                      <p className="text-xs text-text-muted">Anyone can join before departure.</p>
                     </div>
 
                     <div
@@ -705,7 +693,7 @@ const CreateBuddyTrip = () => {
 
                   <div className="mt-3 flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-text-muted text-xs font-medium">
                     <span>🔒</span>
-                    <span>Roster locks when journey starts. No new travelers can join after departure.</span>
+                    <span>Roster locks when journey starts.</span>
                   </div>
                 </div>
               </div>

@@ -19,7 +19,9 @@ const {
 const router = express.Router();
 
 router.get("/rooms", verifyToken, getUserRooms);
-router.post("/room/direct/:targetUserId", verifyToken, checkSuspended, getOrCreateDirectRoom);
+router.route("/room/direct/:targetUserId")
+  .get(verifyToken, checkSuspended, getOrCreateDirectRoom)
+  .post(verifyToken, checkSuspended, getOrCreateDirectRoom);
 router.get("/room/:roomId/messages", verifyToken, getRoomMessages);
 router.post("/room/:roomId/message", verifyToken, checkSuspended, sendMessage);
 

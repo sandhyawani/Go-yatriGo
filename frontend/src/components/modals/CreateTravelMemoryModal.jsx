@@ -1592,19 +1592,12 @@ const CreateTravelMemoryModal = ({ isOpen, onClose, onSuccess, user }) => {
                     </div>
 
                     <div className="relative flex flex-1 flex-col rounded-3xl border border-slate-200 bg-slate-50 p-4 transition-all focus-within:border-brand-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-brand-500/10">
-                      <input
-                type="text"
-                value={postTitle}
-                onChange={(e) => setPostTitle(e.target.value)}
-                placeholder="Give your memory a title... (optional)"
-                className="w-full bg-transparent text-sm font-bold text-text-primary outline-none placeholder:text-text-muted mb-2 border-b border-slate-200/50 pb-2" />
-
                       <textarea
                 value={caption}
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="Write a caption about this journey... Use #hashtags to automatically tag it!"
                 maxLength={2200}
-                className="min-h-[90px] flex-1 resize-none bg-transparent text-sm font-medium leading-6 text-text-primary outline-none placeholder:text-text-muted" />
+                className="min-h-[110px] flex-1 resize-none bg-transparent text-sm font-medium leading-6 text-text-primary outline-none placeholder:text-text-muted" />
 
                       {extractedTags.length > 0 &&
                 <div className="flex flex-wrap gap-1.5 mt-2 mb-1">

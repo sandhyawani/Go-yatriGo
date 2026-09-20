@@ -674,7 +674,7 @@ const NotificationsPage = () => {
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              Accept Squad Invite
+                              Accept
                             </button>
 
                             <button
@@ -710,9 +710,9 @@ const NotificationsPage = () => {
           setIsProcessing(false);
         }
       }}
-      className="w-[110px] h-8 min-w-[110px] inline-flex items-center justify-center px-3 bg-brand hover:bg-brand-hover text-white text-[11px] font-semibold rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
+      className="w-20 h-8 min-w-[70px] inline-flex items-center justify-center px-3 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer whitespace-nowrap"
     >
-      Accept Follow
+      Accept
     </button>
 
     <button
@@ -728,9 +728,9 @@ const NotificationsPage = () => {
           setIsProcessing(false);
         }
       }}
-      className="w-[110px] h-8 min-w-[110px] inline-flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap"
+      className="w-20 h-8 min-w-[70px] inline-flex items-center justify-center px-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-all cursor-pointer whitespace-nowrap"
     >
-      Decline Follow
+      Decline
     </button>
   </>
 )}
@@ -756,7 +756,7 @@ const NotificationsPage = () => {
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              Approve Join
+                              Accept
                             </button>
 
                             <button
@@ -807,7 +807,7 @@ const NotificationsPage = () => {
                               }}
                               className="px-3.5 py-1.5 bg-brand hover:bg-brand-hover text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
                             >
-                              Accept Chat
+                              Accept
                             </button>
 
                             <button
@@ -832,7 +832,7 @@ const NotificationsPage = () => {
                               }}
                               className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-xl transition-all cursor-pointer"
                             >
-                              Decline Chat
+                              Decline
                             </button>
                           </>
                         )}

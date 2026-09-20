@@ -625,15 +625,9 @@ export const ProfileMemoryCard = ({
         </div>
 
         <div className="px-3.5 pb-2 text-left space-y-1.5 font-sans">
-          {currentMemory.title && (
-            <h3 className="text-xs sm:text-sm font-bold text-text-primary line-clamp-1 font-heading leading-tight">
-              {currentMemory.title}
-            </h3>
-          )}
-
-          {currentMemory.caption && (
-            <p className="text-xs text-text-secondary font-normal line-clamp-2 leading-relaxed break-words font-sans">
-              {currentMemory.caption}
+          {(currentMemory.caption || currentMemory.title) && (
+            <p className="text-xs text-text-primary font-medium line-clamp-2 leading-relaxed break-words font-sans">
+              {currentMemory.caption || currentMemory.title}
             </p>
           )}
 

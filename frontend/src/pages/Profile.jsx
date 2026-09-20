@@ -784,9 +784,8 @@ const Profile = () => {
         if (isOwn) {
           setCurrentUserData(userData);
           dispatch({
-            type: "LOGIN_SUCCESS",
+            type: "UPDATE_USER",
             payload: {
-              ...currentUser,
               followRequests: userData.followRequests,
               followers: userData.followers,
               following: userData.following,
@@ -803,9 +802,8 @@ const Profile = () => {
                 const selfData = selfRes.data.user || selfRes.data;
                 setCurrentUserData(selfData);
                 dispatch({
-                  type: "LOGIN_SUCCESS",
+                  type: "UPDATE_USER",
                   payload: {
-                    ...currentUser,
                     followRequests: selfData.followRequests,
                     followers: selfData.followers,
                     following: selfData.following,
@@ -947,9 +945,8 @@ const Profile = () => {
           setCurrentUserData(userData);
 
           dispatch({
-            type: "LOGIN_SUCCESS",
+            type: "UPDATE_USER",
             payload: {
-              ...currentUser,
               followRequests: userData.followRequests,
               followers: userData.followers,
               following: userData.following,
@@ -966,9 +963,8 @@ const Profile = () => {
             setCurrentUserData(selfData);
 
             dispatch({
-              type: "LOGIN_SUCCESS",
+              type: "UPDATE_USER",
               payload: {
-                ...currentUser,
                 followRequests: selfData.followRequests,
                 followers: selfData.followers,
                 following: selfData.following,
@@ -1354,9 +1350,8 @@ const Profile = () => {
         const selfData = freshSelf.data.user || freshSelf.data;
 
         dispatch({
-          type: "LOGIN_SUCCESS",
+          type: "UPDATE_USER",
           payload: {
-            ...currentUser,
             followRequests: selfData.followRequests,
             followers: selfData.followers,
             following: selfData.following,
@@ -1383,9 +1378,8 @@ const Profile = () => {
         const selfData = freshSelf.data.user || freshSelf.data;
 
         dispatch({
-          type: "LOGIN_SUCCESS",
+          type: "UPDATE_USER",
           payload: {
-            ...currentUser,
             followRequests: selfData.followRequests,
           },
         });
@@ -1828,6 +1822,12 @@ const Profile = () => {
 
         setUserMemoriesTotal((prev) =>
           Math.max(0, prev - 1)
+        );
+
+        setSelectedMemory((prev) =>
+          prev && (prev._id === memoryToDelete._id || prev.id === memoryToDelete._id)
+            ? null
+            : prev
         );
 
         setShowDeleteMemoryModal(false);

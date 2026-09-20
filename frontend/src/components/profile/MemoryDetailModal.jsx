@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
 import { getAvatarUrl } from "../../utils/avatar";
@@ -270,12 +270,40 @@ export const MemoryDetailModal = ({
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
+                {isCreator && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const editData = {
+                        ...selectedMemory,
+                        caption: selectedMemory.caption ?? selectedMemory.title ?? "",
+                      };
+                      if (setEditMemoryData) {
+                        setEditMemoryData(editData);
+                      } else if (setEditPostData) {
+                        setEditPostData(editData);
+                      }
+                      if (setShowEditMemoryModal) {
+                        setShowEditMemoryModal(true);
+                      } else if (setShowEditPostModal) {
+                        setShowEditPostModal(true);
+                      }
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-primary-600 hover:bg-primary-50 transition-colors active:scale-95"
+                    title="Edit Memory"
+                    aria-label="Edit memory"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                )}
+
                 <div className="relative" ref={menuRef}>
                   <button
                     type="button"
                     onClick={() => setShowMenu((prev) => !prev)}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-background transition-colors"
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors"
                     aria-label="More options"
+                    title="More options"
                   >
                     <MoreVertical className="w-4 h-4" />
                   </button>
@@ -287,59 +315,24 @@ export const MemoryDetailModal = ({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -4 }}
                         transition={{ duration: 0.12 }}
-                        className="absolute right-0 top-full mt-1 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 text-left"
+                        className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-50 text-left"
                       >
                         {isCreator ? (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowMenu(false);
-                                if (setEditMemoryData) {
-                                  setEditMemoryData(selectedMemory);
-                                } else if (setEditPostData) {
-                                  setEditPostData(selectedMemory);
-                                }
-                                if (setShowEditMemoryModal) {
-                                  setShowEditMemoryModal(true);
-                                } else if (setShowEditPostModal) {
-                                  setShowEditPostModal(true);
-                                }
-                              }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
-                            >
-                              <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                              <span>Edit Memory</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowMenu(false);
-                                setShowChangeCoverModal(true);
-                              }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
-                            >
-                              <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                              <span>Change Cover</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setShowMenu(false);
-                                if (handleDeleteMemory) {
-                                  handleDeleteMemory(selectedMemory);
-                                } else if (handleDeletePost) {
-                                  handleDeletePost(selectedMemory);
-                                }
-                              }}
-                              className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-500 hover:bg-rose-50 transition-colors border-t border-slate-100 mt-0.5 whitespace-nowrap"
-                            >
-                              <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                              <span>Delete Memory</span>
-                            </button>
-                          </>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowMenu(false);
+                              if (handleDeleteMemory) {
+                                handleDeleteMemory(selectedMemory);
+                              } else if (handleDeletePost) {
+                                handleDeletePost(selectedMemory);
+                              }
+                            }}
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors whitespace-nowrap"
+                          >
+                            <Trash2 className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                            <span>Delete Memory</span>
+                          </button>
                         ) : (
                           <button
                             type="button"
@@ -356,7 +349,7 @@ export const MemoryDetailModal = ({
                                 });
                               }
                             }}
-                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover transition-colors whitespace-nowrap"
+                            className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-semibold text-text-primary hover:bg-slate-50 transition-colors whitespace-nowrap"
                           >
                             <ShieldAlert className="w-3.5 h-3.5 text-text-muted shrink-0" />
                             <span>Report Memory</span>
@@ -371,7 +364,8 @@ export const MemoryDetailModal = ({
                   type="button"
                   onClick={() => setSelectedMemory(null)}
                   aria-label="Close details"
-                  className="flex h-8 w-8 items-center justify-center rounded-full bg-background hover text-text-muted hover:text-text-primary transition-colors ml-1"
+                  title="Close"
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-text-primary hover:bg-slate-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -564,15 +558,9 @@ export const MemoryDetailModal = ({
             </div>
 
             <div className="px-4 sm:px-5 pt-3.5 pb-2 text-left space-y-2">
-              {selectedMemory.title && (
-                <h2 className="text-base sm:text-lg font-bold text-text-primary leading-snug font-heading">
-                  {selectedMemory.title}
-                </h2>
-              )}
-
-              {selectedMemory.caption && (
+              {(selectedMemory.caption || selectedMemory.title) && (
                 <p className="text-xs sm:text-sm text-text-primary font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
-                  {renderClickableText(selectedMemory.caption)}
+                  {renderClickableText(selectedMemory.caption || selectedMemory.title)}
                 </p>
               )}
 

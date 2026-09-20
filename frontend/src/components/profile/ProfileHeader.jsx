@@ -200,13 +200,6 @@ export const ProfileHeader = ({
       profileUser.privacySettings?.whoCanMessage || "everyone";
 
     if (whoCanMessage === "everyone") {
-      if (
-        profileUser.privateAccount &&
-        !isFollowing &&
-        !currentUser?.isAdmin
-      ) {
-        return false;
-      }
       return true;
     }
 

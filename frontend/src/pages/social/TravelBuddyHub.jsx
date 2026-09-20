@@ -481,9 +481,9 @@ const TravelBuddyHub = () => {
               <p className="text-xs sm:text-sm text-slate-500 font-medium leading-relaxed max-w-xl">
                 {!loading && totalFilteredTrips === 0
                   ? (dynamicCityName
-                      ? `No active trips near ${dynamicCityName} yet. Create one and invite fellow travelers.`
-                      : "No active trips yet. Create one and invite fellow travelers.")
-                  : "Discover active trips and find people heading your way."}
+                      ? `No active trips near ${dynamicCityName} yet.`
+                      : "No active trips yet.")
+                  : "Find trip groups and travelers heading your way."}
               </p>
             </div>
 
@@ -493,7 +493,7 @@ const TravelBuddyHub = () => {
                 className="btn-primary w-full sm:w-auto !min-h-[42px] !py-2 sm:!py-2.5 !px-4 !text-xs sm:!text-sm inline-flex items-center justify-center gap-2"
               >
                 <Plus className="w-4 h-4 text-white stroke-[2.5] shrink-0" />
-                <span>Create Trip Group</span>
+                <span>Create Trip</span>
               </Link>
             </div>
           </div>
@@ -903,20 +903,20 @@ const TravelBuddyHub = () => {
                 {getEmptyStateMessage()}
               </h3>
               <p className="text-sm text-slate-500 max-w-md mx-auto mb-6">
-                No trips matching this criteria right now. Be the first to start an adventure or adjust your search filters!
+                No trips matching your current filters. Try resetting filters or start a new trip.
               </p>
               <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
                   onClick={handleClearFilters}
                   className="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-2xl transition-all active:scale-95 text-xs sm:text-sm"
                 >
-                  Reset All Filters
+                  Reset Filters
                 </button>
                 <Link
                   to="/social/buddy/new"
                   className="px-6 py-2.5 bg-gradient-to-r from-brand to-brand-dark hover:brightness-110 text-white font-bold rounded-2xl transition-all shadow-md active:scale-95 text-xs sm:text-sm flex items-center gap-2"
                 >
-                  <Plus className="w-4 h-4" /> Create Trip Group
+                  <Plus className="w-4 h-4" /> Create Trip
                 </Link>
               </div>
             </motion.div>
