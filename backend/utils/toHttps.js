@@ -21,9 +21,19 @@ const toHttps = (url) => {
   return trimmed;
 };
 
+const isObjectId = (val) => {
+  if (!val) return false;
+  if (typeof val === "string") return false;
+  if (val._bsontype === "ObjectID" || val._bsontype === "ObjectId") return true;
+  if (val.constructor && (val.constructor.name === "ObjectId" || val.constructor.name === "ObjectID")) return true;
+  return false;
+};
+
 const normalizeUserUrls = (user) => {
   if (!user) return user;
+  if (typeof user === "string" || isObjectId(user)) return user;
   const target = (typeof user.toObject === "function") ? user.toObject() : { ...user };
+  if (isObjectId(target)) return user;
 
   if (target.avatar) target.avatar = toHttps(target.avatar);
   if (target.pic) target.pic = toHttps(target.pic);
@@ -37,12 +47,12 @@ const normalizeUserUrls = (user) => {
 
   if (Array.isArray(target.followers)) {
     target.followers = target.followers.map((f) =>
-      f && typeof f === "object" ? normalizeUserUrls(f) : f
+      f && typeof f === "object" && !isObjectId(f) ? normalizeUserUrls(f) : f
     );
   }
   if (Array.isArray(target.following)) {
     target.following = target.following.map((f) =>
-      f && typeof f === "object" ? normalizeUserUrls(f) : f
+      f && typeof f === "object" && !isObjectId(f) ? normalizeUserUrls(f) : f
     );
   }
 
@@ -51,19 +61,22 @@ const normalizeUserUrls = (user) => {
 
 const normalizeJourneyUrls = (journey) => {
   if (!journey) return journey;
+  if (typeof journey === "string" || isObjectId(journey)) return journey;
   const target = (typeof journey.toObject === "function") ? journey.toObject() : { ...journey };
+  if (isObjectId(target)) return journey;
 
   if (target.coverImage) target.coverImage = toHttps(target.coverImage);
   if (target.image) target.image = toHttps(target.image);
 
-  if (target.creator && typeof target.creator === "object") {
+  if (target.creator && typeof target.creator === "object" && !isObjectId(target.creator)) {
     target.creator = normalizeUserUrls(target.creator);
   }
 
   if (Array.isArray(target.members)) {
     target.members = target.members.map((m) => {
-      const memObj = m && typeof m.toObject === "function" ? m.toObject() : { ...m };
-      if (memObj.user && typeof memObj.user === "object") {
+      if (!m) return m;
+      const memObj = typeof m.toObject === "function" ? m.toObject() : { ...m };
+      if (memObj.user && typeof memObj.user === "object" && !isObjectId(memObj.user)) {
         memObj.user = normalizeUserUrls(memObj.user);
       }
       return memObj;
@@ -72,7 +85,8 @@ const normalizeJourneyUrls = (journey) => {
 
   if (Array.isArray(target.timeline)) {
     target.timeline = target.timeline.map((item) => {
-      const itemObj = item && typeof item.toObject === "function" ? item.toObject() : { ...item };
+      if (!item) return item;
+      const itemObj = typeof item.toObject === "function" ? item.toObject() : { ...item };
       if (itemObj.photoUrl) itemObj.photoUrl = toHttps(itemObj.photoUrl);
       if (itemObj.mediaUrl) itemObj.mediaUrl = toHttps(itemObj.mediaUrl);
       return itemObj;

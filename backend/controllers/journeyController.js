@@ -370,14 +370,23 @@ exports.createJourney = async (req, res) => {
 
 exports.getMyJourneys = async (req, res) => {
   try {
-    const userId = req.user._id || req.user.id;
+    const rawUserId = req.user?._id || req.user?.id;
+    if (!rawUserId) {
+      return res.status(401).json({ success: false, message: "Authentication required" });
+    }
+
+    const userIdStr = rawUserId.toString();
+    const userIdObj = mongoose.isValidObjectId(userIdStr) ? new mongoose.Types.ObjectId(userIdStr) : null;
     const { filter, status } = req.query;
 
+    const userConditions = [{ creator: rawUserId }, { "members.user": rawUserId }];
+    if (userIdObj) {
+      userConditions.push({ creator: userIdObj }, { "members.user": userIdObj });
+    }
+    userConditions.push({ creator: userIdStr }, { "members.user": userIdStr });
+
     let query = {
-      $or: [
-        { creator: userId },
-        { "members.user": userId }
-      ]
+      $or: userConditions
     };
 
     if (status && status !== "all") {
@@ -385,29 +394,55 @@ exports.getMyJourneys = async (req, res) => {
     }
 
     let journeys = await Journey.find(query).sort({ startDate: 1 });
-    const syncedJourneys = await Promise.all(journeys.map((j) => syncJourneyStatus(j)));
-    const syncedIds = syncedJourneys.map((j) => j._id);
-
-    const populatedJourneys = await Journey.find({ _id: { $in: syncedIds } }).
-    populate("creator", "name profilePic pic img avatar isVerified").
-    populate("members.user", "name profilePic pic img avatar isVerified").
-    sort({ startDate: 1 });
-
-    let finalJourneys = populatedJourneys;
-    if (filter === "upcoming") {
-      finalJourneys = populatedJourneys.filter((j) => j.status === "Upcoming" || j.status === "Planning");
-    } else if (filter === "ongoing") {
-      finalJourneys = populatedJourneys.filter((j) => j.status === "Ongoing");
-    } else if (filter === "completed") {
-      finalJourneys = populatedJourneys.filter((j) => j.status === "Completed");
-    } else if (filter === "cancelled") {
-      finalJourneys = populatedJourneys.filter((j) => j.status === "Cancelled" || j.isCancelled);
+    if (!journeys || !Array.isArray(journeys)) {
+      journeys = [];
     }
+
+    const syncedJourneys = await Promise.all(
+      journeys.map(async (j) => {
+        try {
+          return await syncJourneyStatus(j);
+        } catch (syncErr) {
+          console.error("Non-fatal sync error in getMyJourneys:", syncErr?.message || syncErr);
+          return j;
+        }
+      })
+    );
+
+    const validSyncedJourneys = syncedJourneys.filter(Boolean);
+    const syncedIds = validSyncedJourneys.map((j) => j._id).filter(Boolean);
+
+    let populatedJourneys = [];
+    if (syncedIds.length > 0) {
+      populatedJourneys = await Journey.find({ _id: { $in: syncedIds } })
+        .populate("creator", "name profilePic pic img avatar isVerified")
+        .populate("members.user", "name profilePic pic img avatar isVerified")
+        .sort({ startDate: 1 });
+    }
+
+    let finalJourneys = populatedJourneys || [];
+    if (filter === "upcoming") {
+      finalJourneys = populatedJourneys.filter((j) => j && (j.status === "Upcoming" || j.status === "Planning"));
+    } else if (filter === "ongoing") {
+      finalJourneys = populatedJourneys.filter((j) => j && j.status === "Ongoing");
+    } else if (filter === "completed") {
+      finalJourneys = populatedJourneys.filter((j) => j && j.status === "Completed");
+    } else if (filter === "cancelled") {
+      finalJourneys = populatedJourneys.filter((j) => j && (j.status === "Cancelled" || j.isCancelled));
+    }
+
+    const safeFinalJourneys = (finalJourneys || []).map((j) => {
+      try {
+        return normalizeJourneyUrls(j);
+      } catch (normErr) {
+        return j;
+      }
+    });
 
     res.json({
       success: true,
-      count: finalJourneys.length,
-      journeys: finalJourneys.map(normalizeJourneyUrls)
+      count: safeFinalJourneys.length,
+      journeys: safeFinalJourneys
     });
   } catch (error) {
     console.error("Error fetching user journeys:", error);
