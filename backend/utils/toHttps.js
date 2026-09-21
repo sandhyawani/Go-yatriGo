@@ -114,7 +114,7 @@ const normalizePostUrls = (post) => {
     target.music = m;
   }
 
-  if (target.userId && typeof target.userId === "object") {
+  if (target.userId && typeof target.userId === "object" && !isObjectId(target.userId)) {
     target.userId = normalizeUserUrls(target.userId);
   }
 
@@ -122,7 +122,7 @@ const normalizePostUrls = (post) => {
     target.comments = target.comments.map((c) => {
       const cObj = c && typeof c.toObject === "function" ? c.toObject() : { ...c };
       if (cObj.userPic) cObj.userPic = toHttps(cObj.userPic);
-      if (cObj.userId && typeof cObj.userId === "object") {
+      if (cObj.userId && typeof cObj.userId === "object" && !isObjectId(cObj.userId)) {
         cObj.userId = normalizeUserUrls(cObj.userId);
       }
       return cObj;
@@ -132,14 +132,17 @@ const normalizePostUrls = (post) => {
   return target;
 };
 
-const sanitizeCloudinaryUrls = (data) => {
+const sanitizeCloudinaryUrls = (data, seen = new WeakSet()) => {
   if (!data) return data;
   if (typeof data === "string") {
     return toHttps(data);
   }
+  if (isObjectId(data)) return data;
   if (Array.isArray(data)) {
+    if (seen.has(data)) return data;
+    seen.add(data);
     for (let i = 0; i < data.length; i++) {
-      data[i] = sanitizeCloudinaryUrls(data[i]);
+      data[i] = sanitizeCloudinaryUrls(data[i], seen);
     }
     return data;
   }
@@ -149,12 +152,18 @@ const sanitizeCloudinaryUrls = (data) => {
       data instanceof RegExp ||
       (typeof Buffer !== "undefined" && Buffer.isBuffer && Buffer.isBuffer(data)) ||
       data._bsontype === "ObjectID" ||
-      data._bsontype === "ObjectId"
+      data._bsontype === "ObjectId" ||
+      isObjectId(data)
     ) {
       return data;
     }
 
+    if (seen.has(data)) return data;
+    seen.add(data);
+
     const target = (typeof data.toObject === "function") ? data.toObject() : data;
+    if (isObjectId(target)) return data;
+
     for (const key of Object.keys(target)) {
       const val = target[key];
       if (typeof val === "string") {
@@ -162,7 +171,7 @@ const sanitizeCloudinaryUrls = (data) => {
           target[key] = toHttps(val);
         }
       } else if (typeof val === "object" && val !== null) {
-        target[key] = sanitizeCloudinaryUrls(val);
+        target[key] = sanitizeCloudinaryUrls(val, seen);
       }
     }
     return target;

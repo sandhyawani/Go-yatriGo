@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const ChatRoom = require("../models/ChatRoom");
 const Message = require("../models/Message");
 const User = require("../models/User");
