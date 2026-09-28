@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Edit, Trash2, ShieldAlert, Send, Loader2, Camera, ChevronLeft, ChevronRight, Pencil } from "lucide-react";
+import { X, Sparkles, MessageCircle, Share2, Bookmark, MapPin, Calendar, Compass, Music2, Play, Pause, MoreVertical, Trash2, ShieldAlert, Send, Loader2, ChevronLeft, ChevronRight, Pencil, Check } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
 import { toHttps } from "../../utils/toHttps";
 import { renderClickableText } from "../home/feed/utils/feedHelpers";
-import ChangeCoverModal from "../modals/ChangeCoverModal";
 import { isActuallyVerified } from "../../utils/verification";
 import AudioManager from "../../utils/AudioManager";
 import { showToast } from "../../utils/showToast";
@@ -46,10 +46,14 @@ export const MemoryDetailModal = ({
   handleDeletePost,
   handleAvatarError,
   audioRefs,
+  onMemoryUpdated,
 }) => {
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
-  const [showChangeCoverModal, setShowChangeCoverModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editCaption, setEditCaption] = useState("");
+  const [editLocation, setEditLocation] = useState("");
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [activeMediaIndex, setActiveMediaIndex] = useState(0);
   const menuRef = useRef(null);
   const modalAudioRef = useRef(null);
@@ -95,6 +99,12 @@ export const MemoryDetailModal = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showMenu]);
+  useEffect(() => {
+    if (!isEditing && selectedMemory) {
+      setEditCaption(selectedMemory.caption ?? selectedMemory.title ?? "");
+      setEditLocation(selectedMemory.location ?? "");
+    }
+  }, [selectedMemory, isEditing]);
 
   if (!selectedMemory) return null;
 
@@ -186,11 +196,68 @@ export const MemoryDetailModal = ({
 
   const isAudioPlaying = playingAudioId === memoryId;
 
-  const handleCoverUpdated = (updatedMemory) => {
-    setSelectedMemory((prev) => ({
-      ...prev,
-      ...updatedMemory,
-    }));
+  const handleStartEdit = () => {
+    setShowMenu(false);
+    setEditCaption(selectedMemory?.caption ?? selectedMemory?.title ?? "");
+    setEditLocation(selectedMemory?.location ?? "");
+    setIsEditing((prev) => !prev);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditCaption(selectedMemory?.caption ?? selectedMemory?.title ?? "");
+    setEditLocation(selectedMemory?.location ?? "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (isSavingEdit || !memoryId) return;
+    setIsSavingEdit(true);
+
+    try {
+      const res = await axios.put(
+        `/social/memory/${memoryId}`,
+        {
+          caption: editCaption,
+          location: editLocation,
+        },
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        showToast.success("Travel Memory updated successfully!");
+        const updatedMemory = res.data.post || res.data.memory || {
+          ...selectedMemory,
+          caption: editCaption,
+          title: editCaption,
+          location: editLocation,
+        };
+
+        const updatedData = {
+          ...selectedMemory,
+          ...updatedMemory,
+          caption: editCaption,
+          title: editCaption,
+          location: editLocation,
+        };
+
+        setSelectedMemory(updatedData);
+
+        if (onMemoryUpdated) {
+          onMemoryUpdated(updatedData);
+        }
+
+        setIsEditing(false);
+      } else {
+        throw new Error(res.data?.message || "Failed to update Travel Memory");
+      }
+    } catch (err) {
+      console.error("Failed to update travel memory:", err);
+      showToast.error(
+        err.response?.data?.message || "Failed to update Travel Memory."
+      );
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   const travelDateFormatted = selectedMemory.createdAt
@@ -273,23 +340,12 @@ export const MemoryDetailModal = ({
                 {isCreator && (
                   <button
                     type="button"
-                    onClick={() => {
-                      const editData = {
-                        ...selectedMemory,
-                        caption: selectedMemory.caption ?? selectedMemory.title ?? "",
-                      };
-                      if (setEditMemoryData) {
-                        setEditMemoryData(editData);
-                      } else if (setEditPostData) {
-                        setEditPostData(editData);
-                      }
-                      if (setShowEditMemoryModal) {
-                        setShowEditMemoryModal(true);
-                      } else if (setShowEditPostModal) {
-                        setShowEditPostModal(true);
-                      }
-                    }}
-                    className="flex h-8 w-8 items-center justify-center rounded-full text-text-muted hover:text-primary-600 hover:bg-primary-50 transition-colors active:scale-95"
+                    onClick={handleStartEdit}
+                    className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors active:scale-95 ${
+                      isEditing
+                        ? "text-primary-600 bg-primary-50"
+                        : "text-text-muted hover:text-primary-600 hover:bg-primary-50"
+                    }`}
                     title="Edit Memory"
                     aria-label="Edit memory"
                   >
@@ -527,19 +583,7 @@ export const MemoryDetailModal = ({
                   </div>
                 )}
 
-                {isCreator && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowChangeCoverModal(true);
-                    }}
-                    className="absolute top-3 right-3 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 hover:bg-black/85 text-white text-[11px] font-bold backdrop-blur-md shadow-md opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95 z-20"
-                  >
-                    <Camera className="w-3.5 h-3.5 text-primary-300" />
-                    <span>Change Cover</span>
-                  </button>
-                )}
+
 
                 {journeyLikeAnim?.postId === memoryId && (
                   <motion.div
@@ -558,46 +602,110 @@ export const MemoryDetailModal = ({
             </div>
 
             <div className="px-4 sm:px-5 pt-3.5 pb-2 text-left space-y-2">
-              {(selectedMemory.caption || selectedMemory.title) && (
-                <p className="text-xs sm:text-sm text-text-primary font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
-                  {renderClickableText(selectedMemory.caption || selectedMemory.title)}
-                </p>
-              )}
-
-              <div className="flex flex-wrap items-center gap-2 pt-1">
-                {selectedMemory.location && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
-                    <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                    <span className="truncate max-w-[200px]">
-                      {selectedMemory.location}
-                    </span>
+              {isEditing ? (
+                <div className="space-y-3 pt-1 pb-1">
+                  <div>
+                    <label className="block text-xs font-bold text-text-secondary mb-1">
+                      Caption
+                    </label>
+                    <textarea
+                      value={editCaption}
+                      onChange={(e) => setEditCaption(e.target.value)}
+                      placeholder="Caption"
+                      rows="3"
+                      className="w-full bg-secondary-50 border border-border rounded-xl p-3 text-xs text-text-primary outline-none focus:border-primary-600 focus:bg-white transition resize-none font-medium leading-relaxed"
+                    />
                   </div>
-                )}
 
-                {travelDateFormatted && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
-                    <Calendar className="w-3.5 h-3.5 text-primary-600 shrink-0" />
-                    <span>{travelDateFormatted}</span>
+                  <div>
+                    <label className="block text-xs font-bold text-text-secondary mb-1">
+                      Location
+                    </label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-rose-500" />
+                      <input
+                        type="text"
+                        value={editLocation}
+                        onChange={(e) => setEditLocation(e.target.value)}
+                        placeholder="Location"
+                        className="w-full pl-9 pr-3 py-2 bg-secondary-50 border border-border rounded-xl text-xs text-text-primary outline-none focus:border-primary-600 focus:bg-white transition font-medium"
+                      />
+                    </div>
                   </div>
-                )}
 
-                {selectedMemory.journeyId && (
-                  <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 border border-primary-100 text-[11px] font-semibold">
-                    <Compass className="w-3.5 h-3.5 text-primary-600 shrink-0" />
-                    <span>Journey Escape</span>
-                  </div>
-                )}
-
-                {selectedMemory.tags &&
-                  selectedMemory.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="inline-block px-2 py-0.5 rounded-full bg-background text-text-secondary text-[10px] font-medium"
+                  <div className="flex items-center justify-end gap-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      disabled={isSavingEdit}
+                      className="px-3.5 py-1.5 rounded-full text-xs font-semibold text-text-muted hover:bg-secondary-100 transition active:scale-95 disabled:opacity-50"
                     >
-                      #{tag}
-                    </span>
-                  ))}
-              </div>
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEdit}
+                      disabled={isSavingEdit}
+                      className="px-5 py-1.5 rounded-full text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition active:scale-95 flex items-center gap-1.5 disabled:opacity-50"
+                    >
+                      {isSavingEdit ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <span>Saving...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Save</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {(selectedMemory.caption || selectedMemory.title) && (
+                    <p className="text-xs sm:text-sm text-text-primary font-normal leading-relaxed whitespace-pre-wrap break-words font-sans">
+                      {renderClickableText(selectedMemory.caption || selectedMemory.title)}
+                    </p>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {selectedMemory.location && (
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
+                        <MapPin className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <span className="truncate max-w-[200px]">
+                          {selectedMemory.location}
+                        </span>
+                      </div>
+                    )}
+
+                    {travelDateFormatted && (
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-background text-text-primary text-[11px] font-semibold">
+                        <Calendar className="w-3.5 h-3.5 text-primary-600 shrink-0" />
+                        <span>{travelDateFormatted}</span>
+                      </div>
+                    )}
+
+                    {selectedMemory.journeyId && (
+                      <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-50 text-primary-700 border border-primary-100 text-[11px] font-semibold">
+                        <Compass className="w-3.5 h-3.5 text-primary-600 shrink-0" />
+                        <span>Journey Escape</span>
+                      </div>
+                    )}
+
+                    {selectedMemory.tags &&
+                      selectedMemory.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className="inline-block px-2 py-0.5 rounded-full bg-background text-text-secondary text-[10px] font-medium"
+                        >
+                          #{tag}
+                        </span>
+                      ))}
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="px-4 sm:px-5 py-2.5 mt-1 flex items-center justify-between border-y border-slate-100 bg-slate-50/70 select-none">
@@ -861,15 +969,6 @@ export const MemoryDetailModal = ({
           </motion.div>
         </div>
       </AnimatePresence>
-
-      {showChangeCoverModal && (
-        <ChangeCoverModal
-          isOpen={showChangeCoverModal}
-          onClose={() => setShowChangeCoverModal(false)}
-          memory={selectedMemory}
-          onCoverUpdated={handleCoverUpdated}
-        />
-      )}
     </>
   );
 };

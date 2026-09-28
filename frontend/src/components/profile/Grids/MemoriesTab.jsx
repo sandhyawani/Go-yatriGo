@@ -1,4 +1,4 @@
-﻿import React from "react";
+import React from "react";
 import { Globe, Plus, AlertCircle, Loader2 } from "lucide-react";
 import ProfileMemoryCard from "./ProfileMemoryCard";
 
@@ -41,6 +41,7 @@ export const MemoriesTab = ({
   handleDeleteMemory,
   handleAvatarError,
   audioRefs,
+  onMemoryUpdated,
 }) => {
   if (memoriesLoading && userMemories.length === 0) {
     return (
@@ -254,6 +255,7 @@ export const MemoriesTab = ({
                   }
                 }
               }}
+              onMemoryUpdated={onMemoryUpdated}
               onCardClick={() => setSelectedMemory?.(memory)}
             />
           );

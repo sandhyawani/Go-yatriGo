@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Mail, Phone, Calendar, MapPin, Clock, Edit, Share2, Ban, ShieldAlert, Star, ShieldCheck, XCircle, MoreVertical, MessageCircle, Check, UserPlus, UserCheck, Loader2, X, Eye } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
@@ -6,9 +6,11 @@ import axios from "../../api/axios";
 import { getAvatarUrl } from "../../utils/avatar";
 import { toHttps } from "../../utils/toHttps";
 import { showToast } from "../../utils/showToast";
-import { compressImage } from "../../utils/compressImage";
 import { chatService } from "../../services/chatService";
 import { isActuallyVerified } from "../../utils/verification";
+import { compressImage } from "../../utils/compressImage";
+import { INDIAN_STATES_AND_CITIES } from "../../constants/locationData";
+import CustomSelect from "../ui/CustomSelect";
 
 export const ProfileHeader = ({
   profileUser,
@@ -36,14 +38,31 @@ export const ProfileHeader = ({
   handleOpenStory,
   journeyStats,
   onProfileUpdate,
+  triggerInlineField = null,
+  onTriggerInlineFieldHandled,
 }) => {
   const [copied, setCopied] = useState(false);
-  const [coverFile, setCoverFile] = useState(null);
-  const [coverPreview, setCoverPreview] = useState("");
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
   const [showPhotoModal, setShowPhotoModal] = useState(false);
-  const coverInputRef = useRef(null);
-  const previewUrlRef = useRef(null);
+
+  // Inline edit state machine
+  const [activeField, setActiveField] = useState(null);
+  const [editValues, setEditValues] = useState({
+    name: "",
+    username: "",
+    bio: "",
+    state: "",
+    city: "",
+    mobile: "",
+    interests: [],
+  });
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
+  const [newInterestInput, setNewInterestInput] = useState("");
+
+  // Avatar inline editing
+  const [avatarFile, setAvatarFile] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const avatarFileInputRef = useRef(null);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -59,112 +78,277 @@ export const ProfileHeader = ({
     };
   }, [showPhotoModal]);
 
+  // Clean up avatar preview URL on change/unmount
   useEffect(() => {
     return () => {
-      if (previewUrlRef.current) {
-        URL.revokeObjectURL(previewUrlRef.current);
-        previewUrlRef.current = null;
+      if (avatarPreview && avatarPreview.startsWith("blob:")) {
+        URL.revokeObjectURL(avatarPreview);
       }
     };
-  }, []);
+  }, [avatarPreview]);
 
-  const handleCoverSelect = (e) => {
+  // Handle external trigger for inline editing (e.g. from completion checklist)
+  useEffect(() => {
+    if (triggerInlineField && isOwnProfile) {
+      if (triggerInlineField === "avatar") {
+        avatarFileInputRef.current?.click();
+      } else {
+        handleStartEdit(triggerInlineField);
+      }
+      onTriggerInlineFieldHandled?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [triggerInlineField, isOwnProfile]);
+
+  const handleStartEdit = (field) => {
+    if (!isOwnProfile || isSaving) return;
+
+    if (activeField === "avatar") {
+      handleCancelAvatar();
+    }
+
+    setEditValues({
+      name: profileUser?.name || "",
+      username: profileUser?.username || "",
+      bio: profileUser?.bio || "",
+      state: profileUser?.state || "",
+      city: profileUser?.city || "",
+      mobile: profileUser?.mobile || "",
+      interests: Array.isArray(profileUser?.interests) ? [...profileUser.interests] : [],
+    });
+    setNewInterestInput("");
+    setFieldErrors({});
+    setActiveField(field);
+  };
+
+  const handleCancelEdit = () => {
+    if (isSaving) return;
+    if (activeField === "avatar") {
+      handleCancelAvatar();
+      return;
+    }
+    setFieldErrors({});
+    setActiveField(null);
+  };
+
+  const handleFieldChange = (field, value) => {
+    setEditValues((prev) => ({ ...prev, [field]: value }));
+    if (fieldErrors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+  const handleAddInterest = (interestToAdd) => {
+    const trimmed = (interestToAdd || "").trim();
+    if (!trimmed) return;
+    if (editValues.interests.length >= 10) {
+      setFieldErrors((prev) => ({ ...prev, interests: "Maximum 10 interests allowed." }));
+      return;
+    }
+    if (editValues.interests.some((item) => item.toLowerCase() === trimmed.toLowerCase())) {
+      setFieldErrors((prev) => ({ ...prev, interests: "Interest already added." }));
+      return;
+    }
+    setEditValues((prev) => ({
+      ...prev,
+      interests: [...prev.interests, trimmed],
+    }));
+    setNewInterestInput("");
+    setFieldErrors((prev) => ({ ...prev, interests: "" }));
+  };
+
+  const validateField = (field, values) => {
+    if (field === "name") {
+      const val = (values.name || "").trim();
+      if (!val) return "Full name is required.";
+      if (val.length > 80) return "Use 80 characters or fewer.";
+    }
+    if (field === "username") {
+      const val = (values.username || "").trim().toLowerCase();
+      if (!val) return "Username is required.";
+      if (val.length < 3 || val.length > 30) return "Username must be between 3 and 30 characters.";
+      if (!/^[a-z0-9_](?:[a-z0-9._]{1,28}[a-z0-9_])$/.test(val) || val.includes("..")) {
+        return "Use 3-30 lowercase letters, numbers, dots, or underscores.";
+      }
+    }
+    if (field === "bio") {
+      const val = (values.bio || "").trim();
+      if (val.length > 280) return "Use 280 characters or fewer.";
+    }
+    if (field === "location") {
+      const state = (values.state || "").trim();
+      const city = (values.city || "").trim();
+      if (!state) return "State is required.";
+      if (!city) return "City is required.";
+      const validCities = INDIAN_STATES_AND_CITIES[state];
+      if (!validCities || !validCities.includes(city)) {
+        return "Selected city does not belong to the state.";
+      }
+    }
+    if (field === "mobile") {
+      const val = (values.mobile || "").trim();
+      if (val && !/^[6-9]\d{9}$/.test(val)) {
+        return "Enter a valid 10-digit Indian mobile number.";
+      }
+    }
+    if (field === "interests") {
+      if (values.interests && values.interests.length > 10) {
+        return "Maximum 10 interests allowed.";
+      }
+    }
+    return null;
+  };
+
+  const handleSaveField = async (field) => {
+    const error = validateField(field, editValues);
+    if (error) {
+      setFieldErrors((prev) => ({ ...prev, [field]: error }));
+      return;
+    }
+    setFieldErrors((prev) => ({ ...prev, [field]: "" }));
+
+    const targetUserId = profileUser?._id || profileUser?.id;
+    if (!targetUserId) {
+      showToast.error("User not found");
+      return;
+    }
+
+    let payload = {};
+    if (field === "name") {
+      payload = { name: editValues.name.trim() };
+    } else if (field === "username") {
+      payload = { username: editValues.username.trim().toLowerCase() };
+    } else if (field === "bio") {
+      payload = { bio: editValues.bio.trim() };
+    } else if (field === "location") {
+      payload = { state: editValues.state.trim(), city: editValues.city.trim(), country: "India" };
+    } else if (field === "mobile") {
+      payload = { mobile: editValues.mobile.trim() };
+    } else if (field === "interests") {
+      payload = { interests: editValues.interests };
+    }
+
+    setIsSaving(true);
+    try {
+      const response = await axios.put(`/users/${targetUserId}`, payload, {
+        withCredentials: true,
+      });
+
+      const updatedUser = response.data?.user || response.data;
+      if (onProfileUpdate) {
+        onProfileUpdate(updatedUser);
+      }
+      showToast.success(`${field.charAt(0).toUpperCase() + field.slice(1)} updated successfully!`);
+      setActiveField(null);
+    } catch (err) {
+      const errorMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to update profile.";
+      setFieldErrors((prev) => ({ ...prev, [field]: errorMsg }));
+      showToast.error(errorMsg);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const allowedTypes = [
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/webp",
-    ];
-
-    if (!allowedTypes.includes(file.type?.toLowerCase())) {
-      showToast.error(
-        "Invalid image format",
-        "Please select a JPG, JPEG, PNG, or WEBP image."
-      );
+    if (!file.type.startsWith("image/")) {
+      showToast.error("Invalid file type", "Please upload a valid image file.");
       e.target.value = "";
       return;
     }
 
-    const maxSizeBytes = 5 * 1024 * 1024;
-    if (file.size > maxSizeBytes) {
-      showToast.error("File too large", "Cover photo must be under 5MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      showToast.error("File too large", "Image must be under 5MB.");
       e.target.value = "";
       return;
     }
 
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
+    if (avatarPreview && avatarPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
     }
 
-    const objectUrl = URL.createObjectURL(file);
-    previewUrlRef.current = objectUrl;
-    setCoverFile(file);
-    setCoverPreview(objectUrl);
+    const previewUrl = URL.createObjectURL(file);
+    setAvatarFile(file);
+    setAvatarPreview(previewUrl);
+    setActiveField("avatar");
   };
 
-  const handleCancelCover = () => {
-    if (previewUrlRef.current) {
-      URL.revokeObjectURL(previewUrlRef.current);
-      previewUrlRef.current = null;
-    }
-    setCoverFile(null);
-    setCoverPreview("");
-    if (coverInputRef.current) coverInputRef.current.value = "";
-  };
+  const handleSaveAvatar = async () => {
+    if (!avatarFile) return;
 
-  const handleSaveCover = async () => {
-    if (!coverFile || isUploadingCover) return;
+    const targetUserId = profileUser?._id || profileUser?.id;
+    if (!targetUserId) return;
 
-    setIsUploadingCover(true);
+    setIsSaving(true);
     try {
-      const compressed = await compressImage(coverFile, 1.5, 1920);
-
+      const compressed = await compressImage(avatarFile);
       const formData = new FormData();
       formData.append("image", compressed);
 
       const uploadRes = await axios.post("/upload", formData, {
-        withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
+        withCredentials: true,
       });
 
       const uploadedUrl = (uploadRes.data?.secure_url || uploadRes.data?.url || "").replace(/^http:\/\//i, "https://");
       if (!uploadedUrl) {
-        throw new Error(uploadRes.data?.message || "Upload failed");
+        throw new Error("No image URL returned from upload");
       }
 
-      const targetUserId = profileUser?._id || currentUser?._id;
-      const updateRes = await axios.put(
-        `/users/${targetUserId}`,
-        {
-          coverImage: uploadedUrl,
-          coverPic: uploadedUrl,
-        },
-        { withCredentials: true }
-      );
+      const payload = {
+        avatar: uploadedUrl,
+        pic: uploadedUrl,
+        img: uploadedUrl,
+      };
 
-      if (updateRes.data?.success) {
-        showToast.success("Cover photo updated successfully!");
-        onProfileUpdate?.({
-          coverImage: uploadedUrl,
-          coverPic: uploadedUrl,
-        });
-        handleCancelCover();
-      } else {
-        throw new Error(updateRes.data?.message || "Failed to update profile");
+      const updateRes = await axios.put(`/users/${targetUserId}`, payload, {
+        withCredentials: true,
+      });
+
+      const updatedUser = updateRes.data?.user || updateRes.data;
+      if (onProfileUpdate) {
+        onProfileUpdate(updatedUser);
       }
+
+      showToast.success("Profile photo updated successfully!");
+      handleCancelAvatar();
     } catch (err) {
-      console.error("Cover photo update error:", err);
-      showToast.error(
-        "Upload failed",
-        err.response?.data?.message ||
-          err.message ||
-          "Failed to upload cover photo"
-      );
+      const errorMsg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to upload photo.";
+      showToast.error(errorMsg);
     } finally {
-      setIsUploadingCover(false);
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancelAvatar = () => {
+    if (avatarPreview && avatarPreview.startsWith("blob:")) {
+      URL.revokeObjectURL(avatarPreview);
+    }
+    setAvatarFile(null);
+    setAvatarPreview(null);
+    if (avatarFileInputRef.current) {
+      avatarFileInputRef.current.value = "";
+    }
+    if (activeField === "avatar") {
+      setActiveField(null);
+    }
+  };
+
+  const handleKeyDown = (e, field) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      handleCancelEdit();
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      handleSaveField(field);
     }
   };
 
@@ -178,8 +362,6 @@ export const ProfileHeader = ({
   };
 
   const socialState = relationship?.socialState || "none";
-  const isFollowing = Boolean(relationship?.isFollowing);
-  const isRequested = Boolean(relationship?.requestSent);
   const isTripMate = Boolean(relationship?.isTripMate);
 
   const canMessageUser = (() => {
@@ -294,8 +476,6 @@ export const ProfileHeader = ({
       ? "Hey there! I’m using YatriGo. What about you?"
       : profileUser?.bio;
 
-  const verificationStatus = profileUser?.verificationStatus || "unverified";
-
   const renderVerificationBadge = () => {
     if (isActuallyVerified(profileUser)) {
       return (
@@ -337,7 +517,7 @@ export const ProfileHeader = ({
       return (
         <button
           onClick={() => setShowBlockModal(true)}
-          className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-xs font-bold text-red-600 shadow-xs transition hover:bg-red-100 active:scale-95"
+          className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-red-200 bg-red-50 px-4 text-xs font-bold text-red-600 shadow-xs transition hover:bg-red-100 active:scale-95 cursor-pointer"
         >
           <Ban className="h-3.5 w-3.5" />
           Unblock
@@ -350,14 +530,14 @@ export const ProfileHeader = ({
         <div className="flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 p-1">
           <button
             onClick={handleAcceptRequest}
-            className="flex min-h-[34px] items-center justify-center gap-1 rounded-full bg-primary-600 px-3.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 active:scale-95"
+            className="flex min-h-[34px] items-center justify-center gap-1 rounded-full bg-primary-600 px-3.5 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 active:scale-95 cursor-pointer"
           >
             <Check className="h-3.5 w-3.5" />
             Accept
           </button>
           <button
             onClick={handleDeclineRequest}
-            className="flex min-h-[34px] items-center justify-center rounded-full px-3 text-xs font-bold text-secondary-700 transition hover:bg-white active:scale-95"
+            className="flex min-h-[34px] items-center justify-center rounded-full px-3 text-xs font-bold text-secondary-700 transition hover:bg-white active:scale-95 cursor-pointer"
           >
             Decline
           </button>
@@ -373,7 +553,7 @@ export const ProfileHeader = ({
       <button
         onClick={handleFollowToggle}
         disabled={followLoading}
-        className={`flex min-h-[38px] items-center justify-center gap-1.5 rounded-full px-4 text-xs font-bold transition-all duration-200 active:scale-95 ${
+        className={`flex min-h-[38px] items-center justify-center gap-1.5 rounded-full px-4 text-xs font-bold transition-all duration-200 active:scale-95 cursor-pointer ${
           followLoading ? "cursor-not-allowed opacity-50" : ""
         } ${
           isFollowingState || isRequestedState
@@ -407,12 +587,9 @@ export const ProfileHeader = ({
     <>
       <section className="relative overflow-hidden rounded-3xl border border-border/80 bg-surface shadow-sm">
       <div className="relative h-28 sm:h-36 md:h-44 w-full overflow-hidden bg-gradient-to-r from-sky-800 via-brand to-sky-900 select-none group/cover">
-        {coverPreview || profileUser?.coverImage || profileUser?.coverPic ? (
+        {profileUser?.coverImage || profileUser?.coverPic ? (
           <img
-            src={
-              coverPreview ||
-              toHttps(profileUser?.coverImage || profileUser?.coverPic)
-            }
+            src={toHttps(profileUser?.coverImage || profileUser?.coverPic)}
             alt="Cover"
             className="w-full h-full object-cover"
           />
@@ -432,63 +609,6 @@ export const ProfileHeader = ({
             </svg>
           </div>
         )}
-
-        {isOwnProfile && (
-          <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 z-20 flex items-center gap-2">
-            <input
-              ref={coverInputRef}
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleCoverSelect}
-              className="hidden"
-            />
-
-            {coverPreview ? (
-              <div className="flex items-center gap-1.5 rounded-full bg-brand/80 p-1 backdrop-blur-md shadow-lg border border-white/20">
-                <button
-                  type="button"
-                  onClick={handleCancelCover}
-                  disabled={isUploadingCover}
-                  className="flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold text-white/90 transition hover:bg-white/20 active:scale-95 disabled:opacity-50"
-                  title="Cancel"
-                >
-                  <X className="h-3.5 w-3.5" />
-                  <span>Cancel</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSaveCover}
-                  disabled={isUploadingCover}
-                  className="flex items-center gap-1 rounded-full bg-primary-600 px-3 py-1 text-[11px] font-bold text-white shadow-sm transition hover:bg-primary-700 active:scale-95 disabled:opacity-50"
-                  title="Save Cover Photo"
-                >
-                  {isUploadingCover ? (
-                    <>
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                      <span>Saving...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Check className="h-3.5 w-3.5" />
-                      <span>Save</span>
-                    </>
-                  )}
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={() => coverInputRef.current?.click()}
-                disabled={isUploadingCover}
-                className="flex items-center justify-center p-2 rounded-full bg-primary-600 hover:bg-primary-700 text-white shadow-md border-2 border-white backdrop-blur-xs transition-all hover:scale-105 active:scale-95 group/btn"
-                title="Edit Cover Photo"
-                aria-label="Edit Cover Photo"
-              >
-                <Edit className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        )}
       </div>
 
       <div className="px-4 sm:px-6 pb-5 pt-0">
@@ -504,7 +624,7 @@ export const ProfileHeader = ({
               title="Click to view profile photo"
             >
               <img
-                src={getAvatarUrl(profileUser)}
+                src={avatarPreview || getAvatarUrl(profileUser)}
                 alt={profileUser?.name || "Traveler"}
                 className="h-full w-full object-cover transition-transform duration-300 group-hover/avatar:scale-105"
                 onError={(e) => {
@@ -519,18 +639,60 @@ export const ProfileHeader = ({
               </div>
             </div>
 
-            {isOwnProfile && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  navigate("/updateProfile", { state: profileUser });
-                }}
-                className="absolute bottom-0 right-0 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full border-2 border-surface shadow-sm hover:scale-105 transition-transform"
-                title="Edit Profile"
-                aria-label="Edit Profile"
-              >
-                <Edit className="w-3 h-3" />
-              </button>
+            {/* Avatar Inline Edit Controls */}
+            {isOwnProfile && activeField !== "avatar" && (
+              <>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    avatarFileInputRef.current?.click();
+                  }}
+                  className="absolute bottom-0 right-0 p-1.5 bg-primary-600 hover:bg-primary-700 text-white rounded-full border-2 border-surface shadow-sm hover:scale-105 transition-transform cursor-pointer"
+                  title="Change Profile Photo"
+                  aria-label="Change Profile Photo"
+                >
+                  <Edit className="w-3 h-3" />
+                </button>
+                <input
+                  type="file"
+                  ref={avatarFileInputRef}
+                  onChange={handleAvatarFileSelect}
+                  className="hidden"
+                  accept="image/*,.heic,.heif"
+                  disabled={isSaving}
+                />
+              </>
+            )}
+
+            {/* Save / Cancel buttons when avatar is actively being edited */}
+            {activeField === "avatar" && (
+              <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-1.5 bg-white border border-primary-200 shadow-md rounded-full px-2 py-0.5 z-20">
+                <button
+                  type="button"
+                  onClick={handleSaveAvatar}
+                  disabled={isSaving}
+                  className="p-1 rounded-full bg-primary-600 hover:bg-primary-700 text-white transition disabled:opacity-50 cursor-pointer shadow-xs"
+                  title="Save new photo"
+                  aria-label="Save photo"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelAvatar}
+                  disabled={isSaving}
+                  className="p-1 rounded-full hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                  title="Cancel"
+                  aria-label="Cancel photo change"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
             )}
           </div>
 
@@ -538,18 +700,19 @@ export const ProfileHeader = ({
             {isOwnProfile ? (
               <>
                 <button
-                  onClick={() =>
-                    navigate("/updateProfile", { state: profileUser })
-                  }
-                  className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full bg-primary-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 active:scale-95"
+                  type="button"
+                  onClick={() => handleStartEdit("name")}
+                  className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full bg-primary-600 px-4 text-xs font-bold text-white shadow-xs transition hover:bg-primary-700 active:scale-95 cursor-pointer"
+                  title="Edit Profile"
                 >
                   <Edit className="h-3.5 w-3.5" />
                   Edit Profile
                 </button>
 
                 <button
+                  type="button"
                   onClick={handleShareProfile}
-                  className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-xs font-bold text-secondary-700 shadow-xs transition hover:bg-secondary-50 active:scale-95"
+                  className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-xs font-bold text-secondary-700 shadow-xs transition hover:bg-secondary-50 active:scale-95 cursor-pointer"
                   title="Share Profile"
                 >
                   {copied ? (
@@ -567,7 +730,7 @@ export const ProfileHeader = ({
                 {canMessageUser && (
                   <button
                     onClick={handleMessage}
-                    className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-xs font-bold text-secondary-700 shadow-xs transition hover:border-primary-200 hover:bg-primary-50 active:scale-95"
+                    className="flex min-h-[38px] items-center justify-center gap-1.5 rounded-full border border-border bg-surface px-3.5 text-xs font-bold text-secondary-700 shadow-xs transition hover:border-primary-200 hover:bg-primary-50 active:scale-95 cursor-pointer"
                   >
                     <MessageCircle className="h-3.5 w-3.5 text-primary-600" />
                     Message
@@ -577,7 +740,7 @@ export const ProfileHeader = ({
                 <div className="relative dropdown-container">
                   <button
                     onClick={() => setShowProfileMenu(!showProfileMenu)}
-                    className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-border bg-surface text-muted shadow-xs transition hover:bg-secondary-50 hover:text-dark"
+                    className="flex h-[38px] w-[38px] items-center justify-center rounded-full border border-border bg-surface text-muted shadow-xs transition hover:bg-secondary-50 hover:text-dark cursor-pointer"
                     aria-label="More options"
                   >
                     <MoreVertical className="h-4 w-4" />
@@ -598,7 +761,7 @@ export const ProfileHeader = ({
                               setShowProfileMenu(false);
                               setShowRateModal(true);
                             }}
-                            className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-secondary-700 hover:bg-amber-50 hover:text-amber-800 transition-colors"
+                            className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-secondary-700 hover:bg-amber-50 hover:text-amber-800 transition-colors cursor-pointer"
                           >
                             <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-500" />
                             Write Review
@@ -610,7 +773,7 @@ export const ProfileHeader = ({
                             setShowProfileMenu(false);
                             setShowReportModal(true);
                           }}
-                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-secondary-700 hover:bg-secondary-50 transition-colors"
+                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-secondary-700 hover:bg-secondary-50 transition-colors cursor-pointer"
                         >
                           <ShieldAlert className="h-3.5 w-3.5 text-muted" />
                           Report User
@@ -623,7 +786,7 @@ export const ProfileHeader = ({
                             setShowProfileMenu(false);
                             setShowBlockModal(true);
                           }}
-                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-danger hover:bg-red-50 transition-colors"
+                          className="flex w-full items-center gap-2.5 px-3.5 py-2 text-xs font-bold text-danger hover:bg-red-50 transition-colors cursor-pointer"
                         >
                           <Ban className="h-3.5 w-3.5 text-danger" />
                           {isBlockedByMe ? "Unblock User" : "Block User"}
@@ -638,10 +801,66 @@ export const ProfileHeader = ({
         </div>
 
         <div className="space-y-2">
+          {/* 1. Name row */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-            <h1 className="text-base sm:text-xl font-bold tracking-tight text-dark font-heading leading-snug">
-              {profileUser?.name || "Explorer"}
-            </h1>
+            {activeField === "name" ? (
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                <input
+                  type="text"
+                  value={editValues.name}
+                  onChange={(e) => handleFieldChange("name", e.target.value)}
+                  onKeyDown={(e) => handleKeyDown(e, "name")}
+                  maxLength={80}
+                  disabled={isSaving}
+                  className="px-2.5 py-1 text-base sm:text-lg font-bold text-dark bg-white border border-primary-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 rounded-xl outline-none transition shadow-2xs min-w-[180px] sm:min-w-[240px]"
+                  autoFocus
+                  placeholder="Full name"
+                />
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveField("name")}
+                    disabled={isSaving}
+                    className="p-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
+                    title="Save (Enter)"
+                    aria-label="Save name"
+                  >
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="p-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                    title="Cancel (Esc)"
+                    aria-label="Cancel editing"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {fieldErrors.name && (
+                  <p className="w-full text-[11px] font-semibold text-red-500">{fieldErrors.name}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 group/name">
+                <h1 className="text-base sm:text-xl font-bold tracking-tight text-dark font-heading leading-snug">
+                  {profileUser?.name || "Explorer"}
+                </h1>
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit("name")}
+                    className="p-1 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                    title="Edit name"
+                    aria-label="Edit name"
+                  >
+                    <Edit className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+            )}
+
             {renderVerificationBadge()}
             {Number(profileUser?.rating) > 0 ? (
               <span
@@ -662,18 +881,208 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          <p className="text-xs font-medium text-primary-600 font-sans">
-            @{profileUser?.username || "traveler"}
-          </p>
-
-          {displayBio && (
-            <p className="text-xs sm:text-sm text-secondary-600 font-normal sm:font-medium leading-relaxed max-w-2xl whitespace-pre-wrap break-words pt-0.5 font-sans">
-              {displayBio}
-            </p>
+          {/* 2. Username row */}
+          {activeField === "username" ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex items-center bg-white border border-primary-400 focus-within:border-primary-600 focus-within:ring-2 focus-within:ring-primary-100 rounded-lg px-2 py-0.5 shadow-2xs">
+                <span className="text-xs font-bold text-primary-600 select-none">@</span>
+                <input
+                  type="text"
+                  value={editValues.username}
+                  onChange={(e) => handleFieldChange("username", e.target.value.toLowerCase().replace(/\s+/g, ""))}
+                  onKeyDown={(e) => handleKeyDown(e, "username")}
+                  maxLength={30}
+                  disabled={isSaving}
+                  className="px-1 py-0.5 text-xs font-medium text-primary-700 bg-transparent outline-none min-w-[120px] sm:min-w-[160px]"
+                  autoFocus
+                  placeholder="username"
+                />
+              </div>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => handleSaveField("username")}
+                  disabled={isSaving}
+                  className="p-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
+                  title="Save (Enter)"
+                  aria-label="Save username"
+                >
+                  {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isSaving}
+                  className="p-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                  title="Cancel (Esc)"
+                  aria-label="Cancel editing"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+              {fieldErrors.username && (
+                <p className="w-full text-[11px] font-semibold text-red-500">{fieldErrors.username}</p>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center gap-1 group/username">
+              <p className="text-xs font-medium text-primary-600 font-sans">
+                @{profileUser?.username || "traveler"}
+              </p>
+              {isOwnProfile && (
+                <button
+                  type="button"
+                  onClick={() => handleStartEdit("username")}
+                  className="p-0.5 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                  title="Edit username"
+                  aria-label="Edit username"
+                >
+                  <Edit className="w-3 h-3" />
+                </button>
+              )}
+            </div>
           )}
 
+          {/* 3. Bio row */}
+          {activeField === "bio" ? (
+            <div className="w-full max-w-2xl space-y-1.5 pt-0.5">
+              <textarea
+                value={editValues.bio}
+                onChange={(e) => handleFieldChange("bio", e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") handleCancelEdit();
+                  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") handleSaveField("bio");
+                }}
+                maxLength={280}
+                rows={3}
+                disabled={isSaving}
+                className="w-full rounded-xl border border-primary-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 bg-white p-2.5 text-xs sm:text-sm text-dark outline-none transition shadow-2xs"
+                placeholder="Tell other travelers about yourself..."
+                autoFocus
+              />
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] text-muted font-mono">
+                  {(editValues.bio || "").length} / 280
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveField("bio")}
+                    disabled={isSaving}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold shadow-xs transition disabled:opacity-50 cursor-pointer"
+                    title="Save (Ctrl+Enter)"
+                  >
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Save</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-xs font-semibold transition cursor-pointer"
+                    title="Cancel (Esc)"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              </div>
+              {fieldErrors.bio && (
+                <p className="text-[11px] font-semibold text-red-500">{fieldErrors.bio}</p>
+              )}
+            </div>
+          ) : displayBio ? (
+            <div className="group/bio flex items-start gap-1 max-w-2xl pt-0.5">
+              <p className="text-xs sm:text-sm text-secondary-600 font-normal sm:font-medium leading-relaxed whitespace-pre-wrap break-words font-sans">
+                {displayBio}
+              </p>
+              {isOwnProfile && (
+                <button
+                  type="button"
+                  onClick={() => handleStartEdit("bio")}
+                  className="p-1 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors shrink-0 cursor-pointer"
+                  title="Edit bio"
+                  aria-label="Edit bio"
+                >
+                  <Edit className="w-3 h-3" />
+                </button>
+              )}
+            </div>
+          ) : isOwnProfile ? (
+            <button
+              type="button"
+              onClick={() => handleStartEdit("bio")}
+              className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium py-0.5 hover:underline cursor-pointer"
+            >
+              <Edit className="w-3 h-3" />
+              <span>+ Add Bio</span>
+            </button>
+          ) : null}
+
+          {/* 4. Metadata details row (Location, Mobile, Joined, Email) */}
           <div className="flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-xs text-muted font-medium pt-1 font-sans">
-            {profileUser?.city || profileUser?.state || profileUser?.country ? (
+            {/* Location */}
+            {activeField === "location" ? (
+              <div className="flex flex-wrap items-center gap-1.5 py-1 w-full max-w-md">
+                <MapPin className="h-3.5 w-3.5 text-danger shrink-0" />
+                <div className="min-w-[130px] flex-1">
+                  <CustomSelect
+                    value={editValues.state}
+                    onChange={(e) => {
+                      const state = e.target.value;
+                      setEditValues((prev) => ({ ...prev, state, city: "" }));
+                      setFieldErrors((prev) => ({ ...prev, location: "" }));
+                    }}
+                    options={Object.keys(INDIAN_STATES_AND_CITIES).map((s) => ({ value: s, label: s }))}
+                    placeholder="Select State"
+                    searchable={true}
+                  />
+                </div>
+                <div className="min-w-[130px] flex-1">
+                  <CustomSelect
+                    value={editValues.city}
+                    onChange={(e) => {
+                      const city = e.target.value;
+                      setEditValues((prev) => ({ ...prev, city }));
+                      setFieldErrors((prev) => ({ ...prev, location: "" }));
+                    }}
+                    disabled={!editValues.state}
+                    options={
+                      editValues.state && INDIAN_STATES_AND_CITIES[editValues.state]
+                        ? INDIAN_STATES_AND_CITIES[editValues.state].map((c) => ({ value: c, label: c }))
+                        : []
+                    }
+                    placeholder={editValues.state ? "Select City" : "Select State first"}
+                    searchable={true}
+                  />
+                </div>
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveField("location")}
+                    disabled={isSaving}
+                    className="p-2 rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
+                    title="Save location"
+                    aria-label="Save location"
+                  >
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="p-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                    title="Cancel"
+                    aria-label="Cancel"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                {fieldErrors.location && (
+                  <p className="w-full text-[11px] font-semibold text-red-500">{fieldErrors.location}</p>
+                )}
+              </div>
+            ) : profileUser?.city || profileUser?.state || profileUser?.country ? (
               <span className="inline-flex items-center gap-1 text-secondary-600">
                 <MapPin className="h-3.5 w-3.5 text-danger shrink-0" />
                 <span>
@@ -681,23 +1090,106 @@ export const ProfileHeader = ({
                     ? `${profileUser.city}, ${profileUser.state}`
                     : profileUser?.city || profileUser?.country}
                 </span>
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit("location")}
+                    className="p-0.5 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                    title="Edit location"
+                    aria-label="Edit location"
+                  >
+                    <Edit className="w-3 h-3" />
+                  </button>
+                )}
               </span>
             ) : isOwnProfile ? (
               <button
-                onClick={() =>
-                  navigate("/updateProfile", { state: profileUser })
-                }
-                className="inline-flex items-center gap-1 text-primary-600 bg-primary-50 border border-primary-200 px-2.5 py-0.5 rounded-full text-xs font-semibold hover:bg-primary-100 transition-colors"
+                type="button"
+                onClick={() => handleStartEdit("location")}
+                className="inline-flex items-center gap-1 text-primary-600 bg-primary-50 border border-primary-200 px-2.5 py-0.5 rounded-full text-xs font-semibold hover:bg-primary-100 transition-colors cursor-pointer"
               >
                 <MapPin className="h-3 w-3 text-danger" /> Add Location
+                <Edit className="w-2.5 h-2.5 ml-0.5 text-primary-500" />
               </button>
             ) : null}
 
+            {/* Mobile / Phone */}
+            {activeField === "mobile" ? (
+              <div className="flex flex-wrap items-center gap-1.5">
+                <Phone className="h-3.5 w-3.5 text-secondary-500 shrink-0" />
+                <input
+                  type="tel"
+                  value={editValues.mobile}
+                  onChange={(e) => handleFieldChange("mobile", e.target.value.replace(/\D/g, ""))}
+                  onKeyDown={(e) => handleKeyDown(e, "mobile")}
+                  maxLength={10}
+                  disabled={isSaving}
+                  className="px-2 py-0.5 text-xs font-medium text-dark bg-white border border-primary-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 rounded-lg outline-none transition shadow-2xs w-28 sm:w-32"
+                  autoFocus
+                  placeholder="10-digit mobile"
+                />
+                <div className="flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveField("mobile")}
+                    disabled={isSaving}
+                    className="p-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white shadow-xs transition disabled:opacity-50 cursor-pointer"
+                    title="Save (Enter)"
+                    aria-label="Save mobile"
+                  >
+                    {isSaving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="p-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 transition cursor-pointer"
+                    title="Cancel (Esc)"
+                    aria-label="Cancel editing"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+                {fieldErrors.mobile && (
+                  <p className="w-full text-[11px] font-semibold text-red-500">{fieldErrors.mobile}</p>
+                )}
+              </div>
+            ) : profileUser?.mobile ? (
+              <span className="inline-flex items-center gap-1 text-secondary-600">
+                <Phone className="h-3.5 w-3.5 text-secondary-500 shrink-0" />
+                <span>{profileUser.mobile}</span>
+                {isOwnProfile && (
+                  <button
+                    type="button"
+                    onClick={() => handleStartEdit("mobile")}
+                    className="p-0.5 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors cursor-pointer"
+                    title="Edit mobile"
+                    aria-label="Edit mobile"
+                  >
+                    <Edit className="w-3 h-3" />
+                  </button>
+                )}
+              </span>
+            ) : isOwnProfile ? (
+              <button
+                type="button"
+                onClick={() => handleStartEdit("mobile")}
+                className="inline-flex items-center gap-1 text-slate-500 hover:text-primary-600 text-xs font-medium hover:underline cursor-pointer"
+                title="Add mobile number"
+              >
+                <Phone className="h-3.5 w-3.5 text-slate-400" />
+                <span>+ Add Mobile</span>
+                <Edit className="w-2.5 h-2.5 ml-0.5 text-slate-400" />
+              </button>
+            ) : null}
+
+            {/* Member Since (Read-only metadata) */}
             <span className="inline-flex items-center gap-1 text-secondary-600">
               <Calendar className="h-3.5 w-3.5 text-muted shrink-0" />
               Joined {memberSinceFormatted}
             </span>
 
+            {/* Email (Read-only account identity) */}
             {isOwnProfile && profileUser?.email && (
               <span className="inline-flex items-center gap-1 text-muted">
                 <Mail className="h-3.5 w-3.5 shrink-0" />
@@ -706,8 +1198,108 @@ export const ProfileHeader = ({
             )}
           </div>
 
-          {profileUser?.interests && profileUser.interests.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1.5 pt-1.5 font-sans">
+          {/* 5. Interests */}
+          {activeField === "interests" ? (
+            <div className="w-full max-w-2xl space-y-2 pt-1.5 font-sans">
+              <div className="flex flex-wrap items-center gap-1.5">
+                {editValues.interests.map((interest, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1 rounded-full border border-primary-200 bg-primary-50 px-2.5 py-0.5 text-[11px] sm:text-xs font-semibold text-primary-700 shadow-2xs"
+                  >
+                    <span>{INTEREST_ICON_MAP[(interest || "").toLowerCase()] || "🌍"}</span>
+                    <span>{interest}</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = editValues.interests.filter((_, i) => i !== idx);
+                        setEditValues((prev) => ({ ...prev, interests: updated }));
+                      }}
+                      className="ml-0.5 hover:text-danger rounded-full p-0.5 transition cursor-pointer"
+                      title="Remove interest"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {editValues.interests.length < 10 && (
+                <div className="flex items-center gap-1.5 max-w-sm">
+                  <input
+                    type="text"
+                    value={newInterestInput}
+                    onChange={(e) => setNewInterestInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddInterest(newInterestInput);
+                      }
+                    }}
+                    placeholder="Add interest (e.g. Hiking)"
+                    className="px-2.5 py-1 text-xs font-medium text-dark bg-white border border-primary-400 focus:border-primary-600 focus:ring-2 focus:ring-primary-100 rounded-lg outline-none transition shadow-2xs flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleAddInterest(newInterestInput)}
+                    className="px-2.5 py-1 bg-primary-50 hover:bg-primary-100 border border-primary-200 text-primary-700 text-xs font-bold rounded-lg transition cursor-pointer"
+                  >
+                    Add
+                  </button>
+                </div>
+              )}
+
+              {/* Quick suggestions */}
+              {editValues.interests.length < 10 && (
+                <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                  <span className="text-[10px] text-muted font-medium mr-1">Suggestions:</span>
+                  {["Photography", "Road Trips", "Trekking", "Mountains", "Beaches", "Food", "Camping", "Solo Travel", "Culture", "Backpacking"]
+                    .filter((item) => !editValues.interests.some((existing) => existing.toLowerCase() === item.toLowerCase()))
+                    .slice(0, 5)
+                    .map((suggestion) => (
+                      <button
+                        key={suggestion}
+                        type="button"
+                        onClick={() => handleAddInterest(suggestion)}
+                        className="text-[10.5px] px-2 py-0.5 bg-slate-100 hover:bg-primary-50 hover:text-primary-700 rounded-full border border-slate-200 text-slate-600 transition cursor-pointer"
+                      >
+                        + {suggestion}
+                      </button>
+                    ))}
+                </div>
+              )}
+
+              <div className="flex items-center justify-between pt-1">
+                <span className="text-[10px] text-muted font-mono">
+                  {editValues.interests.length} / 10 interests
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleSaveField("interests")}
+                    disabled={isSaving}
+                    className="flex items-center gap-1 px-3 py-1 rounded-lg bg-primary-600 hover:bg-primary-700 text-white text-xs font-bold shadow-xs transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                    <span>Save</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    disabled={isSaving}
+                    className="flex items-center gap-1 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-100 text-slate-600 text-xs font-semibold transition cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel</span>
+                  </button>
+                </div>
+              </div>
+              {fieldErrors.interests && (
+                <p className="text-[11px] font-semibold text-red-500">{fieldErrors.interests}</p>
+              )}
+            </div>
+          ) : profileUser?.interests && profileUser.interests.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-1.5 pt-1.5 font-sans group/interests">
               {profileUser.interests
                 .filter((interest) => {
                   const lower = (interest || "").toLowerCase().trim();
@@ -728,8 +1320,28 @@ export const ProfileHeader = ({
                     <span>{interest}</span>
                   </span>
                 ))}
+              {isOwnProfile && (
+                <button
+                  type="button"
+                  onClick={() => handleStartEdit("interests")}
+                  className="p-1 rounded-full text-slate-400 hover:text-primary-600 hover:bg-primary-50 transition-colors ml-0.5 cursor-pointer"
+                  title="Edit interests"
+                  aria-label="Edit interests"
+                >
+                  <Edit className="w-3 h-3" />
+                </button>
+              )}
             </div>
-          )}
+          ) : isOwnProfile ? (
+            <button
+              type="button"
+              onClick={() => handleStartEdit("interests")}
+              className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium py-1 hover:underline cursor-pointer"
+            >
+              <Edit className="w-3 h-3" />
+              <span>+ Add Interests</span>
+            </button>
+          ) : null}
         </div>
 
         <div className="mt-4 grid grid-cols-3 min-[430px]:grid-cols-5 overflow-hidden rounded-2xl border border-border/80 bg-secondary-50/60 divide-y min-[430px]:divide-y-0 divide-x divide-border/60">
@@ -827,7 +1439,7 @@ export const ProfileHeader = ({
                 <div className="flex items-center gap-3">
                   <div className="h-10 w-10 rounded-full overflow-hidden border-2 border-white/20 shadow-xs">
                     <img
-                      src={getAvatarUrl(profileUser)}
+                      src={avatarPreview || getAvatarUrl(profileUser)}
                       alt={profileUser?.name || "Traveler"}
                       className="h-full w-full object-cover"
                     />
@@ -850,7 +1462,7 @@ export const ProfileHeader = ({
                       type="button"
                       onClick={() => {
                         setShowPhotoModal(false);
-                        navigate("/updateProfile", { state: profileUser });
+                        avatarFileInputRef.current?.click();
                       }}
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition active:scale-95 border border-white/15 cursor-pointer"
                     >
@@ -873,7 +1485,7 @@ export const ProfileHeader = ({
 
               <div className="relative w-full max-h-[72vh] flex items-center justify-center rounded-2xl overflow-hidden bg-black/40 border border-white/10 shadow-2xl p-2 sm:p-3">
                 <img
-                  src={getAvatarUrl(profileUser)}
+                  src={avatarPreview || getAvatarUrl(profileUser)}
                   alt={profileUser?.name || "Profile Photo"}
                   className="max-h-[66vh] w-auto max-w-full object-contain rounded-xl select-none"
                   onError={(e) => {
@@ -899,7 +1511,7 @@ export const ProfileHeader = ({
                   </button>
                 )}
                 <a
-                  href={getAvatarUrl(profileUser)}
+                  href={avatarPreview || getAvatarUrl(profileUser)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white/90 hover:text-white text-xs font-semibold transition border border-white/15 cursor-pointer"

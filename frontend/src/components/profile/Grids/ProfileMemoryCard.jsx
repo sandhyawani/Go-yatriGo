@@ -12,17 +12,19 @@ import {
   Music2,
   Play,
   Pause,
-  Edit,
+  Pencil,
   Trash2,
   ShieldAlert,
-  Camera,
+  Loader2,
+  Check,
 } from "lucide-react";
 import moment from "moment";
 import { motion, AnimatePresence } from "framer-motion";
+import axios from "../../../api/axios";
+import { showToast } from "../../../utils/showToast";
 import { getAvatarUrl } from "../../../utils/avatar";
 import { toHttps } from "../../../utils/toHttps";
 import AudioManager from "../../../utils/AudioManager";
-import ChangeCoverModal from "../../modals/ChangeCoverModal";
 
 export const ProfileMemoryCard = ({
   memory,
@@ -58,9 +60,16 @@ export const ProfileMemoryCard = ({
   onPostUpdated,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const [showChangeCoverModal, setShowChangeCoverModal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const initialMemory = memory || post;
   const [localMemory, setLocalMemory] = useState(initialMemory);
+  const [editCaption, setEditCaption] = useState(
+    initialMemory?.caption || initialMemory?.title || ""
+  );
+  const [editLocation, setEditLocation] = useState(
+    initialMemory?.location || ""
+  );
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -140,15 +149,79 @@ export const ProfileMemoryCard = ({
       ? currentMemory.song?.artist
       : null);
 
-  const handleCoverUpdated = (updatedMemory) => {
-    setLocalMemory((prev) => ({
-      ...prev,
-      ...updatedMemory,
-    }));
-    if (onMemoryUpdated) {
-      onMemoryUpdated(updatedMemory);
-    } else if (onPostUpdated) {
-      onPostUpdated(updatedMemory);
+  useEffect(() => {
+    if (!isEditing) {
+      setEditCaption(currentMemory?.caption || currentMemory?.title || "");
+      setEditLocation(currentMemory?.location || "");
+    }
+  }, [currentMemory, isEditing]);
+
+  const handleStartEdit = (e) => {
+    e?.stopPropagation();
+    setShowMenu(false);
+    setEditCaption(currentMemory?.caption || currentMemory?.title || "");
+    setEditLocation(currentMemory?.location || "");
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = (e) => {
+    e?.stopPropagation();
+    setIsEditing(false);
+    setEditCaption(currentMemory?.caption || currentMemory?.title || "");
+    setEditLocation(currentMemory?.location || "");
+  };
+
+  const handleSaveEdit = async (e) => {
+    e?.stopPropagation();
+    if (isSavingEdit || !memoryId) return;
+    setIsSavingEdit(true);
+
+    try {
+      const res = await axios.put(
+        `/social/memory/${memoryId}`,
+        {
+          caption: editCaption,
+          location: editLocation,
+        },
+        { withCredentials: true }
+      );
+
+      if (res.data?.success) {
+        showToast.success("Travel Memory updated successfully!");
+        const updatedMemory = res.data.post || res.data.memory || {
+          ...currentMemory,
+          caption: editCaption,
+          title: editCaption,
+          location: editLocation,
+        };
+
+        const updatedData = {
+          ...currentMemory,
+          ...updatedMemory,
+          caption: editCaption,
+          title: editCaption,
+          location: editLocation,
+        };
+
+        setLocalMemory(updatedData);
+
+        if (onMemoryUpdated) {
+          onMemoryUpdated(updatedData);
+        } else if (onPostUpdated) {
+          onPostUpdated(updatedData);
+        }
+
+        setIsEditing(false);
+      } else {
+        throw new Error(res.data?.message || "Failed to update Travel Memory");
+      }
+    } catch (err) {
+      console.error("Failed to update travel memory:", err);
+      showToast.error(
+        err.response?.data?.message || "Failed to update Travel Memory."
+      );
+    } finally {
+      setIsSavingEdit(false);
     }
   };
 
@@ -425,7 +498,23 @@ export const ProfileMemoryCard = ({
             </div>
           </div>
 
-          <div className="relative shrink-0" ref={menuRef}>
+          <div className="flex items-center gap-1 shrink-0" ref={menuRef}>
+            {isCreator && (
+              <button
+                type="button"
+                onClick={handleStartEdit}
+                className={`p-1.5 rounded-full transition-colors active:scale-95 ${
+                  isEditing
+                    ? "text-primary-600 bg-primary-50"
+                    : "text-text-muted hover:text-primary-600 hover:bg-background"
+                }`}
+                title="Edit Memory"
+                aria-label="Edit memory"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+              </button>
+            )}
+
             <button
               type="button"
               onClick={(e) => {
@@ -445,36 +534,18 @@ export const ProfileMemoryCard = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full mt-1 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left"
+                  className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {isCreator ? (
                     <>
                       <button
                         type="button"
-                        onClick={() => {
-                          setShowMenu(false);
-                          if (setEditMemoryData) setEditMemoryData(currentMemory);
-                          else if (setEditPostData) setEditPostData(currentMemory);
-                          if (setShowEditMemoryModal) setShowEditMemoryModal(true);
-                          else if (setShowEditPostModal) setShowEditPostModal(true);
-                        }}
+                        onClick={handleStartEdit}
                         className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
                       >
-                        <Edit className="w-3.5 h-3.5 text-primary-500 shrink-0" />
+                        <Pencil className="w-3.5 h-3.5 text-primary-500 shrink-0" />
                         <span>Edit Memory</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setShowMenu(false);
-                          setShowChangeCoverModal(true);
-                        }}
-                        className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-text-primary hover:bg-primary-50 hover:text-primary-600 transition-colors whitespace-nowrap"
-                      >
-                        <Camera className="w-3.5 h-3.5 text-primary-500 shrink-0" />
-                        <span>Change Cover</span>
                       </button>
 
                       <button
@@ -608,49 +679,103 @@ export const ProfileMemoryCard = ({
               </div>
             )}
 
-            {isCreator && (
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowChangeCoverModal(true);
-                }}
-                className="absolute top-2 right-2 flex items-center gap-1 px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/80 text-white text-[10px] font-bold backdrop-blur-md shadow-sm opacity-0 group-hover/cover:opacity-100 transition-all duration-200 active:scale-95 z-20"
-              >
-                <Camera className="w-3 h-3 text-primary-300" />
-                <span>Change Cover</span>
-              </button>
-            )}
           </div>
         </div>
 
         <div className="px-3.5 pb-2 text-left space-y-1.5 font-sans">
-          {(currentMemory.caption || currentMemory.title) && (
-            <p className="text-xs text-text-primary font-medium line-clamp-2 leading-relaxed break-words font-sans">
-              {currentMemory.caption || currentMemory.title}
-            </p>
-          )}
+          {isEditing ? (
+            <div
+              className="space-y-2 pt-1 pb-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div>
+                <label className="block text-[11px] font-bold text-text-secondary mb-1">
+                  Caption
+                </label>
+                <textarea
+                  value={editCaption}
+                  onChange={(e) => setEditCaption(e.target.value)}
+                  placeholder="Caption"
+                  rows="2"
+                  className="w-full bg-secondary-50 border border-border rounded-xl p-2.5 text-xs text-text-primary outline-none focus:border-primary-600 focus:bg-white transition resize-none font-medium leading-relaxed"
+                />
+              </div>
 
-          <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-text-muted">
-            {currentMemory.location && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-primary truncate max-w-[140px]">
-                <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
-                <span className="truncate">{currentMemory.location}</span>
-              </span>
-            )}
-            {travelDateFormatted && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-secondary">
-                <Calendar className="w-2.5 h-2.5 text-primary-600 shrink-0" />
-                <span>{travelDateFormatted}</span>
-              </span>
-            )}
-            {currentMemory.journeyId && (
-              <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 border border-primary-100/60">
-                <Compass className="w-2.5 h-2.5 text-primary-600 shrink-0" />
-                <span>Trip</span>
-              </span>
-            )}
-          </div>
+              <div>
+                <label className="block text-[11px] font-bold text-text-secondary mb-1">
+                  Location
+                </label>
+                <div className="relative">
+                  <MapPin className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-rose-500" />
+                  <input
+                    type="text"
+                    value={editLocation}
+                    onChange={(e) => setEditLocation(e.target.value)}
+                    placeholder="Location"
+                    className="w-full pl-8 pr-2.5 py-1.5 bg-secondary-50 border border-border rounded-xl text-xs text-text-primary outline-none focus:border-primary-600 focus:bg-white transition font-medium"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  disabled={isSavingEdit}
+                  className="px-3 py-1 rounded-full text-xs font-semibold text-text-muted hover:bg-secondary-100 transition active:scale-95 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveEdit}
+                  disabled={isSavingEdit}
+                  className="px-4 py-1 rounded-full text-xs font-bold text-white bg-primary-600 hover:bg-primary-700 shadow-sm transition active:scale-95 flex items-center gap-1.5 disabled:opacity-50"
+                >
+                  {isSavingEdit ? (
+                    <>
+                      <Loader2 className="w-3 h-3 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3 h-3" />
+                      <span>Save</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              {(currentMemory.caption || currentMemory.title) && (
+                <p className="text-xs text-text-primary font-medium line-clamp-2 leading-relaxed break-words font-sans">
+                  {currentMemory.caption || currentMemory.title}
+                </p>
+              )}
+
+              <div className="flex flex-wrap items-center gap-1.5 pt-1 text-[10px] font-semibold text-text-muted">
+                {currentMemory.location && (
+                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-primary truncate max-w-[140px]">
+                    <MapPin className="w-2.5 h-2.5 text-rose-500 shrink-0" />
+                    <span className="truncate">{currentMemory.location}</span>
+                  </span>
+                )}
+                {travelDateFormatted && (
+                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-background text-text-secondary">
+                    <Calendar className="w-2.5 h-2.5 text-primary-600 shrink-0" />
+                    <span>{travelDateFormatted}</span>
+                  </span>
+                )}
+                {currentMemory.journeyId && (
+                  <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-md bg-primary-50 text-primary-700 border border-primary-100/60">
+                    <Compass className="w-2.5 h-2.5 text-primary-600 shrink-0" />
+                    <span>Trip</span>
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="flex items-center justify-between px-3.5 py-2.5 border-t border-slate-100 bg-slate-50/60 select-none mt-auto font-sans">
@@ -730,15 +855,6 @@ export const ProfileMemoryCard = ({
           </button>
         </div>
       </article>
-
-      {showChangeCoverModal && (
-        <ChangeCoverModal
-          isOpen={showChangeCoverModal}
-          onClose={() => setShowChangeCoverModal(false)}
-          memory={currentMemory}
-          onCoverUpdated={handleCoverUpdated}
-        />
-      )}
     </>
   );
 };

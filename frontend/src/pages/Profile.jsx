@@ -52,7 +52,6 @@ const Profile = () => {
   const [profileUser, setProfileUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [ratingVal, setRatingVal] = useState(5);
-  const [reportReason, setReportReason] = useState("");
   const [showReportModal, setShowReportModal] = useState(false);
   const [showBlockModal, setShowBlockModal] = useState(false);
   const [showRateModal, setShowRateModal] = useState(false);
@@ -159,6 +158,7 @@ const Profile = () => {
   const [isStoryMuted, setIsStoryMuted] = useState(true);
   const [isStoryPaused, setIsStoryPaused] = useState(false);
   const [showViewersList, setShowViewersList] = useState(false);
+  const [triggerInlineField, setTriggerInlineField] = useState(null);
 
   const handleOpenStory = (index) => {
     if (!userStories || userStories.length === 0) return;
@@ -189,12 +189,9 @@ const Profile = () => {
     }
   };
   const [selectedMemory, setSelectedMemory] = useState(null);
-  const [likeAnimation, setLikeAnimation] = useState(false);
-  const audioRef = useRef(null);
   const relationsRequestRef = useRef(0);
   const tabFetchRequestRef = useRef(0);
   const abortControllerRef = useRef(null);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
 
   useEffect(() => {
     const unsubscribe = AudioManager.subscribe((event, data) => {
@@ -1839,6 +1836,23 @@ const Profile = () => {
     }
   };
 
+  const handleMemoryUpdated = (updatedMemory) => {
+    if (!updatedMemory) return;
+    const targetMemId = (updatedMemory._id || updatedMemory.id)?.toString();
+    setUserMemories((prev) =>
+      prev.map((p) =>
+        (p._id || p.id)?.toString() === targetMemId
+          ? { ...p, ...updatedMemory }
+          : p
+      )
+    );
+    setSelectedMemory((prev) =>
+      prev && (prev._id || prev.id)?.toString() === targetMemId
+        ? { ...prev, ...updatedMemory }
+        : prev
+    );
+  };
+
   const handleEditStory = async (e) => {
     e.preventDefault();
     setIsSaving(true);
@@ -1963,8 +1977,6 @@ const Profile = () => {
       ]
     );
 
-  const targetUserId = profileUser?._id || id;
-
   return (
     <div className="w-full overflow-x-hidden pb-20 lg:pb-12 font-sans antialiased relative bg-background pt-2 sm:pt-4">
       <div className="max-w-[1100px] mx-auto px-3 sm:px-4 lg:px-8 relative z-10 space-y-4">
@@ -2003,6 +2015,8 @@ const Profile = () => {
               });
             }
           }}
+          triggerInlineField={triggerInlineField}
+          onTriggerInlineFieldHandled={() => setTriggerInlineField(null)}
         />
 
         {!isOwnProfile && isBlockedByMe ? (
@@ -2109,12 +2123,11 @@ const Profile = () => {
 
                       {!profileUser?.city && (
                         <button
-                          onClick={() =>
-                            navigate("/updateProfile", {
-                              state: profileUser,
-                            })
-                          }
-                          className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-[10px] font-semibold"
+                          onClick={() => {
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                            setTriggerInlineField("location");
+                          }}
+                          className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-[10px] font-semibold cursor-pointer"
                         >
                           Add
                         </button>
@@ -2158,12 +2171,11 @@ const Profile = () => {
                         )
                       ) && (
                           <button
-                            onClick={() =>
-                              navigate("/updateProfile", {
-                                state: profileUser,
-                              })
-                            }
-                            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-[10px] font-semibold"
+                            onClick={() => {
+                              window.scrollTo({ top: 0, behavior: "smooth" });
+                              setTriggerInlineField("avatar");
+                            }}
+                            className="bg-primary-600 hover:bg-primary-700 text-white rounded-lg px-2.5 py-1 text-[10px] font-semibold cursor-pointer"
                           >
                             Upload
                           </button>
@@ -2344,6 +2356,7 @@ const Profile = () => {
                     }}
                     handleAvatarError={handleAvatarError}
                     audioRefs={audioRefs}
+                    onMemoryUpdated={handleMemoryUpdated}
                   />
                 )}
 
@@ -2472,6 +2485,7 @@ const Profile = () => {
           }}
           handleAvatarError={handleAvatarError}
           audioRefs={audioRefs}
+          onMemoryUpdated={handleMemoryUpdated}
         />
 
         {relationsModalType === "trip_mates" ? (
