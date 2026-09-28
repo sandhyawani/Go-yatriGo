@@ -1,6 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
-  Heart,
   Sparkles,
   MessageCircle,
   Share2,
@@ -446,10 +445,9 @@ export const ProfileMemoryCard = ({
                   initial={{ scale: 0.6, opacity: 0.8 }}
                   animate={{ scale: 2, opacity: 0 }}
                   transition={{ duration: 0.55, ease: "easeOut" }}
-                  className="absolute w-16 h-16 rounded-full bg-rose-500/25 blur-sm"
+                  className="absolute w-16 h-16 rounded-full bg-brand/25 blur-sm"
                 />
-                <Heart className="w-12 h-12 text-rose-500 fill-rose-500 drop-shadow-[0_4px_16px_rgba(244,63,94,0.5)]" />
-                <Sparkles className="w-4 h-4 text-amber-300 fill-amber-300 absolute -top-1 -right-1 animate-pulse" />
+                <Sparkles className="w-12 h-12 text-brand fill-brand drop-shadow-[0_4px_16px_rgba(99,102,241,0.5)]" />
               </div>
               <div className="mt-1 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 shadow-lg">
                 <span className="text-[10px] font-black uppercase tracking-wider text-white">
