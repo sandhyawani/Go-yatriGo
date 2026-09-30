@@ -415,7 +415,7 @@ export const ProfileMemoryCard = ({
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         style={{ touchAction: "manipulation" }}
-        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-text-primary select-none"
+        className="group relative flex flex-col justify-between rounded-2xl sm:rounded-3xl border border-slate-200/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-primary-200 cursor-pointer text-text-primary select-none"
       >
         <AnimatePresence>
           {(heartAnim || (journeyLikeAnim?.postId === memoryId && journeyLikeAnim)) && (
@@ -496,7 +496,7 @@ export const ProfileMemoryCard = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-1 shrink-0" ref={menuRef}>
+          <div className="flex items-center gap-1 shrink-0 relative" ref={menuRef}>
             {isCreator && (
               <button
                 type="button"
@@ -532,7 +532,7 @@ export const ProfileMemoryCard = ({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: -4 }}
                   transition={{ duration: 0.12 }}
-                  className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-30 text-left"
+                  className="absolute right-0 top-full mt-1 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl z-[999] text-left"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {isCreator ? (
