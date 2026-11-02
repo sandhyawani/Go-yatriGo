@@ -31,6 +31,7 @@ export const ProfileHeader = ({
   userMemories = [],
   userMemoriesTotal = 0,
   userTrips = [],
+  joinedTrips = [],
   openRelationsModal,
   setActiveTab,
   canWriteReview = false,
@@ -461,11 +462,10 @@ export const ProfileHeader = ({
     userMemories.length ||
     0;
 
-  const completedTrips =
-    journeyStats?.completedJourneysCount ??
-    profileUser?.completedTrips ??
-    userTrips.length ??
-    0;
+  const totalTripsCount =
+    (userTrips?.length || 0) + (joinedTrips?.length || 0) > 0
+      ? (userTrips?.length || 0) + (joinedTrips?.length || 0)
+      : (profileUser?.completedTrips ?? journeyStats?.completedJourneysCount ?? (userTrips?.length || 0));
 
   const rawBio = (profileUser?.bio || "").trim();
   const displayBio =
@@ -1364,7 +1364,7 @@ export const ProfileHeader = ({
             className="p-2 sm:p-3 text-center transition hover:bg-primary-50/50 group"
           >
             <span className="block text-sm min-[430px]:text-base sm:text-lg font-bold text-dark group-hover:text-primary-600 transition-colors leading-tight font-heading">
-              {completedTrips}
+              {totalTripsCount}
             </span>
             <span className="mt-1 text-[11px] sm:text-xs font-medium text-slate-500 group-hover:text-primary-700 font-sans block text-center leading-tight">
               {isOwnProfile ? "My Trips" : "Trips"}
