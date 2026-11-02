@@ -643,13 +643,8 @@ export const ProfileMemoryCard = ({
         style={{
           touchAction: "manipulation",
         }}
-        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-yellow-300/70 bg-white shadow-[0_4px_20px_rgba(250,204,21,0.14)] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-yellow-400 cursor-pointer text-text-primary select-none"
+        className="group relative flex flex-col justify-between overflow-hidden rounded-2xl sm:rounded-3xl border border-slate-200/80 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-slate-300 cursor-pointer text-text-primary select-none"
       >
-        {/* Default Sparx yellow circle */}
-        <div
-          className="pointer-events-none absolute -right-10 -top-10 z-0 h-28 w-28 rounded-full bg-yellow-400/90 shadow-[0_0_30px_rgba(250,204,21,0.35)] transition-transform duration-500 group-hover:scale-125"
-        />
-
         <AnimatePresence>
           {(heartAnim ||
             (journeyLikeAnim?.postId ===
@@ -661,88 +656,38 @@ export const ProfileMemoryCard = ({
                 journeyLikeAnim?.key ||
                 memoryId
               }
-              initial={{
-                scale: 0.2,
-                opacity: 0,
-                y: 10,
-              }}
-              animate={{
-                scale: [
-                  0.2,
-                  1.25,
-                  1,
-                ],
-                opacity: [
-                  0,
-                  1,
-                  1,
-                  0,
-                ],
-                y: [
-                  10,
-                  -4,
-                  -18,
-                ],
-              }}
-              exit={{
-                opacity: 0,
-                scale: 0.8,
-              }}
-              transition={{
-                duration: 0.72,
-                times: [
-                  0,
-                  0.25,
-                  0.7,
-                  1,
-                ],
-                ease: "easeOut",
-              }}
-              style={{
-                left: `${
-                  heartAnim?.x ??
-                  journeyLikeAnim?.x ??
-                  50
-                }%`,
-                top: `${
-                  heartAnim?.y ??
-                  journeyLikeAnim?.y ??
-                  50
-                }%`,
-                transform:
-                  "translate(-50%, -50%)",
-              }}
-              className="pointer-events-none absolute z-30 flex flex-col items-center justify-center select-none"
+              initial={{ opacity: 0, scale: 0.4 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.85, y: -20 }}
+              transition={{ type: "spring", stiffness: 400, damping: 20 }}
+              className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/25 backdrop-blur-[2px]"
             >
               <div className="relative flex items-center justify-center">
                 <motion.div
-                  initial={{
-                    scale: 0.6,
-                    opacity: 0.8,
-                  }}
-                  animate={{
-                    scale: 2,
-                    opacity: 0,
-                  }}
-                  transition={{
-                    duration: 0.55,
-                    ease: "easeOut",
-                  }}
-                  className="absolute w-16 h-16 rounded-full bg-brand/25 blur-sm"
+                  initial={{ scale: 0, rotate: -25 }}
+                  animate={{ scale: [0, 1.3, 1], rotate: [0, 12, 0] }}
+                  transition={{ duration: 0.45, ease: "easeOut" }}
+                >
+                  <Sparkles className="h-16 w-16 text-amber-300 fill-amber-300 drop-shadow-[0_0_20px_rgba(252,211,77,0.7)]" />
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: [0, 1, 0], scale: [0.5, 2, 2.5] }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="absolute w-20 h-20 rounded-full border-2 border-amber-300/60"
                 />
-
-                <Sparkles className="w-12 h-12 text-brand fill-brand drop-shadow-[0_4px_16px_rgba(99,102,241,0.5)]" />
               </div>
 
-              <div className="mt-1 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-black/65 backdrop-blur-md border border-white/20 shadow-lg">
-                <span className="text-[10px] font-black uppercase tracking-wider text-white">
-                  Felt
-                </span>
-
-                <span className="text-[10px]">
-                  ✨
-                </span>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 12, scale: 0.9 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: 0.12, type: "spring", stiffness: 350, damping: 25 }}
+                className="mt-3 rounded-full border border-amber-200/40 bg-black/80 backdrop-blur-md px-3.5 py-1.5 text-[11px] font-black uppercase tracking-widest text-amber-300 shadow-xl flex items-center gap-1.5"
+              >
+                <span>✨</span>
+                <span>Memory Felt</span>
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
