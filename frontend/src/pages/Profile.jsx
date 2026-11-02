@@ -2000,6 +2000,7 @@ const Profile = () => {
           userMemories={userMemories}
           userMemoriesTotal={userMemoriesTotal}
           userTrips={userTrips}
+          joinedTrips={joinedTrips}
           openRelationsModal={openRelationsModal}
           canWriteReview={canWriteReview}
           userStories={userStories}
@@ -2302,7 +2303,7 @@ const Profile = () => {
               setActiveTab={setActiveTab}
               isOwnProfile={isOwnProfile}
               memoriesCount={userMemoriesTotal || userMemories?.length || 0}
-              tripsCount={userTrips?.length || 0}
+              tripsCount={(userTrips?.length || 0) + (joinedTrips?.length || 0)}
               savedCount={savedMemories?.length || 0}
             />
 
